@@ -3,9 +3,9 @@
 import type Stripe from "stripe"
 import { planFromPriceId } from "./stripePlan"
 
-// Deux chemins de checkout coexistent avec des conventions de métadonnées
-// différentes (api/stripe/checkout -> `userId` ; actions/stripe.ts ->
-// `supabase_user_id`). On accepte les DEUX.
+// On accepte deux conventions de métadonnée userId : `userId` (posé par
+// api/stripe/checkout, le chemin actuel) et `supabase_user_id` (ancienne
+// convention, conservée par compat pour d'éventuels abonnements antérieurs).
 export function metaUser(m?: Stripe.Metadata | null): string | undefined {
   return (m?.userId || m?.supabase_user_id) || undefined
 }

@@ -4,6 +4,7 @@
 
 import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { escapeHtml as esc } from "@/lib/escapeHtml"
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
@@ -37,7 +38,7 @@ function buildEmailHtml(params: {
   const topLinksHtml = params.topLinks.slice(0, 5).map((l, i) =>
     `<tr>
       <td style="padding:8px 12px;color:#8A8478;font-size:12px">#${i+1}</td>
-      <td style="padding:8px 12px;color:#F5F0E8;font-size:12px;word-break:break-all">${l.target.slice(0, 60)}</td>
+      <td style="padding:8px 12px;color:#F5F0E8;font-size:12px;word-break:break-all">${esc(l.target.slice(0, 60))}</td>
       <td style="padding:8px 12px;color:#C9A84C;font-size:12px;font-weight:700;text-align:right">${l.clicks}</td>
     </tr>`
   ).join("")
@@ -45,7 +46,7 @@ function buildEmailHtml(params: {
   const topPagesHtml = params.topPages.slice(0, 5).map((p, i) =>
     `<tr>
       <td style="padding:8px 12px;color:#8A8478;font-size:12px">#${i+1}</td>
-      <td style="padding:8px 12px;color:#F5F0E8;font-size:12px">${p.title}</td>
+      <td style="padding:8px 12px;color:#F5F0E8;font-size:12px">${esc(p.title)}</td>
       <td style="padding:8px 12px;color:#39FF8F;font-size:12px;font-weight:700;text-align:right">${p.views}</td>
     </tr>`
   ).join("")
@@ -62,7 +63,7 @@ function buildEmailHtml(params: {
         <span style="color:#C9A84C;font-size:13px;font-weight:700;letter-spacing:2px">QROWG REPORT</span>
       </div>
       <h1 style="color:#F5F0E8;font-size:24px;font-weight:300;margin:0 0 6px;font-family:'Fraunces',Georgia,serif">
-        Bonjour ${params.userName} 👋
+        Bonjour ${esc(params.userName)} 👋
       </h1>
       <p style="color:#8A8478;font-size:13px;margin:0">Voici vos performances · ${params.period}</p>
     </div>

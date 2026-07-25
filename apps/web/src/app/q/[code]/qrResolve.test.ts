@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { resolveOverrideDest, detectDevice } from "./qrResolve"
+import { resolveOverrideDest, detectDevice, escapeHtml } from "./qrResolve"
 
 describe("resolveOverrideDest", () => {
   it("url : ajoute https:// si le schema manque", () => {
@@ -48,5 +48,24 @@ describe("detectDevice", () => {
   it("desktop par defaut", () => {
     expect(detectDevice("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")).toBe("desktop")
     expect(detectDevice("")).toBe("desktop")
+  })
+})
+
+describe("escapeHtml (anti-XSS pause_message)", () => {
+  it("neutralise une balise script", () => {
+    expect(escapeHtml("<script>alert(1)</script>")).toBe(
+      "&lt;script&gt;alert(1)&lt;/script&gt;"
+    )
+  })
+  it("echappe guillemets, apostrophes et esperluette", () => {
+    expect(escapeHtml(`a & b "c" 'd'`)).toBe("a &amp; b &quot;c&quot; &#39;d&#39;")
+  })
+  it("neutralise une evasion d'attribut / de balise style", () => {
+    expect(escapeHtml('"><img src=x onerror=alert(1)>')).toBe(
+      "&quot;&gt;&lt;img src=x onerror=alert(1)&gt;"
+    )
+  })
+  it("laisse un texte normal intact", () => {
+    expect(escapeHtml("Revenez demain à 9h")).toBe("Revenez demain à 9h")
   })
 })

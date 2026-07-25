@@ -26,6 +26,18 @@ export function resolveOverrideDest(override: OverrideDest): string | null {
   }
 }
 
+// Echappe le HTML pour une insertion sure dans une chaine HTML construite a la
+// main (les pages d'etat /q sont des template strings, pas du JSX auto-echappe).
+// pause_message est saisi par le proprietaire du QR -> XSS stocke sans echappement.
+export function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
 // Categorise l'appareil a partir du user-agent (pour les stats de scan).
 export function detectDevice(ua: string): "mobile" | "tablet" | "desktop" {
   if (/Mobile|Android|iPhone/i.test(ua)) return "mobile"

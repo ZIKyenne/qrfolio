@@ -3,7 +3,7 @@
 
 import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
-import { resolveOverrideDest, detectDevice, type OverrideDest } from "./qrResolve"
+import { resolveOverrideDest, detectDevice, escapeHtml, type OverrideDest } from "./qrResolve"
 
 // Redirection NON mise en cache : un QR est DYNAMIQUE (le proprietaire peut changer sa
 // destination apres impression) -> chaque scan doit re-resoudre cote serveur. Sans no-store,
@@ -38,7 +38,7 @@ p{font-size:14px;line-height:1.7;color:#8A8478;margin-bottom:28px}
   <div class="icon">⏸</div>
   <div class="badge"><div class="dot"></div>En pause</div>
   <h1>QR Code temporairement indisponible</h1>
-  <p>${message || "Ce QR Code est temporairement désactivé. Réessayez plus tard."}</p>
+  <p>${message ? escapeHtml(message) : "Ce QR Code est temporairement désactivé. Réessayez plus tard."}</p>
   <a class="link" href="${appUrl}">Créer votre propre QR Code →</a>
 </div>
 </body></html>`

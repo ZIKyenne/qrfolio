@@ -3,6 +3,7 @@
 
 import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { escapeHtml } from "@/lib/escapeHtml"
 
 export async function GET(req: NextRequest) {
   const username = req.nextUrl.searchParams.get("username")
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 <div>
   <div style="font-size:48px;margin-bottom:16px">🔍</div>
   <h1 style="color:#C9A84C;font-size:24px;margin:0 0 8px">Sous-domaine introuvable</h1>
-  <p style="color:#8A8478;margin:0 0 24px">${username}.qrowg.com n'est associé à aucun compte</p>
+  <p style="color:#8A8478;margin:0 0 24px">${escapeHtml(username)}.qrowg.com n'est associé à aucun compte</p>
   <a href="${appUrl}" style="color:#C9A84C;text-decoration:none;font-size:14px">← Retour à QRowg</a>
 </div>
 </body></html>`,

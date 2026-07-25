@@ -2,6 +2,7 @@
 import { notFound } from "next/navigation"
 import PublicPageClient from "./PublicPageClient"
 import { canRemoveBranding } from "@/lib/plans"
+import { serializeJsonLd } from "@/lib/jsonLd"
 import type { Metadata } from "next"
 
 interface Props { params: Promise<{ slug: string }> }
@@ -95,7 +96,7 @@ export default async function PublicPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PublicPageClient page={page} blocks={blocks || []} showBranding={showBranding} />
     </>
   )

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import { PLAN_LIST } from "@/lib/plans"
+import { serializeJsonLd } from "@/lib/jsonLd"
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 // Origine du stockage Supabase (avatars, galeries, produits) — preconnect pour eviter
@@ -94,7 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: serializeJsonLd({
               "@context": "https://schema.org",
               "@type": "WebApplication",
               name: "QRowg",

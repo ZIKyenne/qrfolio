@@ -8,7 +8,7 @@ const RESERVED = new Set([
   "www","app","api","admin","dashboard","auth","login","signup","register",
   "support","help","blog","docs","status","mail","smtp","ftp","dev","staging",
   "production","beta","test","demo","static","assets","cdn","media","images",
-  "qrfolio","team","account","profile","settings","billing","pricing","legal",
+  "qrfolio","qrowg","team","account","profile","settings","billing","pricing","legal",
   "terms","privacy","contact","about","careers","press","partners",
 ])
 

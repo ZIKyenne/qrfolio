@@ -2711,7 +2711,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                           <div style={{ padding:14, background:"#fff", borderRadius:14, marginTop:"auto" }}>
                             <img src={qrPng} alt="QR" style={{ width:128, height:128, display:"block" }}/>
                           </div>
-                          <p style={{ color:"#A8A190", fontSize:10, margin:"auto 0 0" }}>qrfolio · /q/{active.short_code}</p>
+                          <p style={{ color:"#A8A190", fontSize:10, margin:"auto 0 0" }}>qrowg · /q/{active.short_code}</p>
                         </div>
                       ) : scene === "sticker" ? (
                         <div style={{ width:244, height:244, borderRadius:"50%", background:"radial-gradient(circle at 50% 35%, #fff, #f1eee6)", boxShadow:"0 24px 60px rgba(0,0,0,0.5), inset 0 0 0 7px var(--accent), inset 0 0 0 9px rgba(0,0,0,0.08)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>

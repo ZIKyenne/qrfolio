@@ -44,7 +44,7 @@ export async function GET() {
   return new NextResponse(JSON.stringify(payload, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="qrfolio-export-${date}.json"`,
+      "Content-Disposition": `attachment; filename="qrowg-export-${date}.json"`,
       "Cache-Control": "no-store",
     },
   })

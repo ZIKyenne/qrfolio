@@ -749,7 +749,7 @@ export function calendarLinks(e: { name?: string; start?: string; end?: string; 
 
   const lines = [
     "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//QRowg//Calendar//FR", "CALSCALE:GREGORIAN",
-    "BEGIN:VEVENT", `UID:${start}-qrfolio@qrowg.com`,
+    "BEGIN:VEVENT", `UID:${start}-qrowg@qrowg.com`,
     `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:${vcardEscape(name)}`,
     e.location ? `LOCATION:${vcardEscape(e.location)}` : "",
     e.description ? `DESCRIPTION:${vcardEscape(e.description)}` : "",

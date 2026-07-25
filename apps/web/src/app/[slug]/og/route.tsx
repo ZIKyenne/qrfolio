@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og"
 import { readFileSync } from "node:fs"
 import { createAdminClient } from "@/lib/supabase/server"
+import { isPublicHttpUrl } from "@/lib/safeUrl"
 
 // Image Open Graph generee dynamiquement par page (1200x630) — identite or/noir QRowg.
 // Referencee par generateMetadata quand aucune og_image_url custom n'est definie.
@@ -88,8 +89,10 @@ export async function GET(_req: Request, ctx: { params: Promise<{ slug: string }
     // Pre-chargement de l'avatar en data-URI : un <img src=http> serait charge par Satori
     // PENDANT le streaming (hors de ce try/catch) -> un avatar casse ferait planter en 500.
     // En data-URI, l'echec est gere ici et on retombe proprement sur l'initiale.
+    // isPublicHttpUrl : garde anti-SSRF (avatarUrl peut etre une URL arbitraire
+    // fournie via un bloc profil) -> on refuse localhost / IP privees / metadata.
     let avatarData: string | null = null
-    if (/^https?:\/\//i.test(avatarUrl)) {
+    if (isPublicHttpUrl(avatarUrl)) {
       try {
         const r = await fetch(avatarUrl, { signal: AbortSignal.timeout(2500) })
         const ct = r.headers.get("content-type") || ""

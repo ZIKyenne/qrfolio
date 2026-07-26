@@ -1220,15 +1220,27 @@ const TEMPLATE_DATA = [
   },
 ] as const
 
-function TemplateMiniPreview({ preview, accent }: { preview: readonly {type:string;color?:string;w?:string;label?:string}[]; accent: string }) {
+function TemplateMiniPreview({ preview, accent, hovered = false }: { preview: readonly {type:string;color?:string;w?:string;label?:string}[]; accent: string; hovered?: boolean }) {
   return (
     <div style={{
       background: "#0c0a08",
-      border: "1px solid rgba(255,255,255,0.06)",
+      border: `1px solid ${hovered ? accent + "33" : "rgba(255,255,255,0.06)"}`,
       borderRadius: 10, padding: "10px 10px",
       display: "flex", flexDirection: "column", gap: 6,
-      height: 120,
+      height: 120, position: "relative", overflow: "hidden",
+      transform: hovered ? "scale(1.02)" : "scale(1)",
+      transformOrigin: "center",
+      transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.25s",
     }}>
+      {/* Balayage lumineux au survol : donne vie à l'aperçu (façon page réelle) */}
+      {hovered && (
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2 }}>
+          <div className="tpl-sweep" style={{
+            position: "absolute", top: 0, bottom: 0, width: "55%", left: "-60%",
+            background: "linear-gradient(105deg, transparent, rgba(255,255,255,0.10), transparent)",
+          }} />
+        </div>
+      )}
       {preview.map((p, i) => {
         if (p.type === "avatar") return (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -1339,7 +1351,7 @@ function TemplateCard({ tpl, i, visible }: { tpl: typeof TEMPLATE_DATA[number]; 
       </div>
 
       {/* Mini preview */}
-      <TemplateMiniPreview preview={tpl.preview} accent={tpl.accent} />
+      <TemplateMiniPreview preview={tpl.preview} accent={tpl.accent} hovered={hovered} />
 
       {/* Footer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1377,6 +1389,9 @@ function TemplatesSection() {
         .tpl-grid::-webkit-scrollbar-track { background:rgba(255,255,255,0.04); border-radius:2px; }
         .tpl-grid::-webkit-scrollbar-thumb { background:rgba(201,168,76,0.3); border-radius:2px; }
         @media(max-width:640px){ #templates { padding:72px 24px !important; } }
+        .tpl-sweep { animation: tpl-sweep 0.9s ease forwards; }
+        @keyframes tpl-sweep { to { left: 120%; } }
+        @media(prefers-reduced-motion:reduce){ .tpl-sweep { animation: none !important; display:none !important; } }
       `}</style>
 
       {/* Header */}

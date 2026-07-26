@@ -4481,6 +4481,12 @@
     }, [undoRedo])
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [multiSelection, setMultiSelection] = useState<string[]>([])
+    // Refs synchronisées : lecture fraîche de la sélection / des blocs depuis le
+    // handler clavier global (deps []), sans re-souscrire l'écouteur à chaque frappe.
+    const blocksKbRef = useRef(blocks)
+    const selectedIdKbRef = useRef(selectedId)
+    useEffect(() => { blocksKbRef.current = blocks }, [blocks])
+    useEffect(() => { selectedIdKbRef.current = selectedId }, [selectedId])
     const [pageName, setPageName] = useState("Ma Page")
     const [pageSlug, setPageSlug] = useState("ma-page")
     const [pageStatus, setPageStatus] = useState("draft")
@@ -4665,6 +4671,33 @@
         if ((e.key === "Delete" || e.key === "Backspace") && multiSelection.length > 0 && !isEditing(e)) {
           e.preventDefault()
           deleteMulti()
+          return
+        }
+        // Flèches ↑/↓ — a11y clavier du canvas. Uniquement quand un bloc est déjà
+        // sélectionné (sinon on laisse le défilement natif). Flèche seule = déplacer
+        // la sélection ; Alt+flèche = déplacer le bloc (réordonnancement).
+        if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !ctrl && !e.shiftKey && !isEditing(e)) {
+          const cur = selectedIdKbRef.current
+          if (!cur) return
+          const bs = blocksKbRef.current
+          if (bs.length === 0) return
+          const dir = e.key === "ArrowDown" ? 1 : -1
+          e.preventDefault()
+          if (e.altKey) {
+            // Déplacer le bloc sélectionné (setBlocks fonctionnel = état frais).
+            setBlocks(p => {
+              const idx = p.findIndex(b => b.id === cur)
+              if (idx < 0 || p[idx]?.locked) return p
+              const ni = idx + dir
+              if (ni < 0 || ni >= p.length) return p
+              const n = [...p]; [n[idx], n[ni]] = [n[ni], n[idx]]; return n
+            })
+          } else {
+            // Déplacer la sélection au bloc voisin.
+            const idx = bs.findIndex(b => b.id === cur)
+            const ni = Math.max(0, Math.min(bs.length - 1, idx + dir))
+            if (ni !== idx) { setMultiSelection([]); setSelectedId(bs[ni].id) }
+          }
           return
         }
         // F seul — Mode Focus (fallback sans modificateur)

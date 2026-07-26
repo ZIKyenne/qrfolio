@@ -9,6 +9,7 @@ import {
   Plus, Printer, Upload, Sparkles, Link2
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { ToastProvider } from "@/components/Toast"
 
 const DEFAULT_ACCENT = "#C9A84C"
 const MUTED = "#A8A190"
@@ -304,7 +305,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* MAIN CONTENT */}
       <main style={{ flex: 1, overflow: "auto", minWidth: 0, paddingBottom: (isMobile && !hideMobileNav) ? "calc(84px + env(safe-area-inset-bottom))" : 0 }}>
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </main>
 
       {/* Sheet "Créer" (bouton central de la barre mobile) */}

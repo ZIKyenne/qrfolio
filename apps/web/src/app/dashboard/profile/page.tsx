@@ -2373,8 +2373,8 @@ export default function ProfilePage() {
                           const res = await fetch("/api/stripe/portal", { method: "POST" })
                           const data = await res.json()
                           if (data.url) window.location.href = data.url
-                          else alert(data.error || "Portail de facturation indisponible pour le moment.")
-                        } catch { alert("Impossible d'ouvrir le portail de facturation.") }
+                          else showToast(data.error || "Portail de facturation indisponible pour le moment.", "err")
+                        } catch { showToast("Impossible d'ouvrir le portail de facturation.", "err") }
                       }}
                       style={{ flex:currentPlan==="business"?1:0, display:"flex", alignItems:"center", justifyContent:"center", gap:6, padding:"10px 14px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, color:MUTED, fontFamily:"inherit", fontSize:12, cursor:"pointer", whiteSpace:"nowrap" as const }}>
                       <CreditCard size={13}/> Gerer la facturation

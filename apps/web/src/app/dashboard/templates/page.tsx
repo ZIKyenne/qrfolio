@@ -546,7 +546,7 @@ export default function TemplatesPage() {
           onClose={() => setPreview(null)}
           onUse={() => {
             setPreview(null)
-            if (!canUse(previewTemplate.plan)) { alert(`Plan ${previewTemplate.plan} requis`); return }
+            if (!canUse(previewTemplate.plan)) { setToast({type:"error", msg:`Plan ${previewTemplate.plan} requis`}); return }
             setNamingFor(previewTemplate.id)
           }}
           canUse={canUse(previewTemplate.plan)}

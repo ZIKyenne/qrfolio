@@ -3489,7 +3489,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       setSaved(true)
       setTimeout(() => setSaved(false), 2200)
     } catch (e) {
-      if (!silent) alert("Sauvegarde impossible : " + (e as Error).message)
+      if (!silent) showToast("Sauvegarde impossible : " + (e as Error).message)
     } finally {
       if (!silent) setSaving(false)
     }

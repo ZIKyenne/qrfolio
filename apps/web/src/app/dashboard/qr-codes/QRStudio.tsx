@@ -14,6 +14,7 @@ import dynamic from "next/dynamic"
 import { createClient } from "@/lib/supabase/client"
 import { useIsMobile } from "@/lib/useIsMobile"
 import { onEnterSpace } from "@/lib/a11y"
+import { useToast } from "@/components/Toast"
 import { PLAN_RANK, canPrintStudio, minPlanFor } from "@/lib/plans"
 import { createQR, updateQR, getQRBlob, downloadBlob, blobToDataUrl, buildAndDownloadPdf, type QROptions } from "./qrRender"
 import type QRCodeStyling from "qr-code-styling"
@@ -423,6 +424,7 @@ const SUPP_OBJECTIVES: SuppObjective[] = [
 ]
 
 export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: Props) {
+  const toast = useToast()
   const [qrCodes,    setQRCodes]    = useState<QRCode[]>(initialQRCodes)
   const [activeId,   setActiveId]   = useState<string | null>(initialQRCodes[0]?.id ?? null)
   const [mobileView, setMobileView] = useState<"list"|"editor">("list") // mobile : liste OU éditeur (pas les deux empilés)
@@ -983,14 +985,14 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       })
       const d = await res.json()
       if (!res.ok || d.error || !d.qr) {
-        window.alert("Duplication impossible : " + (d.message || d.error || "erreur inconnue"))
+        toast.error("Duplication impossible : " + (d.message || d.error || "erreur inconnue"))
         return
       }
       setQRCodes(prev => [d.qr, ...prev])
       setActiveId(d.qr.id)
       setMobileView("editor")
     } catch {
-      window.alert("Duplication impossible : erreur reseau")
+      toast.error("Duplication impossible : erreur reseau")
     } finally {
       setDupId(null)
     }
@@ -1891,7 +1893,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       setEditorQrUrl(dataUrl)
       setEditorOpen(true)
     } catch (e) {
-      alert("Impossible d'ouvrir l'editeur : " + (e as Error).message)
+      toast.error("Impossible d'ouvrir l'editeur : " + (e as Error).message)
     } finally {
       setEditorLoading(false)
     }
@@ -2064,7 +2066,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   async function handleLogoUpload(file: File) {
     if (!file.type.startsWith("image/")) return
     if (file.size > 2 * 1024 * 1024) {
-      alert("Logo trop volumineux (max 2 Mo)")
+      toast.error("Logo trop volumineux (max 2 Mo)")
       return
     }
     setLogoUploading(true)
@@ -2197,11 +2199,11 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         body: JSON.stringify({ all: true, ...payload }),
       })
       const d = await res.json()
-      if (!res.ok || d.error) { window.alert("Application impossible : " + (d.error || "echec")); return }
+      if (!res.ok || d.error) { toast.error("Application impossible : " + (d.error || "echec")); return }
       setQRCodes(prev => prev.map(q => ({ ...q, ...payload })))
       setApplyAllOk(true); setTimeout(()=>setApplyAllOk(false), 2500)
     } catch {
-      window.alert("Application impossible : erreur reseau")
+      toast.error("Application impossible : erreur reseau")
     }
   }
 

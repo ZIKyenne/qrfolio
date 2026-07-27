@@ -8,6 +8,7 @@
   } from "lucide-react"
   import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
   import { PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, type PageTemplate } from "./page-templates"
+  import { useUndoRedo, useResize } from "./builderHooks"
   import { useIsMobile } from "@/lib/useIsMobile"
   import { useToast } from "@/components/Toast"
   import BannerStudio from "./BannerStudio"
@@ -35,100 +36,6 @@
   const NOISE_SVG_URL = "url('data:image/svg+xml,%3Csvg viewBox=%270 0 200 200%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E')"
   const MUTED = "#A8A190"
   type Message = { role: "user" | "assistant"; content: string }
-
-  // ── Historique Undo/Redo ─────────────────────────────────────────────────
-  const MAX_HISTORY = 50
-
-  function useUndoRedo(initial: Block[]) {
-    const historyRef = useRef<Block[][]>([JSON.parse(JSON.stringify(initial))])
-    const cursorRef = useRef(0)
-    const [, forceRender] = useState(0)
-
-    const getState = () => historyRef.current[cursorRef.current]
-
-    const push = useCallback((next: Block[]) => {
-      // Tronquer le futur
-      historyRef.current = historyRef.current.slice(0, cursorRef.current + 1)
-      // Deep clone
-      historyRef.current.push(JSON.parse(JSON.stringify(next)))
-      // Limiter
-      if (historyRef.current.length > MAX_HISTORY + 1) {
-        historyRef.current.shift()
-      } else {
-        cursorRef.current++
-      }
-    }, [])
-
-    const undo = useCallback(() => {
-      if (cursorRef.current > 0) {
-        cursorRef.current--
-        forceRender(n => n + 1)
-        return historyRef.current[cursorRef.current]
-      }
-      return null
-    }, [])
-
-    const redo = useCallback(() => {
-      if (cursorRef.current < historyRef.current.length - 1) {
-        cursorRef.current++
-        forceRender(n => n + 1)
-        return historyRef.current[cursorRef.current]
-      }
-      return null
-    }, [])
-
-    const canUndo = () => cursorRef.current > 0
-    const canRedo = () => cursorRef.current < historyRef.current.length - 1
-    const size = () => historyRef.current.length
-    const pos = () => cursorRef.current
-
-    return { getState, push, undo, redo, canUndo, canRedo, size, pos }
-  }
-
-  // ── Hook resize panneau ────────────────────────────────────────────────────
-  function useResize(key: string, defaultW: number, min: number, max: number) {
-    const [width, setWidth] = useState(() => {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem(`qrfolio_resize_${key}`)
-        if (saved) return Math.min(max, Math.max(min, parseInt(saved)))
-      }
-      return defaultW
-    })
-    const dragging = useRef(false)
-    const startX = useRef(0)
-    const startW = useRef(0)
-
-    const onMouseDown = useCallback((e: React.MouseEvent) => {
-      e.preventDefault()
-      dragging.current = true
-      startX.current = e.clientX
-      startW.current = width
-      document.body.style.cursor = "col-resize"
-      document.body.style.userSelect = "none"
-
-      const onMove = (ev: MouseEvent) => {
-        if (!dragging.current) return
-        const delta = ev.clientX - startX.current
-        const next = Math.min(max, Math.max(min, startW.current + delta))
-        setWidth(next)
-      }
-      const onUp = () => {
-        dragging.current = false
-        document.body.style.cursor = ""
-        document.body.style.userSelect = ""
-        setWidth(prev => {
-          localStorage.setItem(`qrfolio_resize_${key}`, String(prev))
-          return prev
-        })
-        window.removeEventListener("mousemove", onMove)
-        window.removeEventListener("mouseup", onUp)
-      }
-      window.addEventListener("mousemove", onMove)
-      window.addEventListener("mouseup", onUp)
-    }, [width, min, max, key])
-
-    return { width, onMouseDown }
-  }
 
 
   function FAQItem({ q, a, theme, link, linkLabel, compact }: { q: string; a: string; theme: PageTheme; link?: string; linkLabel?: string; compact?: boolean }) {

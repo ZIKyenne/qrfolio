@@ -192,13 +192,17 @@ export async function POST(req: NextRequest) {
 
   const userPlan = profile?.plan ?? "free"
 
+  // Limites par défaut (code) : robuste si la table plan_domain_limits est vide
+  // ou n'a pas la ligne du plan. -1 = illimité.
+  const DEFAULT_DOMAIN_LIMITS: Record<string, number> = { free: 0, starter: 0, pro: 1, business: -1 }
+
   const { data: limitRow } = await supabase
     .from("plan_domain_limits")
     .select("max_domains")
     .eq("plan", userPlan)
-    .single()
+    .maybeSingle()
 
-  const maxDomains = limitRow?.max_domains ?? 0
+  const maxDomains = limitRow?.max_domains ?? DEFAULT_DOMAIN_LIMITS[userPlan] ?? 0
 
   if (maxDomains === 0) {
     return NextResponse.json({

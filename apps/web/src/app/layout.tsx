@@ -88,10 +88,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <head>
         {SUPABASE_ORIGIN && <link rel="preconnect" href={SUPABASE_ORIGIN} />}
-        {/* Polices de marque self-hostées (voir @font-face dans globals.css) :
-            préchargement des sous-ensembles latin critiques (titre + corps). */}
-        <link rel="preload" href="/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        {/* Police de marque self-hostée (voir @font-face dans globals.css) :
+            préchargement du sous-ensemble latin critique — Inter (titres + corps). */}
+        <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

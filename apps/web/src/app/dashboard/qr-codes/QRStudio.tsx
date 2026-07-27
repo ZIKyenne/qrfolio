@@ -843,8 +843,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
     const pts   = data.map((v, i) => [i * step, H - 4 - (v / max) * (H - 10)] as [number,number])
     // Zone de remplissage
     const grad  = ctx.createLinearGradient(0, 0, 0, H)
-    grad.addColorStop(0, "color-mix(in srgb, var(--accent) 30%, transparent)")
-    grad.addColorStop(1, "color-mix(in srgb, var(--accent) 0%, transparent)")
+    grad.addColorStop(0, "rgba(201,168,76,0.3)")
+    grad.addColorStop(1, "rgba(201,168,76,0)")
     ctx.beginPath()
     ctx.moveTo(pts[0][0], H)
     pts.forEach(([x,y]) => ctx.lineTo(x, y))
@@ -1459,7 +1459,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       ctx.fillStyle = fgColor; ctx.fillRect(0, 0, w, headerH)
       const qrSize  = Math.round(w * 0.62)
       drawTitle(opts.title || active?.pages?.title || "Notre Menu", w/2, Math.round(headerH * 0.55), Math.round(w * 0.055), bgColor, "center", w * 0.85)
-      drawSub(opts.subtitle, w/2, Math.round(headerH * 0.80), Math.round(w * 0.034), isDark ? "color-mix(in srgb, var(--accent) 85%, transparent)" : "rgba(255,255,255,0.75)", "center")
+      drawSub(opts.subtitle, w/2, Math.round(headerH * 0.80), Math.round(w * 0.034), isDark ? "rgba(201,168,76,0.85)" : "rgba(255,255,255,0.75)", "center")
       drawQR((w - qrSize)/2, Math.round(h * 0.3), qrSize)
       drawContact(w/2, Math.round(h * 0.86), Math.round(w * 0.026), accentCol, "center")
       drawSub(qrUrl, w/2, Math.round(h * 0.93), Math.round(w * 0.027), isDark ? "rgba(245,240,232,0.4)" : "rgba(26,26,26,0.35)", "center")
@@ -1475,9 +1475,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       ctx.fillStyle = bgColor
       const lx = Math.round(w * 0.19); const ly = Math.round(h * 0.3)
       drawTitle(opts.title || active?.pages?.title || "", lx, ly, Math.round(h * 0.11), isDark?"#F5F0E8":"#FFFFFF", "center", Math.round(w * 0.32))
-      ctx.fillStyle = isDark ? "color-mix(in srgb, var(--accent) 80%, transparent)" : "rgba(255,255,255,0.6)"
+      ctx.fillStyle = isDark ? "rgba(201,168,76,0.8)" : "rgba(255,255,255,0.6)"
       ctx.fillRect(lx - Math.round(w * 0.05), ly + Math.round(h*0.04), Math.round(w * 0.14), Math.round(h*0.007))
-      drawSub(opts.subtitle, lx, Math.round(h * 0.66), Math.round(h * 0.05), isDark?"color-mix(in srgb, var(--accent) 90%, transparent)":"rgba(255,255,255,0.85)", "center", Math.round(w * 0.30))
+      drawSub(opts.subtitle, lx, Math.round(h * 0.66), Math.round(h * 0.05), isDark?"rgba(201,168,76,0.9)":"rgba(255,255,255,0.85)", "center", Math.round(w * 0.30))
       drawContact(lx, Math.round(h * 0.80), Math.round(h * 0.036), isDark?"rgba(245,240,232,0.85)":"rgba(255,255,255,0.85)", "center", Math.round(w * 0.30))
       drawQR(qrX, qrY, qrSize)
     }

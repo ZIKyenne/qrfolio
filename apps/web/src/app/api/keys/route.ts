@@ -5,6 +5,12 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { randomBytes, createHash } from "node:crypto"
+import { rateLimit } from "@/lib/rateLimit"
+
+// Plafond de clés actives par compte : borne le nombre de buckets de rate-limit
+// (chaque clé a son propre quota 120/min) pour empêcher un compte de contourner
+// la limite d'API en multipliant les clés.
+const MAX_ACTIVE_KEYS = 10
 
 function newApiKey() {
   const hex     = randomBytes(32).toString("hex")
@@ -20,8 +26,19 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
+  if (!(await rateLimit("apikey-create:" + user.id, 10, 3600_000))) {
+    return NextResponse.json({ error: "Trop de créations de clés. Réessayez plus tard." }, { status: 429 })
+  }
+
   const { name } = await req.json().catch(() => ({}))
   if (!name?.trim()) return NextResponse.json({ error: "Nom requis" }, { status: 400 })
+
+  // Plafond de clés actives (anti-contournement du quota par clé).
+  const { count } = await supabase.from("api_keys")
+    .select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("is_active", true)
+  if ((count ?? 0) >= MAX_ACTIVE_KEYS) {
+    return NextResponse.json({ error: `Limite de ${MAX_ACTIVE_KEYS} clés actives atteinte.` }, { status: 403 })
+  }
 
   const k = newApiKey()
   const { data, error } = await supabase.from("api_keys").insert({
@@ -38,6 +55,10 @@ export async function PATCH(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+
+  if (!(await rateLimit("apikey-regen:" + user.id, 20, 3600_000))) {
+    return NextResponse.json({ error: "Trop de régénérations. Réessayez plus tard." }, { status: 429 })
+  }
 
   const { id } = await req.json().catch(() => ({}))
   if (!id) return NextResponse.json({ error: "id requis" }, { status: 400 })

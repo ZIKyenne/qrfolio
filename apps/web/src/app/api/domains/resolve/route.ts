@@ -50,20 +50,18 @@ export async function GET(req: NextRequest) {
     // Chercher une redirection exacte (domaine + chemin)
     const { data: redirect } = await supabase
       .from("domain_redirects")
-      .select("to_url, redirect_type, id, hit_count")
+      .select("to_url, redirect_type, id")
       .eq("from_domain", domain)
       .eq("from_path", path)
       .eq("enabled", true)
       .maybeSingle()
 
     if (redirect) {
-      // Incrémenter hit_count (fire-and-forget). NB : l'ancienne version passait
-      // supabase.rpc(...) comme valeur de colonne (query builder ≠ valeur → rejeté
-      // par Postgres, compteur jamais incrémenté). Corrigé : lecture + 1.
+      // Incrémenter hit_count de façon ATOMIQUE (fire-and-forget) via la fonction
+      // SQL dédiée : `hit_count = hit_count + 1` côté Postgres, sans perte sous
+      // trafic concurrent (le read-then-write applicatif perdait des incréments).
       supabase
-        .from("domain_redirects")
-        .update({ hit_count: (redirect.hit_count ?? 0) + 1, last_hit_at: new Date().toISOString() })
-        .eq("id", redirect.id)
+        .rpc("increment_redirect_hit", { p_id: redirect.id })
         .then(() => {}, () => {})
 
       const dest = redirect.to_url.startsWith("http")

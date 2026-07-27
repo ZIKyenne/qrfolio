@@ -24,7 +24,7 @@ const GOLD = "#C9A84C"
 const ROLE_LABEL: Record<Role, string> = { owner: "Propriétaire", admin: "Admin", editor: "Éditeur", viewer: "Lecture" }
 
 function RoleBadge({ role }: { role: Role }) {
-  const c = role === "owner" ? GOLD : role === "admin" ? "#A78BFA" : "#39FF8F"
+  const c = role === "owner" ? GOLD : role === "admin" ? "#A78BFA" : "var(--success)"
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
       padding: "3px 10px", borderRadius: 20, background: `${c}1e`, border: `1px solid ${c}55`, color: c }}>
@@ -174,7 +174,7 @@ export default function TeamPage() {
                 Membres{data.teamLimit ? <span style={{ color: "#8A8478", fontWeight: 600, marginLeft: 8, fontSize: 12.5 }}>{data.seatsUsed} / {data.teamLimit}</span> : null}
               </p>
               {data.myRole && data.myRole !== "owner" && (
-                <button type="button" onClick={leaveTeam} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,107,107,0.3)", background: "transparent", color: "#FF6B6B", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                <button type="button" onClick={leaveTeam} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,107,107,0.3)", background: "transparent", color: "var(--danger)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
                   <LogOut size={13} /> Quitter l'équipe
                 </button>
               )}
@@ -205,7 +205,7 @@ export default function TeamPage() {
                   ) : <RoleBadge role={m.role} />}
                   {canManage && (
                     <button type="button" onClick={() => removeMember(m.id, label)} aria-label={`Retirer ${label}`}
-                      style={{ display: "flex", padding: 8, borderRadius: 8, border: "1px solid rgba(255,107,107,0.25)", background: "transparent", color: "#FF6B6B", cursor: "pointer" }}>
+                      style={{ display: "flex", padding: 8, borderRadius: 8, border: "1px solid rgba(255,107,107,0.25)", background: "transparent", color: "var(--danger)", cursor: "pointer" }}>
                       <Trash2 size={14} />
                     </button>
                   )}

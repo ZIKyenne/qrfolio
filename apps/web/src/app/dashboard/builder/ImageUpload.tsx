@@ -77,7 +77,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
         <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(201,168,76,0.3)" }}>
           <img src={value} alt="" style={{ width: "100%", maxHeight: 160, objectFit: "cover", display: "block" }} />
           <button onClick={() => onChange("")}
-            style={{ position: "absolute", top: 8, right: 8, background: "rgba(8,8,8,0.8)", border: "none", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#FF6B6B" }}>
+            style={{ position: "absolute", top: 8, right: 8, background: "rgba(8,8,8,0.8)", border: "none", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--danger)" }}>
             <X size={14} />
           </button>
           <button onClick={() => setPickerOpen(true)}
@@ -141,7 +141,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
         </div>
       )}
 
-      {error && <p style={{ color: "#FF6B6B", fontSize: 11, margin: "6px 0 0" }}>{error}</p>}
+      {error && <p style={{ color: "var(--danger)", fontSize: 11, margin: "6px 0 0" }}>{error}</p>}
       <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = "" }} />
 
@@ -194,7 +194,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
                           <Star size={12} fill={favs.has(a.url) ? "#FFD700" : "none"} />
                         </button>
                         <button className="del" onClick={e => { e.stopPropagation(); removeAsset(a) }} aria-label="Supprimer"
-                          style={{ position: "absolute", top: 4, right: 4, opacity: 0, transition: "opacity .15s", background: "rgba(8,8,8,0.82)", border: "none", borderRadius: 6, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#FF6B6B" }}>
+                          style={{ position: "absolute", top: 4, right: 4, opacity: 0, transition: "opacity .15s", background: "rgba(8,8,8,0.82)", border: "none", borderRadius: 6, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--danger)" }}>
                           <Trash2 size={12} />
                         </button>
                       </div>

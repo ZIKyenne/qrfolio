@@ -235,7 +235,7 @@ export default function ExportPanel({ plan, pages, views, scans, clicks, blocks,
                 {plan?.toUpperCase()}
               </span>
             ) : (
-              <span style={{ background: "rgba(255,100,100,0.1)", border: "1px solid rgba(255,100,100,0.3)", borderRadius: 6, padding: "2px 8px", fontSize: 10, color: "#FF6B6B", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ background: "rgba(255,100,100,0.1)", border: "1px solid rgba(255,100,100,0.3)", borderRadius: 6, padding: "2px 8px", fontSize: 10, color: "var(--danger)", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
                 <Lock size={9} /> PRO
               </span>
             )}
@@ -245,7 +245,7 @@ export default function ExportPanel({ plan, pages, views, scans, clicks, blocks,
           </p>
         </div>
         {lastExport && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#39FF8F", fontSize: 11 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--success)", fontSize: 11 }}>
             <CheckCircle size={12} />
             Exporté à {lastExport}
           </div>

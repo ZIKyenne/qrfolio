@@ -25,12 +25,12 @@ interface Props {
 // ── Config par type de bloc ───────────────────────────────────────────────────
 const CFG: Record<string, { label: string; emoji: string; color: string; interactive: boolean }> = {
   cta_button:     { label: "Bouton CTA",    emoji: "🔘", color: "var(--accent)", interactive: true  },
-  social_links:   { label: "Liens sociaux", emoji: "🔗", color: "#38BDF8", interactive: true  },
+  social_links:   { label: "Liens sociaux", emoji: "🔗", color: "var(--action)", interactive: true  },
   whatsapp:       { label: "WhatsApp",      emoji: "💬", color: "#25D366", interactive: true  },
-  stripe_product: { label: "Produit",       emoji: "📦", color: "#39FF8F", interactive: true  },
+  stripe_product: { label: "Produit",       emoji: "📦", color: "var(--success)", interactive: true  },
   calendly:       { label: "Réservation",   emoji: "📅", color: "#818CF8", interactive: true  },
   contact_form:   { label: "Contact",       emoji: "📬", color: "#4ADE80", interactive: true  },
-  video:          { label: "Vidéo",         emoji: "▶️", color: "#FF6B6B", interactive: true  },
+  video:          { label: "Vidéo",         emoji: "▶️", color: "var(--danger)", interactive: true  },
   google_maps:    { label: "Maps",          emoji: "📍", color: "#34D399", interactive: true  },
   instagram_feed: { label: "Instagram",     emoji: "📸", color: "#E1306C", interactive: true  },
   gallery:        { label: "Galerie",       emoji: "🖼️", color: "#A78BFA", interactive: true  },
@@ -211,7 +211,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10, marginBottom: 20 }}>
         {[
           { icon: <MousePointerClick size={13} color={G} />,   label: "Interactions",    value: totalClicks.toLocaleString() },
-          { icon: <Eye size={13} color="#39FF8F" />,           label: "Vues",            value: fViews.length.toLocaleString() },
+          { icon: <Eye size={13} color="var(--success)" />,           label: "Vues",            value: fViews.length.toLocaleString() },
           { icon: <Layers size={13} color="#A78BFA" />,        label: "Interactifs",     value: String(interactCount) },
           { icon: <TrendingUp size={13} color="#67E8F9" />,    label: "CTR global",      value: ((totalClicks / totalViews) * 100).toFixed(1) + "%" },
         ].map((k, i) => (
@@ -272,7 +272,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
                 </div>
                 <span style={{ color: MUTED, fontSize: 11 }}>{row.count}x</span>
                 <span style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{row.clics}</span>
-                <span style={{ color: row.ctr >= 10 ? "#39FF8F" : row.ctr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
+                <span style={{ color: row.ctr >= 10 ? "var(--success)" : row.ctr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
                   {row.ctr}%
                 </span>
                 <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
@@ -291,12 +291,12 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
                 <PolarAngleAxis dataKey="subject" tick={{ fill: MUTED, fontSize: 11 }} />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: MUTED, fontSize: 9 }} />
                 <Radar name="Clics" dataKey="Clics" stroke={G} fill={G} fillOpacity={0.25} strokeWidth={2} />
-                <Radar name="CTR"   dataKey="CTR"   stroke="#39FF8F" fill="#39FF8F" fillOpacity={0.15} strokeWidth={2} />
+                <Radar name="CTR"   dataKey="CTR"   stroke="var(--success)" fill="var(--success)" fillOpacity={0.15} strokeWidth={2} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
           <div style={{ display: "flex", gap: 20, justifyContent: "center", marginTop: 8 }}>
-            {[{ color: G, label: "Clics (normalisé)" }, { color: "#39FF8F", label: "CTR (amplifié x4)" }].map((l, i) => (
+            {[{ color: G, label: "Clics (normalisé)" }, { color: "var(--success)", label: "CTR (amplifié x4)" }].map((l, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: l.color }} />
                 <span style={{ color: MUTED, fontSize: 11 }}>{l.label}</span>

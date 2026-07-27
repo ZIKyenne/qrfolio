@@ -112,7 +112,7 @@ export default function OnboardingChecklist() {
           <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: "Fraunces, serif" }}>Configuration terminée !</p>
           <p style={{ color: "#A8A190", fontSize: 13, margin: 0 }}>Tu as complété toutes les étapes. QRowg est prêt à être utilisé.</p>
         </div>
-        <button onClick={dismiss} style={{ background: "rgba(57,255,143,0.1)", border: "1px solid rgba(57,255,143,0.25)", borderRadius: 8, padding: "8px 16px", color: "#39FF8F", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+        <button onClick={dismiss} style={{ background: "rgba(57,255,143,0.1)", border: "1px solid rgba(57,255,143,0.25)", borderRadius: 8, padding: "8px 16px", color: "var(--success)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
           Masquer ✓
         </button>
       </div>
@@ -147,7 +147,7 @@ export default function OnboardingChecklist() {
       {/* Progress bar */}
       <div style={{ marginBottom: 18 }}>
         <div style={{ height: 6, background: "rgba(255,255,255,0.05)", borderRadius: 3, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C9A84C,#39FF8F)", borderRadius: 3, transition: "width 0.5s ease" }} />
+          <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C9A84C,var(--success))", borderRadius: 3, transition: "width 0.5s ease" }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
           <span style={{ color: "#A8A190", fontSize: 10 }}>Progression</span>
@@ -167,7 +167,7 @@ export default function OnboardingChecklist() {
 
               {/* Status icon */}
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: done ? "rgba(57,255,143,0.15)" : isNext ? "rgba(201,168,76,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${done ? "rgba(57,255,143,0.3)" : isNext ? "rgba(201,168,76,0.25)" : "rgba(255,255,255,0.08)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}>
-                {done ? <Check size={13} color="#39FF8F" /> : <span style={{ color: done ? "#39FF8F" : isNext ? "#C9A84C" : "#A8A190", fontSize: 14 }}>{step.emoji}</span>}
+                {done ? <Check size={13} color="var(--success)" /> : <span style={{ color: done ? "var(--success)" : isNext ? "#C9A84C" : "#A8A190", fontSize: 14 }}>{step.emoji}</span>}
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -186,7 +186,7 @@ export default function OnboardingChecklist() {
                 <ChevronRight size={14} color="#A8A190" style={{ opacity: 0.4, flexShrink: 0 }} />
               )}
               {done && (
-                <span style={{ color: "#39FF8F", fontSize: 10, flexShrink: 0 }}>✓ Fait</span>
+                <span style={{ color: "var(--success)", fontSize: 10, flexShrink: 0 }}>✓ Fait</span>
               )}
             </div>
           )

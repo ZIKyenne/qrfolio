@@ -78,7 +78,7 @@ export default async function QRCodesPage() {
             {/* KPIs en pastilles */}
             <div className="qrh-kpis" style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {[
-                { label: "QR actifs",   value: activeQR,                      icon: <Activity size={13} color="#39FF8F"/>,    color: "#39FF8F" },
+                { label: "QR actifs",   value: activeQR,                      icon: <Activity size={13} color="var(--success)"/>,    color: "var(--success)" },
                 { label: "Scans total", value: totalScans.toLocaleString("fr-FR"), icon: <TrendingUp size={13} color="var(--accent)"/>, color: "var(--accent)" },
               ].map((k, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "7px 13px" }}>

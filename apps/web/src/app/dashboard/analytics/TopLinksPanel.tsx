@@ -69,7 +69,7 @@ const BLOCK_TYPE_EMOJI: Record<string, string> = {
 }
 
 const CLICK_COLORS = [
-  "var(--accent)", "#39FF8F", "#7B61FF", "#FF6B6B",
+  "var(--accent)", "var(--success)", "#7B61FF", "var(--danger)",
   "#4ECDC4", "#FFE66D", "#F97316", "#E1306C",
   "#26A5E4", "#A78BFA",
 ]
@@ -98,7 +98,7 @@ function CustomTooltip({ active, payload }: any) {
         {d.label}
       </p>
       <p style={{ color: G, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{d.clicks} clics</p>
-      <p style={{ color: "#39FF8F", fontSize: 11, margin: 0 }}>CTR : {d.ctr}%</p>
+      <p style={{ color: "var(--success)", fontSize: 11, margin: 0 }}>CTR : {d.ctr}%</p>
     </div>
   )
 }
@@ -234,7 +234,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         {[
           { label: "Clics totaux",  value: totalClicks.toLocaleString(),                    icon: <MousePointerClick size={13} color={G} /> },
-          { label: "Vues totales",  value: (totalViews === 1 ? 0 : totalViews).toLocaleString(), icon: <TrendingUp size={13} color="#39FF8F" /> },
+          { label: "Vues totales",  value: (totalViews === 1 ? 0 : totalViews).toLocaleString(), icon: <TrendingUp size={13} color="var(--success)" /> },
           { label: "Liens uniques", value: linkData.length,                                  icon: <Hash size={13} color="#7B61FF" /> },
         ].map((stat, i) => (
           <div key={i} style={{ background: SURFACE, border: "1px solid " + BORDER, borderRadius: 10, padding: "10px 16px", display: "flex", alignItems: "center", gap: 8, flex: "1 1 120px" }}>
@@ -315,7 +315,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
               <span style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{row.clicks.toLocaleString()}</span>
 
               {/* CTR */}
-              <span style={{ color: row.ctr >= 10 ? "#39FF8F" : row.ctr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
+              <span style={{ color: row.ctr >= 10 ? "var(--success)" : row.ctr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
                 {row.ctr}%
               </span>
 

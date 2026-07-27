@@ -48,7 +48,7 @@ export default function ForgotPasswordForm() {
     return (
       <div style={{ textAlign: "center" }}>
         <div style={{ width: 56, height: 56, margin: "0 auto 16px", borderRadius: 16, background: "var(--success-bg, rgba(57,255,143,0.09))", border: "1px solid var(--success-border, rgba(57,255,143,0.28))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <CheckCircle2 size={26} color="var(--success, #39FF8F)" />
+          <CheckCircle2 size={26} color="var(--success, var(--success))" />
         </div>
         <h2 style={{ color: "#F8F4EC", fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>Vérifiez votre boîte mail</h2>
         <p style={{ color: "#C9C3B6", fontSize: 14, lineHeight: 1.5, margin: "0 0 6px" }}>

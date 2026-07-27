@@ -19,8 +19,8 @@ const SOCIAL_NETWORKS = [
   { key: "spotify",   icon: "🎧", label: "Spotify",   color: "#1DB954" },
   { key: "pinterest", icon: "📌", label: "Pinterest", color: "#E60023" },
   { key: "website",   icon: "🌐", label: "Site web",  color: "var(--accent)" },
-  { key: "phone",     icon: "📞", label: "Téléphone", color: "#39FF8F" },
-  { key: "email",     icon: "✉️", label: "Email",     color: "#38BDF8" },
+  { key: "phone",     icon: "📞", label: "Téléphone", color: "var(--success)" },
+  { key: "email",     icon: "✉️", label: "Email",     color: "var(--action)" },
   { key: "whatsapp",  icon: "💬", label: "WhatsApp",  color: "#25D366" },
 ]
 
@@ -103,7 +103,7 @@ function computeBgStyle(theme: PageTheme, dayMode: boolean): React.CSSProperties
   } else if (t.bgMode === "radial") {
     return { background: t.bgGradient || `radial-gradient(circle at 50% 50%, ${theme.primary}, ${theme.bg})` }
   } else if (t.bgMode === "mesh") {
-    const c1 = t.mesh_c1 || "var(--accent)"; const c2 = t.mesh_c2 || "#39FF8F"; const c3 = t.mesh_c3 || "#7B2FBE"
+    const c1 = t.mesh_c1 || "var(--accent)"; const c2 = t.mesh_c2 || "var(--success)"; const c3 = t.mesh_c3 || "#7B2FBE"
     const blurPx = Math.round((t.mesh_blur||40)/3)
     base = {
       background: `radial-gradient(ellipse at 10% 20%, ${c1}90, transparent 55%), radial-gradient(ellipse at 90% 80%, ${c2}90, transparent 55%), radial-gradient(ellipse at 80% 10%, ${c3}70, transparent 55%), ${theme.bg}`,
@@ -447,7 +447,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
       <div style={{ padding: "4px 16px 10px", ...s }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 12, padding: "13px 18px" }}>
           <span style={{ fontSize: 16 }}>{c.icon||"📞"}</span>
-          <span style={{ color: "#39FF8F", fontSize: 13, fontWeight: 700 }}>{c.label||"Appeler maintenant"}</span>
+          <span style={{ color: "var(--success)", fontSize: 13, fontWeight: 700 }}>{c.label||"Appeler maintenant"}</span>
         </div>
       </div>
     )
@@ -463,7 +463,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
       <div style={{ padding: "4px 16px 10px", ...s }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(56,189,248,0.1)", border: "1.5px solid rgba(56,189,248,0.3)", borderRadius: 12, padding: "13px 18px" }}>
           <span style={{ fontSize: 16 }}>✉️</span>
-          <span style={{ color: "#38BDF8", fontSize: 13, fontWeight: 700 }}>{c.label||"Envoyer un email"}</span>
+          <span style={{ color: "var(--action)", fontSize: 13, fontWeight: 700 }}>{c.label||"Envoyer un email"}</span>
         </div>
       </div>
     )
@@ -587,7 +587,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
       <div style={{ padding: "4px 16px 10px", ...s }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 12, padding: "13px 18px" }}>
           <span style={{ fontSize: 16 }}>💳</span>
-          <p style={{ color: "#39FF8F", fontSize: 13, fontWeight: 700, margin: 0 }}>{c.label||"Payer maintenant"}{c.amount ? ` — ${c.amount}` : ""}</p>
+          <p style={{ color: "var(--success)", fontSize: 13, fontWeight: 700, margin: 0 }}>{c.label||"Payer maintenant"}{c.amount ? ` — ${c.amount}` : ""}</p>
         </div>
       </div>
     )
@@ -618,7 +618,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
     )
     case "availability": {
       const scMap: Record<string,any> = {
-        available: { color: "#39FF8F", bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.25)", label: "Disponible" },
+        available: { color: "var(--success)", bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.25)", label: "Disponible" },
         busy: { color: "#F97316", bg: "rgba(249,115,22,0.08)", border: "rgba(249,115,22,0.25)", label: "En mission" },
         closed: { color: "#EF4444", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.25)", label: "Indisponible" },
       }
@@ -931,7 +931,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
                 <p style={{ color: primary, fontSize: 18, fontWeight: 700, margin: "0 0 8px", textAlign: "center", fontFamily: theme.fontDisplay }}>{plan.price}</p>
                 {plan.features && plan.features.split("\n").filter(Boolean).map((f: string, j: number) => (
                   <p key={j} style={{ color: muted, fontSize: 9, margin: "0 0 3px", display: "flex", alignItems: "center", gap: 4 }}>
-                    <span style={{ color: "#39FF8F" }}>✓</span> {f}
+                    <span style={{ color: "var(--success)" }}>✓</span> {f}
                   </p>
                 ))}
                 {c.cta_label && <div style={{ background: plan.highlight ? `linear-gradient(90deg,${primary},${primary}cc)` : "rgba(255,255,255,0.06)", borderRadius: 7, padding: "8px", textAlign: "center", fontSize: 10, fontWeight: 700, color: plan.highlight ? "#080808" : text, marginTop: 8 }}>{c.cta_label}</div>}
@@ -963,7 +963,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
                 </div>
                 {content && content.split("\n").filter(Boolean).map((line: string, j: number) => (
                   <p key={j} style={{ color: muted, fontSize: 11, margin: "0 0 3px", display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ color: "#39FF8F", fontSize: 10 }}>✓</span> {line}
+                    <span style={{ color: "var(--success)", fontSize: 10 }}>✓</span> {line}
                   </p>
                 ))}
               </div>
@@ -990,7 +990,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
               ? <img src={c.after_img} alt="Après" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
               : <div style={{ height: 120, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>✨</div>}
             <div style={{ background: "rgba(57,255,143,0.15)", padding: "5px", textAlign: "center" }}>
-              <p style={{ color: "#39FF8F", fontSize: 11, fontWeight: 700, margin: 0 }}>{c.after_label||"Après"}</p>
+              <p style={{ color: "var(--success)", fontSize: 11, fontWeight: 700, margin: 0 }}>{c.after_label||"Après"}</p>
             </div>
           </div>
         </div>
@@ -1303,7 +1303,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
               ? <img src={c.after_img} alt="Après" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
               : <div style={{ height: 130, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>✨</div>}
             <div style={{ background: "rgba(57,255,143,0.15)", padding: "6px", textAlign: "center" }}>
-              <p style={{ color: "#39FF8F", fontSize: 11, fontWeight: 700, margin: 0 }}>{c.after_label||"Après"}</p>
+              <p style={{ color: "var(--success)", fontSize: 11, fontWeight: 700, margin: 0 }}>{c.after_label||"Après"}</p>
             </div>
           </div>
         </div>
@@ -1478,7 +1478,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
         <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 14, padding: "16px 24px" }}>
           <span style={{ fontSize: 28 }}>{c.emoji||"📱"}</span>
           <div>
-            <p style={{ color: "#39FF8F", fontSize: 32, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>1 284</p>
+            <p style={{ color: "var(--success)", fontSize: 32, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>1 284</p>
             <p style={{ color: muted, fontSize: 11, margin: "3px 0 0" }}>{c.label||"scans QR ce mois"}</p>
           </div>
         </div>
@@ -1503,7 +1503,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
               ))
               : events.map(([date,title,desc],i) => (
                 <div key={i} style={{ position: "relative", marginBottom: i<events.length-1 ? 16 : 0 }}>
-                  <div style={{ position: "absolute", left: -17, top: 4, width: 10, height: 10, borderRadius: "50%", background: i===events.length-1 ? "#39FF8F" : primary, border: `2px solid ${i===events.length-1 ? "#39FF8F40" : primary+"40"}` }} />
+                  <div style={{ position: "absolute", left: -17, top: 4, width: 10, height: 10, borderRadius: "50%", background: i===events.length-1 ? "var(--success)" : primary, border: `2px solid ${i===events.length-1 ? "var(--success)40" : primary+"40"}` }} />
                   <p style={{ color: primary, fontSize: 11, fontWeight: 700, margin: "0 0 2px" }}>{date}</p>
                   <p style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px" }}>{title}</p>
                   {desc && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{desc}</p>}
@@ -1614,7 +1614,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
             {(badges.length===0 ? [["✔","Vérifié"],["🏆","Certifié"],["⭐","Partenaire officiel"]] : badges).map(([icon,label],i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 20, padding: "7px 14px" }}>
-                <span style={{ color: "#39FF8F", fontSize: 14, fontWeight: 700 }}>{icon}</span>
+                <span style={{ color: "var(--success)", fontSize: 14, fontWeight: 700 }}>{icon}</span>
                 <span style={{ color: text, fontSize: 12, fontWeight: 600 }}>{label}</span>
               </div>
             ))}
@@ -1641,8 +1641,8 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
     case "announcement": {
       const typeStyles: Record<string,any> = {
         warning: { bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)", color: "#FBBF24" },
-        info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "#38BDF8" },
-        success: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.3)", color: "#39FF8F" },
+        info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "var(--action)" },
+        success: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.3)", color: "var(--success)" },
         promo: { bg: "color-mix(in srgb, var(--accent) 8%, transparent)", border: "color-mix(in srgb, var(--accent) 30%, transparent)", color: "var(--accent)" },
       }
       const ts = typeStyles[c.type||"warning"]
@@ -1734,8 +1734,8 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
         {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           {[
-            [c.phone, "📞", "#39FF8F", `tel:${c.phone}`],
-            [c.email, "✉️", "#38BDF8", `mailto:${c.email}`],
+            [c.phone, "📞", "var(--success)", `tel:${c.phone}`],
+            [c.email, "✉️", "var(--action)", `mailto:${c.email}`],
             [c.whatsapp, "💬", "#25D366", `https://wa.me/${c.whatsapp}`],
             [c.address, "📍", primary, null],
             [c.hours, "🕐", MUTED, null],
@@ -1777,8 +1777,8 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
                   </div>
                   {(phone||email) && (
                     <div style={{ display: "flex", gap: 7 }}>
-                      {phone && <a href={`tel:${phone}`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 8, padding: "7px", color: "#39FF8F", textDecoration: "none", fontSize: 11, fontWeight: 600 }}>📞 Appeler</a>}
-                      {email && <a href={`mailto:${email}`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", borderRadius: 8, padding: "7px", color: "#38BDF8", textDecoration: "none", fontSize: 11, fontWeight: 600 }}>✉️ Email</a>}
+                      {phone && <a href={`tel:${phone}`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 8, padding: "7px", color: "var(--success)", textDecoration: "none", fontSize: 11, fontWeight: 600 }}>📞 Appeler</a>}
+                      {email && <a href={`mailto:${email}`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", borderRadius: 8, padding: "7px", color: "var(--action)", textDecoration: "none", fontSize: 11, fontWeight: 600 }}>✉️ Email</a>}
                     </div>
                   )}
                 </div>
@@ -2260,7 +2260,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
         <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 4px" }}>{c.title||"Serez-vous présent ?"}</p>
         {c.description && <p style={{ color: muted, fontSize: 11, margin: "0 0 14px" }}>{c.description}</p>}
         <div style={{ display: "flex", gap: 8 }}>
-          <button style={{ flex: 2, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 10, padding: "12px 8px", color: "#39FF8F", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{c.yes_label||"✅ Oui, je viens"}</button>
+          <button style={{ flex: 2, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 10, padding: "12px 8px", color: "var(--success)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{c.yes_label||"✅ Oui, je viens"}</button>
           <button style={{ flex: 1, background: "rgba(251,191,36,0.08)", border: "1.5px solid rgba(251,191,36,0.25)", borderRadius: 10, padding: "12px 8px", color: "#FBBF24", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{c.maybe_label||"🤔 Peut-être"}</button>
           <button style={{ flex: 1, background: "rgba(239,68,68,0.08)", border: "1.5px solid rgba(239,68,68,0.2)", borderRadius: 10, padding: "12px 8px", color: "#EF4444", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{c.no_label||"❌ Non"}</button>
         </div>
@@ -2323,7 +2323,7 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
       const urgencyStyles: Record<string,any> = {
         high: { bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.4)", color: "#EF4444", pulse: true },
         medium: { bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)", color: "#FBBF24", pulse: false },
-        low: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.25)", color: "#39FF8F", pulse: false },
+        low: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.25)", color: "var(--success)", pulse: false },
       }
       const us = urgencyStyles[c.urgency||"high"]
       return (
@@ -2508,9 +2508,9 @@ function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageThem
 
     case "info_box": {
       const boxStyles: Record<string,any> = {
-        info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "#38BDF8" },
+        info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "var(--action)" },
         warning: { bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)", color: "#FBBF24" },
-        success: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.3)", color: "#39FF8F" },
+        success: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.3)", color: "var(--success)" },
         tip: { bg: "color-mix(in srgb, var(--accent) 8%, transparent)", border: "color-mix(in srgb, var(--accent) 30%, transparent)", color: "var(--accent)" },
         important: { bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.3)", color: "#EF4444" },
       }
@@ -2717,7 +2717,7 @@ export default function TemplatePreviewModal({
 
           {/* Label sous l'iPhone */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, color: MUTED, fontSize: 11 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#39FF8F", animation: "pulse 2s ease-in-out infinite" }} />
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", animation: "pulse 2s ease-in-out infinite" }} />
             Aperçu en temps réel
           </div>
         </div>

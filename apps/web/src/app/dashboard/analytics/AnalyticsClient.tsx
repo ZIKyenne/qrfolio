@@ -43,9 +43,9 @@ interface Props {
 }
 
 const GOLD = "var(--accent)"
-const NEON = "#39FF8F"
+const NEON = "var(--success)"
 const MUTED = "#A8A190"
-const COLORS = [GOLD, NEON, "#7B61FF", "#FF6B6B", "#4ECDC4", "#FFE66D"]
+const COLORS = [GOLD, NEON, "#7B61FF", "var(--danger)", "#4ECDC4", "#FFE66D"]
 
 function formatAgo(iso: string) {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
@@ -175,8 +175,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
               {/* Badge EN DIRECT masque tant qu'aucune donnee (audit #04 : pas de "live" trompeur) */}
               {!noData && (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(57,255,143,0.1)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 999, padding: "3px 10px" }}>
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#39FF8F", animation: "pulse 1.8s ease-in-out infinite" }} />
-                  <span style={{ color: "#39FF8F", fontSize: 11, fontWeight: 800, letterSpacing: 0.5 }}>EN DIRECT</span>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--success)", animation: "pulse 1.8s ease-in-out infinite" }} />
+                  <span style={{ color: "var(--success)", fontSize: 11, fontWeight: 800, letterSpacing: 0.5 }}>EN DIRECT</span>
                 </span>
               )}
             </div>
@@ -267,11 +267,11 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
         {!noData && (
         <div className="az" style={{ animationDelay: "60ms", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 13, marginBottom: 13 }}>
           {/* Visiteurs actifs (hero live) */}
-          <div className="az-card" style={{ background: "linear-gradient(135deg, color-mix(in srgb,#39FF8F 11%,#0E0D09), #0E0D09)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 14, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
+          <div className="az-card" style={{ background: "linear-gradient(135deg, color-mix(in srgb,var(--success) 11%,#0E0D09), #0E0D09)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 14, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: -16, right: -16, width: 80, height: 80, borderRadius: "50%", background: "radial-gradient(circle,rgba(57,255,143,0.16),transparent 70%)" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#39FF8F", animation: live.active ? "ring 1.6s infinite" : "pulse 2s infinite" }} />
-              <span style={{ color: "#39FF8F", fontSize: 11.5, fontWeight: 700 }}>Visiteurs actifs</span>
+              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--success)", animation: live.active ? "ring 1.6s infinite" : "pulse 2s infinite" }} />
+              <span style={{ color: "var(--success)", fontSize: 11.5, fontWeight: 700 }}>Visiteurs actifs</span>
             </div>
             <p style={{ color: "#F8F4EC", fontSize: 38, fontWeight: 700, margin: 0, fontFamily: "Fraunces, serif", lineHeight: 1 }}>{live.active}</p>
             <p style={{ color: "rgba(57,255,143,0.7)", fontSize: 10.5, margin: "2px 0 0" }}>sur les 10 dernières minutes</p>
@@ -281,7 +281,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             <p style={{ color: "#A8A190", fontSize: 11.5, fontWeight: 600, margin: "0 0 8px" }}>Activité aujourd'hui</p>
             <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
               <p style={{ color: "#F8F4EC", fontSize: 38, fontWeight: 700, margin: 0, fontFamily: "Fraunces, serif", lineHeight: 1 }}>{live.todayN}</p>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: live.evo >= 0 ? "#39FF8F" : "#FF6B6B", fontSize: 12.5, fontWeight: 700 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: live.evo >= 0 ? "var(--success)" : "var(--danger)", fontSize: 12.5, fontWeight: 700 }}>
                 <TrendingUp size={13} style={{ transform: live.evo >= 0 ? "none" : "scaleY(-1)" }} /> {live.evo >= 0 ? "+" : ""}{live.evo}%
               </span>
             </div>
@@ -309,7 +309,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             { icon: <QrCode size={18} />, label: "Scans (30j)", value: totalScans30, color: GOLD },
             { icon: <Eye size={18} />, label: "Vues (30j)", value: totalViews30, color: NEON },
             { icon: <BarChart2 size={18} />, label: "Pages actives", value: pages.filter(p => p.status === "published").length, color: "#7B61FF" },
-            { icon: <TrendingUp size={18} />, label: "Total scans", value: profile?.total_scans || 0, color: "#FF6B6B" },
+            { icon: <TrendingUp size={18} />, label: "Total scans", value: profile?.total_scans || 0, color: "var(--danger)" },
           ].map((kpi, i) => (
             <div key={i} className="az az-card" style={{
               animationDelay: `${120 + i * 60}ms`,

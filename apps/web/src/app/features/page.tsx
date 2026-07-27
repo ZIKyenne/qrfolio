@@ -31,7 +31,7 @@ function Check({ text }: { text: string }) {
         width: 18, height: 18, borderRadius: "50%", flexShrink: 0, marginTop: 1,
         background: "rgba(57,255,143,0.12)", border: "1px solid rgba(57,255,143,0.3)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 9, color: "#39FF8F", fontWeight: 800,
+        fontSize: 9, color: "var(--success)", fontWeight: 800,
       }}>✓</span>
       <span style={{ color: MUT, fontSize: 14, lineHeight: 1.55 }}>{text}</span>
     </div>
@@ -85,9 +85,9 @@ function CtaInline({ label = "Essayer gratuitement" }: { label?: string }) {
 function BuilderMockupSvg() {
   const BLOCKS = [
     { icon: "👤", label: "Profil", c: "#C9A84C" },
-    { icon: "🔗", label: "Liens", c: "#38BDF8" },
+    { icon: "🔗", label: "Liens", c: "var(--action)" },
     { icon: "📸", label: "Galerie", c: "#A78BFA" },
-    { icon: "💬", label: "WhatsApp", c: "#39FF8F" },
+    { icon: "💬", label: "WhatsApp", c: "var(--success)" },
   ]
   return (
     <div style={{
@@ -98,7 +98,7 @@ function BuilderMockupSvg() {
     }}>
       {/* Barre titre */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
-        {["#FF6B6B", "#F97316", "#39FF8F"].map((c, i) => (
+        {["var(--danger)", "#F97316", "var(--success)"].map((c, i) => (
           <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, opacity: 0.65 }} />
         ))}
         <span style={{ color: "rgba(201,168,76,0.4)", fontSize: 9, letterSpacing: 1.5, marginLeft: 8 }}>BUILDER — QRowg</span>
@@ -142,14 +142,14 @@ function BuilderMockupSvg() {
             <div style={{ width: 18, height: 3, borderRadius: 2, background: "rgba(255,255,255,0.1)", margin: "0 auto 6px" }} />
             <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}>
               <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg,#C9A84C,#b8953f)" }} />
-              {[[80, "#C9A84C", 0.4], [60, "#fff", 0.1], [90, "#38BDF8", 0.2], [70, "#fff", 0.08]].map(([w, c, o], i) => (
+              {[[80, "#C9A84C", 0.4], [60, "#fff", 0.1], [90, "var(--action)", 0.2], [70, "#fff", 0.08]].map(([w, c, o], i) => (
                 <div key={i} style={{ height: i === 2 ? 18 : 5, width: w + "%", borderRadius: 4, background: c as string, opacity: o as number }} />
               ))}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 3, padding: "3px 7px", borderRadius: 12, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)" }}>
-            <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#39FF8F" }} />
-            <span style={{ color: "#39FF8F", fontSize: 7, fontWeight: 700 }}>LIVE</span>
+            <div style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--success)" }} />
+            <span style={{ color: "var(--success)", fontSize: 7, fontWeight: 700 }}>LIVE</span>
           </div>
         </div>
       </div>
@@ -164,12 +164,12 @@ function AnalyticsMockupSvg() {
   return (
     <div style={{ background: "linear-gradient(145deg, #0e0c08, #111009)", border: "1px solid " + BOR, borderRadius: 20, padding: 20, boxShadow: "0 24px 80px rgba(0,0,0,0.5)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
-        {["#FF6B6B","#F97316","#39FF8F"].map((c,i) => <div key={i} style={{ width:8,height:8,borderRadius:"50%",background:c,opacity:0.65 }}/>)}
+        {["var(--danger)","#F97316","var(--success)"].map((c,i) => <div key={i} style={{ width:8,height:8,borderRadius:"50%",background:c,opacity:0.65 }}/>)}
         <span style={{ color:"rgba(201,168,76,0.4)",fontSize:9,letterSpacing:1.5,marginLeft:8 }}>ANALYTICS — QRowg</span>
       </div>
       {/* KPI */}
       <div className="rcols-4" style={{ display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14 }}>
-        {[["📱","847","Scans","#39FF8F"],["👁","2 341","Vues","#38BDF8"],["🎯","36%","Clic","#C9A84C"],["✅","5","QR actifs","#A78BFA"]].map(([icon,val,lbl,c])=>(
+        {[["📱","847","Scans","var(--success)"],["👁","2 341","Vues","var(--action)"],["🎯","36%","Clic","#C9A84C"],["✅","5","QR actifs","#A78BFA"]].map(([icon,val,lbl,c])=>(
           <div key={lbl as string} style={{ background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:9,padding:"8px 10px" }}>
             <span style={{fontSize:13}}>{icon}</span>
             <p style={{color:c as string,fontSize:15,fontWeight:800,margin:"3px 0 2px",lineHeight:1}}>{val}</p>
@@ -199,7 +199,7 @@ function QRMockupSvg() {
   const STYLES = [
     { fg:"#1a1a1a", bg:"#ffffff", acc:"#C9A84C", name:"Classic" },
     { fg:"#C9A84C", bg:"#111009", acc:"#F5F0E8", name:"Gold" },
-    { fg:"#39FF8F", bg:"#050505", acc:"#A78BFA", name:"Neon" },
+    { fg:"var(--success)", bg:"#050505", acc:"#A78BFA", name:"Neon" },
   ]
   const [active, setActive] = useState(0)
   const s = STYLES[active]
@@ -423,10 +423,10 @@ export default function FeaturesPage() {
             <style>{`@media(max-width:700px){.tpl-grid{grid-template-columns:1fr !important;}}`}</style>
             {[
               { icon:"🍽️", name:"Restaurant & Bar",    color:"#F97316", blocks:7 },
-              { icon:"💼", name:"Freelance Pro",         color:"#38BDF8", blocks:6 },
+              { icon:"💼", name:"Freelance Pro",         color:"var(--action)", blocks:6 },
               { icon:"🎵", name:"Artiste & Musicien",    color:"#A78BFA", blocks:7 },
               { icon:"🏠", name:"Agent Immobilier",      color:"#C9A84C", blocks:6 },
-              { icon:"🎪", name:"Événement",             color:"#39FF8F", blocks:6 },
+              { icon:"🎪", name:"Événement",             color:"var(--success)", blocks:6 },
               { icon:"🛍️",  name:"Commerce local",       color:"#F43F5E", blocks:8 },
             ].map(t => (
               <Link key={t.name} href="/auth/signup" style={{
@@ -465,9 +465,9 @@ export default function FeaturesPage() {
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}} className="other-grid">
             <style>{`@media(max-width:700px){.other-grid{grid-template-columns:1fr !important;}}`}</style>
             {[
-              { icon:"🌐", color:"#38BDF8", title:"Domaine personnalisé",   desc:"Connecte ton sous-domaine (carte.tonsite.fr). Ton image, pas la nôtre.", tag:"Pro" },
+              { icon:"🌐", color:"var(--action)", title:"Domaine personnalisé",   desc:"Connecte ton sous-domaine (carte.tonsite.fr). Ton image, pas la nôtre.", tag:"Pro" },
               { icon:"✨", color:"#A78BFA", title:"Branding personnalisé",   desc:"Retire le branding QRowg. Ta page, tes couleurs, ton identité.", tag:"Pro" },
-              { icon:"👥", color:"#39FF8F", title:"Collaboration équipe",     desc:"Gérez vos pages à plusieurs avec des rôles et permissions.", tag:"Business" },
+              { icon:"👥", color:"var(--success)", title:"Collaboration équipe",     desc:"Gérez vos pages à plusieurs avec des rôles et permissions.", tag:"Business" },
             ].map(f => (
               <div key={f.title} style={{
                 background:"rgba(255,255,255,0.02)",

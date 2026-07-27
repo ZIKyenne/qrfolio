@@ -54,7 +54,7 @@ export default function FileUpload({ value, onChange, hint }: Props) {
           <FileText size={16} color={G} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1, color: "#F5F0E8", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nameFromUrl(value)}</span>
           <a href={value} target="_blank" rel="noopener noreferrer" title="Ouvrir" style={{ color: MUTED, display: "flex", flexShrink: 0 }}><ExternalLink size={13} /></a>
-          <button onClick={() => onChange("")} title="Retirer" style={{ background: "none", border: "none", cursor: "pointer", color: "#FF6B6B", flexShrink: 0, display: "flex" }}><X size={14} /></button>
+          <button onClick={() => onChange("")} title="Retirer" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)", flexShrink: 0, display: "flex" }}><X size={14} /></button>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -73,7 +73,7 @@ export default function FileUpload({ value, onChange, hint }: Props) {
         <FolderOpen size={12} /> Choisir dans ma bibliothèque
       </button>
       {hint && <p style={{ color: MUTED, fontSize: 11, margin: "4px 0 0", lineHeight: 1.4 }}>{hint}</p>}
-      {error && <p style={{ color: "#FF6B6B", fontSize: 11, margin: "6px 0 0" }}>{error}</p>}
+      {error && <p style={{ color: "var(--danger)", fontSize: 11, margin: "6px 0 0" }}>{error}</p>}
       <input ref={inputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,application/pdf" style={{ display: "none" }}
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = "" }} />
 
@@ -105,7 +105,7 @@ export default function FileUpload({ value, onChange, hint }: Props) {
                     <div key={a.url} style={{ display: "flex", alignItems: "center", gap: 9, background: value === a.url ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.02)", border: `1px solid ${value === a.url ? "rgba(201,168,76,0.4)" : "rgba(255,255,255,0.07)"}`, borderRadius: 9, padding: "8px 11px" }}>
                       <FileText size={15} color={G} style={{ flexShrink: 0 }} />
                       <button onClick={() => { onChange(a.url); setLibOpen(false) }} style={{ flex: 1, textAlign: "left", background: "none", border: "none", color: "#F5F0E8", fontSize: 12, cursor: "pointer", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prettyName(a.name)}</button>
-                      <button onClick={() => removeAsset(a)} aria-label="Supprimer" style={{ background: "none", border: "none", cursor: "pointer", color: "#FF6B6B", flexShrink: 0, display: "flex" }}><Trash2 size={13} /></button>
+                      <button onClick={() => removeAsset(a)} aria-label="Supprimer" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--danger)", flexShrink: 0, display: "flex" }}><Trash2 size={13} /></button>
                     </div>
                   ))}
             </div>

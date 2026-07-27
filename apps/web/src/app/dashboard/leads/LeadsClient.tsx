@@ -29,7 +29,7 @@ const TYPE_LABELS: Record<string, string> = {
 }
 const TYPE_COLORS: Record<string, string> = {
   quote: "#C9A84C", reservation: "#EF4444", booking: "#9146FF",
-  register: "#EC4899", rsvp: "#39FF8F", form: "#38BDF8",
+  register: "#EC4899", rsvp: "var(--success)", form: "var(--action)",
 }
 
 function fmtDate(iso: string) {

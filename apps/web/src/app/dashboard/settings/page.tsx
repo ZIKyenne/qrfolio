@@ -189,7 +189,7 @@ export default function SettingsPage() {
               <label style={{ color: MUTED, fontSize: 12, display: "block", marginBottom: 5 }}>Email</label>
               <div style={{ ...inputStyle, opacity: 0.6, cursor: "not-allowed", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ color: "#F5F0E8" }}>{profile?.email}</span>
-                <span style={{ marginLeft: "auto", color: "#39FF8F", fontSize: 10, background: "rgba(57,255,143,0.1)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 6, padding: "2px 7px" }}>Vérifié</span>
+                <span style={{ marginLeft: "auto", color: "var(--success)", fontSize: 10, background: "rgba(57,255,143,0.1)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 6, padding: "2px 7px" }}>Vérifié</span>
               </div>
               <p style={{ color: MUTED, fontSize: 12, margin: "4px 0 0" }}>L'e-mail ne peut pas être modifié pour des raisons de sécurité.</p>
             </div>
@@ -248,7 +248,7 @@ export default function SettingsPage() {
               <div>
                 <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
                   {[1,2,3,4].map(i => (
-                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= (newPwd.length >= 12 && /[A-Z]/.test(newPwd) && /[0-9]/.test(newPwd) ? 4 : newPwd.length >= 10 ? 3 : newPwd.length >= 8 ? 2 : 1) ? (newPwd.length >= 12 ? "#39FF8F" : newPwd.length >= 10 ? G : newPwd.length >= 8 ? "#F97316" : "#EF4444") : "rgba(255,255,255,0.06)" }} />
+                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= (newPwd.length >= 12 && /[A-Z]/.test(newPwd) && /[0-9]/.test(newPwd) ? 4 : newPwd.length >= 10 ? 3 : newPwd.length >= 8 ? 2 : 1) ? (newPwd.length >= 12 ? "var(--success)" : newPwd.length >= 10 ? G : newPwd.length >= 8 ? "#F97316" : "#EF4444") : "rgba(255,255,255,0.06)" }} />
                   ))}
                 </div>
                 <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{newPwd.length < 8 ? "Trop court" : newPwd.length < 10 ? "Acceptable" : newPwd.length < 12 ? "Bon" : "Excellent"}</p>
@@ -263,7 +263,7 @@ export default function SettingsPage() {
             )}
 
             <button onClick={changePassword} disabled={pwdSaving || !newPwd || !confirmPwd}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: pwdSaved ? "rgba(57,255,143,0.1)" : (pwdSaving || !newPwd) ? "color-mix(in srgb, var(--accent) 20%, transparent)" : `linear-gradient(90deg,${G},color-mix(in srgb, var(--accent) 75%, #000))`, border: pwdSaved ? "1px solid rgba(57,255,143,0.3)" : "none", borderRadius: 10, padding: "12px", color: pwdSaved ? "#39FF8F" : (!newPwd || pwdSaving) ? MUTED : "#080808", fontSize: 14, fontWeight: 700, cursor: (pwdSaving || !newPwd) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: pwdSaved ? "rgba(57,255,143,0.1)" : (pwdSaving || !newPwd) ? "color-mix(in srgb, var(--accent) 20%, transparent)" : `linear-gradient(90deg,${G},color-mix(in srgb, var(--accent) 75%, #000))`, border: pwdSaved ? "1px solid rgba(57,255,143,0.3)" : "none", borderRadius: 10, padding: "12px", color: pwdSaved ? "var(--success)" : (!newPwd || pwdSaving) ? MUTED : "#080808", fontSize: 14, fontWeight: 700, cursor: (pwdSaving || !newPwd) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>
               {pwdSaved ? <><Check size={14} /> Mot de passe modifié !</> : pwdSaving ? "Modification..." : <><Key size={14} /> Changer le mot de passe</>}
             </button>
           </div>
@@ -284,7 +284,7 @@ export default function SettingsPage() {
               label="Offres et promotions" description="Réductions et offres spéciales" />
             <div style={{ paddingTop: 14 }}>
               <button onClick={saveNotifications}
-                style={{ display: "flex", alignItems: "center", gap: 7, background: notifSaved ? "rgba(57,255,143,0.1)" : `color-mix(in srgb, var(--accent) 7%, transparent)`, border: `1px solid ${notifSaved ? "rgba(57,255,143,0.3)" : "color-mix(in srgb, var(--accent) 15%, transparent)"}`, borderRadius: 9, padding: "9px 18px", color: notifSaved ? "#39FF8F" : G, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 7, background: notifSaved ? "rgba(57,255,143,0.1)" : `color-mix(in srgb, var(--accent) 7%, transparent)`, border: `1px solid ${notifSaved ? "rgba(57,255,143,0.3)" : "color-mix(in srgb, var(--accent) 15%, transparent)"}`, borderRadius: 9, padding: "9px 18px", color: notifSaved ? "var(--success)" : G, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                 {notifSaved ? <><Check size={12} /> Sauvegarde !</> : <><Save size={12} /> Sauvegarder les préférences</>}
               </button>
             </div>
@@ -326,7 +326,7 @@ export default function SettingsPage() {
         <Section title="Session" subtitle="Connexion et déconnexion" icon={<LogOut size={16} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#39FF8F", animation: "pulse 2s infinite" }} />
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--success)", animation: "pulse 2s infinite" }} />
               <div style={{ flex: 1 }}>
                 <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: 0 }}>Session active</p>
                 <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{profile?.email}</p>

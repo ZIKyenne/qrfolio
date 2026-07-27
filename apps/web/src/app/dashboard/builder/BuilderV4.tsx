@@ -616,7 +616,7 @@
         <div style={{ padding: "4px 16px 10px", ...s }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 12, padding: "13px 18px" }}>
             <span style={{ fontSize: 16 }}>{c.icon||"📞"}</span>
-            <span style={{ color: "#39FF8F", fontSize: 13, fontWeight: 700 }}>{c.label||"Appeler maintenant"}</span>
+            <span style={{ color: "var(--success)", fontSize: 13, fontWeight: 700 }}>{c.label||"Appeler maintenant"}</span>
           </div>
         </div>
       )
@@ -632,7 +632,7 @@
         <div style={{ padding: "4px 16px 10px", ...s }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(56,189,248,0.1)", border: "1.5px solid rgba(56,189,248,0.3)", borderRadius: 12, padding: "13px 18px" }}>
             <span style={{ fontSize: 16 }}>✉️</span>
-            <span style={{ color: "#38BDF8", fontSize: 13, fontWeight: 700 }}>{c.label||"Envoyer un email"}</span>
+            <span style={{ color: "var(--action)", fontSize: 13, fontWeight: 700 }}>{c.label||"Envoyer un email"}</span>
           </div>
         </div>
       )
@@ -1149,7 +1149,7 @@
                   </div>
                   {plan.features && plan.features.split("\n").filter(Boolean).map((f: string, j: number) => (
                     <p key={j} style={{ color: muted, fontSize: 9, margin: "0 0 3px", display: "flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ color: "#39FF8F" }}>✓</span> {f}
+                      <span style={{ color: "var(--success)" }}>✓</span> {f}
                     </p>
                   ))}
                   {c.cta_label && <div style={{ background: plan.highlight ? `linear-gradient(90deg,${primary},${primary}cc)` : "rgba(255,255,255,0.06)", borderRadius: 7, padding: "8px", textAlign: "center", fontSize: 10, fontWeight: 700, color: plan.highlight ? "#080808" : text, marginTop: 8 }}>{c.cta_label}</div>}
@@ -1177,7 +1177,7 @@
                   </div>
                   {content && content.split("\n").filter(Boolean).map((line: string, j: number) => (
                     <p key={j} style={{ color: muted, fontSize: 11, margin: "0 0 3px", display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ color: "#39FF8F", fontSize: 10 }}>✓</span> {line}
+                      <span style={{ color: "var(--success)", fontSize: 10 }}>✓</span> {line}
                     </p>
                   ))}
                 </div>
@@ -1204,7 +1204,7 @@
                 ? <img src={c.after_img} alt="Après" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
                 : <div style={{ height: 120, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>✨</div>}
               <div style={{ background: "rgba(57,255,143,0.15)", padding: "5px", textAlign: "center" }}>
-                <p style={{ color: "#39FF8F", fontSize: 11, fontWeight: 700, margin: 0 }}>{c.after_label||"Après"}</p>
+                <p style={{ color: "var(--success)", fontSize: 11, fontWeight: 700, margin: 0 }}>{c.after_label||"Après"}</p>
               </div>
             </div>
           </div>
@@ -1491,7 +1491,7 @@
                 ? <img src={c.after_img} alt="Après" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
                 : <div style={{ height: 130, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>✨</div>}
               <div style={{ background: "rgba(57,255,143,0.15)", padding: "6px", textAlign: "center" }}>
-                <p style={{ color: "#39FF8F", fontSize: 11, fontWeight: 700, margin: 0 }}>{c.after_label||"Après"}</p>
+                <p style={{ color: "var(--success)", fontSize: 11, fontWeight: 700, margin: 0 }}>{c.after_label||"Après"}</p>
               </div>
             </div>
           </div>
@@ -1705,7 +1705,7 @@
             {horizontal ? (
               <div style={{ display: "flex", gap: 9, overflowX: "auto", padding: "2px 0 6px" }}>
                 {list.map((e,i) => (
-                  <div key={i} style={{ flexShrink: 0, width: 150, background: "rgba(255,255,255,0.03)", border: `1px solid ${i===list.length-1 ? "#39FF8F30" : "rgba(255,255,255,0.07)"}`, borderRadius: 12, padding: "12px" }}>
+                  <div key={i} style={{ flexShrink: 0, width: 150, background: "rgba(255,255,255,0.03)", border: `1px solid ${i===list.length-1 ? "var(--success)30" : "rgba(255,255,255,0.07)"}`, borderRadius: 12, padding: "12px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
                       <div style={{ width: 26, height: 26, borderRadius: 7, background: `${primary}12`, border: `1px solid ${primary}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{e.icon || "•"}</div>
                       <p style={{ color: primary, fontSize: 11, fontWeight: 700, margin: 0 }}>{e.date}</p>
@@ -1720,7 +1720,7 @@
                 <div style={{ position: "absolute", left: 6, top: 8, bottom: 8, width: 2, background: `linear-gradient(180deg,${primary},${primary}40)`, borderRadius: 1 }} />
                 {list.map((e,i) => (
                   <div key={i} style={{ position: "relative", marginBottom: i<list.length-1 ? 16 : 0 }}>
-                    <div style={{ position: "absolute", left: -17, top: 4, width: 10, height: 10, borderRadius: "50%", background: i===list.length-1 ? "#39FF8F" : primary, border: `2px solid ${i===list.length-1 ? "#39FF8F40" : primary+"40"}` }} />
+                    <div style={{ position: "absolute", left: -17, top: 4, width: 10, height: 10, borderRadius: "50%", background: i===list.length-1 ? "var(--success)" : primary, border: `2px solid ${i===list.length-1 ? "var(--success)40" : primary+"40"}` }} />
                     <p style={{ color: primary, fontSize: 11, fontWeight: 700, margin: "0 0 2px" }}>{e.date}</p>
                     <p style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px", display: "flex", alignItems: "center", gap: 5 }}>{e.icon && <span style={{ fontSize: 13 }}>{e.icon}</span>}{e.title}</p>
                     {e.desc && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{e.desc}</p>}
@@ -1849,7 +1849,7 @@
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
               {(badges.length===0 ? [["✔","Vérifié"],["🏆","Certifié"],["⭐","Partenaire officiel"]] : badges).map(([icon,label],i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 20, padding: "7px 14px" }}>
-                  <span style={{ color: "#39FF8F", fontSize: 14, fontWeight: 700 }}>{icon}</span>
+                  <span style={{ color: "var(--success)", fontSize: 14, fontWeight: 700 }}>{icon}</span>
                   <span style={{ color: text, fontSize: 12, fontWeight: 600 }}>{label}</span>
                 </div>
               ))}
@@ -1994,8 +1994,8 @@
           {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             {[
-              [c.phone, "📞", "#39FF8F", `tel:${c.phone}`],
-              [c.email, "✉️", "#38BDF8", `mailto:${c.email}`],
+              [c.phone, "📞", "var(--success)", `tel:${c.phone}`],
+              [c.email, "✉️", "var(--action)", `mailto:${c.email}`],
               [c.whatsapp, "💬", "#25D366", `https://wa.me/${c.whatsapp}`],
               [c.address, "📍", primary, null],
               [c.hours, "🕐", MUTED, null],
@@ -2033,8 +2033,8 @@
                     </div>
                     {(phone||email) && (
                       <div style={{ display: "flex", gap: 7 }}>
-                        {phone && <a href={`tel:${phone}`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 8, padding: "7px", color: "#39FF8F", textDecoration: "none", fontSize: 11, fontWeight: 600 }}>📞 Appeler</a>}
-                        {email && <a href={`mailto:${email}`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", borderRadius: 8, padding: "7px", color: "#38BDF8", textDecoration: "none", fontSize: 11, fontWeight: 600 }}>✉️ Email</a>}
+                        {phone && <a href={`tel:${phone}`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 8, padding: "7px", color: "var(--success)", textDecoration: "none", fontSize: 11, fontWeight: 600 }}>📞 Appeler</a>}
+                        {email && <a href={`mailto:${email}`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", borderRadius: 8, padding: "7px", color: "var(--action)", textDecoration: "none", fontSize: 11, fontWeight: 600 }}>✉️ Email</a>}
                       </div>
                     )}
                   </div>
@@ -2497,7 +2497,7 @@
           <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 4px" }}>{c.title||"Serez-vous présent ?"}</p>
           {c.description && <p style={{ color: muted, fontSize: 11, margin: "0 0 14px" }}>{c.description}</p>}
           <div style={{ display: "flex", gap: 8 }}>
-            <button style={{ flex: 2, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 10, padding: "12px 8px", color: "#39FF8F", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{c.yes_label||"✅ Oui, je viens"}</button>
+            <button style={{ flex: 2, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 10, padding: "12px 8px", color: "var(--success)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{c.yes_label||"✅ Oui, je viens"}</button>
             <button style={{ flex: 1, background: "rgba(251,191,36,0.08)", border: "1.5px solid rgba(251,191,36,0.25)", borderRadius: 10, padding: "12px 8px", color: "#FBBF24", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{c.maybe_label||"🤔 Peut-être"}</button>
             <button style={{ flex: 1, background: "rgba(239,68,68,0.08)", border: "1.5px solid rgba(239,68,68,0.2)", borderRadius: 10, padding: "12px 8px", color: "#EF4444", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{c.no_label||"❌ Non"}</button>
           </div>
@@ -2560,7 +2560,7 @@
         const urgencyStyles: Record<string,any> = {
           high: { bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.4)", color: "#EF4444", pulse: true },
           medium: { bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)", color: "#FBBF24", pulse: false },
-          low: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.25)", color: "#39FF8F", pulse: false },
+          low: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.25)", color: "var(--success)", pulse: false },
         }
         const us = urgencyStyles[c.urgency||"high"]
         return (
@@ -2745,9 +2745,9 @@
 
       case "info_box": {
         const boxStyles: Record<string,any> = {
-          info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "#38BDF8" },
+          info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "var(--action)" },
           warning: { bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)", color: "#FBBF24" },
-          success: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.3)", color: "#39FF8F" },
+          success: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.3)", color: "var(--success)" },
           tip: { bg: "rgba(201,168,76,0.08)", border: "rgba(201,168,76,0.3)", color: "#C9A84C" },
           important: { bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.3)", color: "#EF4444" },
         }
@@ -3015,7 +3015,7 @@
                   <span style={{ flex: 1, color: MUTED, fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{noun} {i}</span>
                   <button type="button" onClick={() => moveItem(i, -1)} disabled={i === 1} aria-label="Monter" style={iconBtn(i === 1)}><ChevronUp size={16} /></button>
                   <button type="button" onClick={() => moveItem(i, 1)} disabled={i === count} aria-label="Descendre" style={iconBtn(i === count)}><ChevronDown size={16} /></button>
-                  <button type="button" onClick={() => deleteItem(i)} aria-label="Supprimer" style={{ ...iconBtn(false), color: "#FF6B6B" }}><Trash2 size={15} /></button>
+                  <button type="button" onClick={() => deleteItem(i)} aria-label="Supprimer" style={{ ...iconBtn(false), color: "var(--danger)" }}><Trash2 size={15} /></button>
                 </div>
                 {fields.map(f => f.kind === "image"
                   ? <ImageUpload key={f.suffix} value={it[f.suffix]} onChange={url => onChange(key(i, f.suffix), url)} />
@@ -3444,7 +3444,7 @@
               const isTestable = field.type === "url" && valid && /^https?:\/\//i.test(val)
               return (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 4 }}>
-                  <span style={{ color: valid ? "#39FF8F" : "#F59E0B", fontSize: 10.5, fontWeight: 600 }}>{valid ? "✓ Format valide" : `⚠ ${msg}`}</span>
+                  <span style={{ color: valid ? "var(--success)" : "#F59E0B", fontSize: 10.5, fontWeight: 600 }}>{valid ? "✓ Format valide" : `⚠ ${msg}`}</span>
                   {isTestable && <a href={val} target="_blank" rel="noopener noreferrer" style={{ color: G, fontSize: 9, fontWeight: 700, textDecoration: "none" }}>Tester ↗</a>}
                 </div>
               )
@@ -3453,7 +3453,7 @@
             {field.type === "textarea" && !(field as any).maxRecommended && (() => {
               const len = (block.content[field.key] || "").length
               if (!len) return null
-              const [txt, col] = len < 40 ? ["Un peu court", "#F59E0B"] : len <= 200 ? ["Bonne longueur ✓", "#39FF8F"] : ["Un peu long pour mobile", "#F59E0B"]
+              const [txt, col] = len < 40 ? ["Un peu court", "#F59E0B"] : len <= 200 ? ["Bonne longueur ✓", "var(--success)"] : ["Un peu long pour mobile", "#F59E0B"]
               return (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
                   <span style={{ color: col, fontSize: 10.5, fontWeight: 600 }}>{txt}</span>
@@ -3467,11 +3467,11 @@
               if (!len) return null
               const max = (field as any).maxRecommended as number
               const short = Math.max(12, Math.round(max * 0.15))
-              const [txt, col] = len < short ? ["Un peu court", "#F59E0B"] : len <= max * 0.9 ? ["Excellent ✓", "#39FF8F"] : len <= max ? ["Bonne longueur ✓", "#39FF8F"] : ["Trop long", "#FF6B6B"]
+              const [txt, col] = len < short ? ["Un peu court", "#F59E0B"] : len <= max * 0.9 ? ["Excellent ✓", "var(--success)"] : len <= max ? ["Bonne longueur ✓", "var(--success)"] : ["Trop long", "var(--danger)"]
               return (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
                   <span style={{ color: col, fontSize: 10.5, fontWeight: 600 }}>{txt}</span>
-                  <span style={{ color: len > max ? "#FF6B6B" : MUTED, fontSize: 10.5 }}>{len}/{max}</span>
+                  <span style={{ color: len > max ? "var(--danger)" : MUTED, fontSize: 10.5 }}>{len}/{max}</span>
                 </div>
               )
             })()}
@@ -3510,7 +3510,7 @@
             <div key={g}>
               <button type="button" onClick={() => setOpenCards(prev => { const n = new Set(prev); if (n.has(g)) n.delete(g); else n.add(g); return n })}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, minHeight: 46, padding: "10px 12px", borderRadius: 10, border: `1px solid ${open ? "rgba(201,168,76,0.4)" : "rgba(255,255,255,0.08)"}`, background: open ? "rgba(201,168,76,0.06)" : "rgba(255,255,255,0.02)", color: "#F5F0E8", cursor: "pointer", textAlign: "left" }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: filled ? "#39FF8F" : "rgba(255,255,255,0.18)", flexShrink: 0 }} />
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: filled ? "var(--success)" : "rgba(255,255,255,0.18)", flexShrink: 0 }} />
                 <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{g}</span>
                 <span style={{ fontSize: 10.5, color: MUTED }}>{filled ? `${filled}/${fields.length}` : "vide"}</span>
                 <ChevronDown size={16} color={MUTED} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }} />
@@ -3586,9 +3586,9 @@
     const PRESETS = [
       // Business
       { name: "Executive Blue", group: "Business", bg: "#0A1628", primary: "#1E88E5", accent: "#42A5F5", text: "#F5F0E8", muted: "#8A9BA8", gradient: "linear-gradient(135deg,#0A1628 0%,#1A2A4A 100%)" },
-      { name: "Corporate Black", group: "Business", bg: "#080808", primary: "#C9A84C", accent: "#39FF8F", text: "#F5F0E8", muted: "#A8A190", gradient: "linear-gradient(135deg,#080808 0%,#111111 100%)" },
+      { name: "Corporate Black", group: "Business", bg: "#080808", primary: "#C9A84C", accent: "var(--success)", text: "#F5F0E8", muted: "#A8A190", gradient: "linear-gradient(135deg,#080808 0%,#111111 100%)" },
       { name: "Premium Navy", group: "Business", bg: "#0D1B2A", primary: "#C9A84C", accent: "#E8C96A", text: "#F5F0E8", muted: "#7A8B9A", gradient: "linear-gradient(135deg,#0D1B2A 0%,#1A3050 100%)" },
-      { name: "Midnight Gold", group: "Business", bg: "#080808", primary: "#C9A84C", accent: "#39FF8F", text: "#F5F0E8", muted: "#A8A190", gradient: "linear-gradient(135deg,#080808,#1a1a08)" },
+      { name: "Midnight Gold", group: "Business", bg: "#080808", primary: "#C9A84C", accent: "var(--success)", text: "#F5F0E8", muted: "#A8A190", gradient: "linear-gradient(135deg,#080808,#1a1a08)" },
       { name: "Boardroom", group: "Business", bg: "#1A1A1A", primary: "#E0E0E0", accent: "#C9A84C", text: "#F5F0E8", muted: "#888888", gradient: "linear-gradient(160deg,#1A1A1A,#2D2D2D)" },
       // Luxury
       { name: "Velvet Noir", group: "Luxury", bg: "#0D0A1A", primary: "#9B59B6", accent: "#E056FD", text: "#F5F0E8", muted: "#8A7A9A", gradient: "linear-gradient(135deg,#0D0A1A 0%,#1A0D2E 100%)" },
@@ -3598,7 +3598,7 @@
       { name: "Prestige", group: "Luxury", bg: "#0C0C0C", primary: "#C9A84C", accent: "#FFD700", text: "#F5EDD0", muted: "#A8A190", gradient: "linear-gradient(160deg,#0C0C0C,#1A1500)" },
       // SaaS
       { name: "Deep Space", group: "SaaS", bg: "#020B18", primary: "#00D4FF", accent: "#7B2FBE", text: "#F5F0E8", muted: "#8A9BA8", gradient: "linear-gradient(135deg,#020B18,#0A1628)" },
-      { name: "Aurora", group: "SaaS", bg: "#0A0F1E", primary: "#00FF9D", accent: "#FF6B6B", text: "#F5F0E8", muted: "#8A8FA0", gradient: "linear-gradient(135deg,#0A0F1E,#0D1628)" },
+      { name: "Aurora", group: "SaaS", bg: "#0A0F1E", primary: "#00FF9D", accent: "var(--danger)", text: "#F5F0E8", muted: "#8A8FA0", gradient: "linear-gradient(135deg,#0A0F1E,#0D1628)" },
       { name: "Ocean Tech", group: "SaaS", bg: "#050F1A", primary: "#00B4D8", accent: "#0096C7", text: "#F5F0E8", muted: "#6A8A9A", gradient: "linear-gradient(160deg,#050F1A,#0A1E2A)" },
       { name: "Matrix Code", group: "SaaS", bg: "#000D00", primary: "#00FF41", accent: "#00CC33", text: "#00FF41", muted: "#006B1A", gradient: "linear-gradient(180deg,#000D00,#001500)" },
       { name: "Future Grid", group: "SaaS", bg: "#08001A", primary: "#7B2FBE", accent: "#9B59B6", text: "#F5F0E8", muted: "#7A6A8A", gradient: "linear-gradient(135deg,#08001A,#100028)" },
@@ -3613,7 +3613,7 @@
       { name: "TikTok Vibes", group: "Creator", bg: "#010101", primary: "#FF0050", accent: "#00F2EA", text: "#F5F0E8", muted: "#888888", gradient: "linear-gradient(135deg,#010101,#0A000A)" },
       { name: "Cyber Purple", group: "Creator", bg: "#0A0015", primary: "#BF00FF", accent: "#7B2FBE", text: "#F5F0E8", muted: "#7A6A8A", gradient: "linear-gradient(135deg,#0A0015,#150020)" },
       { name: "Creator Blue", group: "Creator", bg: "#000A20", primary: "#0066FF", accent: "#4A90FF", text: "#F5F0E8", muted: "#6A7A9A", gradient: "linear-gradient(135deg,#000A20,#000F30)" },
-      { name: "Electric Neon", group: "Creator", bg: "#050505", primary: "#39FF8F", accent: "#00FFFF", text: "#F5F0E8", muted: "#5A8A7A", gradient: "linear-gradient(135deg,#050505,#050F0A)" },
+      { name: "Electric Neon", group: "Creator", bg: "#050505", primary: "var(--success)", accent: "#00FFFF", text: "#F5F0E8", muted: "#5A8A7A", gradient: "linear-gradient(135deg,#050505,#050F0A)" },
       // Minimal
       { name: "Pure White", group: "Minimal", bg: "#FFFFFF", primary: "#1A1A1A", accent: "#C9A84C", text: "#1A1A1A", muted: "#6B7280", gradient: "linear-gradient(135deg,#FFFFFF,#F8F8F8)" },
       { name: "Minimal Cream", group: "Minimal", bg: "#FAF7F2", primary: "#1A1A1A", accent: "#C9A84C", text: "#2D2D2D", muted: "#7A7060", gradient: "linear-gradient(135deg,#FAF7F2,#F0EDE8)" },
@@ -3764,7 +3764,7 @@
                     <span style={{ fontSize: 9, color: MUTED }}>{hint}</span>
                     {/* Badge contraste */}
                     {(key === "text" || key === "muted") && (
-                      <span style={{ background: wcag==="AAA" ? "rgba(57,255,143,0.15)" : wcag==="AA" ? "rgba(251,191,36,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${wcag==="AAA" ? "rgba(57,255,143,0.3)" : wcag==="AA" ? "rgba(251,191,36,0.3)" : "rgba(239,68,68,0.3)"}`, borderRadius: 6, padding: "1px 6px", fontSize: 9, fontWeight: 700, color: wcag==="AAA" ? "#39FF8F" : wcag==="AA" ? "#FBBF24" : "#EF4444" }}>
+                      <span style={{ background: wcag==="AAA" ? "rgba(57,255,143,0.15)" : wcag==="AA" ? "rgba(251,191,36,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${wcag==="AAA" ? "rgba(57,255,143,0.3)" : wcag==="AA" ? "rgba(251,191,36,0.3)" : "rgba(239,68,68,0.3)"}`, borderRadius: 6, padding: "1px 6px", fontSize: 9, fontWeight: 700, color: wcag==="AAA" ? "var(--success)" : wcag==="AA" ? "#FBBF24" : "#EF4444" }}>
                         {wcag} {ratio.toFixed(1)}:1
                       </span>
                     )}
@@ -4063,10 +4063,10 @@
                 {bgMode==="mesh" && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     <label style={{ color: MUTED, fontSize: 10, textTransform: "uppercase" as const, letterSpacing: 1.5 }}>Dégradé Mesh</label>
-                    <div style={{ height: 60, borderRadius: 10, background: `radial-gradient(ellipse at 0% 0%, ${(theme as any).mesh_c1||"#C9A84C"}80, transparent 50%), radial-gradient(ellipse at 100% 100%, ${(theme as any).mesh_c2||"#39FF8F"}80, transparent 50%), radial-gradient(ellipse at 100% 0%, ${(theme as any).mesh_c3||"#7B2FBE"}60, transparent 50%), ${theme.bg}`, border: "1px solid rgba(255,255,255,0.1)", filter: `blur(${Math.round(((theme as any).mesh_blur||40)/5)}px)`, overflow: "hidden" }} />
+                    <div style={{ height: 60, borderRadius: 10, background: `radial-gradient(ellipse at 0% 0%, ${(theme as any).mesh_c1||"#C9A84C"}80, transparent 50%), radial-gradient(ellipse at 100% 100%, ${(theme as any).mesh_c2||"var(--success)"}80, transparent 50%), radial-gradient(ellipse at 100% 0%, ${(theme as any).mesh_c3||"#7B2FBE"}60, transparent 50%), ${theme.bg}`, border: "1px solid rgba(255,255,255,0.1)", filter: `blur(${Math.round(((theme as any).mesh_blur||40)/5)}px)`, overflow: "hidden" }} />
                     {[
                       { label: "Couleur 1", key: "mesh_c1", default: "#C9A84C" },
-                      { label: "Couleur 2", key: "mesh_c2", default: "#39FF8F" },
+                      { label: "Couleur 2", key: "mesh_c2", default: "var(--success)" },
                       { label: "Couleur 3", key: "mesh_c3", default: "#7B2FBE" },
                     ].map(({ label, key, default: def }) => (
                       <div key={key} style={{ display: "flex", gap: 7, alignItems: "center" }}>
@@ -4302,7 +4302,7 @@
                   <div style={{
                     position: "absolute", inset: 0,
                     background: animation==="aurora"
-                      ? `radial-gradient(ellipse at 20% 50%, ${theme.primary}40, transparent 50%), radial-gradient(ellipse at 80% 20%, ${theme.accent||"#39FF8F"}30, transparent 50%), ${theme.bgGradient||theme.bg}`
+                      ? `radial-gradient(ellipse at 20% 50%, ${theme.primary}40, transparent 50%), radial-gradient(ellipse at 80% 20%, ${theme.accent||"var(--success)"}30, transparent 50%), ${theme.bgGradient||theme.bg}`
                       : theme.bgGradient||theme.bg,
                     animation: animation==="gradient-flow" ? `gradientShift ${(theme as any).anim_speed||8}s ease infinite` : animation==="aurora" ? `auroraShift ${(theme as any).anim_speed||12}s ease infinite` : "none",
                     backgroundSize: "200% 200%",
@@ -4368,7 +4368,7 @@
                     navigator.clipboard.writeText(JSON.stringify(style, null, 2))
                     setCopiedStyle(true)
                     setTimeout(() => setCopiedStyle(false), 2000)
-                  }} style={{ flex: 1, background: copiedStyle ? "#39FF8F20" : "rgba(255,255,255,0.05)", border: `1px solid ${copiedStyle ? "#39FF8F40" : "rgba(255,255,255,0.1)"}`, borderRadius: 9, padding: "10px", color: copiedStyle ? "#39FF8F" : MUTED, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                  }} style={{ flex: 1, background: copiedStyle ? "var(--success)20" : "rgba(255,255,255,0.05)", border: `1px solid ${copiedStyle ? "var(--success)40" : "rgba(255,255,255,0.1)"}`, borderRadius: 9, padding: "10px", color: copiedStyle ? "var(--success)" : MUTED, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
                     {copiedStyle ? "✓ Copié !" : "📋 Copier le style"}
                   </button>
                   <button onClick={() => {
@@ -5283,7 +5283,7 @@
       } else if (t.bgMode === "radial") {
         return { background: t.bgGradient || `radial-gradient(circle at 50% 50%, ${theme.primary}, ${theme.bg})` }
       } else if (t.bgMode === "mesh") {
-        const c1 = t.mesh_c1 || "#C9A84C"; const c2 = t.mesh_c2 || "#39FF8F"; const c3 = t.mesh_c3 || "#7B2FBE"
+        const c1 = t.mesh_c1 || "#C9A84C"; const c2 = t.mesh_c2 || "var(--success)"; const c3 = t.mesh_c3 || "#7B2FBE"
         const blurPx = Math.round((t.mesh_blur||40)/3)
         base = {
           background: `radial-gradient(ellipse at 10% 20%, ${c1}90, transparent 55%), radial-gradient(ellipse at 90% 80%, ${c2}90, transparent 55%), radial-gradient(ellipse at 80% 10%, ${c3}70, transparent 55%), ${theme.bg}`,
@@ -5316,7 +5316,7 @@
           <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />
           <input value={pageName} onChange={e => setPageName(e.target.value)} style={{ background: "transparent", border: "none", color: "#F5F0E8", fontSize: 13, fontWeight: 600, outline: "none", width: isMobile ? 96 : 160, minWidth: 0 }} />
           {saving && <span style={{ color: MUTED, fontSize: 10 }}>Enregistrement…</span>}
-          {saved && !saveError && !saving && <span style={{ color: "#39FF8F", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}><Check size={10} /> Enregistré</span>}
+          {saved && !saveError && !saving && <span style={{ color: "var(--success)", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}><Check size={10} /> Enregistré</span>}
           {hasUnsaved && !saving && !saved && !saveError && (
             <button onClick={saveNow} title="Enregistrer maintenant (sinon sauvegarde auto après ~1s)"
               style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: 6, padding: "3px 8px", color: "#FBBF24", fontSize: 10, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>
@@ -5431,7 +5431,7 @@
 
           <div style={{ position: "relative", flexShrink: 0 }}>
             <button onClick={() => setShowPublishPopup(p => !p)}
-              style={{ display: "flex", alignItems: "center", gap: 6, background: pageStatus==="published" ? "rgba(57,255,143,0.12)" : `linear-gradient(90deg,${G},#b8953f)`, border: pageStatus==="published" ? "1px solid rgba(57,255,143,0.35)" : "none", borderRadius: 9, padding: "8px 18px", color: pageStatus==="published" ? "#39FF8F" : "#080808", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: pageStatus==="published" ? "none" : `0 4px 16px rgba(201,168,76,0.3)` }}>
+              style={{ display: "flex", alignItems: "center", gap: 6, background: pageStatus==="published" ? "rgba(57,255,143,0.12)" : `linear-gradient(90deg,${G},#b8953f)`, border: pageStatus==="published" ? "1px solid rgba(57,255,143,0.35)" : "none", borderRadius: 9, padding: "8px 18px", color: pageStatus==="published" ? "var(--success)" : "#080808", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: pageStatus==="published" ? "none" : `0 4px 16px rgba(201,168,76,0.3)` }}>
               {pageStatus==="published" ? <><Check size={13} /> Publié</> : "Publier"}
             </button>
             {showPublishPopup && (
@@ -5451,8 +5451,8 @@
 
                   {/* Statut */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, background: pageStatus==="published" ? "rgba(57,255,143,0.08)" : "rgba(255,255,255,0.04)", border: `1px solid ${pageStatus==="published" ? "rgba(57,255,143,0.2)" : "rgba(255,255,255,0.08)"}`, borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: pageStatus==="published" ? "#39FF8F" : MUTED, boxShadow: pageStatus==="published" ? "0 0 6px #39FF8F80" : "none" }} />
-                    <span style={{ color: pageStatus==="published" ? "#39FF8F" : MUTED, fontSize: 12, fontWeight: 600 }}>{pageStatus==="published" ? "En ligne" : "Brouillon"}</span>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: pageStatus==="published" ? "var(--success)" : MUTED, boxShadow: pageStatus==="published" ? "0 0 6px var(--success)80" : "none" }} />
+                    <span style={{ color: pageStatus==="published" ? "var(--success)" : MUTED, fontSize: 12, fontWeight: 600 }}>{pageStatus==="published" ? "En ligne" : "Brouillon"}</span>
                     <span style={{ color: MUTED, fontSize: 11, marginLeft: "auto" }}>{blocks.length} bloc{blocks.length!==1?"s":""}</span>
                   </div>
 
@@ -5479,14 +5479,14 @@
                       <p style={{ color: MUTED, fontSize: 9, margin: 0 }}>👁 Vues</p>
                     </div>
                     <div style={{ background: "rgba(57,255,143,0.06)", border: "1px solid rgba(57,255,143,0.15)", borderRadius: 10, padding: "10px", textAlign: "center" }}>
-                      <p style={{ color: "#39FF8F", fontSize: 20, fontWeight: 700, margin: 0, fontFamily: "Fraunces, serif" }}>{pageStats.scans}</p>
+                      <p style={{ color: "var(--success)", fontSize: 20, fontWeight: 700, margin: 0, fontFamily: "Fraunces, serif" }}>{pageStats.scans}</p>
                       <p style={{ color: MUTED, fontSize: 9, margin: 0 }}>📱 Scans</p>
                     </div>
                   </div>
 
                   {/* Bouton principal */}
                   <button onClick={handlePublish} disabled={publishing || pageStatus==="published"}
-                    style={{ width: "100%", background: pageStatus==="published" ? "rgba(57,255,143,0.1)" : `linear-gradient(90deg,${G},#b8953f)`, border: pageStatus==="published" ? "1px solid rgba(57,255,143,0.3)" : "none", borderRadius: 12, padding: "14px", color: pageStatus==="published" ? "#39FF8F" : "#080808", fontSize: 14, fontWeight: 700, cursor: pageStatus==="published" ? "default" : "pointer", marginBottom: pageSlug ? 10 : 0, boxShadow: pageStatus==="published" ? "none" : "0 4px 20px rgba(201,168,76,0.3)" }}>
+                    style={{ width: "100%", background: pageStatus==="published" ? "rgba(57,255,143,0.1)" : `linear-gradient(90deg,${G},#b8953f)`, border: pageStatus==="published" ? "1px solid rgba(57,255,143,0.3)" : "none", borderRadius: 12, padding: "14px", color: pageStatus==="published" ? "var(--success)" : "#080808", fontSize: 14, fontWeight: 700, cursor: pageStatus==="published" ? "default" : "pointer", marginBottom: pageSlug ? 10 : 0, boxShadow: pageStatus==="published" ? "none" : "0 4px 20px rgba(201,168,76,0.3)" }}>
                     {publishing ? (
                       <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
                         <span style={{display:"inline-block",width:14,height:14,border:"2px solid #08080880",borderTopColor:"#080808",borderRadius:"50%",animation:"spin 0.7s linear infinite"}} />
@@ -5558,7 +5558,7 @@
                   {/* Catégorie Récents — visible seulement si au moins 1 récent */}
                   {recentBlocks.length > 0 && (
                     <button onClick={() => setActiveCategory("recents")} title="Blocs récemment utilisés"
-                      style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, alignItems: "center", gap: isMobile ? 3 : 7, minWidth: 0, background: activeCategory==="recents" ? "#38BDF818" : "rgba(255,255,255,0.03)", border: `1px solid ${activeCategory==="recents" ? "#38BDF850" : "rgba(255,255,255,0.06)"}`, borderRadius: 10, padding: isMobile ? "5px 3px" : "9px 11px", color: activeCategory==="recents" ? "#38BDF8" : MUTED, fontSize: 12, fontWeight: activeCategory==="recents" ? 700 : 500, cursor: "pointer", transition: "all 0.15s", textAlign: "left" as const }}>
+                      style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, alignItems: "center", gap: isMobile ? 3 : 7, minWidth: 0, background: activeCategory==="recents" ? "var(--action)18" : "rgba(255,255,255,0.03)", border: `1px solid ${activeCategory==="recents" ? "var(--action)50" : "rgba(255,255,255,0.06)"}`, borderRadius: 10, padding: isMobile ? "5px 3px" : "9px 11px", color: activeCategory==="recents" ? "var(--action)" : MUTED, fontSize: 12, fontWeight: activeCategory==="recents" ? 700 : 500, cursor: "pointer", transition: "all 0.15s", textAlign: "left" as const }}>
                       <span style={{ fontSize: isMobile ? 16 : 15, flexShrink: 0 }}>🕐</span>
                       <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: isMobile ? "normal" as const : "nowrap", fontSize: isMobile ? 9.5 : undefined, textAlign: isMobile ? "center" as const : undefined, lineHeight: isMobile ? 1.15 : undefined, width: isMobile ? "100%" : undefined }}>Récents</span>
                     </button>
@@ -5594,7 +5594,7 @@
                 {recentBlocks.length > 0 && (
                   <button onClick={() => { setDrawerCategory("recents"); setActiveCategory("recents") }}
                     title={`Récents (${recentBlocks.length})`}
-                    style={{ width: 44, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: (drawerCategory==="recents" || activeCategory==="recents") ? "#38BDF818" : "transparent", border: `1px solid ${(drawerCategory==="recents" || activeCategory==="recents") ? "#38BDF840" : "transparent"}`, borderRadius: 8, cursor: "pointer", fontSize: 16, transition: "all 0.15s" }}>
+                    style={{ width: 44, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: (drawerCategory==="recents" || activeCategory==="recents") ? "var(--action)18" : "transparent", border: `1px solid ${(drawerCategory==="recents" || activeCategory==="recents") ? "var(--action)40" : "transparent"}`, borderRadius: 8, cursor: "pointer", fontSize: 16, transition: "all 0.15s" }}>
                     🕐
                   </button>
                 )}
@@ -5658,7 +5658,7 @@
                     {activeCategory==="recents" && recentBlocks.length > 0 && filteredBlocks.map(([type, def]) => (
                       <button key={type} onClick={() => addBlock(type)}
                         style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 9px", background: "transparent", border: "1px solid transparent", borderRadius: 8, color: MUTED, fontSize: 12, cursor: "pointer", textAlign: "left" as const, marginBottom: 2 }}
-                        onMouseEnter={e => { const el = e.currentTarget; el.style.background = "#38BDF810"; el.style.color = "#F5F0E8" }}
+                        onMouseEnter={e => { const el = e.currentTarget; el.style.background = "var(--action)10"; el.style.color = "#F5F0E8" }}
                         onMouseLeave={e => { const el = e.currentTarget; el.style.background = "transparent"; el.style.color = MUTED }}>
                         <div style={{ width: 30, height: 30, borderRadius: 8, background: def.color+"12", border: `1px solid ${def.color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>{def.icon}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -5936,7 +5936,7 @@
               <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <span style={{ fontSize: 14 }}>{drawerCategory==="recents" ? "🕐" : drawerCategory==="favorites" ? "⭐" : BLOCK_CATEGORIES.find(c => c.id===drawerCategory)?.icon}</span>
-                  <span style={{ color: drawerCategory==="recents" ? "#38BDF8" : drawerCategory==="favorites" ? "#FFD700" : "#F5F0E8", fontSize: 12, fontWeight: 700 }}>{drawerCategory==="recents" ? `Récents (${recentBlocks.length})` : drawerCategory==="favorites" ? `Favoris (${favorites.length})` : BLOCK_CATEGORIES.find(c => c.id===drawerCategory)?.label}</span>
+                  <span style={{ color: drawerCategory==="recents" ? "var(--action)" : drawerCategory==="favorites" ? "#FFD700" : "#F5F0E8", fontSize: 12, fontWeight: 700 }}>{drawerCategory==="recents" ? `Récents (${recentBlocks.length})` : drawerCategory==="favorites" ? `Favoris (${favorites.length})` : BLOCK_CATEGORIES.find(c => c.id===drawerCategory)?.label}</span>
                   {drawerCategory!=="recents" && drawerCategory!=="favorites" && (
                     <span style={{ background: "rgba(255,255,255,0.07)", color: MUTED, borderRadius: 10, padding: "1px 7px", fontSize: 9, fontWeight: 700, marginLeft: 4 }}>
                       {catCounts[drawerCategory||""] || 0}
@@ -6152,7 +6152,7 @@
                     {clickCounts[block.id] > 0 && (
                       <div title={`${clickCounts[block.id]} clic${clickCounts[block.id] > 1 ? "s" : ""} sur 90 jours`} style={{ position: "absolute", bottom: 6, right: 8, display: "flex", alignItems: "center", gap: 3, background: "rgba(57,255,143,0.12)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 20, padding: "2px 8px", zIndex: 10, pointerEvents: "none" }}>
                         <span style={{ fontSize: 9 }}>👆</span>
-                        <span style={{ color: "#39FF8F", fontSize: 9, fontWeight: 700 }}>{clickCounts[block.id]} clic{clickCounts[block.id] > 1 ? "s" : ""}</span>
+                        <span style={{ color: "var(--success)", fontSize: 9, fontWeight: 700 }}>{clickCounts[block.id]} clic{clickCounts[block.id] > 1 ? "s" : ""}</span>
                       </div>
                     )}
 
@@ -6229,7 +6229,7 @@
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <span style={{ fontSize: 12, color: "#F5F0E8", fontWeight: 600 }}>Aperçu live</span>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#39FF8F", animation: "pulse 2s infinite" }} />
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", animation: "pulse 2s infinite" }} />
                   </div>
                   {pageSlug && <a href={`/${pageSlug}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: "5px 10px", color: G, textDecoration: "none", fontSize: 10, fontWeight: 700 }}><ExternalLink size={10} /> Voir en direct</a>}
                 </div>
@@ -6248,7 +6248,7 @@
                     { label: "Localisation", ok: blocks.some(b => b.type === "google_maps"), act: () => addBlock("google_maps") },
                   ]
                   const score = Math.round((checks.filter(c => c.ok).length / checks.length) * 100)
-                  const col = score >= 80 ? "#39FF8F" : score >= 50 ? "#F59E0B" : "#FF6B6B"
+                  const col = score >= 80 ? "var(--success)" : score >= 50 ? "#F59E0B" : "var(--danger)"
                   const missing = checks.filter(c => !c.ok).slice(0, 3)
                   return (
                     <div style={{ marginBottom: 14, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
@@ -6301,7 +6301,7 @@
                           </div>
                           <div style={{ position: "absolute", right: 12, top: 5, display: "flex", gap: 3, alignItems: "center" }}>
                             <span style={{ color: dayMode ? "#333" : "#F5F0E8", fontSize: 6, fontWeight: 600, opacity: 0.6 }}>9:41</span>
-                            <div style={{ width: 10, height: 5, border: `1px solid ${dayMode?"#333":"#F5F0E8"}`, borderRadius: 1.5, opacity: 0.5 }}><div style={{ width: "75%", height: "100%", background: "#39FF8F", borderRadius: 1 }} /></div>
+                            <div style={{ width: 10, height: 5, border: `1px solid ${dayMode?"#333":"#F5F0E8"}`, borderRadius: 1.5, opacity: 0.5 }}><div style={{ width: "75%", height: "100%", background: "var(--success)", borderRadius: 1 }} /></div>
                           </div>
                         </div>
 
@@ -6340,7 +6340,7 @@
                           <QrCode size={48} color="#C9A84C" />
                         </div>}
                     <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "3px 10px" }}>
-                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: pageStatus==="published" ? "#39FF8F" : MUTED, boxShadow: pageStatus==="published" ? "0 0 5px #39FF8F70" : "none" }} />
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: pageStatus==="published" ? "var(--success)" : MUTED, boxShadow: pageStatus==="published" ? "0 0 5px var(--success)70" : "none" }} />
                       <span style={{ color: MUTED, fontSize: 9, fontFamily: "monospace" }}>{qrShortCode ? `/q/${qrShortCode}` : "en attente"}</span>
                     </div>
                   </div>
@@ -6351,14 +6351,14 @@
                       <p style={{ color: MUTED, fontSize: 9, margin: 0 }}>👁 Vues</p>
                     </div>
                     <div style={{ background: "rgba(57,255,143,0.06)", border: "1px solid rgba(57,255,143,0.18)", borderRadius: 11, padding: "12px 10px", textAlign: "center" }}>
-                      <p style={{ color: "#39FF8F", fontSize: 24, fontWeight: 700, margin: "0 0 2px", fontFamily: "Fraunces, serif", lineHeight: 1 }}>{pageStats.scans.toLocaleString("fr-FR")}</p>
+                      <p style={{ color: "var(--success)", fontSize: 24, fontWeight: 700, margin: "0 0 2px", fontFamily: "Fraunces, serif", lineHeight: 1 }}>{pageStats.scans.toLocaleString("fr-FR")}</p>
                       <p style={{ color: MUTED, fontSize: 9, margin: 0 }}>📱 Scans</p>
                     </div>
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "7px 14px", background: pageStatus==="published" ? "rgba(57,255,143,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${pageStatus==="published" ? "rgba(57,255,143,0.2)" : "rgba(255,255,255,0.07)"}`, borderRadius: 20 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: pageStatus==="published" ? "#39FF8F" : MUTED, boxShadow: pageStatus==="published" ? "0 0 5px #39FF8F50" : "none" }} />
-                    <span style={{ color: pageStatus==="published" ? "#39FF8F" : MUTED, fontSize: 10, fontWeight: 600 }}>{pageStatus==="published" ? "En ligne" : "Brouillon"}</span>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: pageStatus==="published" ? "var(--success)" : MUTED, boxShadow: pageStatus==="published" ? "0 0 5px var(--success)50" : "none" }} />
+                    <span style={{ color: pageStatus==="published" ? "var(--success)" : MUTED, fontSize: 10, fontWeight: 600 }}>{pageStatus==="published" ? "En ligne" : "Brouillon"}</span>
                     <span style={{ color: MUTED, fontSize: 9 }}>• {blocks.filter(b=>b.visible).length} bloc{blocks.filter(b=>b.visible).length!==1?"s":""}</span>
                   </div>
                 </div>

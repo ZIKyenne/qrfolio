@@ -49,7 +49,7 @@ const EXAMPLES: Example[] = [
     category: "Freelance",
     plan: "Pro",
     blocks: 7,
-    accent: "#38BDF8",
+    accent: "var(--action)",
     icon: "💼",
     tagline: "Portfolio, services & contact",
     tags: ["Portfolio", "Services", "Tarifs", "WhatsApp"],
@@ -66,7 +66,7 @@ const EXAMPLES: Example[] = [
     category: "Coach",
     plan: "Pro",
     blocks: 8,
-    accent: "#39FF8F",
+    accent: "var(--success)",
     icon: "🧘",
     tagline: "Bien-être & accompagnement",
     tags: ["RDV", "Programme", "Témoignages", "Newsletter"],
@@ -132,7 +132,7 @@ const EXAMPLES: Example[] = [
 
 const CATEGORIES: (Category | "Tous")[] = ["Tous","Restaurant","Freelance","Coach","Artiste","Immobilier","Commerce"]
 const PLANS: (Plan | "Tous")[] = ["Tous","Gratuit","Pro","Business"]
-const PLAN_COLOR: Record<Plan,string> = { Gratuit:"#39FF8F", Pro:"#C9A84C", Business:"#A78BFA" }
+const PLAN_COLOR: Record<Plan,string> = { Gratuit:"var(--success)", Pro:"#C9A84C", Business:"#A78BFA" }
 
 // ── Mini QR SVG ───────────────────────────────────────────────────────────────
 function MiniQR({ accent }: { accent: string }) {
@@ -208,7 +208,7 @@ function DesktopPreview({ example }: { example: Example }) {
     }}>
       {/* Barre top */}
       <div style={{ background: "rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "5px 8px", display: "flex", alignItems: "center", gap: 5 }}>
-        {["#FF6B6B","#F97316","#39FF8F"].map((c,i) => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: c, opacity: 0.6 }}/>)}
+        {["var(--danger)","#F97316","var(--success)"].map((c,i) => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: c, opacity: 0.6 }}/>)}
         <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.07)", borderRadius: 2, margin: "0 8px" }}/>
       </div>
       {/* Contenu */}
@@ -460,7 +460,7 @@ export default function ExamplesPage() {
           <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:64,alignItems:"center" }} className="minutes-grid">
             <style>{`@media(max-width:800px){.minutes-grid{grid-template-columns:1fr!important;gap:40px!important;text-align:center!important;} .minutes-steps{align-items:center!important;} .minutes-grid .step-item{text-align:left;}}`}</style>
             <div>
-              <div style={{ display:"inline-flex",alignItems:"center",gap:7,background:"rgba(57,255,143,0.08)",border:"1px solid rgba(57,255,143,0.2)",borderRadius:100,padding:"5px 14px",marginBottom:20,color:"#39FF8F",fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase" }}>
+              <div style={{ display:"inline-flex",alignItems:"center",gap:7,background:"rgba(57,255,143,0.08)",border:"1px solid rgba(57,255,143,0.2)",borderRadius:100,padding:"5px 14px",marginBottom:20,color:"var(--success)",fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase" }}>
                 ⚡ 5 minutes chrono
               </div>
               <h2 style={{ fontFamily:"Fraunces,serif",fontSize:"clamp(26px,3.5vw,44px)",color:INK,fontWeight:700,lineHeight:1.1,letterSpacing:"-0.02em",margin:"0 0 18px" }}>

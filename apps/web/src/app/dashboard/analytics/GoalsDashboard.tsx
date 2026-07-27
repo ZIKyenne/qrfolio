@@ -42,10 +42,10 @@ const GOAL_TYPES: Record<string, {
   calendly:       { label: "Réservation",      emoji: "📅", color: "#818CF8", icon: <Calendar size={14} />,     matchHint: "calendly.com",            autoMatch: "calendly.com" },
   phone:          { label: "Appel téléphone",  emoji: "📞", color: "#4ADE80", icon: <Phone size={14} />,        matchHint: "tel:",                    autoMatch: "tel:" },
   email:          { label: "Clic Email",       emoji: "📧", color: "#A78BFA", icon: <Mail size={14} />,         matchHint: "mailto:",                 autoMatch: "mailto:" },
-  stripe_product: { label: "Achat produit",    emoji: "🛍️", color: "#39FF8F", icon: <ShoppingBag size={14} />, matchHint: "stripe.com ou buy.",      autoMatch: "stripe.com" },
+  stripe_product: { label: "Achat produit",    emoji: "🛍️", color: "var(--success)", icon: <ShoppingBag size={14} />, matchHint: "stripe.com ou buy.",      autoMatch: "stripe.com" },
   cta_button:     { label: "Bouton CTA",       emoji: "🔘", color: "var(--accent)", icon: <MousePointerClick size={14} />, matchHint: "URL ou laisser vide", autoMatch: "" },
-  contact_form:   { label: "Formulaire contact",emoji: "📬", color: "#38BDF8", icon: <Mail size={14} />,        matchHint: "contact",                 autoMatch: "contact" },
-  custom:         { label: "Personnalisé",     emoji: "⚡", color: "#FF6B6B", icon: <Zap size={14} />,          matchHint: "URL ou mot-clé",          autoMatch: "" },
+  contact_form:   { label: "Formulaire contact",emoji: "📬", color: "var(--action)", icon: <Mail size={14} />,        matchHint: "contact",                 autoMatch: "contact" },
+  custom:         { label: "Personnalisé",     emoji: "⚡", color: "var(--danger)", icon: <Zap size={14} />,          matchHint: "URL ou mot-clé",          autoMatch: "" },
 }
 
 const PERIODS = [{ v: 7, l: "7j" }, { v: 30, l: "30j" }, { v: 90, l: "90j" }]
@@ -210,8 +210,8 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
           {[
             { icon: <TrendingUp size={14} color={G} />,        label: "Conversions totales", value: totalConv.toLocaleString() },
             { icon: <Target size={14} color="#818CF8" />,      label: "Objectifs actifs",   value: String(goals.length) },
-            { icon: <CheckCircle size={14} color="#39FF8F" />, label: "En bonne voie",      value: String(goalsOnTrack) },
-            { icon: <Zap size={14} color="#FF6B6B" />,         label: "Meilleur objectif",  value: bestGoal?.name ?? "—" },
+            { icon: <CheckCircle size={14} color="var(--success)" />, label: "En bonne voie",      value: String(goalsOnTrack) },
+            { icon: <Zap size={14} color="var(--danger)" />,         label: "Meilleur objectif",  value: bestGoal?.name ?? "—" },
           ].map((k, i) => (
             <div key={i} style={{ background: BG, border: "1px solid color-mix(in srgb, var(--accent) 10%, transparent)", borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
               {k.icon}
@@ -297,7 +297,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
                 <input type="color" value={fColor} onChange={e => setFColor(e.target.value)}
                   style={{ width: 36, height: 28, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, background: "none", cursor: "pointer" }} />
                 <div style={{ display: "flex", gap: 5 }}>
-                  {["var(--accent)","#39FF8F","#818CF8","#FF6B6B","#38BDF8","#25D366"].map(c => (
+                  {["var(--accent)","var(--success)","#818CF8","var(--danger)","var(--action)","#25D366"].map(c => (
                     <button key={c} type="button" onClick={() => setFColor(c)}
                       style={{ width: 18, height: 18, borderRadius: "50%", background: c, border: fColor === c ? "2px solid white" : "2px solid transparent", cursor: "pointer" }} />
                   ))}
@@ -354,7 +354,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, flexWrap: "wrap" }}>
                         <h3 style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: 0 }}>{goal.name}</h3>
                         <span style={{ background: `${goal.color}15`, border: `1px solid ${goal.color}30`, borderRadius: 6, padding: "2px 8px", fontSize: 10, color: goal.color, fontWeight: 600 }}>{cfg.label}</span>
-                        {onTrack && <span style={{ background: "rgba(57,255,143,0.1)", borderRadius: 6, padding: "2px 8px", fontSize: 10, color: "#39FF8F", fontWeight: 600 }}>✓ En bonne voie</span>}
+                        {onTrack && <span style={{ background: "rgba(57,255,143,0.1)", borderRadius: 6, padding: "2px 8px", fontSize: 10, color: "var(--success)", fontWeight: 600 }}>✓ En bonne voie</span>}
                       </div>
                       {goal.description && <p style={{ color: MUTED, fontSize: 11, margin: "0 0 2px" }}>{goal.description}</p>}
                       <p style={{ color: MUTED, fontSize: 10, margin: 0 }}>

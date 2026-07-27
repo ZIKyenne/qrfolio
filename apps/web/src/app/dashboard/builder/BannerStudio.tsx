@@ -91,7 +91,7 @@ function Segmented({ options, value, onChange }: { options: { key: string; label
 }
 
 // ── Color Studio (lite) : HEX + pipette + palette thème + couleurs récentes ──
-const PALETTE = ["#C9A84C", "#39FF8F", "#F5F0E8", "#ffffff", "#080808", "#0b0b0f", "#EC4899", "#9146FF", "#38BDF8", "#EF4444", "#FBBF24", "#1DB954"]
+const PALETTE = ["#C9A84C", "var(--success)", "#F5F0E8", "#ffffff", "#080808", "#0b0b0f", "#EC4899", "#9146FF", "var(--action)", "#EF4444", "#FBBF24", "#1DB954"]
 function ColorStudio({ label, value, fallback, onChange }: { label: string; value?: string; fallback: string; onChange: (v: string) => void }) {
   const [recent, setRecent] = useState<string[]>([])
   const [open, setOpen] = useState(false)
@@ -280,10 +280,10 @@ export default function BannerStudio({ content, onChange }: { content: Record<st
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
             <span style={{ color: MUTED, fontSize: 10, fontWeight: 600 }}>Qualité visuelle</span>
-            <span style={{ color: score >= 80 ? "#39FF8F" : score >= 55 ? G : "#FBBF24", fontSize: 11, fontWeight: 700 }}>{score}% · {"★".repeat(stars)}{"☆".repeat(5 - stars)}</span>
+            <span style={{ color: score >= 80 ? "var(--success)" : score >= 55 ? G : "#FBBF24", fontSize: 11, fontWeight: 700 }}>{score}% · {"★".repeat(stars)}{"☆".repeat(5 - stars)}</span>
           </div>
           <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${score}%`, background: `linear-gradient(90deg,${G},#39FF8F)`, borderRadius: 3, transition: "width .3s ease" }} />
+            <div style={{ height: "100%", width: `${score}%`, background: `linear-gradient(90deg,${G},var(--success))`, borderRadius: 3, transition: "width .3s ease" }} />
           </div>
           {tips[0] && <p style={{ color: MUTED, fontSize: 10, margin: "7px 0 0", display: "flex", gap: 5 }}><span style={{ color: G }}>💡</span>{tips[0]}</p>}
         </div>
@@ -292,7 +292,7 @@ export default function BannerStudio({ content, onChange }: { content: Record<st
           <button onClick={copyStyle} title="Copier le style de cette bannière" style={styleBtn}>Copier</button>
           <button onClick={pasteStyle} disabled={!hasClip} title={hasClip ? "Appliquer le style copié" : "Copiez d'abord un style"} style={{ ...styleBtn, opacity: hasClip ? 1 : 0.4, cursor: hasClip ? "pointer" : "not-allowed" }}>Coller</button>
           <button onClick={resetStyle} title="Réinitialiser le style" style={{ ...styleBtn, color: MUTED }}>Réinitialiser</button>
-          {flash && <span style={{ marginLeft: "auto", color: "#39FF8F", fontSize: 10, fontWeight: 700 }}>✓ {flash}</span>}
+          {flash && <span style={{ marginLeft: "auto", color: "var(--success)", fontSize: 10, fontWeight: 700 }}>✓ {flash}</span>}
         </div>
       </div>
 

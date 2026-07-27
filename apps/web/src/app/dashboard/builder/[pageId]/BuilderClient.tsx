@@ -218,7 +218,7 @@ export default function BuilderClient({ page, initialBlocks }: BuilderClientProp
         />
 
         {/* Save status */}
-        <div style={{ fontSize: '12px', color: saveStatus === 'saved' ? '#39FF8F' : saveStatus === 'saving' ? '#C9A84C' : '#A8A190' }}>
+        <div style={{ fontSize: '12px', color: saveStatus === 'saved' ? 'var(--success)' : saveStatus === 'saving' ? '#C9A84C' : '#A8A190' }}>
           {saveStatus === 'saved' ? '✓ Sauvegardé' : saveStatus === 'saving' ? '⏳ Sauvegarde...' : '● Modifications non sauvegardées'}
         </div>
 
@@ -333,7 +333,7 @@ export default function BuilderClient({ page, initialBlocks }: BuilderClientProp
                           <span style={{ display: 'block', fontSize: '12px', color: '#F5F0E8', fontFamily: 'DM Sans, sans-serif' }}>{t.name}</span>
                           <span style={{ display: 'block', fontSize: '10px', color: '#8A8478' }}>{t.font_display}</span>
                         </span>
-                        {active && <span style={{ color: '#39FF8F', fontSize: '13px' }}>✓</span>}
+                        {active && <span style={{ color: 'var(--success)', fontSize: '13px' }}>✓</span>}
                       </button>
                     )
                   })}
@@ -354,7 +354,7 @@ export default function BuilderClient({ page, initialBlocks }: BuilderClientProp
           <div style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: '#8A8478', marginBottom: '12px' }}>
             {blocks.length} bloc{blocks.length > 1 ? 's' : ''}
             {page.status === 'published' && (
-              <a href={'/' + page.slug} target="_blank" style={{ marginLeft: '12px', color: '#39FF8F', textDecoration: 'none' }}>
+              <a href={'/' + page.slug} target="_blank" style={{ marginLeft: '12px', color: 'var(--success)', textDecoration: 'none' }}>
                 ↗ Voir la page live
               </a>
             )}

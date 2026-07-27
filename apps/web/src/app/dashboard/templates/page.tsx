@@ -34,7 +34,7 @@ const SETUP_TIME: Record<string, string> = {
 // ── Popularité éditoriale (déterministe par id : stable, ~1/3 "populaire", ~1/4 "tendance") ──
 function popTier(id: string): { label: string; emoji: string; color: string } | null {
   let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  if (h % 3 === 0) return { label: "Populaire", emoji: "🔥", color: "#FF6B6B" }
+  if (h % 3 === 0) return { label: "Populaire", emoji: "🔥", color: "var(--danger)" }
   if (h % 4 === 0) return { label: "Tendance", emoji: "✦", color: "#7B61FF" }
   return null
 }
@@ -51,10 +51,10 @@ const BUSINESS_CATEGORIES: Category[] = [
   { id: "Bar",         label: "Bar",         emoji: "🍸", color: "#F97316" },
   { id: "Cafe",        label: "Café",        emoji: "☕", color: "#92400E" },
   { id: "Freelance",   label: "Freelance",   emoji: "💼", color: "var(--accent)" },
-  { id: "Consultant",  label: "Consultant",  emoji: "🎯", color: "#38BDF8" },
+  { id: "Consultant",  label: "Consultant",  emoji: "🎯", color: "var(--action)" },
   { id: "Coach",       label: "Coach",       emoji: "🧘", color: "#4ADE80" },
   { id: "Agence",      label: "Agence",      emoji: "🏢", color: "#A78BFA" },
-  { id: "Influenceur", label: "Influenceur", emoji: "📱", color: "#FF6B6B" },
+  { id: "Influenceur", label: "Influenceur", emoji: "📱", color: "var(--danger)" },
   { id: "Musicien",    label: "Musicien",    emoji: "🎵", color: "#C084FC" },
   { id: "Photographe", label: "Photographe", emoji: "📷", color: "#67E8F9" },
   { id: "Immobilier",  label: "Immobilier",  emoji: "🏠", color: "#34D399" },
@@ -86,15 +86,15 @@ const CATEGORY_MAP: Record<string, string[]> = {
 }
 
 const TEMPLATES: any[] = [
-  { id: "freelance", name: "Freelance Pro", category: "Business", plan: "free", description: "Portfolio, services, tarifs, prise de contact", emoji: "💼", color: "var(--accent)", accent: "#39FF8F", bg: "#080808", surface: "#111009", tags: ["Services", "Tarifs", "Contact", "Calendly"] },
+  { id: "freelance", name: "Freelance Pro", category: "Business", plan: "free", description: "Portfolio, services, tarifs, prise de contact", emoji: "💼", color: "var(--accent)", accent: "var(--success)", bg: "#080808", surface: "#111009", tags: ["Services", "Tarifs", "Contact", "Calendly"] },
   { id: "restaurant", name: "Restaurant & Bar", category: "Food", plan: "free", description: "Menu, horaires, reservation, reseaux", emoji: "🍽️", color: "#EF4444", accent: "#F97316", bg: "#0D0505", surface: "#1A0A0A", tags: ["Menu", "Horaires", "Carte", "Reservation"] },
   { id: "artiste", name: "Artiste & Musicien", category: "Creatif", plan: "free", description: "Bio, musique, concerts, reseaux sociaux", emoji: "🎵", color: "#A78BFA", accent: "#F472B6", bg: "#0A0510", surface: "#130A20", tags: ["Spotify", "Concerts", "Reseaux", "Bio"] },
   { id: "coach", name: "Coach & Therapeute", category: "Bien-etre", plan: "free", description: "Presentation, methode, temoignages, RDV", emoji: "🧘", color: "#4ADE80", accent: "#86EFAC", bg: "#040D06", surface: "#081A0C", tags: ["Services", "Temoignages", "Tarifs", "RDV"] },
-  { id: "createur", name: "Createur de contenu", category: "Creatif", plan: "free", description: "Liens reseaux, partenariats, stats", emoji: "📱", color: "#FF6B6B", accent: "#FFD93D", bg: "#080810", surface: "#10101E", tags: ["Reseaux", "Stats", "Partenariats", "Feed"] },
+  { id: "createur", name: "Createur de contenu", category: "Creatif", plan: "free", description: "Liens reseaux, partenariats, stats", emoji: "📱", color: "var(--danger)", accent: "#FFD93D", bg: "#080810", surface: "#10101E", tags: ["Reseaux", "Stats", "Partenariats", "Feed"] },
   { id: "event", name: "Evenement & Soiree", category: "Event", plan: "free", description: "Countdown, programme, billetterie", emoji: "🎉", color: "#EC4899", accent: "#A855F7", bg: "#05020D", surface: "#0D0620", tags: ["Countdown", "Programme", "Billets", "Lieu"] },
   { id: "ecommerce", name: "Boutique E-commerce", category: "Commerce", plan: "starter", description: "Produits phares, promos, avis, boutique", emoji: "🛍️", color: "#F97316", accent: "#FCD34D", bg: "#0D0700", surface: "#1A1000", tags: ["Produits", "Promo", "Avis", "Boutique"], highlight: "Catalogue produits + promo" },
   { id: "coiffeur", name: "Salon Beaute", category: "Beaute", plan: "starter", description: "Services, galerie, avis, prise de RDV", emoji: "✂️", color: "#F472B6", accent: "#FB7185", bg: "#0D0508", surface: "#1A0812", tags: ["Services", "Galerie", "Avis", "RDV"], highlight: "Galerie + reservations en ligne" },
-  { id: "agence", name: "Agence & Studio", category: "Business", plan: "starter", description: "Portfolio, services, tarifs, contact pro", emoji: "🏢", color: "#38BDF8", accent: "#818CF8", bg: "#020C18", surface: "#041828", tags: ["Portfolio", "Services", "Tarifs", "Contact"], highlight: "Portfolio + tunnel de conversion" },
+  { id: "agence", name: "Agence & Studio", category: "Business", plan: "starter", description: "Portfolio, services, tarifs, contact pro", emoji: "🏢", color: "var(--action)", accent: "#818CF8", bg: "#020C18", surface: "#041828", tags: ["Portfolio", "Services", "Tarifs", "Contact"], highlight: "Portfolio + tunnel de conversion" },
   { id: "medecin", name: "Medecin & Praticien", category: "Sante", plan: "starter", description: "Cabinet, specialites, horaires, RDV", emoji: "🏥", color: "#34D399", accent: "#6EE7B7", bg: "#020D08", surface: "#041A10", tags: ["Cabinet", "Specialites", "Horaires", "RDV"], highlight: "Integration Doctolib + infos cabinet" },
   { id: "vente_produits", name: "Vente Produits Digitaux", category: "Commerce", plan: "pro", description: "Formations, ebooks, templates, acces membres", emoji: "📦", color: "#A78BFA", accent: "#F472B6", bg: "#060410", surface: "#0E0820", tags: ["Formations", "Produits", "Temoignages", "Acces"], highlight: "Tunnel de vente complet" },
   { id: "immobilier", name: "Agent Immobilier", category: "Immobilier", plan: "pro", description: "Biens, expertises, contact, avis clients", emoji: "🏠", color: "#FBBF24", accent: "#F59E0B", bg: "#0A0800", surface: "#171200", tags: ["Biens", "Expertise", "Avis", "Contact"], highlight: "Vitrine biens + avis Google" },
@@ -105,12 +105,12 @@ const TEMPLATES: any[] = [
 
 const PLAN_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
   free:     { label: "Gratuit",  color: "#A8A190", icon: "✦"  },
-  starter:  { label: "Starter",  color: "#38BDF8", icon: "⚡" },
+  starter:  { label: "Starter",  color: "var(--action)", icon: "⚡" },
   pro:      { label: "Pro",      color: "var(--accent)", icon: "🔥" },
-  business: { label: "Business", color: "#39FF8F", icon: "👑" },
+  business: { label: "Business", color: "var(--success)", icon: "👑" },
 }
 const FAV_KEY = "qrfolio_fav_templates"
-const PLAN_FILTERS: [string, string, string][] = [["all", "Tous les plans", "#A8A190"], ["free", "Gratuit ✦", "#A8A190"], ["starter", "Starter ⚡", "#38BDF8"], ["pro", "Pro 🔥", "var(--accent)"]]
+const PLAN_FILTERS: [string, string, string][] = [["all", "Tous les plans", "#A8A190"], ["free", "Gratuit ✦", "#A8A190"], ["starter", "Starter ⚡", "var(--action)"], ["pro", "Pro 🔥", "var(--accent)"]]
 const STARTER_TEMPLATE_ID = "freelance" // modèle recommandé par défaut (nouvel utilisateur sans page)
 
 export default function TemplatesPage() {
@@ -208,7 +208,7 @@ export default function TemplatesPage() {
   // Thèmes complets par template (utilise les PRESET_THEMES officiels)
   const TEMPLATE_THEMES: Record<string, any> = {
     ...SHARED_THEMES,
-    freelance:      { name:"Midnight Gold",bg:"#080808",surface:"#111009",primary:"var(--accent)",accent:"#39FF8F",text:"#F5F0E8",muted:"#A8A190",fontDisplay:"Fraunces",fontBody:"DM Sans",bgMode:"solid",effect_glow:true,glow_color:"var(--accent)",glow_intensity:20,glow_size:350 },
+    freelance:      { name:"Midnight Gold",bg:"#080808",surface:"#111009",primary:"var(--accent)",accent:"var(--success)",text:"#F5F0E8",muted:"#A8A190",fontDisplay:"Fraunces",fontBody:"DM Sans",bgMode:"solid",effect_glow:true,glow_color:"var(--accent)",glow_intensity:20,glow_size:350 },
     restaurant:     { name:"Sunset Fire",bg:"#120300",surface:"#200800",primary:"#FF6B00",accent:"#FF4500",text:"#FFF5EE",muted:"#9A5020",fontDisplay:"Playfair Display",fontBody:"DM Sans",bgMode:"gradient",bgGradient:"linear-gradient(160deg,#120300,#1F0600)",effect_vignette:true,vignette_intensity:60 },
     artiste:        { name:"Velvet Noir",bg:"#070508",surface:"#0F0A12",primary:"#C4A6E8",accent:"#F472B6",text:"#F5F0FF",muted:"#7A6A9A",fontDisplay:"Fraunces",fontBody:"DM Sans",bgMode:"gradient",bgGradient:"linear-gradient(160deg,#070508,#100818)",effect_glow:true,glow_color:"#A78BFA",glow_intensity:25,glow_size:350 },
     coach:          { name:"Zen Wellness",bg:"#F5FFF5",surface:"#EAFAEA",primary:"#059669",accent:"#34D399",text:"#064E3B",muted:"#407A60",fontDisplay:"DM Sans",fontBody:"DM Sans",bgMode:"solid" },
@@ -701,7 +701,7 @@ function NamingModal({ template, blockCount, onClose, onCreate }: {
           <input value={slug} onChange={e => { setSlugTouched(true); setSlug(slugify(e.target.value)) }} placeholder="le-bistrot-parisien" style={{ ...inputStyle, fontFamily: "monospace" }} />
           <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "5px 0 0", minHeight: 16 }}>
             {slugStatus === "checking" && <span style={{ color: MUTED, fontSize: 10 }}>Verification…</span>}
-            {slugStatus === "available" && <span style={{ color: "#39FF8F", fontSize: 10, fontWeight: 600 }}>✓ Disponible</span>}
+            {slugStatus === "available" && <span style={{ color: "var(--success)", fontSize: 10, fontWeight: 600 }}>✓ Disponible</span>}
             {slugStatus === "taken" && <span style={{ color: "#F87171", fontSize: 10, fontWeight: 600 }}>✗ Deja pris</span>}
             {slugStatus === "reserved" && <span style={{ color: "#F87171", fontSize: 10, fontWeight: 600 }}>✗ Slug reserve</span>}
             {slugStatus === "invalid" && <span style={{ color: "#FBBF24", fontSize: 10, fontWeight: 600 }}>2-60 caracteres, minuscules, chiffres, tirets</span>}

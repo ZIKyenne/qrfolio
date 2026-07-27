@@ -26,8 +26,8 @@ export function useToast(): ToastApi {
 let seq = 0
 
 const STYLES: Record<ToastKind, { bar: string; icon: string; ico: string }> = {
-  success: { bar: "#39FF8F", ico: "✓", icon: "rgba(57,255,143,0.14)" },
-  error:   { bar: "#FF6B6B", ico: "!", icon: "rgba(255,107,107,0.14)" },
+  success: { bar: "var(--success)", ico: "✓", icon: "rgba(57,255,143,0.14)" },
+  error:   { bar: "var(--danger)", ico: "!", icon: "rgba(255,107,107,0.14)" },
   info:    { bar: "#C9A84C", ico: "i", icon: "rgba(201,168,76,0.14)" },
 }
 

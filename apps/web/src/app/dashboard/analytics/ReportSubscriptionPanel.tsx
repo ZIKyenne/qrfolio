@@ -31,7 +31,7 @@ const FREQ_CONFIG = {
     desc:    "Le 1er de chaque mois — bilan du mois",
     emoji:   "📊",
     detail:  "Tendances · Top pages · Top liens · Évolution",
-    color:   "#39FF8F",
+    color:   "var(--success)",
   },
 } as const
 
@@ -196,7 +196,7 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
                         {busy ? (
                           <Loader size={12} color={on ? "#080808" : MUTED} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", animation: "spin 0.8s linear infinite" }} />
                         ) : ok ? (
-                          <CheckCircle size={14} color={on ? "#080808" : "#39FF8F"} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+                          <CheckCircle size={14} color={on ? "#080808" : "var(--success)"} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
                         ) : (
                           <div style={{ width: 16, height: 16, borderRadius: "50%", background: on ? "#080808" : "rgba(255,255,255,0.3)", position: "absolute", top: "50%", transform: "translateY(-50%)", transition: "left 0.2s", left: on ? "calc(100% - 20px)" : 4 }} />
                         )}

@@ -39,7 +39,7 @@ export default function AcceptInvitePage() {
         )}
         {status === "ok" && (
           <>
-            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(57,255,143,0.14)", border: "1px solid rgba(57,255,143,0.4)", display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}><Check size={26} color="#39FF8F" /></div>
+            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(57,255,143,0.14)", border: "1px solid rgba(57,255,143,0.4)", display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}><Check size={26} color="var(--success)" /></div>
             <h1 style={{ fontFamily: "Fraunces, serif", fontSize: 23, color: "#F5F0E8", margin: "18px 0 8px" }}>Bienvenue dans l'équipe !</h1>
             <p style={{ color: "#8A8478", fontSize: 14, margin: 0 }}>Vous avez désormais accès aux pages et QR codes partagés.</p>
             <Link href="/dashboard" style={btn}><Users size={16} /> Aller au tableau de bord</Link>
@@ -55,7 +55,7 @@ export default function AcceptInvitePage() {
         )}
         {status === "error" && (
           <>
-            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,107,107,0.12)", border: "1px solid rgba(255,107,107,0.35)", display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}><AlertTriangle size={24} color="#FF6B6B" /></div>
+            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,107,107,0.12)", border: "1px solid rgba(255,107,107,0.35)", display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}><AlertTriangle size={24} color="var(--danger)" /></div>
             <h1 style={{ fontFamily: "Fraunces, serif", fontSize: 22, color: "#F5F0E8", margin: "18px 0 8px" }}>Invitation indisponible</h1>
             <p style={{ color: "#8A8478", fontSize: 14, margin: 0 }}>{msg}</p>
             <Link href="/dashboard" style={btn}>Retour au tableau de bord</Link>

@@ -3,7 +3,7 @@
 import type { FunnelStep } from "./analyticsAgg"
 
 const GOLD = "var(--accent)"
-const NEON = "#39FF8F"
+const NEON = "var(--success)"
 const MUTED = "#A8A190"
 
 type Props = { steps: FunnelStep[]; conversionRate: number; hasEngagementData: boolean }
@@ -12,7 +12,7 @@ type Props = { steps: FunnelStep[]; conversionRate: number; hasEngagementData: b
 // Montre où les visiteurs décrochent, pour savoir quoi améliorer (accroche, longueur, CTA).
 export default function ConversionFunnelPanel({ steps, conversionRate, hasEngagementData }: Props) {
   const views = steps[0]?.count || 0
-  const COLORS = [GOLD, "#38BDF8", NEON]
+  const COLORS = [GOLD, "var(--action)", NEON]
 
   return (
     <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 22px" }}>

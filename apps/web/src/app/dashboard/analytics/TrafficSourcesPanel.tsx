@@ -29,7 +29,7 @@ const SOURCE_CONFIG: Record<string, {
   icon: React.ReactNode
 }> = {
   qr_scan:   { label: "QR Scan",    emoji: "◼",  color: "var(--accent)", icon: <QrCode size={13} /> },
-  direct:    { label: "Direct",     emoji: "🔗", color: "#39FF8F", icon: <Globe size={13} /> },
+  direct:    { label: "Direct",     emoji: "🔗", color: "var(--success)", icon: <Globe size={13} /> },
   instagram: { label: "Instagram",  emoji: "📸", color: "#E1306C", icon: <Instagram size={13} /> },
   tiktok:    { label: "TikTok",     emoji: "🎵", color: "#FF0050", icon: <span style={{ fontSize: 12, fontWeight: 700 }}>TT</span> },
   facebook:  { label: "Facebook",   emoji: "👤", color: "#1877F2", icon: <Facebook size={13} /> },

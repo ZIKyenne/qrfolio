@@ -105,7 +105,7 @@ export default function UpgradePage() {
           <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap", marginBottom: 26 }}>
             {["Essai gratuit 7 jours", "Sans carte pour le plan Gratuit", "Annulation en 1 clic"].map((r, i) => (
               <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUTED, fontSize: 12.5 }}>
-                <Check size={13} color="#39FF8F" /> {r}
+                <Check size={13} color="var(--success)" /> {r}
               </span>
             ))}
           </div>
@@ -117,7 +117,7 @@ export default function UpgradePage() {
               <div style={{ position: "absolute", top: 3, left: annual ? 23 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
             </button>
             <span style={{ color: annual ? "#F5F0E8" : MUTED, fontSize: 14, fontWeight: annual ? 600 : 400 }}>Annuel</span>
-            {annual && <span style={{ background: "rgba(57,255,143,0.15)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 10, padding: "2px 8px", fontSize: 11, color: "#39FF8F", fontWeight: 700 }}>-20%</span>}
+            {annual && <span style={{ background: "rgba(57,255,143,0.15)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 10, padding: "2px 8px", fontSize: 11, color: "var(--success)", fontWeight: 700 }}>-20%</span>}
           </div>
         </div>
 
@@ -136,7 +136,7 @@ export default function UpgradePage() {
                   <div style={{ position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)", background: pc, borderRadius: 20, padding: "4px 14px", fontSize: 10, fontWeight: 800, color: "#080808", letterSpacing: 1, whiteSpace: "nowrap", zIndex: 3, boxShadow: "0 4px 14px rgba(0,0,0,0.35)" }}>{plan.badge}</div>
                 )}
                 {isCurrentPlan && (
-                  <div style={{ position: "absolute", top: 16, right: 16, background: "rgba(57,255,143,0.15)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 10, fontWeight: 700, color: "#39FF8F" }}>ACTUEL</div>
+                  <div style={{ position: "absolute", top: 16, right: 16, background: "rgba(57,255,143,0.15)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 10, fontWeight: 700, color: "var(--success)" }}>ACTUEL</div>
                 )}
 
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -153,7 +153,7 @@ export default function UpgradePage() {
                 </div>
 
                 {annual && price !== "0" && (
-                  <p style={{ color: "#39FF8F", fontSize: 11, margin: "-14px 0 16px", fontWeight: 600 }}>
+                  <p style={{ color: "var(--success)", fontSize: 11, margin: "-14px 0 16px", fontWeight: 600 }}>
                     Soit {(plan.rawAnnual * 12).toLocaleString("fr-FR", { maximumFractionDigits: 0 })}€/an — économisez {((plan.rawMonthly - plan.rawAnnual) * 12).toLocaleString("fr-FR", { maximumFractionDigits: 0 })}€
                   </p>
                 )}
@@ -173,7 +173,7 @@ export default function UpgradePage() {
                 </div>
 
                 <button onClick={() => handleUpgrade(plan)} disabled={loading === plan.id || isCurrentPlan || plan.ctaDisabled}
-                  style={{ width: "100%", padding: "13px 20px", borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: isCurrentPlan || plan.ctaDisabled ? "default" : "pointer", background: isCurrentPlan ? "rgba(57,255,143,0.08)" : plan.highlight ? "linear-gradient(90deg,#38BDF8,#818CF8)" : pc + "15", color: isCurrentPlan ? "#39FF8F" : plan.highlight ? "#080808" : pc, border: isCurrentPlan ? "1px solid rgba(57,255,143,0.2)" : plan.highlight ? "none" : "1px solid " + pc + "30", transition: "all 0.2s", fontFamily: "DM Sans, sans-serif" }}>
+                  style={{ width: "100%", padding: "13px 20px", borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: isCurrentPlan || plan.ctaDisabled ? "default" : "pointer", background: isCurrentPlan ? "rgba(57,255,143,0.08)" : plan.highlight ? "linear-gradient(90deg,var(--action),#818CF8)" : pc + "15", color: isCurrentPlan ? "var(--success)" : plan.highlight ? "#080808" : pc, border: isCurrentPlan ? "1px solid rgba(57,255,143,0.2)" : plan.highlight ? "none" : "1px solid " + pc + "30", transition: "all 0.2s", fontFamily: "DM Sans, sans-serif" }}>
                   {loading === plan.id ? "Chargement..." : isCurrentPlan ? "Plan actuel" : plan.cta}
                 </button>
               </div>
@@ -195,7 +195,7 @@ export default function UpgradePage() {
               <div style={{ padding: "14px 20px" }}><span style={{ color: MUTED, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Fonctionnalite</span></div>
               {["Gratuit", "Starter", "Pro", "Business"].map((h, i) => (
                 <div key={i} style={{ padding: "14px 12px", textAlign: "center" }}>
-                  <span style={{ color: ["#8A8478","#38BDF8","#C9A84C","#39FF8F"][i], fontSize: 12, fontWeight: 700 }}>{h}</span>
+                  <span style={{ color: ["#8A8478","var(--action)","#C9A84C","var(--success)"][i], fontSize: 12, fontWeight: 700 }}>{h}</span>
                 </div>
               ))}
             </div>
@@ -204,7 +204,7 @@ export default function UpgradePage() {
                 <div style={{ padding: "11px 20px" }}><span style={{ color: "#F5F0E8", fontSize: 13 }}>{row.feature}</span></div>
                 {[row.free, row.starter, row.pro, row.business].map((val, j) => (
                   <div key={j} style={{ padding: "11px 12px", textAlign: "center" }}>
-                    <span style={{ color: val === "—" ? "rgba(255,255,255,0.15)" : val === "✓" ? ["#8A8478","#38BDF8","#C9A84C","#39FF8F"][j] : "#F5F0E8", fontSize: 12 }}>{val}</span>
+                    <span style={{ color: val === "—" ? "rgba(255,255,255,0.15)" : val === "✓" ? ["#8A8478","var(--action)","#C9A84C","var(--success)"][j] : "#F5F0E8", fontSize: 12 }}>{val}</span>
                   </div>
                 ))}
               </div>

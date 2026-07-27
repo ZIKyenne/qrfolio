@@ -22,14 +22,14 @@ interface Props {
 const DEVICE_CFG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   mobile:  { label: "Mobile",  icon: <Smartphone size={14} />, color: "var(--accent)" },
   tablet:  { label: "Tablette",icon: <Tablet size={14} />,     color: "#7B61FF" },
-  desktop: { label: "Desktop", icon: <Monitor size={14} />,    color: "#39FF8F" },
+  desktop: { label: "Desktop", icon: <Monitor size={14} />,    color: "var(--success)" },
   unknown: { label: "Inconnu", icon: <Cpu size={14} />,        color: "#A8A190" },
 }
 
 const OS_COLORS: Record<string, string> = {
   ios:       "var(--accent)",
-  android:   "#39FF8F",
-  windows:   "#38BDF8",
+  android:   "var(--success)",
+  windows:   "var(--action)",
   macos:     "#A78BFA",
   linux:     "#F97316",
   other:     "#A8A190",
@@ -37,8 +37,8 @@ const OS_COLORS: Record<string, string> = {
 
 const BROWSER_COLORS: Record<string, string> = {
   chrome:  "#F97316",
-  safari:  "#38BDF8",
-  firefox: "#FF6B6B",
+  safari:  "var(--action)",
+  firefox: "var(--danger)",
   edge:    "#4ADE80",
   samsung: "var(--accent)",
   other:   "#A8A190",

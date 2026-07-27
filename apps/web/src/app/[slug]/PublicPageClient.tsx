@@ -151,7 +151,7 @@ function CopyButton({ value, label, copiedLabel = "Copié", track, style }: { va
   const onClick = async () => {
     try { await navigator.clipboard?.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1800); track?.() } catch {}
   }
-  return <button onClick={onClick} aria-live="polite" style={{ ...style, ...(copied ? { color: "#39FF8F", borderColor: "rgba(57,255,143,0.4)" } : null) }}>{copied ? `✓ ${copiedLabel}` : label}</button>
+  return <button onClick={onClick} aria-live="polite" style={{ ...style, ...(copied ? { color: "var(--success)", borderColor: "rgba(57,255,143,0.4)" } : null) }}>{copied ? `✓ ${copiedLabel}` : label}</button>
 }
 
 // ── Bouton Partager : partage natif (mobile) ou popover réseaux + copie (desktop) ─
@@ -187,7 +187,7 @@ function ShareButton({ pageId, blockId, style, inner }: { pageId: string; blockI
                 <span style={{ color: "#F5F0E8", fontSize: 9, fontWeight: 600 }}>{tgt.label}</span>
               </a>
             ))}
-            <button onClick={copy} style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px", borderRadius: 9, border: "none", cursor: "pointer", background: copied ? "rgba(57,255,143,0.14)" : "rgba(201,168,76,0.12)", color: copied ? "#39FF8F" : "#C9A84C", fontSize: 11, fontWeight: 700 }}>
+            <button onClick={copy} style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px", borderRadius: 9, border: "none", cursor: "pointer", background: copied ? "rgba(57,255,143,0.14)" : "rgba(201,168,76,0.12)", color: copied ? "var(--success)" : "#C9A84C", fontSize: 11, fontWeight: 700 }}>
               {copied ? "✓ Lien copié" : "🔗 Copier le lien"}
             </button>
           </div>
@@ -462,10 +462,10 @@ function RsvpPublic({ block, pageId, TEXT, MUTED }: { block: Block; pageId: stri
       <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 4px" }}>{c.title || "Serez-vous présent ?"}</p>
       {c.description && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 14px" }}>{c.description}</p>}
       {choice ? (
-        <div style={{ background: "rgba(57,255,143,0.08)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 11, padding: "14px", textAlign: "center", color: "#39FF8F", fontSize: 13, fontWeight: 700 }}>✅ Merci, votre réponse est enregistrée !</div>
+        <div style={{ background: "rgba(57,255,143,0.08)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 11, padding: "14px", textAlign: "center", color: "var(--success)", fontSize: 13, fontWeight: 700 }}>✅ Merci, votre réponse est enregistrée !</div>
       ) : (
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => pick("oui")} style={{ flex: 2, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 11, padding: "13px 8px", color: "#39FF8F", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{c.yes_label || "✅ Oui, je viens"}</button>
+          <button onClick={() => pick("oui")} style={{ flex: 2, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 11, padding: "13px 8px", color: "var(--success)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{c.yes_label || "✅ Oui, je viens"}</button>
           <button onClick={() => pick("peut-etre")} style={{ flex: 1, background: "rgba(251,191,36,0.08)", border: "1.5px solid rgba(251,191,36,0.25)", borderRadius: 11, padding: "13px 8px", color: "#FBBF24", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{c.maybe_label || "🤔 Peut-être"}</button>
           <button onClick={() => pick("non")} style={{ flex: 1, background: "rgba(239,68,68,0.08)", border: "1.5px solid rgba(239,68,68,0.2)", borderRadius: 11, padding: "13px 8px", color: "#EF4444", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{c.no_label || "❌ Non"}</button>
         </div>
@@ -504,7 +504,7 @@ function EventRegisterPublic({ block, pageId, TEXT, MUTED, ownerEmail }: { block
   }
   if (status === "done") return (
     <div style={{ padding: "10px 24px 14px" }}>
-      <div style={{ background: "rgba(57,255,143,0.08)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 12, padding: "16px", textAlign: "center", color: "#39FF8F", fontSize: 14, fontWeight: 700 }}>✅ Inscription enregistrée, merci !</div>
+      <div style={{ background: "rgba(57,255,143,0.08)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 12, padding: "16px", textAlign: "center", color: "var(--success)", fontSize: 14, fontWeight: 700 }}>✅ Inscription enregistrée, merci !</div>
     </div>
   )
   return (
@@ -562,7 +562,7 @@ function LeadFormPublic({ block, pageId, ownerEmail, leadType, title, descriptio
   }
   if (status === "done") return (
     <div style={{ padding: "10px 24px 14px" }}>
-      <div style={{ background: "rgba(57,255,143,0.08)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 12, padding: "16px", textAlign: "center", color: "#39FF8F", fontSize: 14, fontWeight: 700 }}>✅ Demande envoyée, merci ! Nous revenons vers vous rapidement.</div>
+      <div style={{ background: "rgba(57,255,143,0.08)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 12, padding: "16px", textAlign: "center", color: "var(--success)", fontSize: 14, fontWeight: 700 }}>✅ Demande envoyée, merci ! Nous revenons vers vous rapidement.</div>
     </div>
   )
   return (
@@ -660,7 +660,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
   switch (block.type) {
     case "profile": return (
       <div style={{ textAlign: "center", padding: "32px 20px 20px" }}>
-        <ProfileAvatar src={c.avatar} name={c.name} fontD={FONT_D} shapeStyle={avatarShapeStyle(c.avatar_shape)} decoStyle={avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, G)} bgStyle={avatarBgStyle(c.avatar_bg, G, theme.accent || "#39FF8F")} />
+        <ProfileAvatar src={c.avatar} name={c.name} fontD={FONT_D} shapeStyle={avatarShapeStyle(c.avatar_shape)} decoStyle={avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, G)} bgStyle={avatarBgStyle(c.avatar_bg, G, theme.accent || "var(--success)")} />
         <h1 style={{ color: TEXT, fontSize: 26, fontWeight: 700, margin: "0 0 5px", fontFamily: FONT_D }}>{c.name || "Mon Nom"}</h1>
         <p style={{ color: MUTED, fontSize: 14, margin: c.badge ? "0 0 10px" : "0", fontFamily: FONT_B }}>{c.tagline}</p>
         {c.badge && (
@@ -775,7 +775,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     }
     case "heading": {
       const sizes: Record<string, number> = { small: 18, medium: 24, large: 32, xl: 42 }
-      const hColors: Record<string, string> = { default: TEXT, primary: G, accent: theme.accent || "#39FF8F", muted: MUTED }
+      const hColors: Record<string, string> = { default: TEXT, primary: G, accent: theme.accent || "var(--success)", muted: MUTED }
       return (
         <div style={{ padding: "12px 24px 6px", textAlign: (c.align as any) || "center" }}>
           <h2 style={{ fontFamily: FONT_D, fontSize: sizes[c.size || "medium"], color: hColors[c.color || "default"], fontWeight: 700, margin: "0 0 4px", lineHeight: 1.2 }}>{c.text || "Titre"}</h2>
@@ -1102,7 +1102,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           {btype === "image"
             ? (c.src
               ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" className="qfb-media" src={c.src} alt="" style={{ width: "100%", height: h, display: "block", ...bannerImageStyle(c) }} />
-              : <div className="qfb-media" style={{ width: "100%", height: h, background: `linear-gradient(135deg,${G}33,${theme.accent || "#39FF8F"}22)` }} />)
+              : <div className="qfb-media" style={{ width: "100%", height: h, background: `linear-gradient(135deg,${G}33,${theme.accent || "var(--success)"}22)` }} />)
             : <div className="qfb-media" style={{ width: "100%", height: h, ...bannerBg }} />}
           {anim === "shimmer" && <div className="qfb-shine" />}
           {ovLayers.map((l, i) => <div key={i} className={l.className} style={l.style} />)}
@@ -1174,7 +1174,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
                     <span style={{ color: G, fontSize: 11, fontWeight: 700 }}>{pct}%</span>
                   </div>
                   <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg,${G},${theme.accent || "#39FF8F"})`, borderRadius: 3 }} />
+                    <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg,${G},${theme.accent || "var(--success)"})`, borderRadius: 3 }} />
                   </div>
                 </div>
               )
@@ -1225,7 +1225,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
         <a href={href} onClick={() => trackLinkClick(pageId, block.id, "call")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(57,255,143,0.1)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 13, padding: c.sub ? "12px 18px" : "15px 18px", textDecoration: "none" }}>
           <span style={{ fontSize: 17 }}>{c.icon || "📞"}</span>
           <span style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <span style={{ color: "#39FF8F", fontSize: 15, fontWeight: 700, fontFamily: FONT_B }}>{c.label || "Appeler maintenant"}</span>
+            <span style={{ color: "var(--success)", fontSize: 15, fontWeight: 700, fontFamily: FONT_B }}>{c.label || "Appeler maintenant"}</span>
             {c.sub && <span style={{ color: "rgba(57,255,143,0.7)", fontSize: 11, fontFamily: FONT_B }}>{c.sub}</span>}
           </span>
         </a>
@@ -1277,7 +1277,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       <div style={{ padding: "6px 24px 10px" }}>
         <a href={`mailto:${c.email}${c.subject ? `?subject=${encodeURIComponent(c.subject)}` : ""}`} onClick={() => trackLinkClick(pageId, block.id, "email")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(56,189,248,0.1)", border: "1.5px solid rgba(56,189,248,0.3)", borderRadius: 13, padding: "15px 18px", textDecoration: "none" }}>
           <span style={{ fontSize: 17 }}>✉️</span>
-          <span style={{ color: "#38BDF8", fontSize: 15, fontWeight: 700, fontFamily: FONT_B }}>{c.label || "Envoyer un email"}</span>
+          <span style={{ color: "var(--action)", fontSize: 15, fontWeight: 700, fontFamily: FONT_B }}>{c.label || "Envoyer un email"}</span>
         </a>
       </div>
     ) : null
@@ -1350,7 +1350,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     }
     case "featured_product": return (c.name || c.image) ? (
       <div style={{ padding: "10px 24px 14px" }}>
-        <div style={{ background: `linear-gradient(135deg,${G}12,${theme.accent || "#39FF8F"}0a)`, border: `1.5px solid ${G}30`, borderRadius: 16, overflow: "hidden" }}>
+        <div style={{ background: `linear-gradient(135deg,${G}12,${theme.accent || "var(--success)"}0a)`, border: `1.5px solid ${G}30`, borderRadius: 16, overflow: "hidden" }}>
           {c.badge && (() => { const bs = productBadgeStyle(c.badge, G); return <div style={{ background: bs.color, color: bs.fg, padding: "7px 14px", fontSize: 12, fontWeight: 700, textAlign: "center" }}>{bs.icon ? bs.icon + " " : ""}{c.badge}</div> })()}
           {c.image
             ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.image} alt="" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
@@ -1386,7 +1386,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
                   {p.old_price && (() => { const disc = priceDiscount(p.price, p.old_price); return <p style={{ margin: "2px 0 0", fontSize: 11, fontFamily: FONT_B }}><span style={{ color: MUTED, textDecoration: "line-through" }}>{p.old_price}</span>{disc && <span style={{ color: "#EF4444", fontWeight: 800, marginLeft: 4 }}>{disc.label}</span>}</p> })()}
                 </div>
                 {(p.features || "").split("\n").filter(Boolean).map((f: string, j: number) => (
-                  <p key={j} style={{ color: MUTED, fontSize: 10.5, margin: "0 0 4px", display: "flex", gap: 5 }}><span style={{ color: "#39FF8F" }}>✓</span> {f}</p>
+                  <p key={j} style={{ color: MUTED, fontSize: 10.5, margin: "0 0 4px", display: "flex", gap: 5 }}><span style={{ color: "var(--success)" }}>✓</span> {f}</p>
                 ))}
               </div>
             ))}
@@ -1407,7 +1407,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
                   <span style={{ color: G, fontSize: 17, fontWeight: 700 }}>{price}</span>
                 </div>
                 {(content || "").split("\n").filter(Boolean).map((line: string, j: number) => (
-                  <p key={j} style={{ color: MUTED, fontSize: 12, margin: "0 0 4px", display: "flex", gap: 7 }}><span style={{ color: "#39FF8F" }}>✓</span> {line}</p>
+                  <p key={j} style={{ color: MUTED, fontSize: 12, margin: "0 0 4px", display: "flex", gap: 7 }}><span style={{ color: "var(--success)" }}>✓</span> {line}</p>
                 ))}
               </div>
             ))}
@@ -1522,7 +1522,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       ) : null
     }
     case "team": {
-      const accent = theme.accent || "#39FF8F"
+      const accent = theme.accent || "var(--success)"
       const members = Array.from({ length: 50 }, (_, k) => k + 1)
         .map(i => ({ photo: c[`m${i}_photo`], name: c[`m${i}_name`], role: c[`m${i}_role`], bio: c[`m${i}_bio`], phone: (c[`m${i}_phone`]||"").trim(), email: (c[`m${i}_email`]||"").trim(), linkedin: (c[`m${i}_linkedin`]||"").trim() }))
         .filter(m => m.name)
@@ -1606,7 +1606,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       ) : null
     }
     case "process_steps": {
-      const accent = theme.accent || "#39FF8F"
+      const accent = theme.accent || "var(--success)"
       const steps = Array.from({ length: 50 }, (_, k) => { const i = k + 1; return [(c as any)[`s${i}_icon`], (c as any)[`s${i}_title`], (c as any)[`s${i}_desc`]] }).filter(([, t]) => t)
       return steps.length > 0 ? (
         <div style={{ padding: "10px 24px 14px" }}>
@@ -1633,7 +1633,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 9, justifyContent: "center" }}>
             {badges.map(([icon, label]: any[], i: number) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 20, padding: "8px 15px" }}>
-                <span style={{ color: "#39FF8F", fontSize: 15, fontWeight: 700 }}>{icon}</span>
+                <span style={{ color: "var(--success)", fontSize: 15, fontWeight: 700 }}>{icon}</span>
                 <span style={{ color: TEXT, fontSize: 13, fontWeight: 600, fontFamily: FONT_B }}>{label}</span>
               </div>
             ))}
@@ -1668,7 +1668,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           {horizontal ? (
             <div style={{ display: "flex", gap: 11, overflowX: "auto", padding: "2px 0 8px", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}>
               {events.map((e, i) => (
-                <div key={i} style={{ scrollSnapAlign: "start", flexShrink: 0, width: 168, background: "rgba(255,255,255,0.03)", border: `1px solid ${i === events.length - 1 ? "#39FF8F30" : "rgba(255,255,255,0.07)"}`, borderRadius: 13, padding: "14px 14px" }}>
+                <div key={i} style={{ scrollSnapAlign: "start", flexShrink: 0, width: 168, background: "rgba(255,255,255,0.03)", border: `1px solid ${i === events.length - 1 ? "var(--success)30" : "rgba(255,255,255,0.07)"}`, borderRadius: 13, padding: "14px 14px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                     <div style={{ width: 30, height: 30, borderRadius: 8, background: `${G}12`, border: `1px solid ${G}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>{e.icon || "•"}</div>
                     <p style={{ color: G, fontSize: 12, fontWeight: 700, margin: 0 }}>{e.date}</p>
@@ -1683,7 +1683,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
               <div style={{ position: "absolute", left: 6, top: 8, bottom: 8, width: 2, background: `linear-gradient(180deg,${G},${G}40)`, borderRadius: 1 }} />
               {events.map((e, i) => (
                 <div key={i} style={{ position: "relative", marginBottom: i < events.length - 1 ? 18 : 0 }}>
-                  <div style={{ position: "absolute", left: -19, top: 4, width: 11, height: 11, borderRadius: "50%", background: i === events.length - 1 ? "#39FF8F" : G, border: `2px solid ${i === events.length - 1 ? "#39FF8F40" : `${G}40`}` }} />
+                  <div style={{ position: "absolute", left: -19, top: 4, width: 11, height: 11, borderRadius: "50%", background: i === events.length - 1 ? "var(--success)" : G, border: `2px solid ${i === events.length - 1 ? "var(--success)40" : `${G}40`}` }} />
                   <p style={{ color: G, fontSize: 12, fontWeight: 700, margin: "0 0 2px" }}>{e.date}</p>
                   <p style={{ color: TEXT, fontSize: 14, fontWeight: 600, margin: "0 0 2px", fontFamily: FONT_B, display: "flex", alignItems: "center", gap: 6 }}>{e.icon && <span aria-hidden style={{ fontSize: 15 }}>{e.icon}</span>}{e.title}</p>
                   {e.desc && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{e.desc}</p>}
@@ -1720,9 +1720,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     }
     case "info_box": {
       const boxStyles: Record<string, any> = {
-        info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "#38BDF8" },
+        info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "var(--action)" },
         warning: { bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)", color: "#FBBF24" },
-        success: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.3)", color: "#39FF8F" },
+        success: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.3)", color: "var(--success)" },
         tip: { bg: "rgba(201,168,76,0.08)", border: "rgba(201,168,76,0.3)", color: "#C9A84C" },
         important: { bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.3)", color: "#EF4444" },
       }
@@ -1906,7 +1906,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           </div>
           <div style={{ borderRadius: 11, overflow: "hidden" }}>
             {c.after_img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.after_img} alt="Après" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>✨</div>}
-            <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "#39FF8F", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.after_label || "Après"}</p></div>
+            <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "var(--success)", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.after_label || "Après"}</p></div>
           </div>
         </div>}
         {c.description && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", margin: "9px 0 0" }}>{c.description}</p>}
@@ -2191,7 +2191,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       const urgencyStyles: Record<string, any> = {
         high: { bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.4)", color: "#EF4444" },
         medium: { bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)", color: "#FBBF24" },
-        low: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.25)", color: "#39FF8F" },
+        low: { bg: "rgba(57,255,143,0.08)", border: "rgba(57,255,143,0.25)", color: "var(--success)" },
       }
       const us = urgencyStyles[c.urgency || "high"]
       return c.count ? (
@@ -2274,7 +2274,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     case "quote_form": return <LeadFormPublic block={block} pageId={pageId} ownerEmail={ownerEmail} leadType="quote" title={c.title || "Demander un devis"} description={c.description} fields={[{ key: "name", label: "Nom complet" }, { key: "email", label: "Email" }, ...(c.show_phone !== "no" ? [{ key: "phone", label: "Téléphone" }] : []), ...(c.show_budget === "yes" ? [{ key: "budget", label: "Budget estimé" }] : []), { key: "project", label: "Description du projet", area: true }]} button={c.button_label || "Envoyer ma demande"} accent={`linear-gradient(90deg,${G},${G}cc)`} subject="Demande de devis" TEXT={TEXT} MUTED={MUTED} />
     case "booking_request": return <LeadFormPublic block={block} pageId={pageId} ownerEmail={ownerEmail} leadType="booking" title={c.title || "Réserver pour un événement"} description={c.description} fields={[{ key: "name", label: "Nom / Organisation" }, { key: "email", label: "Email" }, { key: "type", label: "Type d'événement" }, { key: "date", label: "Date souhaitée" }, { key: "message", label: "Message", area: true }]} button={c.button_label || "Envoyer ma demande"} accent="linear-gradient(90deg,#9146FF,#7B3FCC)" subject="Demande de réservation événement" TEXT={TEXT} MUTED={MUTED} />
     case "quick_contact": {
-      const items = [[c.phone, "📞", "#39FF8F", telLink(c.phone) || null], [c.email, "✉️", "#38BDF8", c.email ? `mailto:${c.email}` : null], [c.whatsapp, "💬", "#25D366", waLink(c.whatsapp, undefined, c.whatsapp_cc || "33") || null], [c.address, "📍", G, null], [c.hours, "🕐", MUTED, null]].filter(([v]) => v)
+      const items = [[c.phone, "📞", "var(--success)", telLink(c.phone) || null], [c.email, "✉️", "var(--action)", c.email ? `mailto:${c.email}` : null], [c.whatsapp, "💬", "#25D366", waLink(c.whatsapp, undefined, c.whatsapp_cc || "33") || null], [c.address, "📍", G, null], [c.hours, "🕐", MUTED, null]].filter(([v]) => v)
       return items.length > 0 ? (
         <div style={{ padding: "10px 24px 14px" }}>
           {c.title && <p style={{ color: MUTED, fontSize: 11, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px", fontFamily: FONT_B }}>{c.title}</p>}
@@ -2290,7 +2290,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     }
     case "multi_contact": {
       const contacts = Array.from({ length: 50 }, (_, k) => { const i = k + 1; return [(c as any)[`c${i}_photo`], (c as any)[`c${i}_name`], (c as any)[`c${i}_role`], (c as any)[`c${i}_phone`], (c as any)[`c${i}_email`]] }).filter(([, n]) => n)
-      const accent = theme.accent || "#39FF8F"
+      const accent = theme.accent || "var(--success)"
       return contacts.length > 0 ? (
         <div style={{ padding: "10px 24px 14px" }}>
           {c.title && <p style={{ color: MUTED, fontSize: 11, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px", fontFamily: FONT_B }}>{c.title}</p>}
@@ -2303,8 +2303,8 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
                 </div>
                 {(phone || email) && (
                   <div style={{ display: "flex", gap: 8 }}>
-                    {phone && <a href={telLink(String(phone)) || `tel:${phone}`} onClick={() => trackLinkClick(pageId, block.id, "tel")} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 9, padding: "9px", color: "#39FF8F", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>📞 Appeler</a>}
-                    {email && <a href={`mailto:${email}`} onClick={() => trackLinkClick(pageId, block.id, "email")} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", borderRadius: 9, padding: "9px", color: "#38BDF8", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ Email</a>}
+                    {phone && <a href={telLink(String(phone)) || `tel:${phone}`} onClick={() => trackLinkClick(pageId, block.id, "tel")} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 9, padding: "9px", color: "var(--success)", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>📞 Appeler</a>}
+                    {email && <a href={`mailto:${email}`} onClick={() => trackLinkClick(pageId, block.id, "email")} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", borderRadius: 9, padding: "9px", color: "var(--action)", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ Email</a>}
                   </div>
                 )}
               </div>
@@ -2409,7 +2409,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           </div>
           <div style={{ borderRadius: 11, overflow: "hidden" }}>
             {c.after_img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.after_img} alt="Après" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>✨</div>}
-            <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "#39FF8F", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.after_label || "Après"}</p></div>
+            <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "var(--success)", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.after_label || "Après"}</p></div>
           </div>
         </div>
         {c.description && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", margin: "9px 0 0" }}>{c.description}</p>}
@@ -2604,7 +2604,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       )
     }
     case "founder_message": {
-      const accent = theme.accent || "#39FF8F"
+      const accent = theme.accent || "var(--success)"
       return (c.message || c.name) ? (
         <div style={{ padding: "12px 24px 14px" }}>
           <div style={{ background: `${G}06`, border: `1px solid ${G}15`, borderRadius: 15, padding: "17px" }}>
@@ -2756,7 +2756,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       ) : null
     }
     case "hero_banner": {
-      const accent = theme.accent || "#39FF8F"
+      const accent = theme.accent || "var(--success)"
       const h = c.height === "lg" ? 280 : c.height === "sm" ? 170 : 220
       const align = c.align === "left" ? "flex-start" : "center"
       const ta: any = c.align === "left" ? "left" : "center"
@@ -2833,7 +2833,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PublicPageClient({ page, blocks, showBranding = true }: { page: Page; blocks: Block[]; showBranding?: boolean }) {
   const theme = {
-    bg: "#080808", surface: "#111009", primary: "#C9A84C", accent: "#39FF8F",
+    bg: "#080808", surface: "#111009", primary: "#C9A84C", accent: "var(--success)",
     text: "#F5F0E8", muted: "#8A8478",
     fontDisplay: "Fraunces, serif", fontBody: "DM Sans, sans-serif",
     ...(page.theme || {}),

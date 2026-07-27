@@ -71,7 +71,7 @@ function QR404() {
       {/* Badge 404 */}
       <div style={{
         position: "absolute", top: -12, right: -12,
-        background: "linear-gradient(135deg, #FF6B6B, #F97316)",
+        background: "linear-gradient(135deg, var(--danger), #F97316)",
         borderRadius: 20, padding: "4px 12px",
         fontSize: 11, fontWeight: 800, color: "#fff",
         boxShadow: "0 2px 12px rgba(255,107,107,0.4)",

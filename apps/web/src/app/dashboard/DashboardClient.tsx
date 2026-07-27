@@ -16,9 +16,9 @@ type Profile = { full_name: string | null; plan: string; total_scans: number; to
 
 const PLAN_CONFIG: Record<string, { color: string; label: string }> = {
   free: { color: "#A8A190", label: "Free" },
-  starter: { color: "#38BDF8", label: "Starter" },
+  starter: { color: "var(--action)", label: "Starter" },
   pro: { color: "var(--accent)", label: "Pro" },
-  business: { color: "#39FF8F", label: "Business" },
+  business: { color: "var(--success)", label: "Business" },
 }
 
 function DeleteModal({ page, onConfirm, onCancel, deleting }: { page: Page; onConfirm: () => void; onCancel: () => void; deleting: boolean }) {
@@ -226,7 +226,7 @@ export default function DashboardClient() {
             <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: "0 6px 6px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{menuPage.title}</p>
             {([
               ...(menuPage.status === "published" ? [{ icon: <ExternalLink size={17} />, label: "Voir la page", onClick: () => { window.open("/" + menuPage.slug, "_blank"); setMenuPage(null) } }] : []),
-              { icon: copiedId === menuPage.id ? <Check size={17} color="#39FF8F" /> : <Globe size={17} />, label: copiedId === menuPage.id ? "Lien copié !" : "Copier le lien", onClick: () => copyLink(menuPage) },
+              { icon: copiedId === menuPage.id ? <Check size={17} color="var(--success)" /> : <Globe size={17} />, label: copiedId === menuPage.id ? "Lien copié !" : "Copier le lien", onClick: () => copyLink(menuPage) },
               { icon: <Eye size={17} />, label: menuPage.status === "published" ? "Dépublier" : "Publier", onClick: () => { togglePublish(menuPage); setMenuPage(null) } },
               { icon: <Trash2 size={17} color="#EF4444" />, label: "Supprimer", danger: true, onClick: () => { setPageToDelete(menuPage); setMenuPage(null) } },
             ] as { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }[]).map((a, i) => (
@@ -252,7 +252,7 @@ export default function DashboardClient() {
                 <span style={{ color: planCfg.color, fontSize: 12, fontWeight: 700 }}>Plan {planCfg.label}</span>
               </span>
               <span style={{ color: MUTED, fontSize: 12.5 }}>
-                <span style={{ color: "#39FF8F", fontWeight: 700 }}>{todayViews}</span> vue{todayViews > 1 ? "s" : ""} aujourd'hui
+                <span style={{ color: "var(--success)", fontWeight: 700 }}>{todayViews}</span> vue{todayViews > 1 ? "s" : ""} aujourd'hui
               </span>
             </div>
           </div>
@@ -265,7 +265,7 @@ export default function DashboardClient() {
         {/* Soft-cap quota de vues : alerte (jamais de blocage des pages publiques) */}
         {(nearViews || overViews) && (
           <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", background: overViews ? "rgba(255,107,107,0.08)" : "color-mix(in srgb, var(--accent) 8%, transparent)", border: "1px solid " + (overViews ? "rgba(255,107,107,0.3)" : "color-mix(in srgb, var(--accent) 30%, transparent)"), borderRadius: 14, padding: "14px 18px", marginBottom: 22 }}>
-            <AlertTriangle size={18} color={overViews ? "#FF6B6B" : G} style={{ flexShrink: 0 }} />
+            <AlertTriangle size={18} color={overViews ? "var(--danger)" : G} style={{ flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 220 }}>
               <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 2px" }}>
                 {overViews
@@ -278,10 +278,10 @@ export default function DashboardClient() {
                   : "Tes pages restent en ligne sans interruption. Pense à monter en plan pour ne pas être limité."}
               </p>
               <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.08)", marginTop: 8, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: Math.min(viewsPct, 100) + "%", background: overViews ? "linear-gradient(90deg,#FF6B6B,#F97316)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius: 3 }} />
+                <div style={{ height: "100%", width: Math.min(viewsPct, 100) + "%", background: overViews ? "linear-gradient(90deg,var(--danger),#F97316)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius: 3 }} />
               </div>
             </div>
-            <Link href="/upgrade" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, background: overViews ? "linear-gradient(90deg,#FF6B6B,#F97316)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius: 10, padding: "9px 16px", color: "#080808", textDecoration: "none", fontSize: 12.5, fontWeight: 800 }}>
+            <Link href="/upgrade" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, background: overViews ? "linear-gradient(90deg,var(--danger),#F97316)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius: 10, padding: "9px 16px", color: "#080808", textDecoration: "none", fontSize: 12.5, fontWeight: 800 }}>
               <Zap size={13} /> Augmenter mon quota
             </Link>
           </div>
@@ -342,7 +342,7 @@ export default function DashboardClient() {
                       <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
                         background: s.done ? "rgba(57,255,143,0.15)" : "transparent",
                         border: s.done ? "1px solid rgba(57,255,143,0.4)" : `2px solid ${isCurrent ? G : "rgba(255,255,255,0.15)"}` }}>
-                        {s.done ? <Check size={13} color="#39FF8F" /> : <span style={{ color: isCurrent ? G : MUTED, fontSize: 11, fontWeight: 700 }}>{i + 1}</span>}
+                        {s.done ? <Check size={13} color="var(--success)" /> : <span style={{ color: isCurrent ? G : MUTED, fontSize: 11, fontWeight: 700 }}>{i + 1}</span>}
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ color: s.done ? MUTED : "#F5F0E8", fontSize: 13.5, fontWeight: 600, margin: 0, textDecoration: s.done ? "line-through" : "none" }}>{s.label}</p>
@@ -362,19 +362,19 @@ export default function DashboardClient() {
         })()}
 
         {/* Cockpit : 1 métrique héro + stats secondaires (au lieu de 4 cartes concurrentes) */}
-        <div className="dz dz-card" style={{ animationDelay: "120ms", marginBottom: 20, background: "linear-gradient(135deg, color-mix(in srgb,#39FF8F 7%,#13110B), #100F0A)", border: "1px solid rgba(57,255,143,0.22)", borderRadius: 16, padding: "18px 22px", position: "relative", overflow: "hidden", boxShadow: "0 8px 30px rgba(0,0,0,0.25)" }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, #39FF8F, transparent)" }} />
-          <div aria-hidden style={{ position: "absolute", top: -30, right: -20, width: 170, height: 170, borderRadius: "50%", background: "radial-gradient(circle,#39FF8F18,transparent 70%)", pointerEvents: "none" }} />
+        <div className="dz dz-card" style={{ animationDelay: "120ms", marginBottom: 20, background: "linear-gradient(135deg, color-mix(in srgb,var(--success) 7%,#13110B), #100F0A)", border: "1px solid rgba(57,255,143,0.22)", borderRadius: 16, padding: "18px 22px", position: "relative", overflow: "hidden", boxShadow: "0 8px 30px rgba(0,0,0,0.25)" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, var(--success), transparent)" }} />
+          <div aria-hidden style={{ position: "absolute", top: -30, right: -20, width: 170, height: 170, borderRadius: "50%", background: "radial-gradient(circle,var(--success)18,transparent 70%)", pointerEvents: "none" }} />
           <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", position: "relative" }}>
 
             {/* HÉRO : scans totaux */}
             <div style={{ flex: "1 1 190px", minWidth: 150 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ color: "#39FF8F", background: "#39FF8F1a", borderRadius: 9, padding: 8, display: "flex" }}><QrCode size={18} /></span>
+                <span style={{ color: "var(--success)", background: "var(--success)1a", borderRadius: 9, padding: 8, display: "flex" }}><QrCode size={18} /></span>
                 <span style={{ color: "#C9C3B6", fontSize: 12.5, fontWeight: 600 }}>Scans totaux</span>
               </div>
               <p style={{ color: "#F8F4EC", fontSize: 44, fontWeight: 700, margin: "8px 0 0", fontFamily: "Fraunces, serif", lineHeight: 1 }}>{(profile?.total_scans || 0).toLocaleString("fr-FR")}</p>
-              <p style={{ color: "#39FF8Fb0", fontSize: 11, margin: "2px 0 0" }}>tous temps</p>
+              <p style={{ color: "var(--success)b0", fontSize: 11, margin: "2px 0 0" }}>tous temps</p>
             </div>
 
             {!isMobile && <div aria-hidden style={{ width: 1, alignSelf: "stretch", minHeight: 64, background: "rgba(255,255,255,0.07)" }} />}
@@ -382,9 +382,9 @@ export default function DashboardClient() {
             {/* SECONDAIRES : vues / pages / publiées */}
             <div style={{ display: "flex", gap: 24, flexWrap: "wrap", flex: "2 1 300px" }}>
               {[
-                { icon: <BarChart2 size={15} />, label: "Vues ce mois", value: monthViews.toLocaleString("fr-FR"), sub: viewsLimit ? `/ ${viewsLimit.toLocaleString("fr-FR")}` : "illimitées", color: overViews ? "#FF6B6B" : "#7B61FF", spark: true },
+                { icon: <BarChart2 size={15} />, label: "Vues ce mois", value: monthViews.toLocaleString("fr-FR"), sub: viewsLimit ? `/ ${viewsLimit.toLocaleString("fr-FR")}` : "illimitées", color: overViews ? "var(--danger)" : "#7B61FF", spark: true },
                 { icon: <Eye size={15} />, label: "Pages créées", value: profile?.total_pages || 0, sub: publishedCount + " publiée" + (publishedCount > 1 ? "s" : ""), color: G, spark: false },
-                { icon: <Globe size={15} />, label: "Publiées", value: publishedCount, sub: "sur " + pages.length, color: "#38BDF8", spark: false },
+                { icon: <Globe size={15} />, label: "Publiées", value: publishedCount, sub: "sur " + pages.length, color: "var(--action)", spark: false },
               ].map((s, i) => (
                 <div key={i} style={{ minWidth: 92 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -442,7 +442,7 @@ export default function DashboardClient() {
                   <div key={page.id} className="dz-row" style={{ display: "flex", alignItems: "center", gap: 11, padding: "10px 14px", borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none" }}>
 
                     {/* Miniature (degrade + initiale ; anneau vert = en ligne) */}
-                    <div style={{ width: isMobile ? 42 : 38, height: isMobile ? 42 : 38, flexShrink: 0, borderRadius: 10, background: `linear-gradient(135deg, hsl(${hue} 52% 44%), hsl(${(hue + 42) % 360} 52% 26%))`, border: `1.5px solid ${pub ? "#39FF8F" : "rgba(255,255,255,0.14)"}`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 17, fontFamily: "Fraunces, serif" }}>
+                    <div style={{ width: isMobile ? 42 : 38, height: isMobile ? 42 : 38, flexShrink: 0, borderRadius: 10, background: `linear-gradient(135deg, hsl(${hue} 52% 44%), hsl(${(hue + 42) % 360} 52% 26%))`, border: `1.5px solid ${pub ? "var(--success)" : "rgba(255,255,255,0.14)"}`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 17, fontFamily: "Fraunces, serif" }}>
                       {(page.title || page.slug || "?").trim()[0]?.toUpperCase() || "?"}
                     </div>
 
@@ -450,8 +450,8 @@ export default function DashboardClient() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 600, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{page.title}</p>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, overflow: "hidden", whiteSpace: "nowrap" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10.5, fontWeight: 700, color: pub ? "#39FF8F" : MUTED, flexShrink: 0 }}>
-                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: pub ? "#39FF8F" : MUTED }} />{pub ? "En ligne" : "Brouillon"}
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10.5, fontWeight: 700, color: pub ? "var(--success)" : MUTED, flexShrink: 0 }}>
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: pub ? "var(--success)" : MUTED }} />{pub ? "En ligne" : "Brouillon"}
                         </span>
                         <span style={{ color: MUTED, fontSize: 10.5, flexShrink: 0 }}>· {page.total_views} vues</span>
                         {relTime(page.created_at) && <span style={{ color: MUTED, fontSize: 10.5, overflow: "hidden", textOverflow: "ellipsis" }}>· {relTime(page.created_at)}</span>}
@@ -501,7 +501,7 @@ export default function DashboardClient() {
                 <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: 0 }}>Raccourcis</p>
               </div>
               {[
-                { icon: "🌐", label: "Domaines perso", href: "/dashboard/domains", color: "#39FF8F" },
+                { icon: "🌐", label: "Domaines perso", href: "/dashboard/domains", color: "var(--success)" },
                 { icon: "⚙️", label: "Parametres", href: "/dashboard/settings", color: MUTED },
               ].map((action, i, arr) => (
                 <Link key={i} href={action.href} className="dz-row dz-act"

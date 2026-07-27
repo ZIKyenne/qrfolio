@@ -126,16 +126,16 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
   // ── Indicateur disponibilité ──────────────────────────────────────────────
   const statusIndicator = () => {
     if (status === "checking") return <Loader size={14} color={MUTED} style={{ animation:"spin 0.7s linear infinite" }}/>
-    if (status === "available") return <CheckCircle size={14} color="#39FF8F"/>
+    if (status === "available") return <CheckCircle size={14} color="var(--success)"/>
     if (status === "own")       return <CheckCircle size={14} color={G}/>
-    if (status === "taken" || status === "invalid") return <X size={14} color="#FF6B6B"/>
+    if (status === "taken" || status === "invalid") return <X size={14} color="var(--danger)"/>
     return null
   }
 
   const msgColor = () => {
-    if (status === "available") return "#39FF8F"
+    if (status === "available") return "var(--success)"
     if (status === "own")       return G
-    if (status === "taken" || status === "invalid") return "#FF6B6B"
+    if (status === "taken" || status === "invalid") return "var(--danger)"
     return MUTED
   }
 
@@ -163,7 +163,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
               <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                 <div style={{ width:36, height:36, background:"rgba(57,255,143,0.1)", borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <CheckCircle size={18} color="#39FF8F"/>
+                  <CheckCircle size={18} color="var(--success)"/>
                 </div>
                 <div>
                   <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:700, margin:"0 0 2px" }}>
@@ -178,7 +178,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
                   <ExternalLink size={13}/>
                 </a>
                 <button type="button" onClick={copySubdomain}
-                  style={{ width:30, height:30, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:copied?"#39FF8F":MUTED, cursor:"pointer" }}>
+                  style={{ width:30, height:30, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:copied?"var(--success)":MUTED, cursor:"pointer" }}>
                   {copied ? <Check size={13}/> : <Copy size={13}/>}
                 </button>
                 <button type="button" onClick={() => { setInput(currentUsername); setEditing(true) }}
@@ -186,7 +186,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
                   <Pencil size={13}/>
                 </button>
                 <button type="button" onClick={release} disabled={deleting}
-                  style={{ width:30, height:30, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"#FF6B6B", cursor:deleting?"wait":"pointer", opacity:deleting?0.6:1 }}>
+                  style={{ width:30, height:30, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:deleting?"wait":"pointer", opacity:deleting?0.6:1 }}>
                   {deleting ? <Loader size={13} style={{ animation:"spin 0.7s linear infinite" }}/> : <Trash2 size={13}/>}
                 </button>
               </div>
@@ -198,7 +198,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
             <span style={{ color:MUTED, fontSize:11 }}>URL :</span>
             <code style={{ color:G, fontSize:12, flex:1 }}>https://{currentUsername}.{APP}</code>
             <button type="button" onClick={copySubdomain}
-              style={{ background:"none", border:"none", color:copied?"#39FF8F":MUTED, cursor:"pointer", display:"flex" }}>
+              style={{ background:"none", border:"none", color:copied?"var(--success)":MUTED, cursor:"pointer", display:"flex" }}>
               {copied ? <Check size={12}/> : <Copy size={12}/>}
             </button>
           </div>
@@ -271,10 +271,10 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
               ].map((rule, i) => (
                 <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
                   {rule.ok && input.length > 0
-                    ? <CheckCircle size={11} color="#39FF8F"/>
+                    ? <CheckCircle size={11} color="var(--success)"/>
                     : <div style={{ width:11, height:11, borderRadius:"50%", border:`1.5px solid ${MUTED}` }}/>
                   }
-                  <span style={{ color: rule.ok && input.length > 0 ? "#39FF8F" : MUTED, fontSize:10 }}>{rule.label}</span>
+                  <span style={{ color: rule.ok && input.length > 0 ? "var(--success)" : MUTED, fontSize:10 }}>{rule.label}</span>
                 </div>
               ))}
             </div>
@@ -282,8 +282,8 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
 
           {error && (
             <div style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 12px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:8, marginBottom:12 }}>
-              <AlertCircle size={13} color="#FF6B6B"/>
-              <span style={{ color:"#FF6B6B", fontSize:12 }}>{error}</span>
+              <AlertCircle size={13} color="var(--danger)"/>
+              <span style={{ color:"var(--danger)", fontSize:12 }}>{error}</span>
             </div>
           )}
 

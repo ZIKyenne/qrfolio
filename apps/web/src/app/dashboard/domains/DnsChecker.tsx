@@ -34,7 +34,7 @@ interface Props {
 // ── Config statuts ────────────────────────────────────────────────────────────
 const STATUS: Record<CheckStatus, { color: string; bg: string; border: string; icon: React.ReactNode; label: string }> = {
   ok: {
-    color:  "#39FF8F",
+    color:  "var(--success)",
     bg:     "rgba(57,255,143,0.08)",
     border: "rgba(57,255,143,0.2)",
     icon:   <CheckCircle size={15}/>,
@@ -48,7 +48,7 @@ const STATUS: Record<CheckStatus, { color: string; bg: string; border: string; i
     label:  "En attente",
   },
   error: {
-    color:  "#FF6B6B",
+    color:  "var(--danger)",
     bg:     "rgba(255,107,107,0.08)",
     border: "rgba(255,107,107,0.2)",
     icon:   <AlertCircle size={15}/>,
@@ -113,8 +113,8 @@ export default function DnsChecker({ domain, onVerified }: Props) {
 
       {error && (
         <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:9, marginTop:10 }}>
-          <AlertCircle size={14} color="#FF6B6B"/>
-          <span style={{ color:"#FF6B6B", fontSize:12 }}>{error}</span>
+          <AlertCircle size={14} color="var(--danger)"/>
+          <span style={{ color:"var(--danger)", fontSize:12 }}>{error}</span>
         </div>
       )}
 
@@ -124,7 +124,7 @@ export default function DnsChecker({ domain, onVerified }: Props) {
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background: result.allOk ? "rgba(57,255,143,0.06)" : "rgba(249,115,22,0.06)", border:`1px solid ${result.allOk ? "rgba(57,255,143,0.2)" : "rgba(249,115,22,0.2)"}`, borderRadius:11, marginBottom:12 }}>
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
               {result.allOk
-                ? <CheckCircle size={18} color="#39FF8F"/>
+                ? <CheckCircle size={18} color="var(--success)"/>
                 : <Clock size={18} color="#F97316"/>
               }
               <div>
@@ -197,11 +197,11 @@ export default function DnsChecker({ domain, onVerified }: Props) {
                         <div style={{ marginBottom:8 }}>
                           <p style={{ color:MUTED, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, margin:"0 0 5px" }}>Valeur attendue</p>
                           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                            <code style={{ color:"#39FF8F", fontSize:11, background:"rgba(57,255,143,0.08)", padding:"5px 10px", borderRadius:7, flex:1, wordBreak:"break-all" }}>
+                            <code style={{ color:"var(--success)", fontSize:11, background:"rgba(57,255,143,0.08)", padding:"5px 10px", borderRadius:7, flex:1, wordBreak:"break-all" }}>
                               {check.expected}
                             </code>
                             <button type="button" onClick={() => copyText(check.expected!, `exp-${check.id}`)}
-                              style={{ flexShrink:0, width:28, height:28, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color: copied===`exp-${check.id}` ? "#39FF8F" : MUTED }}>
+                              style={{ flexShrink:0, width:28, height:28, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color: copied===`exp-${check.id}` ? "var(--success)" : MUTED }}>
                               {copied===`exp-${check.id}` ? <Check size={12}/> : <Copy size={12}/>}
                             </button>
                           </div>
@@ -213,7 +213,7 @@ export default function DnsChecker({ domain, onVerified }: Props) {
                           <p style={{ color:MUTED, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:1, margin:"0 0 5px" }}>
                             {check.status === "error" ? "Valeur actuelle (incorrecte)" : "Valeur trouvée"}
                           </p>
-                          <code style={{ color: check.status === "error" ? "#FF6B6B" : "#F5F0E8", fontSize:11, background:"rgba(255,255,255,0.04)", padding:"5px 10px", borderRadius:7, display:"block", wordBreak:"break-all" }}>
+                          <code style={{ color: check.status === "error" ? "var(--danger)" : "#F5F0E8", fontSize:11, background:"rgba(255,255,255,0.04)", padding:"5px 10px", borderRadius:7, display:"block", wordBreak:"break-all" }}>
                             {check.found}
                           </code>
                         </div>

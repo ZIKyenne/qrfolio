@@ -256,8 +256,8 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
 
             {error && (
               <div style={{ display:"flex", alignItems:"center", gap:7, padding:"8px 12px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:8 }}>
-                <AlertCircle size={13} color="#FF6B6B"/>
-                <span style={{ color:"#FF6B6B", fontSize:12 }}>{error}</span>
+                <AlertCircle size={13} color="var(--danger)"/>
+                <span style={{ color:"var(--danger)", fontSize:12 }}>{error}</span>
               </div>
             )}
 
@@ -296,7 +296,7 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
                   <Globe size={13} color={G}/>
                   <span style={{ color:G, fontSize:12, fontWeight:700 }}>{rootDomain}</span>
-                  {verif?.verified && <CheckCircle size={11} color="#39FF8F"/>}
+                  {verif?.verified && <CheckCircle size={11} color="var(--success)"/>}
                   <span style={{ color:MUTED, fontSize:10 }}>{domRoutes.length} route{domRoutes.length !== 1 ? "s" : ""}</span>
                 </div>
 
@@ -336,13 +336,13 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
 
                         {/* Statut page */}
                         {route.pages?.status === "published"
-                          ? <CheckCircle size={12} color="#39FF8F"/>
+                          ? <CheckCircle size={12} color="var(--success)"/>
                           : <AlertCircle size={12} color="#F97316"/>
                         }
 
                         {/* Supprimer */}
                         <button type="button" onClick={() => deleteRoute(route.id)} disabled={deleting === route.id}
-                          style={{ width:26, height:26, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", color:"#FF6B6B", cursor:deleting===route.id?"wait":"pointer", opacity:deleting===route.id?0.5:1, flexShrink:0 }}>
+                          style={{ width:26, height:26, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:deleting===route.id?"wait":"pointer", opacity:deleting===route.id?0.5:1, flexShrink:0 }}>
                           {deleting === route.id ? <Loader size={11} style={{ animation:"spin 0.8s linear infinite" }}/> : <Trash2 size={11}/>}
                         </button>
                       </div>

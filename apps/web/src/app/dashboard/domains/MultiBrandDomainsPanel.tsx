@@ -45,12 +45,12 @@ function StatusBadge({ status, verified }: { status: string; verified: boolean }
     </span>
   )
   if (status === "active") return (
-    <span style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(57,255,143,0.1)", border:"1px solid rgba(57,255,143,0.25)", borderRadius:6, padding:"2px 8px", fontSize:10, color:"#39FF8F", fontWeight:600 }}>
+    <span style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(57,255,143,0.1)", border:"1px solid rgba(57,255,143,0.25)", borderRadius:6, padding:"2px 8px", fontSize:10, color:"var(--success)", fontWeight:600 }}>
       <CheckCircle size={10}/> Actif
     </span>
   )
   if (status === "error") return (
-    <span style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.25)", borderRadius:6, padding:"2px 8px", fontSize:10, color:"#FF6B6B", fontWeight:600 }}>
+    <span style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.25)", borderRadius:6, padding:"2px 8px", fontSize:10, color:"var(--danger)", fontWeight:600 }}>
       <AlertCircle size={10}/> Erreur
     </span>
   )
@@ -91,7 +91,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
 
           {/* Icône */}
           <div style={{ width:38, height:38, background: isPrimary ? "color-mix(in srgb, var(--accent) 12%, transparent)" : rec.verified ? "rgba(57,255,143,0.08)" : "rgba(255,255,255,0.04)", borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-            {isPrimary ? <Star size={17} color={G}/> : <Globe size={17} color={rec.verified ? "#39FF8F" : MUTED}/>}
+            {isPrimary ? <Star size={17} color={G}/> : <Globe size={17} color={rec.verified ? "var(--success)" : MUTED}/>}
           </div>
 
           {/* Infos */}
@@ -104,7 +104,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
                 </span>
               )}
               {!isPrimary && rec.verified && hasPrimary && (
-                <span style={{ background:"rgba(56,189,248,0.1)", border:"1px solid rgba(56,189,248,0.2)", borderRadius:6, padding:"2px 8px", fontSize:9, color:"#38BDF8", fontWeight:600 }}>
+                <span style={{ background:"rgba(56,189,248,0.1)", border:"1px solid rgba(56,189,248,0.2)", borderRadius:6, padding:"2px 8px", fontSize:9, color:"var(--action)", fontWeight:600 }}>
                   → 301 vers principal
                 </span>
               )}
@@ -135,7 +135,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
 
             {/* Supprimer */}
             <button type="button" onClick={() => handleDelete(rec.id)} disabled={deleting === rec.id}
-              style={{ width:30, height:30, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"#FF6B6B", cursor:deleting===rec.id?"wait":"pointer", opacity:deleting===rec.id?0.5:1 }}>
+              style={{ width:30, height:30, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:deleting===rec.id?"wait":"pointer", opacity:deleting===rec.id?0.5:1 }}>
               {deleting === rec.id ? <Loader size={12} style={{ animation:"spin 0.8s linear infinite" }}/> : <Trash2 size={12}/>}
             </button>
           </div>
@@ -175,12 +175,12 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
         <div style={{ marginBottom:16 }}>
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
             <span style={{ color:MUTED, fontSize:11 }}>Utilisation</span>
-            <span style={{ color: atLimit ? "#FF6B6B" : G, fontSize:11, fontWeight:700 }}>
+            <span style={{ color: atLimit ? "var(--danger)" : G, fontSize:11, fontWeight:700 }}>
               {domains.length}/{planInfo.max}
             </span>
           </div>
           <div style={{ height:5, background:"rgba(255,255,255,0.06)", borderRadius:3, overflow:"hidden" }}>
-            <div style={{ height:"100%", width:`${Math.min((domains.length/planInfo.max)*100, 100)}%`, background: atLimit ? "#FF6B6B" : "linear-gradient(90deg,var(--accent),#39FF8F)", borderRadius:3, transition:"width 0.5s" }}/>
+            <div style={{ height:"100%", width:`${Math.min((domains.length/planInfo.max)*100, 100)}%`, background: atLimit ? "var(--danger)" : "linear-gradient(90deg,var(--accent),var(--success))", borderRadius:3, transition:"width 0.5s" }}/>
           </div>
           {atLimit && (
             <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:7, padding:"8px 12px", background:"color-mix(in srgb, var(--accent) 6%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 15%, transparent)", borderRadius:8 }}>
@@ -222,7 +222,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
               Domaines secondaires ({secondary.length})
             </p>
             {primary && (
-              <span style={{ color:"#38BDF8", fontSize:10 }}>301 → {primary.domain}</span>
+              <span style={{ color:"var(--action)", fontSize:10 }}>301 → {primary.domain}</span>
             )}
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:8 }}>

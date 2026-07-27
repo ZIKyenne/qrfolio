@@ -34,8 +34,8 @@ const PAID_PLANS = ["pro", "business"]
 
 const STATUS_CFG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending: { label: "En attente",   color: "#F97316", icon: <Clock size={13}/> },
-  active:  { label: "Actif",        color: "#39FF8F", icon: <CheckCircle size={13}/> },
-  error:   { label: "Erreur",       color: "#FF6B6B", icon: <AlertCircle size={13}/> },
+  active:  { label: "Actif",        color: "var(--success)", icon: <CheckCircle size={13}/> },
+  error:   { label: "Erreur",       color: "var(--danger)", icon: <AlertCircle size={13}/> },
 }
 
 const G     = "var(--accent)"
@@ -209,7 +209,7 @@ export default function DomainsPage({ pages, plan }: Props) {
                   </div>
 
                   {error && (
-                    <p style={{ color:"#FF6B6B", fontSize:12, margin:0, display:"flex", alignItems:"center", gap:6 }}>
+                    <p style={{ color:"var(--danger)", fontSize:12, margin:0, display:"flex", alignItems:"center", gap:6 }}>
                       <AlertCircle size={13}/> {error}
                     </p>
                   )}
@@ -242,7 +242,7 @@ export default function DomainsPage({ pages, plan }: Props) {
                 </p>
                 {/* Exemple concret */}
                 <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"7px 14px", background:"color-mix(in srgb, var(--accent) 8%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:9, marginBottom:18 }}>
-                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#39FF8F", flexShrink:0 }}/>
+                  <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--success)", flexShrink:0 }}/>
                   <span style={{ color:"#F5F0E8", fontSize:13, fontWeight:600, fontFamily:"monospace" }}>votreentreprise.fr</span>
                 </div>
                 <div>
@@ -265,7 +265,7 @@ export default function DomainsPage({ pages, plan }: Props) {
                       {/* Ligne principale */}
                       <div style={{ display:"flex", alignItems:"center", gap:12, padding:"16px 18px" }}>
                         <div style={{ width:36, height:36, background:rec.verified?"rgba(57,255,143,0.1)":"rgba(255,255,255,0.04)", borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                          <Globe size={16} color={rec.verified?"#39FF8F":MUTED}/>
+                          <Globe size={16} color={rec.verified?"var(--success)":MUTED}/>
                         </div>
                         <div style={{ flex:1, minWidth:0 }}>
                           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:2, flexWrap:"wrap" }}>
@@ -293,7 +293,7 @@ export default function DomainsPage({ pages, plan }: Props) {
                             </button>
                           )}
                           <button type="button" onClick={() => deleteDomain(rec.id)} disabled={isBusy}
-                            style={{ width:28, height:28, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"#FF6B6B", cursor:isBusy?"wait":"pointer", opacity:isBusy?0.5:1 }}>
+                            style={{ width:28, height:28, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:isBusy?"wait":"pointer", opacity:isBusy?0.5:1 }}>
                             {deleting===rec.id ? <Loader size={12} style={{ animation:"spin 0.8s linear infinite" }}/> : <Trash2 size={13}/>}
                           </button>
                           <button type="button" onClick={() => setExpanded(isOpen ? null : rec.id)}
@@ -339,11 +339,11 @@ export default function DomainsPage({ pages, plan }: Props) {
                                     <span style={{ color:"#F5F0E8", fontSize:12 }}>@</span>
                                     <span style={{ color:"#F5F0E8", fontSize:12 }}>3600</span>
                                     <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                                      <code style={{ color:"#39FF8F", fontSize:11, background:"rgba(57,255,143,0.08)", padding:"3px 7px", borderRadius:5, wordBreak:"break-all" }}>
+                                      <code style={{ color:"var(--success)", fontSize:11, background:"rgba(57,255,143,0.08)", padding:"3px 7px", borderRadius:5, wordBreak:"break-all" }}>
                                         qrowg-verify={rec.txt_record}
                                       </code>
                                       <button type="button" onClick={() => copyText(`qrowg-verify=${rec.txt_record}`, `txt-${rec.id}`)}
-                                        style={{ flexShrink:0, background:"none", border:"none", color:copied===`txt-${rec.id}`?"#39FF8F":MUTED, cursor:"pointer", padding:2 }}>
+                                        style={{ flexShrink:0, background:"none", border:"none", color:copied===`txt-${rec.id}`?"var(--success)":MUTED, cursor:"pointer", padding:2 }}>
                                         {copied===`txt-${rec.id}` ? <CheckCircle size={13}/> : <Copy size={13}/>}
                                       </button>
                                     </div>
@@ -371,7 +371,7 @@ export default function DomainsPage({ pages, plan }: Props) {
                                         cname.vercel-dns.com
                                       </code>
                                       <button type="button" onClick={() => copyText("cname.vercel-dns.com", `cname-${rec.id}`)}
-                                        style={{ background:"none", border:"none", color:copied===`cname-${rec.id}`?"#39FF8F":MUTED, cursor:"pointer", padding:2 }}>
+                                        style={{ background:"none", border:"none", color:copied===`cname-${rec.id}`?"var(--success)":MUTED, cursor:"pointer", padding:2 }}>
                                         {copied===`cname-${rec.id}` ? <CheckCircle size={13}/> : <Copy size={13}/>}
                                       </button>
                                     </div>
@@ -391,9 +391,9 @@ export default function DomainsPage({ pages, plan }: Props) {
                             </div>
                           ) : (
                             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                              <CheckCircle size={18} color="#39FF8F"/>
+                              <CheckCircle size={18} color="var(--success)"/>
                               <div>
-                                <p style={{ color:"#39FF8F", fontSize:13, fontWeight:700, margin:"0 0 2px" }}>Domaine actif</p>
+                                <p style={{ color:"var(--success)", fontSize:13, fontWeight:700, margin:"0 0 2px" }}>Domaine actif</p>
                                 <p style={{ color:MUTED, fontSize:12, margin:0 }}>
                                   Vérifié le {formatDate(rec.verified_at!)} · Accessible sur{" "}
                                   <a href={`https://${rec.domain}`} target="_blank" rel="noopener noreferrer" style={{ color:G }}>

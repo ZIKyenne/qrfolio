@@ -26,7 +26,7 @@ const STATUS_CFG: Record<SslStatus, {
   icon: React.ReactNode; shield: React.ReactNode
 }> = {
   active: {
-    color:  "#39FF8F",
+    color:  "var(--success)",
     bg:     "rgba(57,255,143,0.08)",
     border: "rgba(57,255,143,0.2)",
     icon:   <ShieldCheck size={12}/>,
@@ -40,7 +40,7 @@ const STATUS_CFG: Record<SslStatus, {
     shield: <Shield size={16}/>,
   },
   error: {
-    color:  "#FF6B6B",
+    color:  "var(--danger)",
     bg:     "rgba(255,107,107,0.08)",
     border: "rgba(255,107,107,0.2)",
     icon:   <ShieldAlert size={12}/>,
@@ -158,7 +158,7 @@ export default function SslBadge({ domain, verified }: Props) {
             {ssl.status === "active" && (
               <div style={{ display:"flex", justifyContent:"space-between" }}>
                 <span style={{ color:MUTED, fontSize:11 }}>Renouvellement</span>
-                <span style={{ color:"#39FF8F", fontSize:11, fontWeight:600 }}>Automatique ✓</span>
+                <span style={{ color:"var(--success)", fontSize:11, fontWeight:600 }}>Automatique ✓</span>
               </div>
             )}
           </div>

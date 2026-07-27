@@ -34,14 +34,18 @@ export async function GET(req: NextRequest) {
         .maybeSingle()
 
       if (primaryDomain) {
-        const path = req.nextUrl.searchParams.get("path") ?? "/"
+        const rawPath = req.nextUrl.searchParams.get("path") ?? "/"
+        // Forcer un chemin (leading "/") : sinon `path=@evil.com` construirait
+        // `https://primary.com@evil.com` (host = evil.com) = open-redirect.
+        const path = rawPath.startsWith("/") ? rawPath : "/" + rawPath
         const dest = `https://${primaryDomain.domain}${path !== "/" ? path : ""}`
         return NextResponse.redirect(dest, { status: 301 })
       }
     }
 
     // ── Étape 0: vérifier les redirections ──────────────────────────────────────
-    const path = req.nextUrl.searchParams.get("path") ?? "/"
+    const rawPath = req.nextUrl.searchParams.get("path") ?? "/"
+    const path = rawPath.startsWith("/") ? rawPath : "/" + rawPath
 
     // Chercher une redirection exacte (domaine + chemin)
     const { data: redirect } = await supabase

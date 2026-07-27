@@ -18,6 +18,9 @@ function memoryAllow(key: string, max: number, windowMs: number): boolean {
   const now = Date.now()
   const e = buckets.get(key)
   if (!e || now > e.reset) {
+    // Balayage opportuniste des entrées expirées : borne la Map (évite une fuite
+    // mémoire sur une instance chaude voyant beaucoup d'IP/clés distinctes).
+    if (buckets.size > 5000) for (const [k, v] of buckets) if (now > v.reset) buckets.delete(k)
     buckets.set(key, { count: 1, reset: now + windowMs })
     return true
   }
@@ -52,7 +55,14 @@ async function upstashAllow(key: string, max: number, windowMs: number): Promise
   // Réponse pipeline : [{ result: <count> }, { result: 0|1 }]
   const data = (await res.json()) as Array<{ result?: unknown; error?: string }>
   if (!Array.isArray(data) || data[0]?.error) throw new Error(data?.[0]?.error || "upstash bad response")
-  const count = Number(data[0]?.result ?? 0)
+  // Si l'EXPIRE (2e commande) a échoué, la clé peut rester SANS TTL → compteur
+  // jamais réinitialisé → blocage permanent. On lève pour retomber sur le repli
+  // mémoire (fail-safe) plutôt que de faire confiance à un compteur qui ne
+  // redescendra jamais.
+  if (data[1]?.error) throw new Error(`upstash expire: ${data[1].error}`)
+  const count = Number(data[0]?.result)
+  // Réponse 2xx malformée (result absent/non numérique) → fail-safe, pas fail-open.
+  if (!Number.isFinite(count)) throw new Error("upstash bad count")
   return count <= max
 }
 

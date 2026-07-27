@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server"
+import { canTeam, teamLimit } from "@/lib/plans"
 
 // POST — accepter une invitation via son token (l'utilisateur connecté rejoint l'équipe).
 export async function POST(req: NextRequest) {
@@ -24,6 +25,27 @@ export async function POST(req: NextRequest) {
   const { data: prof } = await admin.from("profiles").select("email").eq("id", user.id).single()
   if ((prof?.email ?? "").toLowerCase() !== inv.email.toLowerCase()) {
     return NextResponse.json({ error: "Cette invitation vise une autre adresse e-mail." }, { status: 403 })
+  }
+
+  // Revérifier le plan + les sièges du PROPRIÉTAIRE au moment de l'acceptation :
+  // l'invitation a pu être émise en Business puis le compte rétrogradé (le token
+  // resterait sinon valide et donnerait un accès payant après rétrogradation).
+  const { data: team } = await admin.from("teams").select("owner_id").eq("id", inv.team_id).single()
+  if (!team) return NextResponse.json({ error: "Équipe introuvable." }, { status: 404 })
+  const { data: ownerProf } = await admin.from("profiles").select("plan").eq("id", team.owner_id).single()
+  if (!canTeam(ownerProf?.plan)) {
+    return NextResponse.json({ error: "La fonction Équipe n'est plus active sur ce compte." }, { status: 403 })
+  }
+  // Siège disponible ? (sauf si déjà membre — l'acceptation est idempotente.)
+  const { data: already } = await admin.from("team_members")
+    .select("user_id").eq("team_id", inv.team_id).eq("user_id", user.id).maybeSingle()
+  if (!already) {
+    const limit = teamLimit(ownerProf?.plan) ?? 0
+    const { count } = await admin.from("team_members")
+      .select("id", { count: "exact", head: true }).eq("team_id", inv.team_id)
+    if ((count ?? 0) >= limit) {
+      return NextResponse.json({ error: "L'équipe est complète (limite de sièges atteinte)." }, { status: 403 })
+    }
   }
 
   // Rejoint l'équipe (idempotent).

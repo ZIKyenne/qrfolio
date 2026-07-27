@@ -145,7 +145,8 @@ async function checkHttpsSsl(domain: string, checked_at: string): Promise<Respon
     const res = await fetch(`https://${domain}`, {
       method: "HEAD",
       signal: controller.signal,
-      redirect: "follow",
+      // "manual" : ne pas suivre une redirection vers une cible interne (anti-SSRF).
+      redirect: "manual",
     })
     clearTimeout(timer)
 

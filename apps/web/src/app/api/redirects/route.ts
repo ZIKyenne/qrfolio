@@ -5,6 +5,17 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { normalizeDomain } from "@/lib/domain"
 
+// Destination autorisée : chemin interne "/…" OU URL http(s) absolue.
+// Rejette les URL protocol-relative "//host" (open-redirect) et les schémas
+// exotiques (javascript:, data:, …).
+function isValidRedirectTarget(raw: string): boolean {
+  const t = (raw ?? "").trim()
+  if (!t || t.startsWith("//")) return false
+  if (t.startsWith("/")) return true
+  try { const u = new URL(t); return u.protocol === "http:" || u.protocol === "https:" }
+  catch { return false }
+}
+
 export async function GET() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -37,6 +48,25 @@ export async function POST(req: NextRequest) {
   // Normaliser les chemins
   const cleanPath = (from_path ?? "/").startsWith("/") ? (from_path ?? "/") : "/" + (from_path ?? "")
   const cleanDomain = normalizeDomain(from_domain)
+
+  // Destination : http(s) valide ou chemin interne — jamais //host ni javascript:.
+  if (!isValidRedirectTarget(to_url)) {
+    return NextResponse.json({ error: "Destination invalide : URL http(s) ou chemin /…" }, { status: 400 })
+  }
+
+  // SÉCURITÉ (anti open-redirect) : la source doit être un domaine VÉRIFIÉ
+  // appartenant à l'utilisateur. Sans ça, n'importe qui créerait une redirection
+  // sur qrowg.com ou sur le domaine d'un autre.
+  const { data: ownedDomain } = await supabase
+    .from("domain_verifications")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("domain", cleanDomain)
+    .eq("verified", true)
+    .maybeSingle()
+  if (!ownedDomain) {
+    return NextResponse.json({ error: "Vous devez d'abord ajouter et vérifier ce domaine." }, { status: 403 })
+  }
 
   // Éviter les redirections en boucle (comparaison normalisee, insensible a la casse)
   const destDomain = normalizeDomain(to_url)
@@ -77,8 +107,8 @@ export async function PATCH(req: NextRequest) {
   if ("redirect_type" in filtered && ![301, 302].includes(filtered.redirect_type as number)) {
     return NextResponse.json({ error: "Type doit être 301 ou 302" }, { status: 400 })
   }
-  if ("to_url" in filtered && !String(filtered.to_url ?? "").trim()) {
-    return NextResponse.json({ error: "to_url ne peut pas être vide" }, { status: 400 })
+  if ("to_url" in filtered && !isValidRedirectTarget(String(filtered.to_url ?? ""))) {
+    return NextResponse.json({ error: "Destination invalide : URL http(s) ou chemin /…" }, { status: 400 })
   }
 
   const { data, error } = await supabase

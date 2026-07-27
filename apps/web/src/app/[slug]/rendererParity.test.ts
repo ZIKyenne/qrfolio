@@ -17,8 +17,14 @@ const casesOf = (relUrl: string) => {
 }
 
 // Labels `case "xxx"` des deux renderers.
+// Le rendu de bloc du builder vit dans builderPreview.tsx (BlockPreview, extrait
+// de BuilderV4). On lit les deux fichiers en union pour rester robuste à un futur
+// re-découpage.
 const publicCases = casesOf("./PublicPageClient.tsx")
-const builderCases = casesOf("../dashboard/builder/BuilderV4.tsx")
+const builderCases = new Set([
+  ...casesOf("../dashboard/builder/builderPreview.tsx"),
+  ...casesOf("../dashboard/builder/BuilderV4.tsx"),
+])
 
 const blockTypes = Object.keys(BLOCK_DEFS)
 

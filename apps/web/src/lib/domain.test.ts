@@ -38,4 +38,10 @@ describe("isValidDomain", () => {
   it("un domaine normalise puis valide est coherent", () => {
     expect(isValidDomain(normalizeDomain("https://www.Mon-Site.FR/contact"))).toBe(true)
   })
+  it("rejette les litteraux IPv4 (defense anti-SSRF)", () => {
+    expect(isValidDomain("127.0.0.1")).toBe(false)
+    expect(isValidDomain("169.254.169.254")).toBe(false) // metadonnees cloud
+    expect(isValidDomain("10.0.0.1")).toBe(false)
+    expect(isValidDomain("192.168.1.1")).toBe(false)
+  })
 })

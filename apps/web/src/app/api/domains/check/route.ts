@@ -184,7 +184,10 @@ async function checkHttp(domain: string): Promise<DnsCheck> {
 
       const res = await fetch(url, {
         method:   "HEAD",
-        redirect: "follow",
+        // "manual" (et pas "follow") : `isPublicHttpUrl` ne valide que le 1er saut ;
+        // suivre les redirections laisserait un domaine renvoyer vers une IP interne
+        // (169.254.169.254, …) = SSRF. Un 3xx est déjà traité comme un succès plus bas.
+        redirect: "manual",
         signal:   controller.signal,
         headers:  { "User-Agent": "QRowg-DomainCheck/1.0" },
       })

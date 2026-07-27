@@ -27,6 +27,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
     .maybeSingle()
   if (!qr) return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
 
+  // IDOR : pour une destination de type "page", exiger que la page appartienne
+  // au détenteur de la clé (sinon on pourrait pointer son QR vers l'ID de page
+  // d'un autre utilisateur).
+  if (type === "page") {
+    const { data: pg } = await admin
+      .from("pages").select("id").eq("id", value.trim()).eq("user_id", auth.userId).maybeSingle()
+    if (!pg) return NextResponse.json({ error: "Page introuvable" }, { status: 404 })
+  }
+
   const newDest = {
     type,
     value:  value.trim(),

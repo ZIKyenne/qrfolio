@@ -79,11 +79,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
   const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
 
   try {
-    // Requête sans embed (plus robuste : un embed cassé ferait échouer .single()
-    // et redirigerait à tort vers l'accueil). Le slug de la page est récupéré à part.
+    // select("*") volontaire : robuste si des colonnes optionnelles (status,
+    // dest_override, pause_message, expires_at — migrations 012/013) ne sont pas
+    // appliquées en prod. Un select explicite d'une colonne absente ferait échouer
+    // la requête -> data null -> redirection à tort vers l'accueil pour TOUS les QR.
     const { data: qr, error: qrErr } = await supabase
       .from("qr_codes")
-      .select("id, page_id, status, dest_override, pause_message, expires_at")
+      .select("*")
       .eq("short_code", code)
       .maybeSingle()
 

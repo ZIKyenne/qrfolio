@@ -64,18 +64,18 @@ type ActivityEvent = {
 // Config d'affichage par type d'evenement
 const ACTIVITY_CFG: Record<ActivityEventType, { icon: any; color: string; bg: string }> = {
   page_created:       { icon: FileEdit,  color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  page_published:     { icon: CheckCircle,color: "#39FF8F", bg: "rgba(57,255,143,0.1)"  },
-  page_updated:       { icon: FileEdit,  color: "#38BDF8",  bg: "rgba(56,189,248,0.1)"  },
+  page_published:     { icon: CheckCircle,color: "var(--success)", bg: "rgba(57,255,143,0.1)"  },
+  page_updated:       { icon: FileEdit,  color: "var(--action)",  bg: "rgba(56,189,248,0.1)"  },
   qr_created:         { icon: QrCode,    color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
   qr_customized:      { icon: Settings,  color: "#7B61FF",  bg: "rgba(123,97,255,0.1)"  },
-  qr_scanned:         { icon: ScanLine,      color: "#39FF8F",  bg: "rgba(57,255,143,0.1)"  },
-  qr_downloaded:      { icon: Download,  color: "#38BDF8",  bg: "rgba(56,189,248,0.1)"  },
+  qr_scanned:         { icon: ScanLine,      color: "var(--success)",  bg: "rgba(57,255,143,0.1)"  },
+  qr_downloaded:      { icon: Download,  color: "var(--action)",  bg: "rgba(56,189,248,0.1)"  },
   plan_changed:       { icon: Activity,       color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
   referral_validated: { icon: Award,     color: "#EC4899",  bg: "rgba(236,72,153,0.1)"  },
   profile_updated:    { icon: Settings,  color: "#A8A190",  bg: "rgba(138,132,120,0.1)" },
   template_used:      { icon: Tag,       color: "#F97316",  bg: "rgba(249,115,22,0.1)"  },
   api_key_created:    { icon: Key,       color: "#7B61FF",  bg: "rgba(123,97,255,0.1)"  },
-  export_done:        { icon: Download,  color: "#38BDF8",  bg: "rgba(56,189,248,0.1)"  },
+  export_done:        { icon: Download,  color: "var(--action)",  bg: "rgba(56,189,248,0.1)"  },
 }
 
 const ACTIVITY_FILTER_OPTS = [
@@ -938,17 +938,17 @@ export default function ProfilePage() {
     const isEarly = memberMonths >= 0 && memberMonths <= 6
     return [
       { id:"first_page",     emoji:"📄", label:"Premiere page",      desc:"Publiez votre premiere page",               category:"pages",     color:"var(--accent)", unlocked: publishedPages >= 1      },
-      { id:"builder_expert", emoji:"🏗",  label:"Builder Expert",     desc:"Publiez 10 pages differentes",              category:"pages",     color:"#38BDF8", unlocked: publishedPages >= 10     },
+      { id:"builder_expert", emoji:"🏗",  label:"Builder Expert",     desc:"Publiez 10 pages differentes",              category:"pages",     color:"var(--action)", unlocked: publishedPages >= 10     },
       { id:"template_master",emoji:"🎨", label:"Template Master",     desc:"Creez 3 pages ou plus",                    category:"pages",     color:"#7B61FF", unlocked: totalPages >= 3          },
       { id:"first_qr",       emoji:"⬛", label:"Premier QR",         desc:"Creez votre premier QR Code",              category:"scans",     color:"#F97316", unlocked: qrStats.length >= 1      },
-      { id:"scans_100",      emoji:"📡", label:"100 Scans",          desc:"Atteignez 100 scans au total",             category:"scans",     color:"#39FF8F", unlocked: totalScansQR >= 100      },
+      { id:"scans_100",      emoji:"📡", label:"100 Scans",          desc:"Atteignez 100 scans au total",             category:"scans",     color:"var(--success)", unlocked: totalScansQR >= 100      },
       { id:"scans_1k",       emoji:"🚀", label:"1 000 Scans",        desc:"Atteignez 1 000 scans",                    category:"scans",     color:"var(--accent)", unlocked: totalScansQR >= 1000     },
       { id:"scans_10k",      emoji:"💫", label:"10 000 Scans",       desc:"Top 1% des utilisateurs",                  category:"scans",     color:"#EC4899", unlocked: totalScansQR >= 10000    },
       { id:"first_ref",      emoji:"🤝", label:"Parrain",            desc:"Validez votre premier parrainage",         category:"referrals", color:"#7B61FF", unlocked: validatedRefs >= 1       },
       { id:"refs_5",         emoji:"🌟", label:"Super Parrain",      desc:"Validez 5 parrainages",                    category:"referrals", color:"#EC4899", unlocked: validatedRefs >= 5       },
       { id:"pro_user",       emoji:"⚡", label:"Utilisateur Pro",    desc:"Passez au plan Pro ou superieur",          category:"plan",      color:"var(--accent)", unlocked: isPro                   },
-      { id:"business_user",  emoji:"👑", label:"Business",           desc:"Atteignez le plan Business",               category:"plan",      color:"#39FF8F", unlocked: isBiz                   },
-      { id:"early_user",     emoji:"🌱", label:"Early User",         desc:"Parmi les premiers utilisateurs",          category:"milestone", color:"#39FF8F", unlocked: isEarly                 },
+      { id:"business_user",  emoji:"👑", label:"Business",           desc:"Atteignez le plan Business",               category:"plan",      color:"var(--success)", unlocked: isBiz                   },
+      { id:"early_user",     emoji:"🌱", label:"Early User",         desc:"Parmi les premiers utilisateurs",          category:"milestone", color:"var(--success)", unlocked: isEarly                 },
     ]
   }
 
@@ -963,7 +963,7 @@ export default function ProfilePage() {
     type LevelDef = { min:number; label:string; color:string; emoji:string; next:number }
     const LEVELS: LevelDef[] = [
       { min:0,  label:"Debutant",      color:"#A8A190", emoji:"🌱", next:15  },
-      { min:15, label:"Explorateur",   color:"#38BDF8", emoji:"🧭", next:30  },
+      { min:15, label:"Explorateur",   color:"var(--action)", emoji:"🧭", next:30  },
       { min:30, label:"Createur",      color:"var(--accent)", emoji:"✨", next:50  },
       { min:50, label:"Professionnel", color:"#F97316", emoji:"🔥", next:70  },
       { min:70, label:"Expert",        color:"#7B61FF", emoji:"💎", next:90  },
@@ -1168,8 +1168,8 @@ export default function ProfilePage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 7 }}>
               {([
                 { icon: Calendar, label: "Jours", value: profile ? Math.max(0, Math.floor((Date.now() - new Date(profile.created_at).getTime()) / 86400000)) : 0, color: pc },
-                { icon: FileEdit, label: "Pages", value: totalPages, color: "#38BDF8" },
-                { icon: QrCode, label: "QR", value: activeQR, color: "#39FF8F" },
+                { icon: FileEdit, label: "Pages", value: totalPages, color: "var(--action)" },
+                { icon: QrCode, label: "QR", value: activeQR, color: "var(--success)" },
                 { icon: TrendingUp, label: "Scans", value: profile?.total_scans || 0, color: "#F97316" },
               ] as const).map((s, i) => (
                 <div key={i} className="hero-in hero-tile" style={{ animationDelay: `${120 + i * 80}ms`, background: "rgba(255,255,255,0.04)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "9px 7px", textAlign: "center" as const }}>
@@ -1262,7 +1262,7 @@ export default function ProfilePage() {
             action={
               <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                 {profile?.plan === "free" && memberMonths <= 6 && (
-                  <span style={{ background:"rgba(57,255,143,0.1)", border:"1px solid rgba(57,255,143,0.2)", borderRadius:20, padding:"2px 8px", fontSize:9, color:"#39FF8F", fontWeight:700 }}>
+                  <span style={{ background:"rgba(57,255,143,0.1)", border:"1px solid rgba(57,255,143,0.2)", borderRadius:20, padding:"2px 8px", fontSize:9, color:"var(--success)", fontWeight:700 }}>
                     Early User
                   </span>
                 )}
@@ -1392,7 +1392,7 @@ export default function ProfilePage() {
                     {publicUrl}
                   </span>
                   <button onClick={copyPublicUrl}
-                    style={{ width:26, height:26, background:"none", border:"none", cursor:"pointer", color:copiedUrl?"#39FF8F":G, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    style={{ width:26, height:26, background:"none", border:"none", cursor:"pointer", color:copiedUrl?"var(--success)":G, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     {copiedUrl ? <Check size={12}/> : <Copy size={12}/>}
                   </button>
                   <a href={publicUrl} target="_blank" rel="noopener noreferrer"
@@ -1422,7 +1422,7 @@ export default function ProfilePage() {
               {/* Bouton save */}
               <button onClick={saveProfile}
                 disabled={saving || !hasChanges || usernameStatus==="taken" || usernameStatus==="invalid" || usernameStatus==="checking"}
-                style={{ gridColumn:"1 / -1", display:"flex", alignItems:"center", justifyContent:"center", gap:7, background:saved?"rgba(57,255,143,0.1)":hasChanges?"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))":"rgba(255,255,255,0.04)", border:saved?"1px solid rgba(57,255,143,0.3)":"none", borderRadius:9, padding:"11px", color:saved?"#39FF8F":hasChanges?"#080808":"#A8A190", fontSize:13, fontWeight:700, cursor:saving||!hasChanges||usernameStatus==="taken"||usernameStatus==="invalid"||usernameStatus==="checking"?"not-allowed":"pointer", transition:"all 0.2s", opacity:saving?0.7:1 }}>
+                style={{ gridColumn:"1 / -1", display:"flex", alignItems:"center", justifyContent:"center", gap:7, background:saved?"rgba(57,255,143,0.1)":hasChanges?"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))":"rgba(255,255,255,0.04)", border:saved?"1px solid rgba(57,255,143,0.3)":"none", borderRadius:9, padding:"11px", color:saved?"var(--success)":hasChanges?"#080808":"#A8A190", fontSize:13, fontWeight:700, cursor:saving||!hasChanges||usernameStatus==="taken"||usernameStatus==="invalid"||usernameStatus==="checking"?"not-allowed":"pointer", transition:"all 0.2s", opacity:saving?0.7:1 }}>
                 {saved ? <><Check size={13}/> Sauvegarde !</>
                   : saving ? "Sauvegarde..."
                   : !hasChanges ? "Aucune modification"
@@ -1436,7 +1436,7 @@ export default function ProfilePage() {
 
           {/* 2. ACTIVITE RECENTE */}
           {ptab === "identite" && (
-          <SectionCard title="Activite recente" icon={Clock} color="#38BDF8"
+          <SectionCard title="Activite recente" icon={Clock} color="var(--action)"
             action={
               <a href="/dashboard/analytics" style={{ color:MUTED, fontSize:11, display:"flex", alignItems:"center", gap:3, textDecoration:"none" }}>
                 Tout voir <ChevronRight size={12}/>
@@ -1613,10 +1613,10 @@ export default function ProfilePage() {
               {/* KPIs */}
               <div className="rcols-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:7 }}>
                 {([
-                  { value:referrals.length, label:"Invitations",  color:"#38BDF8" },
+                  { value:referrals.length, label:"Invitations",  color:"var(--action)" },
                   { value:pendingRefs,       label:"En attente",   color:"#F97316" },
                   { value:validatedRefs,     label:"Valides",      color:"#7B61FF" },
-                  { value:totalMonths,       label:"Mois Pro",     color:"#39FF8F" },
+                  { value:totalMonths,       label:"Mois Pro",     color:"var(--success)" },
                 ] as const).map((k, i) => (
                   <div key={i} style={{ background:SURF2, border:"1px solid rgba(255,255,255,0.05)", borderRadius:9, padding:"10px 8px", textAlign:"center" as const }}>
                     <p style={{ color:k.color, fontSize:20, fontWeight:800, margin:0, fontFamily:"Fraunces, serif", lineHeight:1 }}>{k.value}</p>
@@ -1643,7 +1643,7 @@ export default function ProfilePage() {
                     {referralLink}
                   </div>
                   <button onClick={copyReferral}
-                    style={{ flexShrink:0, display:"flex", alignItems:"center", gap:5, background:copiedRef?"rgba(57,255,143,0.1)":"color-mix(in srgb, var(--accent) 7%, transparent)", border:`1px solid ${copiedRef?"rgba(57,255,143,0.3)":"color-mix(in srgb, var(--accent) 15%, transparent)"}`, borderRadius:9, padding:"9px 14px", color:copiedRef?"#39FF8F":G, fontSize:11, fontWeight:600, cursor:"pointer" }}>
+                    style={{ flexShrink:0, display:"flex", alignItems:"center", gap:5, background:copiedRef?"rgba(57,255,143,0.1)":"color-mix(in srgb, var(--accent) 7%, transparent)", border:`1px solid ${copiedRef?"rgba(57,255,143,0.3)":"color-mix(in srgb, var(--accent) 15%, transparent)"}`, borderRadius:9, padding:"9px 14px", color:copiedRef?"var(--success)":G, fontSize:11, fontWeight:600, cursor:"pointer" }}>
                     {copiedRef ? <><Check size={12}/> Copie !</> : <><Copy size={12}/> Copier</>}
                   </button>
                 </div>
@@ -1652,7 +1652,7 @@ export default function ProfilePage() {
                 <div className="rcols-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:6 }}>
                   {([
                     { id:"whatsapp" as const, label:"WhatsApp", color:"#25D366", emoji:"💬" },
-                    { id:"email"    as const, label:"Email",    color:"#38BDF8", emoji:"✉" },
+                    { id:"email"    as const, label:"Email",    color:"var(--action)", emoji:"✉" },
                     { id:"twitter"  as const, label:"X / Twitter", color:"#F5F0E8", emoji:"🐦" },
                     { id:"linkedin" as const, label:"LinkedIn", color:"#0A66C2", emoji:"💼" },
                   ]).map(btn => (
@@ -1701,9 +1701,9 @@ export default function ProfilePage() {
                     {filteredRefs.slice(0, 8).map((r, i) => {
                       const STATUS_CFG2: Record<string, { label:string; color:string; bg:string }> = {
                         pending:   { label:"Inscrit",  color:"#F97316", bg:"rgba(249,115,22,0.1)"  },
-                        validated: { label:"Valide",   color:"#39FF8F", bg:"rgba(57,255,143,0.1)"  },
+                        validated: { label:"Valide",   color:"var(--success)", bg:"rgba(57,255,143,0.1)"  },
                         rewarded:  { label:"Recompense",color:"#7B61FF",bg:"rgba(123,97,255,0.1)"  },
-                        expired:   { label:"Expire",   color:"#FF6B6B", bg:"rgba(255,107,107,0.1)" },
+                        expired:   { label:"Expire",   color:"var(--danger)", bg:"rgba(255,107,107,0.1)" },
                       }
                       const scfg = STATUS_CFG2[r.status] ?? STATUS_CFG2.pending
                       const isLast = i === Math.min(filteredRefs.length, 8) - 1
@@ -1739,7 +1739,7 @@ export default function ProfilePage() {
 
           {/* STATISTIQUES */}
           {ptab === "identite" && (
-          <SectionCard title="Statistiques" icon={TrendingUp} color="#38BDF8"
+          <SectionCard title="Statistiques" icon={TrendingUp} color="var(--action)"
             tag={statsLoading ? "..." : `${totalPages} pages`}
             action={
               <a href="/dashboard/analytics"
@@ -1771,8 +1771,8 @@ export default function ProfilePage() {
                 <div className="rcols-3" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
                   {[
                     { icon:Eye,        label:"Pages",        value:totalPages,              color:G,          tooltip:"Nombre total de pages creees" },
-                    { icon:CheckCircle,label:"Publiees",      value:publishedPages,          color:"#39FF8F",  tooltip:"Pages avec statut Publie" },
-                    { icon:QrCode,     label:"QR actifs",     value:activeQR,                color:"#38BDF8",  tooltip:"QR Codes avec statut Actif" },
+                    { icon:CheckCircle,label:"Publiees",      value:publishedPages,          color:"var(--success)",  tooltip:"Pages avec statut Publie" },
+                    { icon:QrCode,     label:"QR actifs",     value:activeQR,                color:"var(--action)",  tooltip:"QR Codes avec statut Actif" },
                     { icon:TrendingUp, label:"Vues total",    value:totalViews.toLocaleString("fr-FR"), color:"var(--accent)", tooltip:"Total des vues sur toutes les pages" },
                     { icon:Users,      label:"Visiteurs uniq",value:uniqueViews.toLocaleString("fr-FR"),color:"#7B61FF", tooltip:"Visiteurs uniques (hors doublons)" },
                     { icon:QrCode,     label:"Scans QR",      value:totalScansQR.toLocaleString("fr-FR"),color:"#F97316",tooltip:"Total des scans sur tous les QR" },
@@ -1799,14 +1799,14 @@ export default function ProfilePage() {
                   <div style={{ background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.05)", borderRadius:9, padding:"10px 12px" }}>
                     <p style={{ color:MUTED, fontSize:9, textTransform:"uppercase" as const, letterSpacing:0.8, margin:"0 0 5px" }}>Taux conversion</p>
                     <div style={{ display:"flex", alignItems:"flex-end", gap:6 }}>
-                      <p style={{ color:convRate > 10 ? "#39FF8F" : convRate > 5 ? G : MUTED, fontSize:22, fontWeight:800, margin:0, fontFamily:"Fraunces, serif", lineHeight:1 }}>
+                      <p style={{ color:convRate > 10 ? "var(--success)" : convRate > 5 ? G : MUTED, fontSize:22, fontWeight:800, margin:0, fontFamily:"Fraunces, serif", lineHeight:1 }}>
                         {convRate}%
                       </p>
                       <span style={{ color:MUTED, fontSize:9, paddingBottom:2 }}>scans / vues</span>
                     </div>
                     {/* Barre */}
                     <div style={{ height:3, background:"rgba(255,255,255,0.05)", borderRadius:2, marginTop:6, overflow:"hidden" }}>
-                      <div style={{ height:"100%", width:`${Math.min(convRate*5, 100)}%`, background:`linear-gradient(90deg,${G},#39FF8F)`, borderRadius:2, transition:"width 0.6s ease" }}/>
+                      <div style={{ height:"100%", width:`${Math.min(convRate*5, 100)}%`, background:`linear-gradient(90deg,${G},var(--success))`, borderRadius:2, transition:"width 0.6s ease" }}/>
                     </div>
                   </div>
                   <div style={{ background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.05)", borderRadius:9, padding:"10px 12px" }}>
@@ -1872,7 +1872,7 @@ export default function ProfilePage() {
 
           {/* 4. SECURITE */}
           {ptab === "securite" && (
-          <SectionCard title="Securite" icon={Shield} color="#FF6B6B">
+          <SectionCard title="Securite" icon={Shield} color="var(--danger)">
             {secLoading ? (
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {[...Array(3)].map((_,i) => (
@@ -1906,7 +1906,7 @@ export default function ProfilePage() {
                   <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                     <div style={{ width:32, height:32, borderRadius:8, background:emailVerified?"rgba(57,255,143,0.1)":"rgba(249,115,22,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                       {emailVerified
-                        ? <ShieldCheck size={15} color="#39FF8F"/>
+                        ? <ShieldCheck size={15} color="var(--success)"/>
                         : <ShieldOff   size={15} color="#F97316"/>}
                     </div>
                     <div>
@@ -1914,8 +1914,8 @@ export default function ProfilePage() {
                         {authUser?.email || profile?.email}
                       </p>
                       <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                        <div style={{ width:5, height:5, borderRadius:"50%", background:emailVerified?"#39FF8F":"#F97316" }}/>
-                        <span style={{ color:emailVerified?"#39FF8F":"#F97316", fontSize:10 }}>
+                        <div style={{ width:5, height:5, borderRadius:"50%", background:emailVerified?"var(--success)":"#F97316" }}/>
+                        <span style={{ color:emailVerified?"var(--success)":"#F97316", fontSize:10 }}>
                           {emailVerified ? "Email verifie" : "Email non verifie"}
                         </span>
                       </div>
@@ -1936,7 +1936,7 @@ export default function ProfilePage() {
                   <button type="button" onClick={() => setShowPwdChange(p => !p)}
                     style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", background:"none", border:"none", cursor:"pointer", width:"100%", textAlign:"left" as const }}>
                     <div style={{ width:32, height:32, borderRadius:8, background:"rgba(255,107,107,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <Lock size={14} color="#FF6B6B"/>
+                      <Lock size={14} color="var(--danger)"/>
                     </div>
                     <div style={{ flex:1 }}>
                       <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:600, margin:0 }}>Mot de passe</p>
@@ -1967,9 +1967,9 @@ export default function ProfilePage() {
                         {newPwd && (
                           <div>
                             <div style={{ height:4, background:"rgba(255,255,255,0.06)", borderRadius:2, overflow:"hidden", marginBottom:3 }}>
-                              <div style={{ height:"100%", width:`${pwdStrength}%`, background:pwdStrength<40?"#FF6B6B":pwdStrength<70?"#F97316":"#39FF8F", borderRadius:2, transition:"width 0.3s, background 0.3s" }}/>
+                              <div style={{ height:"100%", width:`${pwdStrength}%`, background:pwdStrength<40?"var(--danger)":pwdStrength<70?"#F97316":"var(--success)", borderRadius:2, transition:"width 0.3s, background 0.3s" }}/>
                             </div>
-                            <p style={{ color:pwdStrength<40?"#FF6B6B":pwdStrength<70?"#F97316":"#39FF8F", fontSize:9, margin:0 }}>
+                            <p style={{ color:pwdStrength<40?"var(--danger)":pwdStrength<70?"#F97316":"var(--success)", fontSize:9, margin:0 }}>
                               {pwdStrength<40?"Mot de passe faible":pwdStrength<70?"Correct -- ajoutez des chiffres et symboles":"Mot de passe fort"}
                             </p>
                           </div>
@@ -1980,11 +1980,11 @@ export default function ProfilePage() {
                         placeholder="Confirmer le mot de passe"
                         style={{ width:"100%", background:"#0F0E0B", border:`1px solid ${newPwdConfirm && newPwd !== newPwdConfirm?"rgba(255,107,107,0.4)":"rgba(255,255,255,0.08)"}`, borderRadius:8, padding:"9px 12px", color:"#F5F0E8", fontSize:12, outline:"none", boxSizing:"border-box" as const }}/>
                       {newPwdConfirm && newPwd !== newPwdConfirm && (
-                        <p style={{ color:"#FF6B6B", fontSize:10, margin:"0" }}>Les mots de passe ne correspondent pas</p>
+                        <p style={{ color:"var(--danger)", fontSize:10, margin:"0" }}>Les mots de passe ne correspondent pas</p>
                       )}
                       <button type="button" onClick={changePasswordDirect}
                         disabled={pwdLoading || newPwd.length < 8 || newPwd !== newPwdConfirm}
-                        style={{ padding:"10px", background:newPwd.length>=8&&newPwd===newPwdConfirm?"linear-gradient(90deg,#FF6B6B,#e05555)":"rgba(255,255,255,0.04)", border:"none", borderRadius:8, color:newPwd.length>=8&&newPwd===newPwdConfirm?"#F5F0E8":MUTED, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                        style={{ padding:"10px", background:newPwd.length>=8&&newPwd===newPwdConfirm?"linear-gradient(90deg,var(--danger),#e05555)":"rgba(255,255,255,0.04)", border:"none", borderRadius:8, color:newPwd.length>=8&&newPwd===newPwdConfirm?"#F5F0E8":MUTED, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
                         {pwdLoading ? "Mise a jour..." : <><Lock size={12}/> Mettre a jour le mot de passe</>}
                       </button>
                     </div>
@@ -2000,13 +2000,13 @@ export default function ProfilePage() {
                       return (
                         <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:sess.current?"rgba(57,255,143,0.04)":SURF2, border:`1px solid ${sess.current?"rgba(57,255,143,0.15)":"rgba(255,255,255,0.06)"}`, borderRadius:9 }}>
                           <div style={{ width:32, height:32, borderRadius:8, background:sess.current?"rgba(57,255,143,0.1)":"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                            <DevIcon size={15} color={sess.current?"#39FF8F":MUTED}/>
+                            <DevIcon size={15} color={sess.current?"var(--success)":MUTED}/>
                           </div>
                           <div style={{ flex:1, minWidth:0 }}>
                             <div style={{ display:"flex", alignItems:"center", gap:7 }}>
                               <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:600, margin:0 }}>{sess.browser}</p>
                               {sess.current && (
-                                <span style={{ background:"rgba(57,255,143,0.1)", border:"1px solid rgba(57,255,143,0.2)", borderRadius:4, padding:"1px 6px", fontSize:8, color:"#39FF8F", fontWeight:700 }}>
+                                <span style={{ background:"rgba(57,255,143,0.1)", border:"1px solid rgba(57,255,143,0.2)", borderRadius:4, padding:"1px 6px", fontSize:8, color:"var(--success)", fontWeight:700 }}>
                                   Session actuelle
                                 </span>
                               )}
@@ -2015,7 +2015,7 @@ export default function ProfilePage() {
                           </div>
                           {!sess.current && (
                             <button type="button" onClick={() => signOutAllDevices()}
-                              style={{ padding:"4px 10px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:6, color:"#FF6B6B", fontSize:10, cursor:"pointer" }}>
+                              style={{ padding:"4px 10px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:6, color:"var(--danger)", fontSize:10, cursor:"pointer" }}>
                               Revoquer
                             </button>
                           )}
@@ -2030,25 +2030,25 @@ export default function ProfilePage() {
                   <button type="button" onClick={signOutAllDevices} disabled={signOutAllLoading}
                     style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:9, cursor:"pointer", textAlign:"left" as const, opacity:signOutAllLoading?0.7:1 }}>
                     <div style={{ width:32, height:32, borderRadius:8, background:"rgba(255,107,107,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <LogOut size={14} color="#FF6B6B"/>
+                      <LogOut size={14} color="var(--danger)"/>
                     </div>
                     <div style={{ flex:1 }}>
-                      <p style={{ color:"#FF6B6B", fontSize:12, fontWeight:600, margin:0 }}>
+                      <p style={{ color:"var(--danger)", fontSize:12, fontWeight:600, margin:0 }}>
                         {signOutAllLoading ? "Deconnexion en cours..." : "Deconnecter tous les appareils"}
                       </p>
                       <p style={{ color:MUTED, fontSize:10, margin:0 }}>Met fin a toutes les sessions actives</p>
                     </div>
-                    <ChevronRight size={14} color="#FF6B6B"/>
+                    <ChevronRight size={14} color="var(--danger)"/>
                   </button>
                 </div>
 
                 {/* Badges securite */}
                 <div style={{ display:"flex", gap:7, flexWrap:"wrap" as const }}>
-                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", background:emailVerified?"rgba(57,255,143,0.08)":"rgba(249,115,22,0.08)", border:`1px solid ${emailVerified?"rgba(57,255,143,0.2)":"rgba(249,115,22,0.2)"}`, borderRadius:20, fontSize:10, color:emailVerified?"#39FF8F":"#F97316" }}>
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", background:emailVerified?"rgba(57,255,143,0.08)":"rgba(249,115,22,0.08)", border:`1px solid ${emailVerified?"rgba(57,255,143,0.2)":"rgba(249,115,22,0.2)"}`, borderRadius:20, fontSize:10, color:emailVerified?"var(--success)":"#F97316" }}>
                     {emailVerified ? <ShieldCheck size={11}/> : <ShieldOff size={11}/>}
                     Email {emailVerified?"verifie":"non verifie"}
                   </span>
-                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", background:"rgba(57,255,143,0.08)", border:"1px solid rgba(57,255,143,0.2)", borderRadius:20, fontSize:10, color:"#39FF8F" }}>
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", background:"rgba(57,255,143,0.08)", border:"1px solid rgba(57,255,143,0.2)", borderRadius:20, fontSize:10, color:"var(--success)" }}>
                     <Shield size={11}/>
                     Compte actif
                   </span>
@@ -2067,18 +2067,18 @@ export default function ProfilePage() {
 
           {/* 5. EXPORT + DANGER */}
           {ptab === "donnees" && (
-          <SectionCard title="Donnees personnelles" icon={Download} color="#38BDF8">
+          <SectionCard title="Donnees personnelles" icon={Download} color="var(--action)">
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
               {/* Badge RGPD */}
               <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"rgba(56,189,248,0.05)", border:"1px solid rgba(56,189,248,0.15)", borderRadius:10 }}>
                 <div style={{ width:36, height:36, borderRadius:10, background:"rgba(56,189,248,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Shield size={16} color="#38BDF8"/>
+                  <Shield size={16} color="var(--action)"/>
                 </div>
                 <div>
                   <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:2 }}>
                     <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:700, margin:0 }}>Vos droits RGPD</p>
-                    <span style={{ background:"rgba(56,189,248,0.12)", border:"1px solid rgba(56,189,248,0.25)", borderRadius:4, padding:"1px 7px", fontSize:8, color:"#38BDF8", fontWeight:800 }}>
+                    <span style={{ background:"rgba(56,189,248,0.12)", border:"1px solid rgba(56,189,248,0.25)", borderRadius:4, padding:"1px 7px", fontSize:8, color:"var(--action)", fontWeight:800 }}>
                       RGPD
                     </span>
                   </div>
@@ -2105,7 +2105,7 @@ export default function ProfilePage() {
                   const fmt = fmtMap[job.id] ?? "JSON"
                   return (
                     <div key={job.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 13px", background:SURF2, border:`1px solid ${job.status==="done"?"rgba(57,255,143,0.15)":job.status==="error"?"rgba(255,107,107,0.15)":"rgba(255,255,255,0.06)"}`, borderRadius:9 }}>
-                      <div style={{ width:32, height:32, borderRadius:8, background:"rgba(56,189,248,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#38BDF8" }}>
+                      <div style={{ width:32, height:32, borderRadius:8, background:"rgba(56,189,248,0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"var(--action)" }}>
                         {iconMap[job.id]}
                       </div>
                       <div style={{ flex:1, minWidth:0 }}>
@@ -2117,9 +2117,9 @@ export default function ProfilePage() {
                         </div>
                         <p style={{ color:MUTED, fontSize:10, margin:0 }}>
                           {job.status==="done" && job.filename
-                            ? <span style={{ color:"#39FF8F" }}>{job.filename}</span>
+                            ? <span style={{ color:"var(--success)" }}>{job.filename}</span>
                             : job.status==="error"
-                            ? <span style={{ color:"#FF6B6B" }}>Erreur -- reessayez</span>
+                            ? <span style={{ color:"var(--danger)" }}>Erreur -- reessayez</span>
                             : job.id==="full"       ? "Toutes vos donnees en un fichier (profil, pages, QR, activite)"
                             : job.id==="pages"      ? "Titre, slug, statut, vues par page"
                             : job.id==="qrcodes"    ? "Short code, scans, statut par QR"
@@ -2131,9 +2131,9 @@ export default function ProfilePage() {
                       <button type="button"
                         onClick={() => { if (job.status !== "running") runExport(job.id) }}
                         disabled={job.status === "running"}
-                        style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 13px", background:job.status==="done"?"rgba(57,255,143,0.08)":job.status==="error"?"rgba(255,107,107,0.08)":"rgba(56,189,248,0.08)", border:`1px solid ${job.status==="done"?"rgba(57,255,143,0.2)":job.status==="error"?"rgba(255,107,107,0.2)":"rgba(56,189,248,0.2)"}`, borderRadius:7, color:job.status==="done"?"#39FF8F":job.status==="error"?"#FF6B6B":"#38BDF8", fontSize:11, fontWeight:600, cursor:job.status==="running"?"wait":"pointer", flexShrink:0 }}>
+                        style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 13px", background:job.status==="done"?"rgba(57,255,143,0.08)":job.status==="error"?"rgba(255,107,107,0.08)":"rgba(56,189,248,0.08)", border:`1px solid ${job.status==="done"?"rgba(57,255,143,0.2)":job.status==="error"?"rgba(255,107,107,0.2)":"rgba(56,189,248,0.2)"}`, borderRadius:7, color:job.status==="done"?"var(--success)":job.status==="error"?"var(--danger)":"var(--action)", fontSize:11, fontWeight:600, cursor:job.status==="running"?"wait":"pointer", flexShrink:0 }}>
                         {job.status==="running"
-                          ? <><div style={{ width:11, height:11, border:"1.5px solid rgba(56,189,248,0.3)", borderTopColor:"#38BDF8", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/> Export...</>
+                          ? <><div style={{ width:11, height:11, border:"1.5px solid rgba(56,189,248,0.3)", borderTopColor:"var(--action)", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/> Export...</>
                           : job.status==="done"
                           ? <><Check size={12}/> OK</>
                           : job.status==="error"
@@ -2154,7 +2154,7 @@ export default function ProfilePage() {
                   <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                     {exportHistory.slice(0,5).map((h,i) => (
                       <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 11px", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.04)", borderRadius:8 }}>
-                        <Check size={11} color="#39FF8F"/>
+                        <Check size={11} color="var(--success)"/>
                         <span style={{ flex:1, color:MUTED, fontSize:10 }}>{h.label}</span>
                         <span style={{ background:"rgba(255,255,255,0.05)", borderRadius:4, padding:"1px 6px", fontSize:8, color:MUTED, fontFamily:"monospace" }}>{h.format}</span>
                         <span style={{ color:MUTED, fontSize:9 }}>
@@ -2187,27 +2187,27 @@ export default function ProfilePage() {
 
           {/* -- Zone Danger ------------------------------------------- */}
           {ptab === "securite" && (
-          <SectionCard title="Zone danger" icon={AlertTriangle} color="#FF6B6B">
+          <SectionCard title="Zone danger" icon={AlertTriangle} color="var(--danger)">
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               <div style={{ padding:"12px 14px", background:"rgba(255,107,107,0.04)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:9 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:showDanger?12:0 }}>
                   <div>
-                    <p style={{ color:"#FF6B6B", fontSize:12, fontWeight:700, margin:0 }}>Supprimer mon compte</p>
+                    <p style={{ color:"var(--danger)", fontSize:12, fontWeight:700, margin:0 }}>Supprimer mon compte</p>
                     <p style={{ color:MUTED, fontSize:10, margin:"2px 0 0" }}>Action irreversible -- toutes les donnees seront perdues</p>
                   </div>
                   <button type="button" onClick={() => setShowDanger(!showDanger)}
-                    style={{ padding:"6px 12px", background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:7, color:"#FF6B6B", fontSize:11, cursor:"pointer" }}>
+                    style={{ padding:"6px 12px", background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:7, color:"var(--danger)", fontSize:11, cursor:"pointer" }}>
                     {showDanger ? "Annuler" : "Supprimer"}
                   </button>
                 </div>
                 {showDanger && (
                   <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                    <p style={{ color:"#FF6B6B", fontSize:11, margin:0 }}>Tape <strong>SUPPRIMER</strong> pour confirmer :</p>
+                    <p style={{ color:"var(--danger)", fontSize:11, margin:0 }}>Tape <strong>SUPPRIMER</strong> pour confirmer :</p>
                     <input value={dangerConfirm} onChange={e => setDangerConfirm(e.target.value)}
                       placeholder="SUPPRIMER"
                       style={{ width:"100%", background:"#0F0E0B", border:"1px solid rgba(255,107,107,0.3)", borderRadius:8, padding:"9px 12px", color:"#F5F0E8", fontSize:12, outline:"none", boxSizing:"border-box" as const }}/>
                     <button type="button" disabled={dangerConfirm !== "SUPPRIMER"}
-                      style={{ padding:"9px", background:dangerConfirm==="SUPPRIMER"?"rgba(255,107,107,0.2)":"rgba(255,255,255,0.03)", border:"1px solid rgba(255,107,107,0.3)", borderRadius:8, color:dangerConfirm==="SUPPRIMER"?"#FF6B6B":MUTED, fontSize:12, fontWeight:700, cursor:dangerConfirm==="SUPPRIMER"?"pointer":"not-allowed" }}>
+                      style={{ padding:"9px", background:dangerConfirm==="SUPPRIMER"?"rgba(255,107,107,0.2)":"rgba(255,255,255,0.03)", border:"1px solid rgba(255,107,107,0.3)", borderRadius:8, color:dangerConfirm==="SUPPRIMER"?"var(--danger)":MUTED, fontSize:12, fontWeight:700, cursor:dangerConfirm==="SUPPRIMER"?"pointer":"not-allowed" }}>
                       Confirmer la suppression
                     </button>
                   </div>
@@ -2247,13 +2247,13 @@ export default function ProfilePage() {
                           Plan {planCfg.label}
                         </p>
                         {planCfg.badge && (
-                          <span style={{ background:"rgba(56,189,248,0.15)", border:"1px solid rgba(56,189,248,0.3)", borderRadius:5, padding:"1px 7px", fontSize:9, color:"#38BDF8", fontWeight:800 }}>
+                          <span style={{ background:"rgba(56,189,248,0.15)", border:"1px solid rgba(56,189,248,0.3)", borderRadius:5, padding:"1px 7px", fontSize:9, color:"var(--action)", fontWeight:800 }}>
                             {planCfg.badge}
                           </span>
                         )}
                         <span style={{ display:"inline-flex", alignItems:"center", gap:4, background:subStatus==="active"?"rgba(57,255,143,0.1)":subStatus==="trialing"?"color-mix(in srgb, var(--accent) 10%, transparent)":subStatus==="free"?"rgba(138,132,120,0.1)":"rgba(255,107,107,0.1)", border:`1px solid ${subStatus==="active"?"rgba(57,255,143,0.25)":subStatus==="trialing"?"color-mix(in srgb, var(--accent) 25%, transparent)":subStatus==="free"?"rgba(138,132,120,0.2)":"rgba(255,107,107,0.25)"}`, borderRadius:20, padding:"2px 9px" }}>
-                          <div style={{ width:5, height:5, borderRadius:"50%", background:subStatus==="active"?"#39FF8F":subStatus==="trialing"?"var(--accent)":subStatus==="free"?"#A8A190":"#FF6B6B" }}/>
-                          <span style={{ color:subStatus==="active"?"#39FF8F":subStatus==="trialing"?"var(--accent)":subStatus==="free"?"#A8A190":"#FF6B6B", fontSize:10, fontWeight:600 }}>
+                          <div style={{ width:5, height:5, borderRadius:"50%", background:subStatus==="active"?"var(--success)":subStatus==="trialing"?"var(--accent)":subStatus==="free"?"#A8A190":"var(--danger)" }}/>
+                          <span style={{ color:subStatus==="active"?"var(--success)":subStatus==="trialing"?"var(--accent)":subStatus==="free"?"#A8A190":"var(--danger)", fontSize:10, fontWeight:600 }}>
                             {subStatus==="active"?"Actif":subStatus==="trialing"?"Essai gratuit":subStatus==="free"?"Plan gratuit":subStatus==="past_due"?"Paiement en attente":"Annule"}
                           </span>
                         </span>
@@ -2302,7 +2302,7 @@ export default function ProfilePage() {
                   <div className="rcols-2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
                     {planCfg.features.map((f, i) => (
                       <div key={i} style={{ display:"flex", alignItems:"center", gap:7 }}>
-                        <CheckCircle size={12} color="#39FF8F" style={{ flexShrink:0 }}/>
+                        <CheckCircle size={12} color="var(--success)" style={{ flexShrink:0 }}/>
                         <span style={{ color:"#C9C3B6", fontSize:11 }}>{f}</span>
                       </div>
                     ))}
@@ -2361,7 +2361,7 @@ export default function ProfilePage() {
 
           {/* CONSOMMATION */}
           {ptab === "abonnement" && (
-          <SectionCard title="Consommation" icon={TrendingUp} color="#38BDF8">
+          <SectionCard title="Consommation" icon={TrendingUp} color="var(--action)">
             {statsLoading ? (
               <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
                 {[...Array(3)].map((_,i) => (
@@ -2377,13 +2377,13 @@ export default function ProfilePage() {
                 {/* Alert limite atteinte */}
                 {(isAtLimitPages || isAtLimitViews) && (
                   <div style={{ display:"flex", alignItems:"flex-start", gap:9, padding:"10px 12px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.25)", borderRadius:9 }}>
-                    <AlertTriangle size={14} color="#FF6B6B" style={{ flexShrink:0, marginTop:1 }}/>
+                    <AlertTriangle size={14} color="var(--danger)" style={{ flexShrink:0, marginTop:1 }}/>
                     <div>
-                      <p style={{ color:"#FF6B6B", fontSize:12, fontWeight:700, margin:"0 0 2px" }}>Limite atteinte</p>
+                      <p style={{ color:"var(--danger)", fontSize:12, fontWeight:700, margin:"0 0 2px" }}>Limite atteinte</p>
                       <p style={{ color:"rgba(255,107,107,0.8)", fontSize:11, margin:"0 0 8px" }}>
                         {isAtLimitPages ? "Vous avez atteint la limite de pages de votre plan." : "Vous avez atteint la limite de vues mensuelle."}
                       </p>
-                      <a href="/upgrade" style={{ color:"#FF6B6B", fontSize:11, fontWeight:700 }}>Upgrader maintenant .</a>
+                      <a href="/upgrade" style={{ color:"var(--danger)", fontSize:11, fontWeight:700 }}>Upgrader maintenant .</a>
                     </div>
                   </div>
                 )}
@@ -2395,26 +2395,26 @@ export default function ProfilePage() {
                   const pct   = limit ? Math.min((used/limit)*100, 100) : 0
                   const isNear = limit && used >= Math.floor(limit * 0.8)
                   const isAt   = limit && used >= limit
-                  const barColor = isAt ? "#FF6B6B" : isNear ? "#F97316" : "#38BDF8"
+                  const barColor = isAt ? "var(--danger)" : isNear ? "#F97316" : "var(--action)"
                   return (
                     <div>
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
                         <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-                          <Eye size={12} color="#38BDF8"/>
+                          <Eye size={12} color="var(--action)"/>
                           <span style={{ color:"#F5F0E8", fontSize:12, fontWeight:600 }}>Pages</span>
                           {isNear && !isAt && <span style={{ color:"#F97316", fontSize:9, fontWeight:700, background:"rgba(249,115,22,0.1)", border:"1px solid rgba(249,115,22,0.2)", borderRadius:4, padding:"1px 5px" }}>Bientot plein</span>}
-                          {isAt && <span style={{ color:"#FF6B6B", fontSize:9, fontWeight:700, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:4, padding:"1px 5px" }}>Limite atteinte</span>}
+                          {isAt && <span style={{ color:"var(--danger)", fontSize:9, fontWeight:700, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:4, padding:"1px 5px" }}>Limite atteinte</span>}
                         </div>
-                        <span style={{ color:isAt?"#FF6B6B":isNear?"#F97316":MUTED, fontSize:11, fontWeight:600 }}>
+                        <span style={{ color:isAt?"var(--danger)":isNear?"#F97316":MUTED, fontSize:11, fontWeight:600 }}>
                           {used} {limit ? `/ ${limit}` : "/ illimite"}
                         </span>
                       </div>
                       {limit ? (
                         <div style={{ height:6, background:"rgba(255,255,255,0.06)", borderRadius:3, overflow:"hidden" }}>
-                          <div style={{ height:"100%", width:`${pct}%`, background:isAt?"#FF6B6B":isNear?`linear-gradient(90deg,#F97316,#FF6B6B)`:`linear-gradient(90deg,#38BDF8,#7B61FF)`, borderRadius:3, transition:"width 0.6s ease" }}/>
+                          <div style={{ height:"100%", width:`${pct}%`, background:isAt?"var(--danger)":isNear?`linear-gradient(90deg,#F97316,var(--danger))`:`linear-gradient(90deg,var(--action),#7B61FF)`, borderRadius:3, transition:"width 0.6s ease" }}/>
                         </div>
                       ) : (
-                        <div style={{ height:6, background:`linear-gradient(90deg,#38BDF8,#7B61FF)`, borderRadius:3, opacity:0.3 }}/>
+                        <div style={{ height:6, background:`linear-gradient(90deg,var(--action),#7B61FF)`, borderRadius:3, opacity:0.3 }}/>
                       )}
                     </div>
                   )
@@ -2427,7 +2427,7 @@ export default function ProfilePage() {
                   const pct   = limit ? Math.min((used/limit)*100, 100) : 0
                   const isNear = limit && used >= Math.floor(limit * 0.8)
                   const isAt   = limit && used >= limit
-                  const barColor = isAt ? "#FF6B6B" : isNear ? "#F97316" : G
+                  const barColor = isAt ? "var(--danger)" : isNear ? "#F97316" : G
                   return (
                     <div>
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
@@ -2435,18 +2435,18 @@ export default function ProfilePage() {
                           <TrendingUp size={12} color={G}/>
                           <span style={{ color:"#F5F0E8", fontSize:12, fontWeight:600 }}>Vues ce mois</span>
                           {isNear && !isAt && <span style={{ color:"#F97316", fontSize:9, fontWeight:700, background:"rgba(249,115,22,0.1)", border:"1px solid rgba(249,115,22,0.2)", borderRadius:4, padding:"1px 5px" }}>Bientot plein</span>}
-                          {isAt && <span style={{ color:"#FF6B6B", fontSize:9, fontWeight:700, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:4, padding:"1px 5px" }}>Limite atteinte</span>}
+                          {isAt && <span style={{ color:"var(--danger)", fontSize:9, fontWeight:700, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:4, padding:"1px 5px" }}>Limite atteinte</span>}
                         </div>
-                        <span style={{ color:isAt?"#FF6B6B":isNear?"#F97316":MUTED, fontSize:11, fontWeight:600 }}>
+                        <span style={{ color:isAt?"var(--danger)":isNear?"#F97316":MUTED, fontSize:11, fontWeight:600 }}>
                           {used.toLocaleString("fr-FR")} {limit ? `/ ${limit.toLocaleString("fr-FR")}` : "/ illimite"}
                         </span>
                       </div>
                       {limit ? (
                         <div style={{ height:6, background:"rgba(255,255,255,0.06)", borderRadius:3, overflow:"hidden" }}>
-                          <div style={{ height:"100%", width:`${pct}%`, background:isAt?"#FF6B6B":isNear?`linear-gradient(90deg,#F97316,#FF6B6B)`:`linear-gradient(90deg,${G},#38BDF8)`, borderRadius:3, transition:"width 0.6s ease" }}/>
+                          <div style={{ height:"100%", width:`${pct}%`, background:isAt?"var(--danger)":isNear?`linear-gradient(90deg,#F97316,var(--danger))`:`linear-gradient(90deg,${G},var(--action))`, borderRadius:3, transition:"width 0.6s ease" }}/>
                         </div>
                       ) : (
-                        <div style={{ height:6, background:`linear-gradient(90deg,${G},#39FF8F)`, borderRadius:3, opacity:0.3 }}/>
+                        <div style={{ height:6, background:`linear-gradient(90deg,${G},var(--success))`, borderRadius:3, opacity:0.3 }}/>
                       )}
                     </div>
                   )
@@ -2465,7 +2465,7 @@ export default function ProfilePage() {
                   </div>
                   {planLimits.qr ? (
                     <div style={{ height:6, background:"rgba(255,255,255,0.06)", borderRadius:3, overflow:"hidden" }}>
-                      <div style={{ height:"100%", width:`${Math.min((activeQR/planLimits.qr)*100,100)}%`, background:"linear-gradient(90deg,#F97316,#FF6B6B)", borderRadius:3, transition:"width 0.6s ease" }}/>
+                      <div style={{ height:"100%", width:`${Math.min((activeQR/planLimits.qr)*100,100)}%`, background:"linear-gradient(90deg,#F97316,var(--danger))", borderRadius:3, transition:"width 0.6s ease" }}/>
                     </div>
                   ) : (
                     <div style={{ height:6, background:"linear-gradient(90deg,#F97316,var(--accent))", borderRadius:3, opacity:0.3 }}/>
@@ -2483,7 +2483,7 @@ export default function ProfilePage() {
                       <span style={{ color:MUTED, fontSize:11, fontWeight:600 }}>1 / {planLimits.team}</span>
                     </div>
                     <div style={{ height:6, background:"rgba(255,255,255,0.06)", borderRadius:3, overflow:"hidden" }}>
-                      <div style={{ height:"100%", width:`${(1/planLimits.team)*100}%`, background:"linear-gradient(90deg,#7B61FF,#38BDF8)", borderRadius:3 }}/>
+                      <div style={{ height:"100%", width:`${(1/planLimits.team)*100}%`, background:"linear-gradient(90deg,#7B61FF,var(--action))", borderRadius:3 }}/>
                     </div>
                   </div>
                 )}
@@ -2619,7 +2619,7 @@ export default function ProfilePage() {
                                 {badge.label}
                               </p>
                               {badge.unlocked && (
-                                <div style={{ position:"absolute" as const, top:-4, right:-4, width:14, height:14, borderRadius:"50%", background:"#39FF8F", border:"2px solid #080808", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                <div style={{ position:"absolute" as const, top:-4, right:-4, width:14, height:14, borderRadius:"50%", background:"var(--success)", border:"2px solid #080808", display:"flex", alignItems:"center", justifyContent:"center" }}>
                                   <span style={{ fontSize:7, color:"#080808", fontWeight:900 }}>v</span>
                                 </div>
                               )}
@@ -2695,7 +2695,7 @@ export default function ProfilePage() {
                     <div style={{ background:"#111009", border:`1px solid ${confirmRevoke?"rgba(255,107,107,0.3)":"color-mix(in srgb, var(--accent) 25%, transparent)"}`, borderRadius:16, padding:28, maxWidth:360, width:"100%" }}
                       onClick={e => e.stopPropagation()}>
                       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
-                        <AlertTriangle size={18} color={confirmRevoke?"#FF6B6B":"var(--accent)"}/>
+                        <AlertTriangle size={18} color={confirmRevoke?"var(--danger)":"var(--accent)"}/>
                         <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:700, margin:0 }}>
                           {confirmRevoke ? "Revoquer la cle ?" : "Regenerer la cle ?"}
                         </p>
@@ -2712,7 +2712,7 @@ export default function ProfilePage() {
                         </button>
                         <button type="button" disabled={!!regenKeyId || !!deletingKey}
                           onClick={() => confirmRegen ? regenerateApiKey(confirmRegen) : confirmRevoke ? revokeApiKey(confirmRevoke) : null}
-                          style={{ flex:2, padding:"9px", background:confirmRevoke?"linear-gradient(90deg,#FF6B6B,#e05555)":"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:9, color:confirmRevoke?"#F5F0E8":"#080808", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+                          style={{ flex:2, padding:"9px", background:confirmRevoke?"linear-gradient(90deg,var(--danger),#e05555)":"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:9, color:confirmRevoke?"#F5F0E8":"#080808", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
                           {regenKeyId || deletingKey
                             ? <><div style={{ width:13, height:13, border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#F5F0E8", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/> Traitement...</>
                             : confirmRevoke ? "Revoquer" : "Regenerer"}
@@ -2726,8 +2726,8 @@ export default function ProfilePage() {
                 {newKeyCreated && (
                   <div style={{ padding:"12px 14px", background:"rgba(57,255,143,0.08)", border:"1px solid rgba(57,255,143,0.25)", borderRadius:10 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
-                      <ShieldCheck size={14} color="#39FF8F"/>
-                      <p style={{ color:"#39FF8F", fontSize:12, fontWeight:700, margin:0 }}>
+                      <ShieldCheck size={14} color="var(--success)"/>
+                      <p style={{ color:"var(--success)", fontSize:12, fontWeight:700, margin:0 }}>
                         Cle creee -- copiez-la maintenant, elle ne sera plus affichee
                       </p>
                     </div>
@@ -2738,7 +2738,7 @@ export default function ProfilePage() {
                     </div>
                     <button type="button"
                       onClick={() => { navigator.clipboard.writeText(newKeyCreated); setCopiedKey("new"); showToast("Cle copiee !") }}
-                      style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", background:copiedKey==="new"?"rgba(57,255,143,0.12)":"rgba(255,255,255,0.06)", border:`1px solid ${copiedKey==="new"?"rgba(57,255,143,0.3)":"rgba(255,255,255,0.1)"}`, borderRadius:8, color:copiedKey==="new"?"#39FF8F":"#F5F0E8", fontSize:11, fontWeight:600, cursor:"pointer" }}>
+                      style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", background:copiedKey==="new"?"rgba(57,255,143,0.12)":"rgba(255,255,255,0.06)", border:`1px solid ${copiedKey==="new"?"rgba(57,255,143,0.3)":"rgba(255,255,255,0.1)"}`, borderRadius:8, color:copiedKey==="new"?"var(--success)":"#F5F0E8", fontSize:11, fontWeight:600, cursor:"pointer" }}>
                       {copiedKey==="new" ? <><Check size={12}/> Copiee !</> : <><Copy size={12}/> Copier la cle</>}
                     </button>
                     <p style={{ color:"rgba(57,255,143,0.5)", fontSize:9, margin:"8px 0 0" }}>
@@ -2766,7 +2766,7 @@ export default function ProfilePage() {
                       </div>
                       {limit > 0 && (
                         <div style={{ height:5, background:"rgba(255,255,255,0.06)", borderRadius:3, overflow:"hidden" }}>
-                          <div style={{ height:"100%", width:`${pct}%`, background:isNear?"linear-gradient(90deg,#F97316,#FF6B6B)":"linear-gradient(90deg,#7B61FF,#38BDF8)", borderRadius:3, transition:"width 0.6s ease" }}/>
+                          <div style={{ height:"100%", width:`${pct}%`, background:isNear?"linear-gradient(90deg,#F97316,var(--danger))":"linear-gradient(90deg,#7B61FF,var(--action))", borderRadius:3, transition:"width 0.6s ease" }}/>
                         </div>
                       )}
                     </div>
@@ -2783,12 +2783,12 @@ export default function ProfilePage() {
                       <div key={key.id} style={{ background:SURF2, border:`1px solid ${key.is_active?"rgba(123,97,255,0.15)":"rgba(255,255,255,0.05)"}`, borderRadius:10, overflow:"hidden", opacity:key.is_active?1:0.6 }}>
                         {/* Header cle */}
                         <div style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 13px" }}>
-                          <div style={{ width:8, height:8, borderRadius:"50%", background:key.is_active?"#39FF8F":MUTED, flexShrink:0 }}/>
+                          <div style={{ width:8, height:8, borderRadius:"50%", background:key.is_active?"var(--success)":MUTED, flexShrink:0 }}/>
                           <div style={{ flex:1, minWidth:0 }}>
                             <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:2 }}>
                               <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:600, margin:0 }}>{key.name}</p>
                               {!key.is_active && (
-                                <span style={{ background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:4, padding:"1px 6px", fontSize:8, color:"#FF6B6B", fontWeight:700 }}>
+                                <span style={{ background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:4, padding:"1px 6px", fontSize:8, color:"var(--danger)", fontWeight:700 }}>
                                   REVOQUEE
                                 </span>
                               )}
@@ -2801,7 +2801,7 @@ export default function ProfilePage() {
                               <button type="button"
                                 onClick={() => { navigator.clipboard.writeText(key.key_preview); setCopiedKey(key.id); setTimeout(()=>setCopiedKey(null),2000) }}
                                 title="Copier l'apercu"
-                                style={{ width:28, height:28, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:copiedKey===key.id?"#39FF8F":MUTED }}>
+                                style={{ width:28, height:28, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:copiedKey===key.id?"var(--success)":MUTED }}>
                                 {copiedKey===key.id ? <Check size={12}/> : <Copy size={12}/>}
                               </button>
                               <button type="button"
@@ -2813,7 +2813,7 @@ export default function ProfilePage() {
                               <button type="button"
                                 onClick={() => setConfirmRevoke(key.id)}
                                 title="Revoquer"
-                                style={{ width:28, height:28, background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#FF6B6B" }}>
+                                style={{ width:28, height:28, background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)" }}>
                                 <Trash2 size={12}/>
                               </button>
                             </div>
@@ -2832,7 +2832,7 @@ export default function ProfilePage() {
                             <span style={{ color:MUTED, fontSize:9 }}>{" . "}Jamais utilisee</span>
                           )}
                           {key.expires_at && (
-                            <span style={{ color:new Date(key.expires_at)<new Date()?"#FF6B6B":"#F97316", fontSize:9 }}>
+                            <span style={{ color:new Date(key.expires_at)<new Date()?"var(--danger)":"#F97316", fontSize:9 }}>
                               {" . "}Expire le {new Date(key.expires_at).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})}
                             </span>
                           )}
@@ -2894,7 +2894,7 @@ export default function ProfilePage() {
                   ] as const).map((e, i) => (
                     <div key={i} style={{ marginBottom:11 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5, flexWrap:"wrap" }}>
-                        <span style={{ fontSize:9, fontWeight:800, color:e.m==="GET"?"#39FF8F":"#F97316", background:e.m==="GET"?"rgba(57,255,143,0.1)":"rgba(249,115,22,0.1)", border:`1px solid ${e.m==="GET"?"rgba(57,255,143,0.25)":"rgba(249,115,22,0.25)"}`, borderRadius:4, padding:"1px 6px" }}>{e.m}</span>
+                        <span style={{ fontSize:9, fontWeight:800, color:e.m==="GET"?"var(--success)":"#F97316", background:e.m==="GET"?"rgba(57,255,143,0.1)":"rgba(249,115,22,0.1)", border:`1px solid ${e.m==="GET"?"rgba(57,255,143,0.25)":"rgba(249,115,22,0.25)"}`, borderRadius:4, padding:"1px 6px" }}>{e.m}</span>
                         <code style={{ color:"#F5F0E8", fontSize:11 }}>{e.p}</code>
                         <span style={{ color:MUTED, fontSize:10 }}>· {e.d}</span>
                       </div>
@@ -2910,7 +2910,7 @@ export default function ProfilePage() {
 
           {/* 9. DOMAINES */}
           {ptab === "abonnement" && (
-          <SectionCard title="Domaines personnalises" icon={Globe} color="#38BDF8"
+          <SectionCard title="Domaines personnalises" icon={Globe} color="var(--action)"
             tag={domains.length > 0 ? `${domains.length}` : undefined}
             action={
               <a href="/dashboard/domains"
@@ -2947,7 +2947,7 @@ export default function ProfilePage() {
                   Utilisez votre propre domaine pour<br/>toutes vos pages QRowg.
                 </p>
                 <a href="/dashboard/domains"
-                  style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 18px", background:"rgba(56,189,248,0.1)", border:"1px solid rgba(56,189,248,0.25)", borderRadius:9, color:"#38BDF8", textDecoration:"none", fontSize:12, fontWeight:700 }}>
+                  style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 18px", background:"rgba(56,189,248,0.1)", border:"1px solid rgba(56,189,248,0.25)", borderRadius:9, color:"var(--action)", textDecoration:"none", fontSize:12, fontWeight:700 }}>
                   <Plus size={13}/> Ajouter un domaine
                 </a>
               </div>
@@ -2958,8 +2958,8 @@ export default function ProfilePage() {
                 {/* KPIs rapides */}
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:7 }}>
                   {([
-                    { label:"Total",    value:domains.length,                                              color:"#38BDF8" },
-                    { label:"Actifs",   value:domains.filter(d=>d.vercel_status==="active").length,        color:"#39FF8F" },
+                    { label:"Total",    value:domains.length,                                              color:"var(--action)" },
+                    { label:"Actifs",   value:domains.filter(d=>d.vercel_status==="active").length,        color:"var(--success)" },
                     { label:"En attente",value:domains.filter(d=>d.vercel_status==="pending").length,      color:"#F97316" },
                   ] as const).map((k,i) => (
                     <div key={i} style={{ background:SURF2, border:"1px solid rgba(255,255,255,0.05)", borderRadius:9, padding:"9px 10px", textAlign:"center" as const }}>
@@ -2972,9 +2972,9 @@ export default function ProfilePage() {
                 {/* Cartes domaines */}
                 {domains.slice(0, 4).map(dm => {
                   const statusMap: Record<string, { label:string; color:string; dot:string }> = {
-                    active:  { label:"Actif",       color:"#39FF8F", dot:"#39FF8F" },
+                    active:  { label:"Actif",       color:"var(--success)", dot:"var(--success)" },
                     pending: { label:"En attente",  color:"#F97316", dot:"#F97316" },
-                    error:   { label:"Erreur DNS",  color:"#FF6B6B", dot:"#FF6B6B" },
+                    error:   { label:"Erreur DNS",  color:"var(--danger)", dot:"var(--danger)" },
                   }
                   const st = statusMap[dm.vercel_status] ?? statusMap["pending"]
                   return (
@@ -3019,16 +3019,16 @@ export default function ProfilePage() {
                           )}
                           <a href="/dashboard/domains"
                             title="Configurer DNS"
-                            style={{ width:26, height:26, background:"rgba(56,189,248,0.06)", border:"1px solid rgba(56,189,248,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", color:"#38BDF8", textDecoration:"none" }}>
+                            style={{ width:26, height:26, background:"rgba(56,189,248,0.06)", border:"1px solid rgba(56,189,248,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--action)", textDecoration:"none" }}>
                             <Settings size={11}/>
                           </a>
                           <button type="button"
                             onClick={() => deleteDomain(dm.id)}
                             disabled={deletingDomain === dm.id}
                             title="Supprimer"
-                            style={{ width:26, height:26, background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#FF6B6B" }}>
+                            style={{ width:26, height:26, background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)" }}>
                             {deletingDomain===dm.id
-                              ? <div style={{ width:11, height:11, border:"1.5px solid rgba(255,107,107,0.3)", borderTopColor:"#FF6B6B", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>
+                              ? <div style={{ width:11, height:11, border:"1.5px solid rgba(255,107,107,0.3)", borderTopColor:"var(--danger)", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>
                               : <Trash2 size={11}/>}
                           </button>
                         </div>
@@ -3044,7 +3044,7 @@ export default function ProfilePage() {
                       {/* Bande SSL si actif */}
                       {dm.vercel_status === "active" && (
                         <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 13px", background:"rgba(57,255,143,0.03)", borderTop:"1px solid rgba(57,255,143,0.08)" }}>
-                          <Shield size={10} color="#39FF8F"/>
+                          <Shield size={10} color="var(--success)"/>
                           <span style={{ color:"rgba(57,255,143,0.7)", fontSize:9 }}>
                             SSL actif {dm.verified_at ? `depuis le ${new Date(dm.verified_at).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})}` : ""}
                           </span>
@@ -3063,7 +3063,7 @@ export default function ProfilePage() {
 
                 {/* CTA ajouter */}
                 <a href="/dashboard/domains"
-                  style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px", background:"rgba(56,189,248,0.06)", border:"1px solid rgba(56,189,248,0.15)", borderRadius:9, color:"#38BDF8", textDecoration:"none", fontSize:12, fontWeight:600 }}>
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px", background:"rgba(56,189,248,0.06)", border:"1px solid rgba(56,189,248,0.15)", borderRadius:9, color:"var(--action)", textDecoration:"none", fontSize:12, fontWeight:600 }}>
                   <Plus size={13}/> Ajouter un domaine
                 </a>
               </div>
@@ -3081,7 +3081,7 @@ export default function ProfilePage() {
                   <div style={{ width:12, height:12, border:"1.5px solid rgba(249,115,22,0.3)", borderTopColor:"#F97316", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>
                 )}
                 {prefsSaved && !prefsSaving && (
-                  <span style={{ color:"#39FF8F", fontSize:10, display:"flex", alignItems:"center", gap:4 }}>
+                  <span style={{ color:"var(--success)", fontSize:10, display:"flex", alignItems:"center", gap:4 }}>
                     <Check size={10}/> Sauvegarde
                   </span>
                 )}
@@ -3248,8 +3248,8 @@ export default function ProfilePage() {
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                   <div style={{ display:"flex", gap:7, flexWrap:"wrap" as const }}>
                     {[
-                      "#C9A84C","#39FF8F","#38BDF8","#7B61FF",
-                      "#EC4899","#F97316","#FF6B6B","#F5F0E8",
+                      "#C9A84C","var(--success)","var(--action)","#7B61FF",
+                      "#EC4899","#F97316","var(--danger)","#F5F0E8",
                     ].map(color => (
                       <button key={color} type="button" onClick={() => setPrefField("accent_color", color)}
                         style={{ width:28, height:28, borderRadius:8, background:color, border:prefs.accent_color===color?`2px solid #F5F0E8`:"2px solid transparent", cursor:"pointer", transition:"border 0.15s", boxShadow:prefs.accent_color===color?`0 0 10px ${color}60`:"none" }}/>

@@ -4528,7 +4528,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
 
           <button type="button" onClick={() => save()} disabled={saving} style={topBtn(false)}>
             {saving ? <Loader2 size={13} style={{ animation: "spin 0.8s linear infinite" }} />
-              : saved ? <Check size={13} color="#39FF8F" /> : <Save size={13} />}
+              : saved ? <Check size={13} color="var(--success)" /> : <Save size={13} />}
             {saved ? "Enregistré" : "Enregistrer"}
           </button>
           <div style={{ position: "relative" }}>
@@ -5196,7 +5196,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
                           </button>
                           <button type="button" onClick={() => moveLayer(o, "up")} title="Monter" style={iconMini}><ChevronUp size={13} /></button>
                           <button type="button" onClick={() => moveLayer(o, "down")} title="Descendre" style={iconMini}><ChevronDown size={13} /></button>
-                          <button type="button" onClick={() => removeLayer(o)} title="Supprimer" style={{ ...iconMini, color: "#FF6B6B" }}><Trash2 size={12} /></button>
+                          <button type="button" onClick={() => removeLayer(o)} title="Supprimer" style={{ ...iconMini, color: "var(--danger)" }}><Trash2 size={12} /></button>
                         </div>
                       )
                     })}
@@ -5860,7 +5860,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
                   {sel.isGroupObj && <button type="button" onClick={ungroupSel} style={{ ...panelBtn, gridColumn: "1 / 3" }}>⊟ Dégrouper</button>}
                 </div>
                 <button type="button" onClick={() => layer("del")}
-                  style={{ ...panelBtn, width: "100%", marginTop: 6, background: "rgba(255,107,107,0.1)", border: "1px solid rgba(255,107,107,0.2)", color: "#FF6B6B" }}>
+                  style={{ ...panelBtn, width: "100%", marginTop: 6, background: "rgba(255,107,107,0.1)", border: "1px solid rgba(255,107,107,0.2)", color: "var(--danger)" }}>
                   <Trash2 size={12} /> Supprimer
                 </button>
               </div>
@@ -5942,7 +5942,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
             <button type="button" style={tb} title="Mettre devant" onClick={() => layer("front")}><ChevronUp size={14} /></button>
             <button type="button" style={tb} title="Mettre derrière" onClick={() => layer("back")}><ChevronDown size={14} /></button>
             <button type="button" style={{ ...tb, color: sel.locked ? G : INK }} title={sel.locked ? "Déverrouiller" : "Verrouiller"} onClick={() => layer("lock")}>{sel.locked ? <Unlock size={14} /> : <Lock size={14} />}</button>
-            <button type="button" style={{ ...tb, color: "#FF6B6B" }} title="Supprimer" onClick={() => layer("del")}><Trash2 size={14} /></button>
+            <button type="button" style={{ ...tb, color: "var(--danger)" }} title="Supprimer" onClick={() => layer("del")}><Trash2 size={14} /></button>
           </div>
         )}
 
@@ -6141,7 +6141,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
               ["__del__", () => layer("del")],
             ] as const).map(([label, fn], i) => (
               <button key={i} type="button" onClick={() => { fn(); setCtx(null) }}
-                style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", background: "none", border: "none", borderRadius: 7, color: label === "__del__" ? "#FF6B6B" : INK, fontSize: 12, cursor: "pointer" }}>
+                style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", background: "none", border: "none", borderRadius: 7, color: label === "__del__" ? "var(--danger)" : INK, fontSize: 12, cursor: "pointer" }}>
                 {label === "__del__" ? "Supprimer" : label}
               </button>
             ))}

@@ -394,7 +394,7 @@ export default function AvatarStudio({
             <button
               className={styles.btn}
               onClick={() => setShareOpen((v) => !v)}
-              style={{ borderColor: "rgba(57,255,143,0.35)", background: "rgba(57,255,143,0.10)", color: "#39FF8F", fontWeight: 700 }}
+              style={{ borderColor: "rgba(57,255,143,0.35)", background: "rgba(57,255,143,0.10)", color: "var(--success)", fontWeight: 700 }}
             >
               🔗 Partager mon avatar
             </button>

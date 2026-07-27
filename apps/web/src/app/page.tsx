@@ -371,7 +371,7 @@ const FEATURES = [
     tag: "QR dynamique",
     title: "Un QR code que vous modifiez à volonté",
     desc: "Changez la destination, le contenu et les liens quand vous voulez — sans jamais réimprimer votre QR code.",
-    accent: "#38BDF8",
+    accent: "var(--action)",
     detail: {
       role: "Le QR code pointe vers votre page QRowg. Vous modifiez la page, le QR code imprimé reste valable.",
       example: "Un restaurant imprime le QR sur ses tables une seule fois, puis change son menu chaque semaine.",
@@ -383,7 +383,7 @@ const FEATURES = [
     tag: "Statistiques",
     title: "Sachez exactement qui scanne",
     desc: "Vues, scans, appareils et sources de trafic, en temps réel. Vous pilotez vos résultats.",
-    accent: "#39FF8F",
+    accent: "var(--success)",
     detail: {
       role: "Un tableau de bord qui mesure les scans, les vues, les appareils utilisés et d'où viennent vos visiteurs.",
       example: "Un commerce voit que 70 % des scans viennent de sa vitrine le week-end, et adapte ses promos.",
@@ -622,7 +622,7 @@ function BrandProSection() {
       {pro && <div style={{ position: "absolute", top: 12, right: 12, zIndex: 2, background: G, color: "#080808", fontSize: 9, fontWeight: 800, padding: "3px 9px", borderRadius: 20, letterSpacing: 0.5 }}>PRO</div>}
       {/* barre d'URL */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 12px", background: "rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <span style={{ width: 7, height: 7, borderRadius: "50%", background: pro ? "#39FF8F" : "rgba(188,182,166,0.5)" }} />
+        <span style={{ width: 7, height: 7, borderRadius: "50%", background: pro ? "var(--success)" : "rgba(188,182,166,0.5)" }} />
         <span style={{ color: pro ? "#F5F0E8" : "rgba(188,182,166,0.7)", fontSize: 10.5, fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{pro ? "carte.votremarque.fr" : "qrowg.com/p/votre-page"}</span>
       </div>
       {/* contenu mock */}
@@ -824,7 +824,7 @@ function PricingSection() {
           </button>
           <span style={{ color: annual ? "#F5F0E8" : "rgba(188,182,166,0.6)", fontSize:14, fontWeight: annual ? 600 : 400, transition:"color 0.2s" }}>Annuel</span>
           <span style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(57,255,143,0.12)", border:"1px solid rgba(57,255,143,0.3)",
-            color:"#39FF8F", fontSize:11.5, fontWeight:700, padding:"3px 10px", borderRadius:20, letterSpacing:0.2 }}>
+            color:"var(--success)", fontSize:11.5, fontWeight:700, padding:"3px 10px", borderRadius:20, letterSpacing:0.2 }}>
             Jusqu'à 2 mois offerts
           </span>
         </div>
@@ -930,7 +930,7 @@ function PricingSection() {
                       background: f.ok
                         ? "rgba(57,255,143,0.15)"
                         : "rgba(188,182,166,0.08)",
-                      color: f.ok ? "#39FF8F" : "rgba(188,182,166,0.4)",
+                      color: f.ok ? "var(--success)" : "rgba(188,182,166,0.4)",
                     }}>{f.ok ? "✓" : "✕"}</span>
                     <span style={{
                       color: f.ok ? "rgba(245,240,232,0.85)" : "rgba(188,182,166,0.45)",
@@ -1023,7 +1023,7 @@ function PricingSection() {
               const ok = v === "✓" || v === "Oui"
               const no = v === "❌" || v === "—" || v === "Non"
               return (
-                <td style={{ padding: "12px 14px", textAlign: "center", fontSize: 12.5, fontWeight: hl ? 700 : 500, color: ok ? "#39FF8F" : no ? "rgba(188,182,166,0.45)" : hl ? "#C9A84C" : "#E8E6E0", borderBottom: "1px solid rgba(255,255,255,0.05)", background: hl ? "rgba(201,168,76,0.05)" : "transparent" }}>
+                <td style={{ padding: "12px 14px", textAlign: "center", fontSize: 12.5, fontWeight: hl ? 700 : 500, color: ok ? "var(--success)" : no ? "rgba(188,182,166,0.45)" : hl ? "#C9A84C" : "#E8E6E0", borderBottom: "1px solid rgba(255,255,255,0.05)", background: hl ? "rgba(201,168,76,0.05)" : "transparent" }}>
                   {ok ? "✓" : no ? "—" : v}
                 </td>
               )
@@ -1145,7 +1145,7 @@ const TEMPLATE_DATA = [
     category: "Services",
     blocks: 6,
     isPro: false,
-    accent: "#38BDF8",
+    accent: "var(--action)",
     icon: "💼",
     preview: [
       { type: "avatar", label: "Photo & Titre" },
@@ -1161,7 +1161,7 @@ const TEMPLATE_DATA = [
     category: "Bien-être",
     blocks: 8,
     isPro: false,
-    accent: "#39FF8F",
+    accent: "var(--success)",
     icon: "🧘",
     preview: [
       { type: "avatar", label: "Portrait" },
@@ -1326,7 +1326,7 @@ function TemplateCard({ tpl, i, visible }: { tpl: typeof TEMPLATE_DATA[number]; 
           padding: "3px 8px", borderRadius: 20,
           background: tpl.isPro ? "rgba(167,139,250,0.15)" : "rgba(57,255,143,0.12)",
           border: `1px solid ${tpl.isPro ? "rgba(167,139,250,0.35)" : "rgba(57,255,143,0.3)"}`,
-          color: tpl.isPro ? "#A78BFA" : "#39FF8F",
+          color: tpl.isPro ? "#A78BFA" : "var(--success)",
         }}>{tpl.isPro ? "PRO" : "GRATUIT"}</span>
       </div>
 
@@ -1487,7 +1487,7 @@ function QRStudioLive() {
               : <div style={{ width: 232, height: 232 }} />}
           </div>
           <p style={{ color: "rgba(188,182,166,0.6)", fontSize: 12.5, display: "flex", alignItems: "center", gap: 7, margin: 0 }}>
-            <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: "#39FF8F", boxShadow: "0 0 8px #39FF8F" }} />
+            <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--success)", boxShadow: "0 0 8px var(--success)" }} />
             Aperçu en direct · vrai QR scannable
           </p>
         </div>
@@ -1799,8 +1799,8 @@ function HowItWorks() {
 
 // ── Builder section ───────────────────────────────────────────────────────────
 function BuilderMockup(){
-  const BL=[{icon:"👤",label:"Profil",c:"#C9A84C"},{icon:"🔗",label:"Liens",c:"#38BDF8"},
-    {icon:"📸",label:"Galerie",c:"#A78BFA"},{icon:"💬",label:"WhatsApp",c:"#39FF8F"},
+  const BL=[{icon:"👤",label:"Profil",c:"#C9A84C"},{icon:"🔗",label:"Liens",c:"var(--action)"},
+    {icon:"📸",label:"Galerie",c:"#A78BFA"},{icon:"💬",label:"WhatsApp",c:"var(--success)"},
     {icon:"📅",label:"Reservation",c:"#F97316"},{icon:"💳",label:"Paiement",c:"#F43F5E"}]
   const PH=[{h:28,c:"rgba(201,168,76,0.5)",w:"80%"},{h:14,c:"rgba(255,255,255,0.12)",w:"60%"},
     {h:10,c:"rgba(201,168,76,0.25)",w:"40%"},{h:32,c:"rgba(56,189,248,0.25)",w:"90%"},
@@ -1817,7 +1817,7 @@ function BuilderMockup(){
       </div>
       <div style={{background:"rgba(255,255,255,0.018)",border:"1px solid rgba(201,168,76,0.15)",borderRadius:16,padding:16,display:"flex",flexDirection:"column",gap:10}}>
         <div style={{display:"flex",alignItems:"center",gap:8,paddingBottom:10,borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-          {["#FF6B6B","#F97316","#39FF8F"].map((c,i)=>(<div key={i} style={{width:8,height:8,borderRadius:"50%",background:c,opacity:0.6}}/>))}
+          {["var(--danger)","#F97316","var(--success)"].map((c,i)=>(<div key={i} style={{width:8,height:8,borderRadius:"50%",background:c,opacity:0.6}}/>))}
           <span style={{flex:1,textAlign:"center",color:"rgba(201,168,76,0.5)",fontSize:10,letterSpacing:1}}>Canvas</span>
           <div style={{padding:"3px 10px",borderRadius:5,background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.25)",fontSize:9,color:"#C9A84C",fontWeight:700}}>PUBLIER</div>
         </div>
@@ -1848,8 +1848,8 @@ function BuilderMockup(){
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:20,background:"rgba(57,255,143,0.08)",border:"1px solid rgba(57,255,143,0.2)"}}>
-          <div style={{width:5,height:5,borderRadius:"50%",background:"#39FF8F",animation:"livePulse 1.5s ease-in-out infinite"}}/>
-          <span style={{color:"#39FF8F",fontSize:9,fontWeight:700,letterSpacing:1}}>LIVE</span>
+          <div style={{width:5,height:5,borderRadius:"50%",background:"var(--success)",animation:"livePulse 1.5s ease-in-out infinite"}}/>
+          <span style={{color:"var(--success)",fontSize:9,fontWeight:700,letterSpacing:1}}>LIVE</span>
         </div>
       </div>
     </div>
@@ -1999,10 +1999,10 @@ const QR_STYLES = [
     id: "neon",
     name: "Neon",
     desc: "Impact",
-    fg: "#39FF8F", bg: "#050505", accent: "#A78BFA",
+    fg: "var(--success)", bg: "#050505", accent: "#A78BFA",
     cardBg: "rgba(57,255,143,0.05)",
     border: "rgba(57,255,143,0.25)",
-    tag: "#39FF8F",
+    tag: "var(--success)",
   },
   {
     id: "sunset",
@@ -2017,10 +2017,10 @@ const QR_STYLES = [
     id: "business",
     name: "Business",
     desc: "Institutionnel",
-    fg: "#38BDF8", bg: "#030d14", accent: "#7C3AED",
+    fg: "var(--action)", bg: "#030d14", accent: "#7C3AED",
     cardBg: "rgba(56,189,248,0.05)",
     border: "rgba(56,189,248,0.2)",
-    tag: "#38BDF8",
+    tag: "var(--action)",
   },
 ] as const
 
@@ -2252,8 +2252,8 @@ function QRDynamicSection() {
 // Données démo cohérentes (pas de chiffres marketing abusifs)
 const ANALYTICS_DEMO = {
   stats: [
-    { label: "Scans ce mois", value: "847",  delta: "+12%", color: "#39FF8F",  icon: "📱" },
-    { label: "Vues de page",  value: "2 341", delta: "+8%",  color: "#38BDF8",  icon: "👁️" },
+    { label: "Scans ce mois", value: "847",  delta: "+12%", color: "var(--success)",  icon: "📱" },
+    { label: "Vues de page",  value: "2 341", delta: "+8%",  color: "var(--action)",  icon: "👁️" },
     { label: "Taux de clic",  value: "36%",   delta: "+4pt", color: "#C9A84C",  icon: "🎯" },
     { label: "QR actifs",     value: "5",     delta: "",      color: "#A78BFA",  icon: "✅" },
   ],
@@ -2268,19 +2268,19 @@ const ANALYTICS_DEMO = {
   ],
   pages: [
     { name: "Ma carte pro",   scans: 312, bar: 100, color: "#C9A84C"  },
-    { name: "Menu restaurant",scans: 198, bar: 63,  color: "#38BDF8"  },
+    { name: "Menu restaurant",scans: 198, bar: 63,  color: "var(--action)"  },
     { name: "Portfolio",      scans: 142, bar: 45,  color: "#A78BFA"  },
-    { name: "Promo flash",    scans: 89,  bar: 28,  color: "#39FF8F"  },
+    { name: "Promo flash",    scans: 89,  bar: 28,  color: "var(--success)"  },
   ],
   devices: [
     { label: "Mobile", pct: 72, color: "#C9A84C"  },
-    { label: "Tablette",pct: 18, color: "#38BDF8" },
+    { label: "Tablette",pct: 18, color: "var(--action)" },
     { label: "Desktop", pct: 10, color: "#A78BFA" },
   ],
   sources: [
     { label: "Direct QR",    pct: 58, color: "#C9A84C" },
     { label: "Réseaux soc.", pct: 24, color: "#F97316" },
-    { label: "Email",        pct: 11, color: "#38BDF8" },
+    { label: "Email",        pct: 11, color: "var(--action)" },
     { label: "Autre",        pct: 7,  color: "#BCB6A6" },
   ],
 }
@@ -2312,7 +2312,7 @@ function AnalyticsMockup() {
         background: "rgba(255,255,255,0.02)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {["#FF6B6B","#F97316","#39FF8F"].map((c,i) => (
+          {["var(--danger)","#F97316","var(--success)"].map((c,i) => (
             <div key={i} style={{ width:8, height:8, borderRadius:"50%", background:c, opacity:0.6 }}/>
           ))}
           <span style={{ color:"rgba(201,168,76,0.5)", fontSize:10, letterSpacing:1.5, marginLeft:4 }}>ANALYTICS</span>
@@ -2322,8 +2322,8 @@ function AnalyticsMockup() {
           borderRadius: 6, padding: "3px 10px",
           display: "flex", alignItems: "center", gap: 5,
         }}>
-          <div style={{ width:5, height:5, borderRadius:"50%", background:"#39FF8F", animation:"livePulse 1.5s ease-in-out infinite" }}/>
-          <span style={{ color:"#39FF8F", fontSize:9, fontWeight:700, letterSpacing:1 }}>LIVE</span>
+          <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--success)", animation:"livePulse 1.5s ease-in-out infinite" }}/>
+          <span style={{ color:"var(--success)", fontSize:9, fontWeight:700, letterSpacing:1 }}>LIVE</span>
         </div>
       </div>
 
@@ -2342,7 +2342,7 @@ function AnalyticsMockup() {
               <p style={{ color: s.color, fontSize: 16, fontWeight: 800, margin: 0, lineHeight: 1 }}>{s.value}</p>
               <p style={{ color: "rgba(188,182,166,0.7)", fontSize: 9, margin: 0, lineHeight: 1.3 }}>{s.label}</p>
               {s.delta && (
-                <span style={{ color: "#39FF8F", fontSize: 8, fontWeight: 700 }}>{s.delta}</span>
+                <span style={{ color: "var(--success)", fontSize: 8, fontWeight: 700 }}>{s.delta}</span>
               )}
             </div>
           ))}
@@ -2357,7 +2357,7 @@ function AnalyticsMockup() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <p style={{ color: "#F5F0E8", fontSize: 11, fontWeight: 600, margin: 0 }}>Scans · 7 jours</p>
             <div style={{ display: "flex", gap: 10 }}>
-              {[["#C9A84C","Scans"],["#38BDF8","Vues"]].map(([c,l]) => (
+              {[["#C9A84C","Scans"],["var(--action)","Vues"]].map(([c,l]) => (
                 <div key={l as string} style={{ display:"flex", alignItems:"center", gap:4 }}>
                   <div style={{ width:6, height:6, borderRadius:2, background:c as string }}/>
                   <span style={{ color:"rgba(188,182,166,0.7)", fontSize:9 }}>{l}</span>
@@ -2603,7 +2603,7 @@ const USE_CASES = [
     label: "Freelance",
     title: "Votre carte de visite devient une vitrine interactive.",
     desc: "Un seul QR sur vos cartes pro. Le client arrive sur votre portfolio, vos services et votre contact.",
-    color: "#38BDF8",
+    color: "var(--action)",
     blocks: [
       { icon:"🖼️",  label:"Portfolio",       note:"Galerie de projets" },
       { icon:"🛠️",  label:"Services & tarifs",note:"Vos prestations" },
@@ -2654,7 +2654,7 @@ const USE_CASES = [
     label: "Evenement",
     title: "Tenez vos participants informés en temps réel.",
     desc: "Programme, billets, accès et mises à jour — tout sur une page modifiable même la veille.",
-    color: "#39FF8F",
+    color: "var(--success)",
     blocks: [
       { icon:"📋", label:"Programme",          note:"Mis à jour en direct" },
       { icon:"🎫", label:"Billetterie",        note:"Lien d'achat direct" },
@@ -3041,7 +3041,7 @@ function StoryPhone({ step }: { step: number }) {
         ))}
         {colored && (
           <div style={{ display: "flex", gap: 7, marginTop: 4, animation: "fadeUp 0.4s ease 0.4s both" }}>
-            {[G, "#38BDF8", "#A78BFA", "#39FF8F"].map(c => (
+            {[G, "var(--action)", "#A78BFA", "var(--success)"].map(c => (
               <span key={c} style={{ width: 20, height: 20, borderRadius: "50%", background: c, boxShadow: `0 0 10px ${c}88` }} />
             ))}
           </div>
@@ -3059,7 +3059,7 @@ function StoryPhone({ step }: { step: number }) {
           )}
         </div>
         {step === 3 && (
-          <div style={{ position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 100, background: "rgba(57,255,143,0.14)", border: "1px solid rgba(57,255,143,0.4)", color: "#39FF8F", fontSize: 12, fontWeight: 700, animation: "fadeUp 0.4s ease 0.3s both" }}>✓ Scanné</div>
+          <div style={{ position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 100, background: "rgba(57,255,143,0.14)", border: "1px solid rgba(57,255,143,0.4)", color: "var(--success)", fontSize: 12, fontWeight: 700, animation: "fadeUp 0.4s ease 0.3s both" }}>✓ Scanné</div>
         )}
       </div>
     )
@@ -3316,9 +3316,9 @@ function ComparisonSection() {
 // ── Print Studio : supports imprimables (carrousel mobile) ────────────────────
 const SUPPORTS = [
   { name: "Affiche",          emoji: "🖼️", accent: "#C9A84C", benefit: "Vitrine, événement, salle d'attente — visible de loin." },
-  { name: "Sticker vitrine",  emoji: "🪟", accent: "#38BDF8", benefit: "Instagram, avis Google ou Wi-Fi : collez, c'est prêt." },
+  { name: "Sticker vitrine",  emoji: "🪟", accent: "var(--action)", benefit: "Instagram, avis Google ou Wi-Fi : collez, c'est prêt." },
   { name: "Carte de visite",  emoji: "💳", accent: "#A78BFA", benefit: "Partagez tout votre profil en un seul scan." },
-  { name: "Chevalet de table", emoji: "🍽️", accent: "#39FF8F", benefit: "Menu, avis ou réservation, directement à table." },
+  { name: "Chevalet de table", emoji: "🍽️", accent: "var(--success)", benefit: "Menu, avis ou réservation, directement à table." },
   { name: "Flyer",            emoji: "📄", accent: "#F97316", benefit: "Promo ou ouverture : distribuez, scannez, convertissez." },
   { name: "Avis Google",      emoji: "⭐", accent: "#F5D24E", benefit: "Un scan, un avis en 10 secondes. Boostez votre note." },
 ] as const
@@ -3586,7 +3586,7 @@ export default function HomePage() {
                   display: "inline-flex", alignItems: "center", gap: 6,
                   color: "#BCB6A6", fontSize: 12.5
                 }}>
-                  <span style={{ color: "#39FF8F", fontSize: 11 }}>✓</span>
+                  <span style={{ color: "var(--success)", fontSize: 11 }}>✓</span>
                   {item}
                 </span>
               ))}
@@ -3814,7 +3814,7 @@ export default function HomePage() {
           .fsoc a:focus-visible { outline:2px solid rgba(201,168,76,0.5); outline-offset:3px; }
           .fstatus { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px; background:rgba(57,255,143,0.07); border:1px solid rgba(57,255,143,0.18); color:rgba(57,255,143,0.8); font-size:11px; font-weight:600; text-decoration:none; transition:all 0.2s; }
           .fstatus:hover { background:rgba(57,255,143,0.12); border-color:rgba(57,255,143,0.35); }
-          .fstatus-dot { width:6px; height:6px; border-radius:50%; background:#39FF8F; animation:fpulse 2s ease-in-out infinite; }
+          .fstatus-dot { width:6px; height:6px; border-radius:50%; background:var(--success); animation:fpulse 2s ease-in-out infinite; }
           @keyframes fpulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
           @media(max-width:1100px){ .fg{ grid-template-columns:1fr 1fr 1fr!important; gap:32px!important; } }
           @media(max-width:700px){

@@ -21,7 +21,7 @@ function clampNum(v: unknown, lo: number, hi: number): number { const n = Number
 
 export async function POST(req: NextRequest) {
   try {
-    if (!rateLimit("track:" + ipOf(req), 60, 60_000)) return NextResponse.json({ ok: false }, { status: 429 })
+    if (!(await rateLimit("track:" + ipOf(req), 60, 60_000))) return NextResponse.json({ ok: false }, { status: 429 })
     const body = await req.json().catch(() => null)
     if (!body || typeof body !== "object") return NextResponse.json({ ok: false }, { status: 400 })
 

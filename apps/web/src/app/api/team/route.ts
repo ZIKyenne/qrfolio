@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
-  if (!rateLimit("team-invite:" + user.id, 20, 3600_000)) {
+  if (!(await rateLimit("team-invite:" + user.id, 20, 3600_000))) {
     return NextResponse.json({ error: "Trop d'invitations. Réessayez plus tard." }, { status: 429 })
   }
 

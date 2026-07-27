@@ -21,7 +21,7 @@ function isEmail(s: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!rateLimit("lead-confirm:" + ipOf(req), 10, 600_000)) return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 })
+    if (!(await rateLimit("lead-confirm:" + ipOf(req), 10, 600_000))) return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 })
     const { pageId, email, name, type } = await req.json()
     if (!pageId || !isEmail(email)) return NextResponse.json({ error: "Paramètres invalides" }, { status: 200 })
 

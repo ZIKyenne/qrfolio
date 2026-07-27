@@ -1,10 +1,20 @@
-// Rate-limiter en mémoire, best-effort.
-// ⚠️ LIMITE : en serverless (Vercel), la mémoire n'est PAS partagée entre
-// instances et est perdue au cold start -> protection seulement partielle.
-// À remplacer par un store partagé (Upstash Redis / @vercel/kv) en phase 2.
+// Rate-limiter à fenêtre fixe.
+//
+// Deux back-ends, transparents pour l'appelant :
+//  1. Upstash Redis (REST) — store PARTAGÉ entre toutes les instances serverless,
+//     persistant au cold start. Actif dès que UPSTASH_REDIS_REST_URL +
+//     UPSTASH_REDIS_REST_TOKEN sont posés (aucune dépendance npm : appel REST direct).
+//  2. Repli en mémoire (best-effort) — utilisé si Upstash n'est pas configuré, ou
+//     en cas d'erreur réseau Upstash (fail-safe : on retombe sur la protection
+//     locale plutôt que d'ouvrir en grand).
+//
+// Sémantique commune : `rateLimit(key, max, windowMs)` renvoie `true` si l'appel
+// est AUTORISÉ. Les `max` premiers appels de la fenêtre passent, le (max+1)ᵉ est
+// bloqué. La fenêtre expire `windowMs` ms après le premier appel.
+
 const buckets = new Map<string, { count: number; reset: number }>()
 
-export function rateLimit(key: string, max: number, windowMs: number): boolean {
+function memoryAllow(key: string, max: number, windowMs: number): boolean {
   const now = Date.now()
   const e = buckets.get(key)
   if (!e || now > e.reset) {
@@ -14,6 +24,48 @@ export function rateLimit(key: string, max: number, windowMs: number): boolean {
   if (e.count >= max) return false
   e.count++
   return true
+}
+
+function upstashConfigured(): boolean {
+  return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+}
+
+// Fenêtre fixe distribuée : INCR le compteur, puis pose le TTL uniquement au
+// premier passage (EXPIRE ... NX). Un seul aller-retour via le pipeline REST.
+async function upstashAllow(key: string, max: number, windowMs: number): Promise<boolean> {
+  const url = process.env.UPSTASH_REDIS_REST_URL as string
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN as string
+  const windowSec = Math.max(1, Math.ceil(windowMs / 1000))
+  const rlKey = `rl:${key}`
+
+  const res = await fetch(`${url}/pipeline`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify([
+      ["INCR", rlKey],
+      ["EXPIRE", rlKey, String(windowSec), "NX"],
+    ]),
+    cache: "no-store",
+  })
+  if (!res.ok) throw new Error(`upstash ${res.status}`)
+
+  // Réponse pipeline : [{ result: <count> }, { result: 0|1 }]
+  const data = (await res.json()) as Array<{ result?: unknown; error?: string }>
+  if (!Array.isArray(data) || data[0]?.error) throw new Error(data?.[0]?.error || "upstash bad response")
+  const count = Number(data[0]?.result ?? 0)
+  return count <= max
+}
+
+export async function rateLimit(key: string, max: number, windowMs: number): Promise<boolean> {
+  if (upstashConfigured()) {
+    try {
+      return await upstashAllow(key, max, windowMs)
+    } catch {
+      // Erreur réseau/Upstash : on retombe sur le limiteur local (fail-safe).
+      return memoryAllow(key, max, windowMs)
+    }
+  }
+  return memoryAllow(key, max, windowMs)
 }
 
 export function ipOf(req: Request): string {

@@ -9,7 +9,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 export async function GET(req: NextRequest) {
   const auth = await authApiKey(req)
   if (!auth) return NextResponse.json({ error: "Clé API invalide ou manquante" }, { status: 401 })
-  if (!rateLimit("api:" + auth.keyId, 120, 60_000)) return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 })
+  if (!(await rateLimit("api:" + auth.keyId, 120, 60_000))) return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 })
 
   const admin = createAdminClient()
   const { data } = await admin

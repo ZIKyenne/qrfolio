@@ -9,7 +9,7 @@ import { buildDestUrl, validateDest, type DestType } from "../../../../qr-destin
 export async function POST(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const auth = await authApiKey(req)
   if (!auth) return NextResponse.json({ error: "Clé API invalide ou manquante" }, { status: 401 })
-  if (!rateLimit("api:" + auth.keyId, 120, 60_000)) return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 })
+  if (!(await rateLimit("api:" + auth.keyId, 120, 60_000))) return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 })
 
   const { code } = await params
   const { type, value, label } = await req.json().catch(() => ({}))

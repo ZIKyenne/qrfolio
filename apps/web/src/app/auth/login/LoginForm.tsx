@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useFormStatus } from "react-dom"
 import { Eye, EyeOff, LogIn, Loader2 } from "lucide-react"
 import { signIn } from "../actions"
@@ -36,9 +36,12 @@ function SubmitButton() {
 
 export default function LoginForm() {
   const [show, setShow] = useState(false)
+  const [redirectTo, setRedirectTo] = useState("")
+  useEffect(() => { setRedirectTo(new URLSearchParams(window.location.search).get("redirect") || "") }, [])
   return (
     <form action={signIn} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
       <div>
         <label htmlFor="email" style={LABEL}>Email</label>
         <input id="email" type="email" name="email" placeholder="toi@email.com" required

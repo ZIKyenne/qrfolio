@@ -64,7 +64,9 @@ export async function signIn(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) redirect('/auth/login?error=' + encodeURIComponent(error.message))
-  redirect('/dashboard')
+  // Redirection interne sûre (ex. lien d'invitation) ; sinon dashboard.
+  const to = (formData.get('redirect') as string | null) || ''
+  redirect(to.startsWith('/') && !to.startsWith('//') ? to : '/dashboard')
 }
 
 export async function signOut() {

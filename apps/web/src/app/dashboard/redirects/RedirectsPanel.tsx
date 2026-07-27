@@ -29,8 +29,8 @@ const G     = "var(--accent)"
 const MUTED = "#A8A190"
 
 const TYPE_CFG = {
-  301: { color: "#39FF8F", bg: "rgba(57,255,143,0.1)",  border: "rgba(57,255,143,0.25)",  label: "301 Permanent",  desc: "SEO transféré vers la destination" },
-  302: { color: "#38BDF8", bg: "rgba(56,189,248,0.1)",  border: "rgba(56,189,248,0.25)",  label: "302 Temporaire", desc: "Le SEO reste sur la source" },
+  301: { color: "var(--success)", bg: "rgba(57,255,143,0.1)",  border: "rgba(57,255,143,0.25)",  label: "301 Permanent",  desc: "SEO transféré vers la destination" },
+  302: { color: "var(--action)", bg: "rgba(56,189,248,0.1)",  border: "rgba(56,189,248,0.25)",  label: "302 Temporaire", desc: "Le SEO reste sur la source" },
 }
 
 export default function RedirectsPanel({ userDomains }: Props) {
@@ -155,7 +155,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:12, marginBottom:24 }}>
             {[
               { icon:<ArrowRight size={14} color={G}/>,            label:"Total",    value:redirects.length },
-              { icon:<CheckCircle size={14} color="#39FF8F"/>,     label:"Actives",  value:active },
+              { icon:<CheckCircle size={14} style={{ color:"var(--success)" }}/>,     label:"Actives",  value:active },
               { icon:<ToggleLeft size={14} color={MUTED}/>,        label:"Inactives",value:inactive },
               { icon:<MousePointerClick size={14} color="#818CF8"/>,label:"Clics total",value:redirects.reduce((a,r)=>a+r.hit_count,0).toLocaleString() },
             ].map((k,i) => (
@@ -229,7 +229,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
                 style={{ width:"100%", background:"#111009", border:`1px solid ${fTo ? "color-mix(in srgb, var(--accent) 30%, transparent)" : "rgba(255,255,255,0.1)"}`, borderRadius:9, color:"#F5F0E8", padding:"9px 12px", fontSize:12, outline:"none", boxSizing:"border-box" as const, transition:"border-color 0.15s" }}/>
               {fTo && (
                 <p style={{ color:MUTED, fontSize:10, margin:"5px 0 0" }}>
-                  ↳ <code style={{ color:"#39FF8F" }}>{fTo}</code>
+                  ↳ <code style={{ color:"var(--success)" }}>{fTo}</code>
                 </p>
               )}
             </div>
@@ -244,8 +244,8 @@ export default function RedirectsPanel({ userDomains }: Props) {
 
             {error && (
               <div style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 12px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:8, marginBottom:14 }}>
-                <AlertCircle size={13} color="#FF6B6B"/>
-                <span style={{ color:"#FF6B6B", fontSize:12 }}>{error}</span>
+                <AlertCircle size={13} style={{ color:"var(--danger)" }}/>
+                <span style={{ color:"var(--danger)", fontSize:12 }}>{error}</span>
               </div>
             )}
 
@@ -312,7 +312,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
                     {/* Actions */}
                     <div style={{ display:"flex", gap:5, flexShrink:0 }}>
                       <button type="button" onClick={() => toggle(r)} disabled={toggling === r.id}
-                        style={{ width:28, height:28, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:toggling===r.id?"wait":"pointer", color:r.enabled?"#39FF8F":MUTED }}>
+                        style={{ width:28, height:28, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:toggling===r.id?"wait":"pointer", color:r.enabled?"var(--success)":MUTED }}>
                         {toggling === r.id ? <Loader size={12} style={{ animation:"spin 0.8s linear infinite" }}/> : r.enabled ? <ToggleRight size={13}/> : <ToggleLeft size={13}/>}
                       </button>
                       <button type="button" onClick={() => openEdit(r)}
@@ -324,7 +324,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
                         <ExternalLink size={12}/>
                       </a>
                       <button type="button" onClick={() => del(r.id)} disabled={deleting === r.id}
-                        style={{ width:28, height:28, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:deleting===r.id?"wait":"pointer", color:"#FF6B6B", opacity:deleting===r.id?0.5:1 }}>
+                        style={{ width:28, height:28, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:deleting===r.id?"wait":"pointer", color:"var(--danger)", opacity:deleting===r.id?0.5:1 }}>
                         {deleting === r.id ? <Loader size={12} style={{ animation:"spin 0.8s linear infinite" }}/> : <Trash2 size={12}/>}
                       </button>
                     </div>
@@ -352,10 +352,10 @@ export default function RedirectsPanel({ userDomains }: Props) {
               <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:700, margin:"0 0 6px" }}>301 vs 302 — Lequel choisir ?</p>
               <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
                 <p style={{ color:MUTED, fontSize:11, margin:0 }}>
-                  <strong style={{ color:"#39FF8F" }}>301 Permanent</strong> — Le domaine/page a définitivement changé. Google transfère le PageRank vers la nouvelle URL. À utiliser pour les migrations définitives.
+                  <strong style={{ color:"var(--success)" }}>301 Permanent</strong> — Le domaine/page a définitivement changé. Google transfère le PageRank vers la nouvelle URL. À utiliser pour les migrations définitives.
                 </p>
                 <p style={{ color:MUTED, fontSize:11, margin:0 }}>
-                  <strong style={{ color:"#38BDF8" }}>302 Temporaire</strong> — La redirection est temporaire. Google garde le SEO sur l'URL source. À utiliser pour des tests ou des promotions limitées.
+                  <strong style={{ color:"var(--action)" }}>302 Temporaire</strong> — La redirection est temporaire. Google garde le SEO sur l'URL source. À utiliser pour des tests ou des promotions limitées.
                 </p>
               </div>
             </div>

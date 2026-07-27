@@ -20,7 +20,6 @@ export async function POST(req: NextRequest) {
     .from("qr_codes")
     .select("id, status")
     .eq("id", qr_id)
-    .eq("user_id", user.id)
     .single()
 
   if (!qr) return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
@@ -33,7 +32,6 @@ export async function POST(req: NextRequest) {
       .from("qr_codes")
       .update({ pause_message: pause_message ?? null, updated_at: new Date().toISOString() })
       .eq("id", qr_id)
-      .eq("user_id", user.id)
     return NextResponse.json({ ok: true })
   }
 
@@ -75,7 +73,6 @@ export async function POST(req: NextRequest) {
     .from("qr_codes")
     .update(updates)
     .eq("id", qr_id)
-    .eq("user_id", user.id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -97,7 +94,6 @@ export async function DELETE(req: NextRequest) {
     .from("qr_codes")
     .select("status")
     .eq("id", qr_id)
-    .eq("user_id", user.id)
     .single()
 
   if (!qr) return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
@@ -111,7 +107,6 @@ export async function DELETE(req: NextRequest) {
     .from("qr_codes")
     .delete()
     .eq("id", qr_id)
-    .eq("user_id", user.id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

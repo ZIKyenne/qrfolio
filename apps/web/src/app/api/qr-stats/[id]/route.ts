@@ -18,7 +18,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     .from("qr_codes")
     .select("id, total_scans, last_scan_at, created_at")
     .eq("id", id)
-    .eq("user_id", user.id)
     .single()
 
   // QR introuvable (ou pas encore en base / sans stats) : on renvoie un état vide

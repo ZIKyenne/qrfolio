@@ -15,6 +15,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import { createPortal } from "react-dom"
+import { useToast } from "@/components/Toast"
 import { useDeviceOrientation } from "@/lib/useDeviceOrientation"
 import { onEnterSpace } from "@/lib/a11y"
 import { fabric } from "fabric"
@@ -981,14 +982,8 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   // Sheet "Plus" : actions secondaires de l'objet (empilement/ordre/verrou/supprimer...).
   const [moreSel, setMoreSel] = useState(false)
   const [shadowAdv, setShadowAdv] = useState(false) // #20 : flou/decalages caches derriere "Avance" en mode simple
-  // Toast (avec Annuler) : feedback des actions destructives (#15 audit).
-  const [toast, setToast] = useState<string | null>(null)
-  const toastTimer = useRef<number | null>(null)
-  const showToast = (msg: string) => {
-    setToast(msg)
-    if (toastTimer.current) window.clearTimeout(toastTimer.current)
-    toastTimer.current = window.setTimeout(() => setToast(null), 4500)
-  }
+  // Notifications : toast global unifié (les suppressions ajoutent une action « Annuler »).
+  const toast = useToast()
   // Gestes tactiles (#8) : long-press -> dupliquer. Timer + point de depart.
   const lpTimerRef = useRef<number | null>(null)
   const lpStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -1363,7 +1358,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       setShowStart(true)
     })()
 
-    return () => { if (lpTimerRef.current) window.clearTimeout(lpTimerRef.current); if (toastTimer.current) window.clearTimeout(toastTimer.current); if (pushTimerRef.current) clearTimeout(pushTimerRef.current); fc.dispose(); fcRef.current = null }
+    return () => { if (lpTimerRef.current) window.clearTimeout(lpTimerRef.current); if (pushTimerRef.current) clearTimeout(pushTimerRef.current); fc.dispose(); fcRef.current = null }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -2313,7 +2308,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         fc.discardActiveObject()
         objs.forEach(x => fc.remove(x))
         setSel(null); fc.requestRenderAll()
-        showToast(objs.length > 1 ? `${objs.length} éléments supprimés` : "Élément supprimé") // toast avec Annuler
+        toast.info(objs.length > 1 ? `${objs.length} éléments supprimés` : "Élément supprimé", { action: { label: "Annuler", onClick: undo } })
         return
       }
     }
@@ -3489,7 +3484,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       setSaved(true)
       setTimeout(() => setSaved(false), 2200)
     } catch (e) {
-      if (!silent) showToast("Sauvegarde impossible : " + (e as Error).message)
+      if (!silent) toast.error("Sauvegarde impossible : " + (e as Error).message)
     } finally {
       if (!silent) setSaving(false)
     }
@@ -4337,21 +4332,8 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
 
       {/* Barre contextuelle mobile (facon Canva) : un objet selectionne -> ses actions, gros, en bas.
           Le canvas reste visible ; le panneau complet ne s'ouvre que via "Modifier". */}
-      {/* Toast avec Annuler (feedback destructif) */}
-      {toast && (
-        <div style={{ position: "fixed", left: 16, right: 16, zIndex: 80,
-          bottom: landscapeMobile ? "calc(90px + env(safe-area-inset-bottom))" : 24,
-          display: "flex", alignItems: "center", gap: 12, padding: "11px 12px 11px 15px",
-          background: "#26262B", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 13,
-          boxShadow: "0 12px 34px rgba(0,0,0,0.55)", color: "#F4F1EA", fontSize: 13.5, fontWeight: 600,
-          maxWidth: 460, margin: "0 auto", animation: "psBar .26s cubic-bezier(.2,.8,.2,1)" }}>
-          <span style={{ flex: 1 }}>{toast}</span>
-          <button type="button" onClick={() => { undo(); setToast(null) }}
-            style={{ minHeight: 40, padding: "0 16px", borderRadius: 10, border: "none", background: "linear-gradient(180deg,#D9BC6A,#B8923A)", color: "#141417", fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Annuler</button>
-          <button type="button" onClick={() => setToast(null)} aria-label="Fermer"
-            style={{ width: 34, height: 34, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 9, color: "#F4F1EA", cursor: "pointer" }}><X size={15} /></button>
-        </div>
-      )}
+      {/* Notifications : toast global unifié (voir components/Toast) — l'« Annuler »
+          des suppressions passe désormais par l'action du toast global. */}
 
       {/* Sheet "Plus" : actions secondaires de l'objet selectionne (barre courte -> le reste ici). */}
       {landscapeMobile && sel && moreSel && (() => {

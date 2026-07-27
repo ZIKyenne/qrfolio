@@ -17,6 +17,7 @@ import {
   ShieldOff, ImageIcon
 } from "lucide-react"
 import NextStepCard from "@/components/NextStepCard"
+import { useToast } from "@/components/Toast"
 
 // -- Types --------------------------------------------------------------------
 type Profile = {
@@ -241,7 +242,7 @@ export default function ProfilePage() {
   const [copiedRef, setCopiedRef]       = useState(false)
   const [refFilter, setRefFilter]       = useState("all")
   const [showShareMenu, setShowShareMenu] = useState(false)
-  const [toast, setToast]               = useState<{msg:string;type:"ok"|"err"}|null>(null)
+  const toast = useToast()
   const [cropMode, setCropMode]         = useState(false)
   const [cropSrc, setCropSrc]           = useState<string|null>(null)
   const [deletingAvatar, setDeletingAvatar] = useState(false)
@@ -621,8 +622,9 @@ export default function ProfilePage() {
     return Math.min(score, 100)
   }
 
+  // Délègue au toast global unifié (garde la signature pour tous les appels existants).
   function showToast(msg: string, type: "ok"|"err" = "ok") {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3000)
+    if (type === "err") toast.error(msg); else toast.success(msg)
   }
 
   // Validation username temps reel
@@ -1100,14 +1102,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Toast — role/aria-live pour annonce lecteur d'écran ; wrap (fini le
-          nowrap qui débordait sur mobile pour les messages longs). */}
-      {toast && (
-        <div role="status" aria-live="polite" style={{ position:"fixed", bottom:24, left:"50%", transform:"translateX(-50%)", zIndex:9999, display:"flex", alignItems:"center", gap:9, padding:"11px 20px", background:toast.type==="ok"?"var(--success-bg)":"var(--danger-bg)", border:`1px solid ${toast.type==="ok"?"var(--success-border)":"var(--danger-border)"}`, borderRadius:12, backdropFilter:"blur(12px)", boxShadow:"0 8px 32px rgba(0,0,0,0.5)", maxWidth:"calc(100vw - 32px)" }}>
-          {toast.type==="ok" ? <Check size={14} color="var(--success)"/> : <AlertTriangle size={14} color="var(--danger)"/>}
-          <span style={{ color:toast.type==="ok"?"var(--success)":"var(--danger)", fontSize:13, fontWeight:600 }}>{toast.msg}</span>
-        </div>
-      )}
+      {/* Notifications : toast global unifié (voir components/Toast). */}
 
 
       {/* ====================== HERO — centre de contrôle ====================== */}

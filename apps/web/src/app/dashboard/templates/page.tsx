@@ -10,6 +10,7 @@ import TemplatePreviewModal from "./TemplatePreviewModal"
 import Particles from "@/components/Particles"
 import { useIsMobile } from "@/lib/useIsMobile"
 import { PAGE_TEMPLATES } from "../builder/page-templates"
+import { useToast } from "@/components/Toast"
 
 // Source unique partagée avec le builder : les modèles de page complets (métier + sous-variantes)
 // alimentent AUSSI la galerie d'onboarding (en plus des 14 modèles curés historiques).
@@ -125,7 +126,7 @@ export default function TemplatesPage() {
   const [preview,      setPreview]      = useState<string | null>(null)
   const [hoveredCard,  setHoveredCard]  = useState<string | null>(null)
   const [isCreating,   setIsCreating]   = useState(false)
-  const [toast,        setToast]        = useState<{type:"success"|"error",msg:string}|null>(null)
+  const toast = useToast()
   const [namingFor,    setNamingFor]    = useState<string | null>(null)
   const router = useRouter()
 
@@ -546,7 +547,7 @@ export default function TemplatesPage() {
           onClose={() => setPreview(null)}
           onUse={() => {
             setPreview(null)
-            if (!canUse(previewTemplate.plan)) { setToast({type:"error", msg:`Plan ${previewTemplate.plan} requis`}); return }
+            if (!canUse(previewTemplate.plan)) { toast.error(`Plan ${previewTemplate.plan} requis`); return }
             setNamingFor(previewTemplate.id)
           }}
           canUse={canUse(previewTemplate.plan)}
@@ -596,7 +597,7 @@ export default function TemplatesPage() {
               if (!res.ok || !json.pageId) {
                 return { error: json.error || "Erreur creation page." }
               }
-              setToast({ type: "success", msg: "Page creee avec succes" })
+              toast.success("Page creee avec succes")
               setTimeout(() => router.push("/dashboard/builder/" + json.pageId), 500)
               return { ok: true }
             }}
@@ -604,25 +605,6 @@ export default function TemplatesPage() {
         )
       })()}
 
-      {/* Toast notification */}
-      {toast && (
-        <div style={{
-          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
-          zIndex: 9999, display: "flex", alignItems: "center", gap: 10,
-          background: toast.type === "success" ? "rgba(57,255,143,0.12)" : "rgba(239,68,68,0.12)",
-          border: `1px solid ${toast.type === "success" ? "rgba(57,255,143,0.4)" : "rgba(239,68,68,0.4)"}`,
-          borderRadius: 12, padding: "12px 20px",
-          backdropFilter: "blur(16px)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-          color: toast.type === "success" ? "#39FF8F" : "#F87171",
-          fontSize: 14, fontWeight: 600,
-          animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-        }}>
-          <span>{toast.type === "success" ? "✓" : "⚠"}</span>
-          <span>{toast.msg}</span>
-          <button onClick={() => setToast(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", fontSize: 16, lineHeight: 1, marginLeft: 8 }}>×</button>
-        </div>
-      )}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         @keyframes popIn { from { opacity:0; transform:translateX(-50%) translateY(8px) scale(0.95) } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1) } }

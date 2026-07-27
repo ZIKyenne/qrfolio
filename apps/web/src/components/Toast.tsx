@@ -6,11 +6,13 @@
 import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react"
 
 type ToastKind = "success" | "error" | "info"
-type ToastItem = { id: number; kind: ToastKind; msg: string }
+type ToastAction = { label: string; onClick: () => void }
+type ToastOpts = { action?: ToastAction }
+type ToastItem = { id: number; kind: ToastKind; msg: string; action?: ToastAction }
 type ToastApi = {
-  success: (msg: string) => void
-  error: (msg: string) => void
-  info: (msg: string) => void
+  success: (msg: string, opts?: ToastOpts) => void
+  error: (msg: string, opts?: ToastOpts) => void
+  info: (msg: string, opts?: ToastOpts) => void
 }
 
 const Ctx = createContext<ToastApi | null>(null)
@@ -36,17 +38,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts(t => t.filter(x => x.id !== id))
   }, [])
 
-  const push = useCallback((kind: ToastKind, msg: string) => {
+  const push = useCallback((kind: ToastKind, msg: string, opts?: ToastOpts) => {
     const id = ++seq
-    setToasts(t => [...t, { id, kind, msg }])
-    // Les erreurs restent un peu plus longtemps (le lecteur doit avoir le temps).
-    setTimeout(() => dismiss(id), kind === "error" ? 6000 : 4000)
+    setToasts(t => [...t, { id, kind, msg, action: opts?.action }])
+    // Erreurs et toasts avec action (ex. « Annuler ») restent plus longtemps.
+    setTimeout(() => dismiss(id), opts?.action ? 7000 : kind === "error" ? 6000 : 4000)
   }, [dismiss])
 
   const api = useMemo<ToastApi>(() => ({
-    success: m => push("success", m),
-    error: m => push("error", m),
-    info: m => push("info", m),
+    success: (m, o) => push("success", m, o),
+    error: (m, o) => push("error", m, o),
+    info: (m, o) => push("info", m, o),
   }), [push])
 
   return (
@@ -88,6 +90,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 alignItems: "center", justifyContent: "center", marginTop: 1,
               }}>{s.ico}</span>
               <span style={{ flex: 1, color: "#F5F0E8", fontSize: 14, lineHeight: 1.45 }}>{t.msg}</span>
+              {t.action && (
+                <button
+                  type="button"
+                  onClick={() => { t.action!.onClick(); dismiss(t.id) }}
+                  style={{
+                    flexShrink: 0, border: `1px solid ${s.bar}55`, background: "transparent",
+                    color: s.bar, fontSize: 13, fontWeight: 700, padding: "5px 12px",
+                    borderRadius: 7, cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif",
+                  }}
+                >{t.action.label}</button>
+              )}
               <button
                 type="button"
                 onClick={() => dismiss(t.id)}

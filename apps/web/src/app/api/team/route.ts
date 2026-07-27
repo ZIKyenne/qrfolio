@@ -92,8 +92,9 @@ export async function POST(req: NextRequest) {
   }
 
   const token = randomUUID()
+  const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString() // +7 jours (reposé à chaque ré-invitation)
   const { error: invErr } = await admin.from("team_invitations")
-    .upsert({ team_id: team.id, email, role, token, invited_by: user.id, accepted_at: null }, { onConflict: "team_id,email" })
+    .upsert({ team_id: team.id, email, role, token, invited_by: user.id, accepted_at: null, expires_at: expiresAt }, { onConflict: "team_id,email" })
   if (invErr) return NextResponse.json({ error: "Impossible de créer l'invitation." }, { status: 500 })
 
   // E-mail d'invitation (fire-and-forget — n'échoue jamais la requête).

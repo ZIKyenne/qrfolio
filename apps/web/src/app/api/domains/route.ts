@@ -104,13 +104,25 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Ajouter sur Vercel
+    // Revendiquer le domaine (verified=true) AVANT tout appel externe. L'index
+    // unique partiel `(domain) where verified` rejette (23505) si un AUTRE compte
+    // l'a déjà vérifié → anti-squatting, message propre plutôt qu'une erreur 500.
+    const { error: claimErr } = await supabase
+      .from("domain_verifications")
+      .update({ verified: true, verified_at: new Date().toISOString() })
+      .eq("id", existing.id)
+    if (claimErr) {
+      if (claimErr.code === "23505") {
+        return NextResponse.json({ error: "Ce domaine est déjà vérifié par un autre compte." }, { status: 409 })
+      }
+      return NextResponse.json({ error: "Vérification impossible." }, { status: 500 })
+    }
+
+    // Ajouter sur Vercel (après revendication réussie).
     const vercel = await addToVercel(domain)
     await supabase
       .from("domain_verifications")
       .update({
-        verified:      true,
-        verified_at:   new Date().toISOString(),
         vercel_status: vercel.ok ? "active" : "error",
         vercel_error:  vercel.error ?? null,
       })
@@ -253,13 +265,13 @@ export async function POST(req: NextRequest) {
       verified:   false,
       vercel_status: "pending",
       is_primary: false,
-    }, { onConflict: "domain" })
+    }, { onConflict: "user_id,domain" })
     .select()
     .single()
 
   if (error) {
     if (error.code === "23505") {
-      return NextResponse.json({ error: "Ce domaine est déjà utilisé" }, { status: 409 })
+      return NextResponse.json({ error: "Ce domaine est déjà vérifié par un autre compte" }, { status: 409 })
     }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

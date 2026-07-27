@@ -15,11 +15,14 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
   const { data: inv } = await admin.from("team_invitations")
-    .select("id, team_id, email, role, accepted_at")
+    .select("id, team_id, email, role, accepted_at, expires_at")
     .eq("token", token)
     .maybeSingle()
   if (!inv) return NextResponse.json({ error: "Invitation introuvable ou expirée." }, { status: 404 })
   if (inv.accepted_at) return NextResponse.json({ error: "Invitation déjà utilisée." }, { status: 410 })
+  if (inv.expires_at && new Date(inv.expires_at).getTime() < Date.now()) {
+    return NextResponse.json({ error: "Invitation expirée. Demandez-en une nouvelle." }, { status: 410 })
+  }
 
   // L'e-mail de l'invitation doit correspondre au compte connecté.
   const { data: prof } = await admin.from("profiles").select("email").eq("id", user.id).single()

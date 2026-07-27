@@ -18,8 +18,10 @@ create table if not exists public.domain_verifications (
   -- Timestamps
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now(),
-  -- Un domaine = une page
-  unique(domain)
+  -- Un utilisateur ne peut ajouter un domaine qu'une seule fois (mais plusieurs
+  -- comptes peuvent le revendiquer en attente : anti-squatting, cf index unique
+  -- partiel ci-dessous qui n'autorise qu'UN seul propriétaire VÉRIFIÉ).
+  unique(user_id, domain)
 );
 
 alter table public.domain_verifications enable row level security;
@@ -39,7 +41,10 @@ create policy "Delete propre" on public.domain_verifications
 create index if not exists idx_domain_verif_user
   on public.domain_verifications(user_id);
 
-create index if not exists idx_domain_verif_domain
+-- UNIQUE partiel : un domaine ne peut être VÉRIFIÉ que par un seul compte.
+-- Le premier à prouver la propriété (TXT) le verrouille ; les revendications en
+-- attente d'autres comptes restent possibles mais ne pourront pas être vérifiées.
+create unique index if not exists idx_domain_verif_domain
   on public.domain_verifications(domain)
   where verified = true;
 

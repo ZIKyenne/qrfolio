@@ -752,53 +752,31 @@ export default function ProfilePage() {
     navigator.clipboard.writeText(publicUrl).then(() => { setCopiedUrl(true); setTimeout(() => setCopiedUrl(false), 2500) })
   }
 
-  // Genere une cle API securisee cote client
-  function generateApiKey(): { full: string; preview: string; hash: string } {
-    // 32 bytes aleatoires -> hex -> prefixe qrf_sk_live_
-    const bytes  = new Uint8Array(32)
-    crypto.getRandomValues(bytes)
-    const hex    = Array.from(bytes).map(b => b.toString(16).padStart(2,"0")).join("")
-    const full   = `qrf_sk_live_${hex}`
-    const preview= `qrf_sk_live_${hex.slice(0,8)}...${hex.slice(-4)}`
-    // Hash SHA-256 de la cle complete (ne jamais stocker la cle en clair)
-    return { full, preview, hash: hex }  // en prod: hash = await crypto.subtle SHA256
-  }
+  // (La génération de clé API est désormais serveur : POST /api/keys — vrai SHA-256,
+  //  la clé en clair n'est jamais stockée. Voir createApiKey / regenerateApiKey.)
 
   async function createApiKey() {
     if (!profile || !newKeyName.trim()) return
-    const sb   = createClient()
-    const kp   = generateApiKey()
-    const { data, error } = await sb.from("api_keys").insert({
-      user_id:     profile.id,
-      name:        newKeyName.trim(),
-      key_hash:    kp.hash,
-      key_preview: kp.preview,
-      is_active:   true,
-    }).select().single()
-    if (error) { showToast("Erreur creation cle", "err"); return }
-    if (data) {
-      setApiKeys(prev => [data, ...prev])
-      setNewKeyCreated(kp.full)  // afficher UNE FOIS la cle complete
-      setNewKeyName("")
-      setShowNewKey(false)
-      showToast("Cle API creee -- copiez-la maintenant !")
-      logActivity("api_key_created", "Cle API creee", { entity_label: newKeyName.trim(), entity_type: "api_key" })
-    }
+    const nm  = newKeyName.trim()
+    const res = await fetch("/api/keys", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: nm }) })
+    const d   = await res.json().catch(() => ({}))
+    if (!res.ok) { showToast(d.error || "Erreur creation cle", "err"); return }
+    setApiKeys(prev => [d.record, ...prev])
+    setNewKeyCreated(d.key)  // afficher UNE FOIS la cle complete (generee serveur, hashee)
+    setNewKeyName("")
+    setShowNewKey(false)
+    showToast("Cle API creee -- copiez-la maintenant !")
+    logActivity("api_key_created", "Cle API creee", { entity_label: nm, entity_type: "api_key" })
   }
 
   async function regenerateApiKey(id: string) {
-    const sb   = createClient()
-    const kp   = generateApiKey()
     setRegenKeyId(id)
-    const key  = apiKeys.find(k => k.id === id)
-    const { data, error } = await sb.from("api_keys")
-      .update({ key_hash: kp.hash, key_preview: kp.preview, last_used_at: null })
-      .eq("id", id).eq("user_id", profile!.id)
-      .select().single()
-    if (error) { showToast("Erreur regeneration", "err") }
+    const res = await fetch("/api/keys", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) })
+    const d   = await res.json().catch(() => ({}))
+    if (!res.ok) { showToast(d.error || "Erreur regeneration", "err") }
     else {
-      setApiKeys(prev => prev.map(k => k.id === id ? { ...k, key_preview: kp.preview } : k))
-      setNewKeyCreated(kp.full)
+      setApiKeys(prev => prev.map(k => k.id === id ? { ...k, key_preview: d.record.key_preview } : k))
+      setNewKeyCreated(d.key)
       showToast("Cle regeneree -- copiez-la maintenant !")
     }
     setRegenKeyId(null)

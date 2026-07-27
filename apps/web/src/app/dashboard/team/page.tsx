@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { Users, Mail, Trash2, ShieldCheck, Pencil, Crown, Loader2 } from "lucide-react"
+import Link from "next/link"
+import { Users, Mail, Trash2, ShieldCheck, Pencil, Crown, Loader2, LogOut, Sparkles } from "lucide-react"
 import { useToast } from "@/components/Toast"
 
 type Role = "owner" | "admin" | "editor" | "viewer"
@@ -13,6 +14,10 @@ type TeamData = {
   members: Member[]
   invitations: Invitation[]
   myRole: Role | null
+  plan: string
+  teamEnabled: boolean
+  teamLimit: number | null
+  seatsUsed: number
 }
 
 const GOLD = "#C9A84C"
@@ -99,6 +104,17 @@ export default function TeamPage() {
     } catch (e) { toast.error((e as Error).message) }
   }
 
+  const leaveTeam = async () => {
+    if (!window.confirm("Quitter cette équipe ? Vous perdrez l'accès au contenu partagé.")) return
+    try {
+      const res = await fetch("/api/team/member", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leave: true }) })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || "Erreur")
+      toast.success("Vous avez quitté l'équipe")
+      window.location.href = "/dashboard"
+    } catch (e) { toast.error((e as Error).message) }
+  }
+
   const card: React.CSSProperties = { background: "#0F0E0B", border: "1px solid rgba(201,168,76,0.14)", borderRadius: 16, padding: 22 }
   const rowStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }
 
@@ -122,8 +138,17 @@ export default function TeamPage() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
+          {/* Upsell si le plan du propriétaire n'inclut pas l'Équipe */}
+          {data.myRole === "owner" && !data.teamEnabled && (
+            <div style={{ ...card, borderColor: "rgba(201,168,76,0.35)", background: "linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.02))" }}>
+              <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: "0 0 8px", display: "flex", alignItems: "center", gap: 8 }}><Sparkles size={16} color={GOLD} /> Invitez votre équipe</p>
+              <p style={{ color: "#B8B2A4", fontSize: 14, margin: "0 0 16px", lineHeight: 1.6 }}>La collaboration en équipe est incluse dans le plan <strong style={{ color: GOLD }}>Business</strong> (jusqu'à 5 membres). Passez à Business pour inviter des éditeurs et admins.</p>
+              <Link href="/upgrade?reason=team" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 10, background: "linear-gradient(135deg,#EBCE72,#C9A84C)", color: "#0A0A0A", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>Passer à Business →</Link>
+            </div>
+          )}
+
           {/* Invitation */}
-          {canManage && (
+          {canManage && data.teamEnabled && (
             <form onSubmit={invite} style={card}>
               <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: "0 0 14px", display: "flex", alignItems: "center", gap: 8 }}><Mail size={15} color={GOLD} /> Inviter un membre</p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -144,7 +169,16 @@ export default function TeamPage() {
 
           {/* Membres */}
           <div style={card}>
-            <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: "0 0 6px" }}>Membres</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6, gap: 10, flexWrap: "wrap" }}>
+              <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: 0 }}>
+                Membres{data.teamLimit ? <span style={{ color: "#8A8478", fontWeight: 600, marginLeft: 8, fontSize: 12.5 }}>{data.seatsUsed} / {data.teamLimit}</span> : null}
+              </p>
+              {data.myRole && data.myRole !== "owner" && (
+                <button type="button" onClick={leaveTeam} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,107,107,0.3)", background: "transparent", color: "#FF6B6B", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                  <LogOut size={13} /> Quitter l'équipe
+                </button>
+              )}
+            </div>
             {/* Propriétaire */}
             <div style={rowStyle}>
               <div style={{ flex: 1, minWidth: 0 }}>

@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { ToastProvider } from "@/components/Toast"
+import { accessibleOwnerIds } from "@/lib/team"
 
 const DEFAULT_ACCENT = "#C9A84C"
 const MUTED = "#A8A190"
@@ -86,9 +87,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             const acc = p?.preferences?.accent_color || p?.accent_color
             if (acc) { setAccent(acc); localStorage.setItem("qrfolio_accent", acc) }
           })
-        // Compteur de messages non lus (filtre direct via leads.user_id + index partiel)
-        supabase.from("leads").select("id", { count: "exact", head: true }).eq("user_id", data.user.id).eq("is_read", false)
-          .then(({ count }: any) => { if (typeof count === "number") setUnreadLeads(count) })
+        // Compteur de messages non lus (le sien + celui des équipes dont il est membre)
+        accessibleOwnerIds(supabase, data.user.id).then(ownerIds =>
+          supabase.from("leads").select("id", { count: "exact", head: true }).in("user_id", ownerIds).eq("is_read", false)
+            .then(({ count }: any) => { if (typeof count === "number") setUnreadLeads(count) }))
       }
     })
   }, [])
@@ -97,8 +99,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (!user || pathname === "/dashboard/leads") return
     const supabase = createClient()
-    supabase.from("leads").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("is_read", false)
-      .then(({ count }: any) => { if (typeof count === "number") setUnreadLeads(count) })
+    accessibleOwnerIds(supabase, user.id).then(ownerIds =>
+      supabase.from("leads").select("id", { count: "exact", head: true }).in("user_id", ownerIds).eq("is_read", false)
+        .then(({ count }: any) => { if (typeof count === "number") setUnreadLeads(count) }))
   }, [pathname, user])
 
   // Mise à jour live quand on change la couleur depuis la page Profil

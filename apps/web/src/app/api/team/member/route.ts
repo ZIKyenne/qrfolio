@@ -33,13 +33,28 @@ export async function PATCH(req: NextRequest) {
   return NextResponse.json({ ok: true })
 }
 
-// DELETE — retirer un membre ou annuler une invitation.
+// DELETE — quitter l'équipe (self), retirer un membre ou annuler une invitation.
 export async function DELETE(req: NextRequest) {
-  const c = await ctx()
-  if ("error" in c) return c.error
-  const { admin, team } = c
-  let body: { memberId?: string; invitationId?: string } = {}
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+  let body: { memberId?: string; invitationId?: string; leave?: boolean } = {}
   try { body = await req.json() } catch {}
+  const admin = createAdminClient()
+  const { data: prof } = await admin.from("profiles").select("full_name").eq("id", user.id).single()
+  const team = await getPrimaryTeam(admin, user.id, prof?.full_name ? `Équipe de ${prof.full_name}` : "Mon équipe")
+
+  // Quitter l'équipe soi-même (tout membre invité ; interdit au propriétaire).
+  if (body.leave) {
+    if (team.owner_id === user.id) return NextResponse.json({ error: "Le propriétaire ne peut pas quitter sa propre équipe." }, { status: 400 })
+    const { error } = await admin.from("team_members").delete().eq("team_id", team.id).eq("user_id", user.id)
+    if (error) return NextResponse.json({ error: "Impossible de quitter l'équipe." }, { status: 500 })
+    return NextResponse.json({ ok: true, left: true })
+  }
+
+  // Sinon : actions réservées owner/admin.
+  const myRole = await resolveRole(admin, team, user.id)
+  if (!roleAtLeast(myRole, "admin")) return NextResponse.json({ error: "Réservé au propriétaire / admin." }, { status: 403 })
 
   if (body.memberId) {
     const { data: member } = await admin.from("team_members").select("id, team_id").eq("id", body.memberId).maybeSingle()

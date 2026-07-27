@@ -7,6 +7,7 @@ import { escapeHtml as esc } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailButton } from "@/lib/emailLayout"
 import { getPrimaryTeam, resolveRole, roleAtLeast, ASSIGNABLE_ROLES, type TeamRole } from "@/lib/team"
 import { rateLimit } from "@/lib/rateLimit"
+import { canTeam, teamLimit } from "@/lib/plans"
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 
@@ -17,8 +18,10 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
   const admin = createAdminClient()
-  const { data: prof } = await admin.from("profiles").select("full_name, email").eq("id", user.id).single()
+  const { data: prof } = await admin.from("profiles").select("full_name").eq("id", user.id).single()
   const team = await getPrimaryTeam(admin, user.id, prof?.full_name ? `Équipe de ${prof.full_name}` : "Mon équipe")
+  // Le propriétaire de l'équipe (≠ user courant si celui-ci est un membre invité).
+  const { data: ownerProf } = await admin.from("profiles").select("email, full_name, plan").eq("id", team.owner_id).single()
 
   const [{ data: members }, { data: invitations }] = await Promise.all([
     admin.from("team_members").select("id, user_id, role, joined_at, profiles(email, full_name)").eq("team_id", team.id).order("joined_at"),
@@ -28,10 +31,14 @@ export async function GET() {
   const myRole = await resolveRole(admin, team, user.id)
   return NextResponse.json({
     team: { id: team.id, name: team.name, ownerId: team.owner_id },
-    owner: { id: user.id, email: prof?.email, name: prof?.full_name },
+    owner: { id: team.owner_id, email: ownerProf?.email, name: ownerProf?.full_name },
     members: members ?? [],
     invitations: invitations ?? [],
     myRole,
+    plan: ownerProf?.plan ?? "free",
+    teamEnabled: canTeam(ownerProf?.plan),
+    teamLimit: teamLimit(ownerProf?.plan),
+    seatsUsed: (members?.length ?? 0) + (invitations?.length ?? 0),
   })
 }
 
@@ -60,6 +67,21 @@ export async function POST(req: NextRequest) {
   const myRole = await resolveRole(admin, team, user.id)
   if (!roleAtLeast(myRole, "admin")) return NextResponse.json({ error: "Réservé au propriétaire / admin." }, { status: 403 })
 
+  // Gating plan : la fonction Équipe dépend du plan du PROPRIÉTAIRE de l'équipe.
+  const { data: ownerProf } = await admin.from("profiles").select("plan").eq("id", team.owner_id).single()
+  if (!canTeam(ownerProf?.plan)) {
+    return NextResponse.json({ error: "La fonction Équipe nécessite le plan Business.", upgrade: true }, { status: 403 })
+  }
+  const limit = teamLimit(ownerProf?.plan) ?? 0
+  const [{ count: memberCount }, { count: inviteCount }] = await Promise.all([
+    admin.from("team_members").select("id", { count: "exact", head: true }).eq("team_id", team.id),
+    admin.from("team_invitations").select("id", { count: "exact", head: true }).eq("team_id", team.id).is("accepted_at", null),
+  ])
+  if ((memberCount ?? 0) + (inviteCount ?? 0) >= limit) {
+    return NextResponse.json({ error: `Limite de ${limit} membres atteinte pour votre plan.` }, { status: 403 })
+  }
+
+  // Ne pas s'inviter soi-même.
   if (email === (prof?.email ?? "").toLowerCase()) return NextResponse.json({ error: "Vous êtes déjà dans l'équipe." }, { status: 400 })
 
   // Déjà membre ?

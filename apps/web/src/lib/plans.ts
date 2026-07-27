@@ -165,6 +165,10 @@ export const getPlan = (id?: string | null): Plan => PLANS[(id as PlanId)] ?? PL
 // Limite de pages d'un plan (null = illimité) — utilisée par l'enforcement
 export const pageLimit = (id?: string | null): number | null => getPlan(id).limits.pages
 
+// Équipe : nombre de membres invitables (null = fonctionnalité indisponible sur ce plan).
+export const teamLimit = (id?: string | null): number | null => getPlan(id).limits.team
+export const canTeam = (id?: string | null): boolean => (getPlan(id).limits.team ?? 0) > 0
+
 // Capacités d'un plan (gating fonctionnalités)
 export const caps = (id?: string | null): PlanCaps => getPlan(id).caps
 export const canPrintStudio = (id?: string | null): boolean => getPlan(id).caps.printStudio

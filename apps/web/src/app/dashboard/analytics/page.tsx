@@ -1,6 +1,7 @@
 ﻿import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import AnalyticsClient from "./AnalyticsClient"
+import { accessibleOwnerIds } from "@/lib/team"
 
 export const metadata = { title: "Analytics — QRowg" }
 
@@ -16,11 +17,12 @@ export default async function AnalyticsPage() {
     .eq("id", user.id)
     .single()
 
-  // Pages de l'utilisateur
+  // Pages accessibles : les siennes + celles des équipes dont il est membre.
+  const ownerIds = await accessibleOwnerIds(supabase, user.id)
   const { data: pages } = await supabase
     .from("pages")
     .select("id, title, slug, total_views, unique_views, status")
-    .eq("user_id", user.id)
+    .in("user_id", ownerIds)
     .order("total_views", { ascending: false })
 
   // Scans des 30 derniers jours

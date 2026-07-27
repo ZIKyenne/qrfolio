@@ -43,6 +43,21 @@ export async function getPrimaryTeam(admin: SupabaseClient, userId: string, name
   return getOrCreateOwnTeam(admin, userId, name)
 }
 
+// IDs des propriétaires dont `userId` peut voir le contenu : lui-même + les
+// propriétaires des équipes dont il est membre. À utiliser dans les listings
+// (.in("user_id", ids)) pour que les membres voient le contenu partagé.
+// Marche avec le client authentifié (la RLS autorise la lecture de ses propres
+// team_members + des teams où il est membre).
+export async function accessibleOwnerIds(client: SupabaseClient, userId: string): Promise<string[]> {
+  const ids = new Set<string>([userId])
+  const { data } = await client.from("team_members").select("teams(owner_id)").eq("user_id", userId)
+  for (const r of data ?? []) {
+    const o = (r as any).teams?.owner_id
+    if (o) ids.add(o)
+  }
+  return [...ids]
+}
+
 // Rôle de `userId` dans l'équipe `team` : owner (propriétaire) ou rôle de membre.
 export async function resolveRole(admin: SupabaseClient, team: { id: string; owner_id: string }, userId: string): Promise<TeamRole | null> {
   if (team.owner_id === userId) return "owner"

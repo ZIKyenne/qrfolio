@@ -8,6 +8,7 @@ import { getPlan, fmtPrice } from "@/lib/plans"
 import Particles from "@/components/Particles"
 import { useIsMobile } from "@/lib/useIsMobile"
 import NextStepCard from "@/components/NextStepCard"
+import { accessibleOwnerIds } from "@/lib/team"
 import RecentLeadsCard from "./RecentLeadsCard"
 
 type Page = { id: string; title: string; slug: string; status: string; total_views: number; created_at: string }
@@ -71,9 +72,11 @@ export default function DashboardClient() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = "/auth/login"; return }
+    // Pages accessibles : les siennes + celles des équipes dont il est membre.
+    const ownerIds = await accessibleOwnerIds(supabase, user.id)
     const [{ data: prof }, { data: pgs }] = await Promise.all([
       supabase.from("profiles").select("full_name,plan,total_scans,total_pages,avatar_url").eq("id", user.id).single(),
-      supabase.from("pages").select("id,title,slug,status,total_views,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+      supabase.from("pages").select("id,title,slug,status,total_views,created_at").in("user_id", ownerIds).order("created_at", { ascending: false }).limit(20),
     ])
     if (prof) setProfile(prof)
     if (pgs) setPages(pgs)

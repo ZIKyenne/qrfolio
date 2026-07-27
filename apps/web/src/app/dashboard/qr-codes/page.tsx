@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import type { Metadata } from "next"
 import QRStudio from "./QRStudio"
 import Particles from "@/components/Particles"
+import { accessibleOwnerIds } from "@/lib/team"
 import { Plus, QrCode, TrendingUp, Activity, Link2 } from "lucide-react"
 
 export const metadata: Metadata = { title: "QR Studio - QRowg" }
@@ -18,10 +19,13 @@ export default async function QRCodesPage() {
     .eq("id", user.id)
     .single()
 
+  // Contenu accessible : le sien + celui des équipes dont il est membre.
+  const ownerIds = await accessibleOwnerIds(supabase, user.id)
+
   const { data: qrCodes } = await supabase
     .from("qr_codes")
     .select("*, pages(id, title, slug, status, total_views, updated_at)")
-    .eq("user_id", user.id)
+    .in("user_id", ownerIds)
     .order("created_at", { ascending: false })
 
   const appUrl   = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"

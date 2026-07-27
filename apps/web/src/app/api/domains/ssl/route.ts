@@ -3,6 +3,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { isPublicHttpUrl } from "@/lib/safeUrl"
 
 const VERCEL_TOKEN      = process.env.VERCEL_TOKEN ?? ""
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID ?? ""
@@ -132,6 +133,11 @@ export async function GET(req: NextRequest) {
 
 // ── Fallback: vérifier HTTPS directement ──────────────────────────────────────
 async function checkHttpsSsl(domain: string, checked_at: string): Promise<Response> {
+  // Garde anti-SSRF : `domain` est fourni par l'utilisateur -> on refuse les hôtes
+  // non publics (localhost, IP privées, métadonnées) avant tout fetch.
+  if (!isPublicHttpUrl(`https://${domain}`)) {
+    return NextResponse.json({ status: "error", label: "Domaine invalide", message: "Domaine non autorisé (hôte non public).", checked_at } satisfies SslInfo)
+  }
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 6000)

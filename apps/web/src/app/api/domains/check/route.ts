@@ -4,6 +4,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import dns from "dns/promises"
+import { isPublicHttpUrl } from "@/lib/safeUrl"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type CheckStatus = "ok" | "pending" | "error"
@@ -175,6 +176,8 @@ async function checkHttp(domain: string): Promise<DnsCheck> {
   const urls = [`https://${domain}`, `https://www.${domain}`]
 
   for (const url of urls) {
+    // Garde anti-SSRF : `domain` vient de l'utilisateur -> on ignore les hôtes non publics.
+    if (!isPublicHttpUrl(url)) continue
     try {
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 6000)

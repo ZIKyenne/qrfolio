@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     if (!ok) {
       return NextResponse.json({
         verified: false,
-        message: `Enregistrement TXT non trouvé. Ajoutez: qrfolio-verify=${existing.txt_record}`,
+        message: `Enregistrement TXT non trouvé. Ajoutez: qrowg-verify=${existing.txt_record}`,
       })
     }
 

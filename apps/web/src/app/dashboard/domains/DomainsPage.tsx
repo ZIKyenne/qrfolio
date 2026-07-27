@@ -339,9 +339,9 @@ export default function DomainsPage({ pages, plan }: Props) {
                                     <span style={{ color:"#F5F0E8", fontSize:12 }}>3600</span>
                                     <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                                       <code style={{ color:"#39FF8F", fontSize:11, background:"rgba(57,255,143,0.08)", padding:"3px 7px", borderRadius:5, wordBreak:"break-all" }}>
-                                        qrfolio-verify={rec.txt_record}
+                                        qrowg-verify={rec.txt_record}
                                       </code>
-                                      <button type="button" onClick={() => copyText(`qrfolio-verify=${rec.txt_record}`, `txt-${rec.id}`)}
+                                      <button type="button" onClick={() => copyText(`qrowg-verify=${rec.txt_record}`, `txt-${rec.id}`)}
                                         style={{ flexShrink:0, background:"none", border:"none", color:copied===`txt-${rec.id}`?"#39FF8F":MUTED, cursor:"pointer", padding:2 }}>
                                         {copied===`txt-${rec.id}` ? <CheckCircle size={13}/> : <Copy size={13}/>}
                                       </button>

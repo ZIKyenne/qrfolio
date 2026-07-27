@@ -48,7 +48,7 @@ async function checkTxt(domain: string, expected: string): Promise<DnsCheck> {
   try {
     const records = await withTimeout(dns.resolveTxt(domain))
     const flat    = records.map(r => r.join(""))
-    const found   = flat.find(r => r.includes("qrfolio-verify="))
+    const found   = flat.find(r => r.includes("qrowg-verify="))
     const match   = flat.some(r => r.includes(expected))
 
     if (match) {
@@ -56,7 +56,7 @@ async function checkTxt(domain: string, expected: string): Promise<DnsCheck> {
         id: "txt", label: "Vérification propriété",
         status: "ok",
         message: "Enregistrement TXT trouvé et valide",
-        found: `qrfolio-verify=${expected}`,
+        found: `qrowg-verify=${expected}`,
       }
     }
 
@@ -66,7 +66,7 @@ async function checkTxt(domain: string, expected: string): Promise<DnsCheck> {
         status: "error",
         message: "Enregistrement TXT trouvé mais valeur incorrecte",
         found,
-        expected: `qrfolio-verify=${expected}`,
+        expected: `qrowg-verify=${expected}`,
         detail: "Supprimez l'ancien enregistrement et recréez-le avec la bonne valeur",
       }
     }
@@ -75,7 +75,7 @@ async function checkTxt(domain: string, expected: string): Promise<DnsCheck> {
       id: "txt", label: "Vérification propriété",
       status: "pending",
       message: "Enregistrement TXT non trouvé",
-      expected: `qrfolio-verify=${expected}`,
+      expected: `qrowg-verify=${expected}`,
       detail: "Ajoutez un enregistrement TXT @ avec cette valeur dans votre gestionnaire DNS",
     }
   } catch (e: any) {

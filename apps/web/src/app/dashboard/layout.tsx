@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard, FileText, BarChart, QrCode, User,
   Activity, ChevronRight, LogOut, Settings, Menu, X, Eye, Inbox, Images,
-  Plus, Printer, Upload, Sparkles, Link2, Users
+  Plus, Printer, Upload, Sparkles, Link2, Users, Globe
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { ToastProvider } from "@/components/Toast"
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/leads", icon: Inbox, label: "Messages" },
   { href: "/dashboard/qr-codes", icon: QrCode, label: "QR Codes" },
   { href: "/dashboard/team", icon: Users, label: "Équipe" },
+  { href: "/dashboard/domains", icon: Globe, label: "Domaines" },
   { href: "/dashboard/profile", icon: User, label: "Profil" },
   { href: "/dashboard/settings", icon: Settings, label: "Parametres" },
 ]

@@ -79,12 +79,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
   const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
 
   try {
-    const { data: qr } = await supabase
+    // Requête sans embed (plus robuste : un embed cassé ferait échouer .single()
+    // et redirigerait à tort vers l'accueil). Le slug de la page est récupéré à part.
+    const { data: qr, error: qrErr } = await supabase
       .from("qr_codes")
-      .select("id, page_id, status, dest_override, pause_message, expires_at, pages(slug, status)")
+      .select("id, page_id, status, dest_override, pause_message, expires_at")
       .eq("short_code", code)
-      .single()
+      .maybeSingle()
 
+    if (qrErr) console.error("[qr-redirect] erreur lookup", code, qrErr.message)
     if (!qr) return redirectNoStore(new URL("/?qr=notfound", appUrl))
 
     const qrStatus = qr.status ?? "active"
@@ -138,16 +141,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     if (override) {
       if (override.type === "page") {
         // Type "page" : resolution du slug via la DB (hors helper pur).
-        const { data: pg } = await supabase.from("pages").select("slug").eq("id", override.value).single()
-        if (pg) return redirectNoStore(`${appUrl}/${pg.slug}`)
+        const { data: pg } = await supabase.from("pages").select("slug").eq("id", override.value).maybeSingle()
+        if (pg?.slug) return redirectNoStore(`${appUrl}/${pg.slug}`)
       } else {
         const dest = resolveOverrideDest(override)
         if (dest) return redirectNoStore(dest)
       }
     }
 
-    const page = qr.pages as any
-    if (page?.slug) return redirectNoStore(`${appUrl}/${page.slug}`)
+    if (qr.page_id) {
+      const { data: pg } = await supabase.from("pages").select("slug").eq("id", qr.page_id).maybeSingle()
+      if (pg?.slug) return redirectNoStore(`${appUrl}/${pg.slug}`)
+    }
 
     return redirectNoStore(new URL("/?qr=error", appUrl))
   } catch (e) {

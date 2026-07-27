@@ -165,6 +165,7 @@ export default function DomainsPage({ pages, plan }: Props) {
             <div style={{ marginBottom: 20 }}>
               <MultiBrandDomainsPanel
                 domains={domains}
+                pages={pages}
                 plan={plan}
                 onSetPrimary={setPrimaryDomain}
                 onDelete={async (id) => { await deleteDomain(id) }}
@@ -274,7 +275,7 @@ export default function DomainsPage({ pages, plan }: Props) {
                             </span>
                           </div>
                           <p style={{ color:MUTED, fontSize:11, margin:0 }}>
-                            → {rec.pages?.title ?? "Page inconnue"} · Ajouté le {formatDate(rec.created_at)}
+                            → {rec.pages?.title ?? pages.find(p => p.id === rec.page_id)?.title ?? "Page non liée"} · Ajouté le {formatDate(rec.created_at)}
                           </p>
                         </div>
                         <div style={{ display:"flex", gap:6, alignItems:"center", flexShrink:0 }}>

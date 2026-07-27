@@ -21,6 +21,7 @@ type DomainRecord = {
 
 interface Props {
   domains:    DomainRecord[]
+  pages:      { id: string; title: string; slug: string }[]
   plan:       string
   onSetPrimary: (domain: string) => Promise<void>
   onDelete:     (id: string) => Promise<void>
@@ -60,7 +61,7 @@ function StatusBadge({ status, verified }: { status: string; verified: boolean }
   )
 }
 
-export default function MultiBrandDomainsPanel({ domains, plan, onSetPrimary, onDelete, onAddClick }: Props) {
+export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrimary, onDelete, onAddClick }: Props) {
   const [settingPrimary, setSettingPrimary] = useState<string | null>(null)
   const [deleting,       setDeleting]       = useState<string | null>(null)
 
@@ -110,7 +111,7 @@ export default function MultiBrandDomainsPanel({ domains, plan, onSetPrimary, on
               <StatusBadge status={rec.vercel_status} verified={rec.verified}/>
             </div>
             <p style={{ color:MUTED, fontSize:11, margin:0 }}>
-              → {rec.pages?.title ?? "Aucune page"} · {new Date(rec.created_at).toLocaleDateString("fr-FR")}
+              → {rec.pages?.title ?? pages.find(p => p.id === rec.page_id)?.title ?? "Page non liée"} · {new Date(rec.created_at).toLocaleDateString("fr-FR")}
             </p>
           </div>
 

@@ -2880,6 +2880,28 @@ export default function ProfilePage() {
                     ))}
                   </div>
                 </div>
+
+                {/* Documentation API — exemples pour développeurs */}
+                <div style={{ padding:"14px", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:9 }}>
+                  <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:700, margin:"0 0 4px" }}>Documentation API</p>
+                  <p style={{ color:MUTED, fontSize:10.5, margin:"0 0 12px", lineHeight:1.6 }}>
+                    Base <code style={{ color:"#C9C3B6" }}>https://qrowg.com/api/v1</code> · en-tête <code style={{ color:"#C9C3B6" }}>Authorization: Bearer &lt;clé&gt;</code> · 120 req/min par clé.
+                  </p>
+                  {([
+                    { m:"GET",  p:"/pages",                  d:"Lister vos pages",                cmd:'curl https://qrowg.com/api/v1/pages \\\n  -H "Authorization: Bearer VOTRE_CLE"' },
+                    { m:"GET",  p:"/qr-codes",               d:"Lister vos QR codes",             cmd:'curl https://qrowg.com/api/v1/qr-codes \\\n  -H "Authorization: Bearer VOTRE_CLE"' },
+                    { m:"POST", p:"/qr/:code/destination",   d:"Changer la destination d'un QR",  cmd:'curl -X POST https://qrowg.com/api/v1/qr/CODE/destination \\\n  -H "Authorization: Bearer VOTRE_CLE" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"type":"url","value":"https://exemple.fr"}\'' },
+                  ] as const).map((e, i) => (
+                    <div key={i} style={{ marginBottom:11 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5, flexWrap:"wrap" }}>
+                        <span style={{ fontSize:9, fontWeight:800, color:e.m==="GET"?"#39FF8F":"#F97316", background:e.m==="GET"?"rgba(57,255,143,0.1)":"rgba(249,115,22,0.1)", border:`1px solid ${e.m==="GET"?"rgba(57,255,143,0.25)":"rgba(249,115,22,0.25)"}`, borderRadius:4, padding:"1px 6px" }}>{e.m}</span>
+                        <code style={{ color:"#F5F0E8", fontSize:11 }}>{e.p}</code>
+                        <span style={{ color:MUTED, fontSize:10 }}>· {e.d}</span>
+                      </div>
+                      <pre style={{ margin:0, padding:"8px 10px", background:"#0A0908", border:"1px solid rgba(255,255,255,0.06)", borderRadius:7, color:"#B8B2A4", fontSize:9.5, lineHeight:1.6, overflowX:"auto", whiteSpace:"pre" }}>{e.cmd}</pre>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </SectionCard>

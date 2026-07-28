@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, Component } from "react"
 import { ExternalLink } from "lucide-react"
+import SmartImage from "@/components/SmartImage"
 import { trackPageView } from "@/lib/trackPageView"
 import { queueEngagement, trackDwell, queueTap } from "@/lib/trackEngagement"
 import { trackLinkClick } from "@/lib/trackLinkClick"
@@ -591,7 +592,7 @@ function ProfileAvatar({ src, name, shapeStyle, decoStyle, bgStyle, fontD }: { s
   if (!src || failed) {
     return <div style={{ width: 96, height: 96, ...shapeStyle, ...decoStyle, ...bgStyle, margin: "0 auto 14px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 38, fontWeight: 700, color: "#080808", fontFamily: fontD }}>{(name || "?")[0]?.toUpperCase()}</div>
   }
-  return <img loading="eager" fetchPriority="high" decoding="async" src={src} alt={name || ""} onError={() => setFailed(true)} style={{ width: 96, height: 96, ...shapeStyle, ...decoStyle, objectFit: "cover", margin: "0 auto 14px", display: "block" }} />
+  return <SmartImage src={src} alt={name || ""} width={96} height={96} eager onError={() => setFailed(true)} style={{ width: 96, height: 96, ...shapeStyle, ...decoStyle, objectFit: "cover", margin: "0 auto 14px", display: "block" }} />
 }
 
 // Annonce / alerte : icône + couleur auto (ou personnalisée), fenêtre de dates optionnelle,

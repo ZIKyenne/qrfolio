@@ -1,7 +1,7 @@
 // submitLead.ts — enregistre une soumission de formulaire / RSVP en base (table leads)
-// Insert public (RLS: with check true). Retourne true si l'enregistrement a réussi.
-
-import { createClient } from "@/lib/supabase/client"
+// via la route serveur /api/leads. Volontairement SANS @supabase/supabase-js : ce
+// helper est chargé sur toutes les pages publiques, l'importer ici embarquerait
+// ~214 Ko de client Supabase dans le bundle de chaque page scannée.
 
 export type LeadInput = {
   pageId: string
@@ -17,18 +17,16 @@ export type LeadInput = {
 export async function submitLead(input: LeadInput): Promise<boolean> {
   if (typeof window === "undefined") return false
   try {
-    const sb = createClient()
-    const { error } = await sb.from("leads").insert({
-      page_id:  input.pageId,
-      block_id: input.blockId ? String(input.blockId).slice(0, 200) : null,
-      type:     input.type || "form",
-      name:     input.name?.slice(0, 200) || null,
-      email:    input.email?.slice(0, 200) || null,
-      phone:    input.phone?.slice(0, 60) || null,
-      message:  input.message?.slice(0, 3000) || null,
-      data:     input.data || {},
+    const res = await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        pageId: input.pageId, blockId: input.blockId, type: input.type || "form",
+        name: input.name, email: input.email, phone: input.phone,
+        message: input.message, data: input.data || {},
+      }),
     })
-    if (error) return false
+    if (!res.ok) return false
 
     // Notifie le propriétaire par email (fire-and-forget, l'email est résolu côté serveur)
     fetch("/api/emails/new-lead", {

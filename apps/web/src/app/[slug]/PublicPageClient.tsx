@@ -1334,7 +1334,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
             {products.map(([img, name, price, desc, url]: any[], i: number) => (
               <a key={i} href={url || "#"} target={/^https?:/.test(url || "") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, url || "product")} style={{ display: "flex", gap: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden", textDecoration: "none" }}>
-                {img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(img)} alt="" style={{ width: 84, height: 84, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 84, height: 84, background: "rgba(249,115,22,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>🛍️</div>}
+                {img ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={String(img)} alt="" width={84} height={84} style={{ width: 84, height: 84, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 84, height: 84, background: "rgba(249,115,22,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>🛍️</div>}
                 <div style={{ flex: 1, minWidth: 0, padding: "10px 12px 10px 0" }}>
                   <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{name}</p>
                   {desc && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 5px" }}>{desc}</p>}
@@ -1855,7 +1855,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 13 }}>
             {c.cover_url
-              ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.cover_url} alt="" style={{ width: 54, height: 54, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
+              ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover_url} alt="" width={54} height={54} style={{ width: 54, height: 54, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
               : <div style={{ width: 54, height: 54, borderRadius: 11, background: "rgba(177,80,226,0.15)", border: "1px solid rgba(177,80,226,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 27, flexShrink: 0 }}>🎙️</div>}
             <div>
               <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.podcast_name || "Mon Podcast"}</p>
@@ -1934,7 +1934,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
         <div style={{ background: "rgba(167,139,250,0.06)", border: "1.5px solid rgba(167,139,250,0.22)", borderRadius: 15, padding: "15px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 13 }}>
             {c.cover
-              ? <img onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" loading="lazy" style={{ width: 60, height: 60, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
+              ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={60} height={60} style={{ width: 60, height: 60, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
               : <div style={{ width: 60, height: 60, borderRadius: 11, background: "rgba(167,139,250,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>🎧</div>}
             <div style={{ minWidth: 0 }}>
               <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.title || "Écouter"}</p>
@@ -2087,7 +2087,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
             {guests.map(([photo, name, role, desc]: any[], i: number) => (
               <div key={i} style={{ background: "rgba(236,72,153,0.06)", border: "1px solid rgba(236,72,153,0.15)", borderRadius: 13, padding: "14px 11px", textAlign: "center" }}>
                 {photo
-                  ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(photo)} alt="" style={{ width: 58, height: 58, borderRadius: "50%", objectFit: "cover", margin: "0 auto 9px", display: "block", border: "2px solid rgba(236,72,153,0.4)" }} />
+                  ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={String(photo)} alt="" width={58} height={58} style={{ width: 58, height: 58, borderRadius: "50%", objectFit: "cover", margin: "0 auto 9px", display: "block", border: "2px solid rgba(236,72,153,0.4)" }} />
                   : <div style={{ width: 58, height: 58, borderRadius: "50%", background: "linear-gradient(135deg,#EC4899,#F472B6)", margin: "0 auto 9px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, color: "#fff" }}>{String(name)[0]}</div>}
                 <p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{name}</p>
                 {role && <span style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)", borderRadius: 20, padding: "2px 9px", color: "#EC4899", fontSize: 10, fontWeight: 700 }}>{role}</span>}
@@ -2299,7 +2299,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
             {contacts.map(([photo, name, role, phone, email]: any[], i: number) => (
               <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 13, padding: "13px 15px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: (phone || email) ? 11 : 0 }}>
-                  {photo ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(photo)} alt="" style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} /> : <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 700, color: "#080808", flexShrink: 0 }}>{String(name)[0]}</div>}
+                  {photo ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={String(photo)} alt="" width={44} height={44} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} /> : <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 700, color: "#080808", flexShrink: 0 }}>{String(name)[0]}</div>}
                   <div><p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{name}</p>{role && <p style={{ color: G, fontSize: 11, margin: 0 }}>{role}</p>}</div>
                 </div>
                 {(phone || email) && (
@@ -2391,7 +2391,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     case "company": return (c.company_name || c.logo_url) ? (
       <div style={{ padding: "8px 24px 12px" }}>
         <div style={{ display: "flex", gap: 12, alignItems: "center", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 13, padding: "12px 13px" }}>
-          {c.logo_url ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.logo_url} alt="" style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, borderRadius: 10, background: `${G}15`, border: `1px solid ${G}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, flexShrink: 0 }}>🏢</div>}
+          {c.logo_url ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.logo_url} alt="" width={44} height={44} style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, borderRadius: 10, background: `${G}15`, border: `1px solid ${G}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, flexShrink: 0 }}>🏢</div>}
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_D }}>{c.company_name || "Mon Entreprise"}</p>
             <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{c.sector}{c.founded_year ? ` · Depuis ${c.founded_year}` : ""}</p>
@@ -2524,7 +2524,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
             {tops.map(([rank, img, name, price, sales, url]: any[], i: number) => {
               const inner = <>
                 {rank && <span style={{ fontSize: 19, flexShrink: 0 }}>{String(rank).split(" ")[0]}</span>}
-                {img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(img)} alt="" style={{ width: 44, height: 44, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, background: `${G}10`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, flexShrink: 0 }}>🏆</div>}
+                {img ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={String(img)} alt="" width={44} height={44} style={{ width: 44, height: 44, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, background: `${G}10`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, flexShrink: 0 }}>🏆</div>}
                 <div style={{ flex: 1, minWidth: 0 }}><p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_B }}>{name}</p>{sales && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{sales}</p>}</div>
                 {price && <span style={{ color: G, fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{price}</span>}
               </>
@@ -2610,7 +2610,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
         <div style={{ padding: "12px 24px 14px" }}>
           <div style={{ background: `${G}06`, border: `1px solid ${G}15`, borderRadius: 15, padding: "17px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 13 }}>
-              {c.photo ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.photo} alt="" style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} /> : <div style={{ width: 52, height: 52, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>👤</div>}
+              {c.photo ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.photo} alt="" width={52} height={52} style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} /> : <div style={{ width: 52, height: 52, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>👤</div>}
               <div><p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_D }}>{c.name || "Jean Dupont"}</p><p style={{ color: G, fontSize: 12, margin: 0 }}>{c.role || "Fondateur & CEO"}</p></div>
             </div>
             <p style={{ color: MUTED, fontSize: 13, lineHeight: 1.7, margin: c.signature ? "0 0 11px" : "0", fontStyle: "italic" }}>&quot;{c.message}&quot;</p>
@@ -2635,7 +2635,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           <div style={{ background: "linear-gradient(135deg,rgba(29,185,84,0.12),rgba(29,185,84,0.06))", border: "1.5px solid rgba(29,185,84,0.3)", borderRadius: 16, overflow: "hidden" }}>
             {c.badge && <div style={{ background: "rgba(29,185,84,0.2)", padding: "7px 14px", fontSize: 12, fontWeight: 700, color: "#1DB954", textAlign: "center" }}>{c.badge}</div>}
             <div style={{ display: "flex", gap: 14, padding: "15px" }}>
-              {c.cover ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.cover} alt="" style={{ width: 84, height: 84, borderRadius: 11, objectFit: "cover", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }} /> : <div style={{ width: 84, height: 84, borderRadius: 11, background: "rgba(29,185,84,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, flexShrink: 0 }}>🎵</div>}
+              {c.cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={84} height={84} style={{ width: 84, height: 84, borderRadius: 11, objectFit: "cover", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }} /> : <div style={{ width: 84, height: 84, borderRadius: 11, background: "rgba(29,185,84,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, flexShrink: 0 }}>🎵</div>}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ color: TEXT, fontSize: 17, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.title || "Nouveau titre"}</p>
                 {c.artist && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 4px" }}>{c.artist}</p>}
@@ -2657,7 +2657,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {albums.map(([cover, title, year, type, url]: any[], i: number) => {
               const inner = <>
-                {cover ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(cover)} alt="" style={{ width: 54, height: 54, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 54, height: 54, borderRadius: 9, background: "rgba(29,185,84,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25, flexShrink: 0 }}>💿</div>}
+                {cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={String(cover)} alt="" width={54} height={54} style={{ width: 54, height: 54, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 54, height: 54, borderRadius: 9, background: "rgba(29,185,84,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25, flexShrink: 0 }}>💿</div>}
                 <div style={{ flex: 1 }}><p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{title}</p><div style={{ display: "flex", alignItems: "center", gap: 7 }}>{type && <span style={{ background: "rgba(29,185,84,0.12)", border: "1px solid rgba(29,185,84,0.2)", borderRadius: 10, padding: "1px 8px", color: "#1DB954", fontSize: 10, fontWeight: 700 }}>{type}</span>}{year && <span style={{ color: MUTED, fontSize: 12 }}>{year}</span>}</div></div>
                 <span style={{ color: "#1DB954", fontSize: 19 }}>▶</span>
               </>
@@ -2690,7 +2690,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       return (c.title || platforms.length > 0) ? (
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ display: "flex", gap: 13, alignItems: "center", marginBottom: 13 }}>
-            {c.cover ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.cover} alt="" style={{ width: 62, height: 62, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 62, height: 62, borderRadius: 11, background: "rgba(29,185,84,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 29, flexShrink: 0 }}>📋</div>}
+            {c.cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={62} height={62} style={{ width: 62, height: 62, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 62, height: 62, borderRadius: 11, background: "rgba(29,185,84,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 29, flexShrink: 0 }}>📋</div>}
             <div style={{ flex: 1 }}><p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.title || "Ma Playlist"}</p>{c.description && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 3px" }}>{c.description}</p>}{c.tracks_count && <p style={{ color: "#1DB954", fontSize: 12, margin: 0, fontWeight: 600 }}>🎵 {c.tracks_count}</p>}</div>
           </div>
           {platforms.length > 0 && <div style={{ display: "flex", gap: 8 }}>{platforms.map(([url, label, color]: any[], i: number) => <a key={i} href={extHref(String(url))} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, String(url))} style={{ flex: 1, background: `${color}18`, border: `1px solid ${color}33`, borderRadius: 9, padding: "10px", textAlign: "center", fontSize: 12, fontWeight: 700, color, textDecoration: "none" }}>{label}</a>)}</div>}
@@ -2730,7 +2730,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       return (c.release_name || platforms.length > 0) ? (
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ background: "linear-gradient(135deg,rgba(29,185,84,0.1),rgba(29,185,84,0.05))", border: "1.5px solid rgba(29,185,84,0.3)", borderRadius: 16, padding: "17px", textAlign: "center" }}>
-            {c.cover ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.cover} alt="" style={{ width: 110, height: 110, borderRadius: 13, objectFit: "cover", margin: "0 auto 13px", display: "block", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }} /> : <div style={{ width: 110, height: 110, borderRadius: 13, background: "rgba(29,185,84,0.15)", margin: "0 auto 13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44 }}>💾</div>}
+            {c.cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={110} height={110} style={{ width: 110, height: 110, borderRadius: 13, objectFit: "cover", margin: "0 auto 13px", display: "block", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }} /> : <div style={{ width: 110, height: 110, borderRadius: 13, background: "rgba(29,185,84,0.15)", margin: "0 auto 13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44 }}>💾</div>}
             <p style={{ color: TEXT, fontSize: 17, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.release_name || "Mon prochain titre"}</p>
             {c.release_date && <p style={{ color: "#1DB954", fontSize: 13, fontWeight: 600, margin: "0 0 15px" }}>📅 Sortie le {c.release_date}</p>}
             {platforms.length > 0 && <div style={{ display: "flex", gap: 8 }}>{platforms.map(([url, label, bg, fg]: any[], i: number) => <a key={i} href={extHref(String(url))} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, String(url))} style={{ flex: 1, background: bg, borderRadius: 10, padding: "12px", fontSize: 12, fontWeight: 700, color: fg, textDecoration: "none" }}>{label}</a>)}</div>}

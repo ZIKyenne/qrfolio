@@ -1,6 +1,6 @@
 ﻿import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import GoalsDashboard from "../analytics/GoalsDashboard"
+import GoalsShell from "./GoalsShell"
 
 export const metadata = { title: "Objectifs — QRowg" }
 
@@ -42,7 +42,7 @@ export default async function GoalsPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#080808", padding: "32px 24px 80px", fontFamily: "DM Sans, sans-serif" }}>
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <GoalsDashboard
+        <GoalsShell
           clicks={normalizedClicks}
           pageViews={views || []}
           pages={pages || []}

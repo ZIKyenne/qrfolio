@@ -1,6 +1,6 @@
 ﻿import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import AnalyticsClient from "./AnalyticsClient"
+import AnalyticsShell from "./AnalyticsShell"
 import { accessibleOwnerIds } from "@/lib/team"
 
 export const metadata = { title: "Analytics — QRowg" }
@@ -112,7 +112,7 @@ export default async function AnalyticsPage() {
   }))
 
   return (
-    <AnalyticsClient
+    <AnalyticsShell
       profile={profile}
       pages={pages || []}
       recentScans={recentScans || []}

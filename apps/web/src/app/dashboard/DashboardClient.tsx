@@ -207,6 +207,8 @@ export default function DashboardClient() {
         .dz-cta:active{transform:translateY(0) scale(.98)}
         /* Mobile : la grille "Pages recentes + Raccourcis" s'empile (au lieu de 2 colonnes serrees) */
         @media (max-width: 760px){ .dash-2col{ grid-template-columns:1fr !important; } }
+        /* Mobile : masque la stat "Publiees" (doublon avec "Pages creees -> X publiees") pour alleger */
+        @media (max-width: 760px){ .dash-stat-hide-mobile{ display:none !important; } }
       `}</style>
 
       {pageToDelete && (
@@ -384,9 +386,9 @@ export default function DashboardClient() {
               {[
                 { icon: <BarChart2 size={15} />, label: "Vues ce mois", value: monthViews.toLocaleString("fr-FR"), sub: viewsLimit ? `/ ${viewsLimit.toLocaleString("fr-FR")}` : "illimitées", color: overViews ? "var(--danger)" : "#7B61FF", spark: true },
                 { icon: <Eye size={15} />, label: "Pages créées", value: profile?.total_pages || 0, sub: publishedCount + " publiée" + (publishedCount > 1 ? "s" : ""), color: G, spark: false },
-                { icon: <Globe size={15} />, label: "Publiées", value: publishedCount, sub: "sur " + pages.length, color: "var(--action)", spark: false },
+                { icon: <Globe size={15} />, label: "Publiées", value: publishedCount, sub: "sur " + pages.length, color: "var(--action)", spark: false, hideMobile: true },
               ].map((s, i) => (
-                <div key={i} style={{ minWidth: 92 }}>
+                <div key={i} className={(s as any).hideMobile ? "dash-stat-hide-mobile" : undefined} style={{ minWidth: 92 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ color: s.color, display: "flex" }}>{s.icon}</span>

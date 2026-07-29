@@ -1694,7 +1694,7 @@ import FileUpload from "./FileUpload"
           // accent = primary (hexa fiable ; theme.accent peut valoir var(--success)).
           const introAccentHex = /^#[0-9a-fA-F]{3,8}$/.test(theme.primary) ? theme.primary : "#C9A84C"
           const setIntro = (patch: Partial<PageTheme>) => onThemeChange({ ...theme, ...patch })
-          const STYLES_L: [string, string][] = [["reveal","Révélation"],["fade","Fondu"],["curtain","Rideau"],["pulse","Pulse"],["ring","Anneau"],["stack","Pile"]]
+          const STYLES_L: [string, string][] = [["reveal","Révélation"],["fade","Fondu"],["curtain","Rideau"],["pulse","Pulse"],["ring","Anneau"],["stack","Pile"],["zoom","Zoom"],["flip","Flip"],["slide","Glissé"],["corners","Coins QR"]]
           if (!canIntro) return (
             <div style={{ padding: "22px 16px", textAlign: "center", border: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)", borderRadius: 12, background: "rgba(201,168,76,0.05)" }}>
               <div style={{ fontSize: 26, marginBottom: 8 }}>✨</div>

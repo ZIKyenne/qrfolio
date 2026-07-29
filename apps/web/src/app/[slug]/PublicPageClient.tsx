@@ -2985,7 +2985,7 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
   return (
     <div style={{ minHeight: "100vh", background: theme.bgGradient || theme.bg, fontFamily: theme.fontBody }}>
       {showIntro && !coverGone && (
-        <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 2147482999, background: theme.bg, display: "grid", placeItems: "center" }}>
+        <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 2147482999, background: theme.bgGradient || theme.bg, display: "grid", placeItems: "center" }}>
           <div style={{ width: 108, height: 108, borderRadius: 30, overflow: "hidden", background: introAccent, display: "grid", placeItems: "center", color: introOn, fontSize: 40, fontWeight: 600 }}>
             {introProfile.avatar
               ? <img src={introProfile.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />

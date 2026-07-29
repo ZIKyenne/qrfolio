@@ -7,7 +7,7 @@
  *   stop()  // annule/nettoie immédiatement (démontage de composant)
  */
 
-export type IntroStyle = "reveal" | "fade" | "curtain" | "pulse" | "ring" | "stack"
+export type IntroStyle = "reveal" | "fade" | "curtain" | "pulse" | "ring" | "stack" | "zoom" | "flip" | "slide" | "corners"
 
 export interface IntroConfig {
   style: IntroStyle
@@ -35,7 +35,7 @@ export const DEFAULTS: IntroConfig = {
   skippable: true,
 }
 
-export const STYLES: IntroStyle[] = ["reveal", "fade", "curtain", "pulse", "ring", "stack"]
+export const STYLES: IntroStyle[] = ["reveal", "fade", "curtain", "pulse", "ring", "stack", "zoom", "flip", "slide", "corners"]
 
 const SESSION_KEY = "pi-intro-seen"
 const CSS_ID = "pi-intro-css"
@@ -116,6 +116,40 @@ export function introCSS(): string { return `
  animation:pi-soft calc(var(--pi-d)*.34) cubic-bezier(.2,1,.32,1) calc(var(--pi-d)*.08) both}
 .pi-ring .pi-face{border-radius:26px;font-size:36px}
 .pi-ring .pi-meta{animation:pi-rise calc(var(--pi-d)*.30) cubic-bezier(.22,1,.36,1) calc(var(--pi-d)*.52) both}
+
+/* zoom */
+.pi-zoom .pi-tile{opacity:0;transform:scale(.5);filter:blur(8px);
+ animation:pi-zoom calc(var(--pi-d)*.55) cubic-bezier(.16,1,.3,1) calc(var(--pi-d)*.06) both}
+.pi-zoom .pi-meta{animation:pi-rise calc(var(--pi-d)*.4) cubic-bezier(.22,1,.36,1) calc(var(--pi-d)*.42) both}
+@keyframes pi-zoom{to{opacity:1;transform:scale(1);filter:blur(0)}}
+
+/* flip */
+.pi-flip .pi-tilewrap{perspective:640px}
+.pi-flip .pi-tile{opacity:0;transform:rotateY(-92deg);transform-origin:center;
+ animation:pi-flip calc(var(--pi-d)*.6) cubic-bezier(.3,1.2,.5,1) calc(var(--pi-d)*.08) both}
+.pi-flip .pi-meta{animation:pi-rise calc(var(--pi-d)*.4) cubic-bezier(.22,1,.36,1) calc(var(--pi-d)*.5) both}
+@keyframes pi-flip{to{opacity:1;transform:rotateY(0)}}
+
+/* slide */
+.pi-slide .pi-tile{opacity:0;transform:translateY(26px);
+ animation:pi-riseB calc(var(--pi-d)*.44) cubic-bezier(.16,1,.3,1) calc(var(--pi-d)*.05) both}
+.pi-slide .pi-name{opacity:0;transform:translateY(20px);
+ animation:pi-riseB calc(var(--pi-d)*.4) cubic-bezier(.16,1,.3,1) calc(var(--pi-d)*.34) both}
+.pi-slide .pi-sub{opacity:0;transform:translateY(14px);
+ animation:pi-riseB calc(var(--pi-d)*.4) cubic-bezier(.16,1,.3,1) calc(var(--pi-d)*.5) both}
+@keyframes pi-riseB{to{opacity:1;transform:none}}
+
+/* corners (finder patterns QR qui se tracent autour de la tuile) */
+.pi-corners .pi-tile{opacity:0;transform:scale(.9);
+ animation:pi-pop calc(var(--pi-d)*.3) cubic-bezier(.2,1,.32,1) calc(var(--pi-d)*.3) both}
+.pi-corners .pi-cnr{position:absolute;inset:-15px;width:calc(100% + 30px);height:calc(100% + 30px);overflow:visible}
+.pi-corners .pi-cnr path{fill:none;stroke:var(--pi-accent);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;
+ stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px var(--pi-glow));
+ animation:pi-draw calc(var(--pi-d)*.38) cubic-bezier(.5,0,.2,1) both}
+.pi-corners .pi-cnr path:nth-child(2){animation-delay:calc(var(--pi-d)*.09)}
+.pi-corners .pi-cnr path:nth-child(3){animation-delay:calc(var(--pi-d)*.18)}
+.pi-corners .pi-cnr path:nth-child(4){animation-delay:calc(var(--pi-d)*.27)}
+.pi-corners .pi-meta{animation:pi-rise calc(var(--pi-d)*.4) cubic-bezier(.22,1,.36,1) calc(var(--pi-d)*.5) both}
 
 @media (prefers-reduced-motion: reduce){
  #pi-intro *,#pi-intro *::before,#pi-intro *::after{
@@ -237,7 +271,13 @@ export function initIntro(config: Partial<IntroConfig>, mountEl?: HTMLElement): 
   }
 
   const reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-  const dur = reduce ? 420 : Math.max(600, cfg.duration | 0)
+  // On découple la CONSTRUCTION (rapide) du HOLD (au moins ~1 s pour lire le nom /
+  // logo) : `dur` pilote les animations (CSS via --pi-d + canvas), `visible` = temps
+  // total à l'écran avant le fondu de sortie. duration = build + hold.
+  const total = Math.max(1500, cfg.duration | 0)
+  const dur = reduce ? 240 : Math.max(700, Math.min(1500, Math.round(total * 0.5)))  // build (snappy)
+  const hold = reduce ? 220 : Math.max(1000, total - dur)                             // lecture stable ≥ 1 s
+  const visible = dur + hold
 
   if (!document.getElementById(CSS_ID)) {
     const st = document.createElement("style")
@@ -283,9 +323,16 @@ export function initIntro(config: Partial<IntroConfig>, mountEl?: HTMLElement): 
       '<div class="pi-clip">' + faceHTML + '<div class="pi-scan"></div></div>' +
       '<svg class="pi-stroke" viewBox="0 0 108 108"><rect pathLength="1" x="1.5" y="1.5" width="105" height="105" rx="29" ry="29"/></svg>' +
       '</div></div>' + metaHTML + '</div>'
-  } else if (cfg.style === "fade") {
-    html = '<div class="pi-stage"><div class="pi-tilewrap"><div class="pi-halo"></div>' +
+  } else if (cfg.style === "fade" || cfg.style === "zoom" || cfg.style === "flip" || cfg.style === "slide") {
+    html = '<div class="pi-stage"><div class="pi-tilewrap">' +
+      (cfg.style === "fade" ? '<div class="pi-halo"></div>' : '') +
       '<div class="pi-tile">' + faceHTML + '</div></div>' + metaHTML + '</div>'
+  } else if (cfg.style === "corners") {
+    html = '<div class="pi-stage"><div class="pi-tilewrap"><div class="pi-tile">' + faceHTML + '</div>' +
+      '<svg class="pi-cnr" viewBox="0 0 100 100">' +
+      '<path pathLength="1" d="M8 30 V8 H30"/><path pathLength="1" d="M70 8 H92 V30"/>' +
+      '<path pathLength="1" d="M92 70 V92 H70"/><path pathLength="1" d="M30 92 H8 V70"/>' +
+      '</svg></div>' + metaHTML + '</div>'
   } else if (cfg.style === "curtain") {
     html = '<div class="pi-veil"></div><div class="pi-panel"><div class="pi-stage">' +
       '<div class="pi-tilewrap"><div class="pi-tile">' + faceHTML + '</div></div>' + metaHTML + '</div></div>'
@@ -365,7 +412,7 @@ export function initIntro(config: Partial<IntroConfig>, mountEl?: HTMLElement): 
     }, 280)
   }
 
-  const timer = window.setTimeout(finish, dur)
+  const timer = window.setTimeout(finish, visible)
   if (cfg.skippable) {
     root.addEventListener("click", finish, { passive: true })
     root.addEventListener("touchstart", finish, { passive: true })

@@ -1,0 +1,33 @@
+# QRowg
+
+> QRowg est une plateforme française qui réunit une page professionnelle mobile
+> (link in bio, carte de visite numérique, mini-site) et un QR code dynamique dont
+> la destination reste modifiable après impression, avec suivi des scans,
+> personnalisation du QR, supports imprimables et modèles par métier.
+
+## Pages
+
+- [Accueil](https://qrowg.com/)
+- [Fonctionnalités](https://qrowg.com/features)
+- [Exemples de pages](https://qrowg.com/examples)
+- [Tarifs](https://qrowg.com/upgrade)
+- [Contact](https://qrowg.com/contact)
+
+## Légal
+
+- [Mentions légales](https://qrowg.com/legal)
+- [Confidentialité](https://qrowg.com/privacy)
+- [Conditions d'utilisation](https://qrowg.com/terms)
+
+## Faits vérifiables
+
+- Plans : Starter 4,90 €/mois, Pro 12,90 €/mois, Business 29,90 €/mois (TTC), plan
+  gratuit disponible, essai sans carte bancaire, sans engagement, résiliable à tout moment.
+- QR code DYNAMIQUE : la destination se modifie après impression, le code imprimé
+  reste valable.
+- Hébergement des données en Europe, échanges et messages chiffrés, conformité RGPD.
+- Exports du QR : PNG, JPG, PDF, SVG.
+- Sous-domaine inclus ; domaine personnalisé et marque blanche sur le plan Business.
+- Fonctionnalités : éditeur no-code, modèles par métier, personnalisation du QR,
+  analytics (scans/vues/clics/sources/appareils), objectifs et redirections,
+  messagerie chiffrée, animation d'entrée personnalisable, espace équipe, API publique.

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react"
 import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
 import { G, MUTED } from "./builderConstants"
 import { useToast } from "@/components/Toast"
 import { canPageIntro } from "@/lib/plans"
+import PageIntro from "@/components/pageIntro/PageIntro"
 import BannerStudio from "./BannerStudio"
 import ImageUpload from "./ImageUpload"
 import FileUpload from "./FileUpload"
@@ -797,6 +798,9 @@ import FileUpload from "./FileUpload"
     const [effectVignette, setEffectVignette] = useState(false)
     const [animation, setAnimation] = useState<string>("none")
     const [copiedStyle, setCopiedStyle] = useState(false)
+    // Aperçu live de l'animation d'entrée (mode scopé : joue dans le cadre, pas en plein écran).
+    const [introReplay, setIntroReplay] = useState(0)
+    const introPreviewRef = useRef<HTMLDivElement>(null)
 
     const G = "#C9A84C"
     const MUTED = "#A8A190"
@@ -1687,6 +1691,8 @@ import FileUpload from "./FileUpload"
           const enabled = !!(theme as any).intro_enabled
           const curStyle = (theme as any).intro_style || "reveal"
           const curDur = (theme as any).intro_duration || 2400
+          // accent = primary (hexa fiable ; theme.accent peut valoir var(--success)).
+          const introAccentHex = /^#[0-9a-fA-F]{3,8}$/.test(theme.primary) ? theme.primary : "#C9A84C"
           const setIntro = (patch: Partial<PageTheme>) => onThemeChange({ ...theme, ...patch })
           const STYLES_L: [string, string][] = [["reveal","Révélation"],["fade","Fondu"],["curtain","Rideau"],["pulse","Pulse"],["ring","Anneau"],["stack","Pile"]]
           if (!canIntro) return (
@@ -1723,6 +1729,35 @@ import FileUpload from "./FileUpload"
                     <span>Durée</span><span style={{ color: G }}>{(curDur / 1000).toFixed(1)} s</span>
                   </div>
                   <input type="range" min={800} max={3000} step={100} value={curDur} onChange={e => setIntro({ intro_duration: parseInt(e.target.value, 10) })} style={{ width: "100%", accentColor: G }} />
+                </div>
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <span style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1 }}>Aperçu</span>
+                    <button onClick={() => setIntroReplay(r => r + 1)}
+                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${G}55`, borderRadius: 8, color: G, fontSize: 11, fontWeight: 600, padding: "5px 11px", cursor: "pointer" }}>
+                      ▶ Rejouer
+                    </button>
+                  </div>
+                  <div ref={introPreviewRef} style={{ position: "relative", width: "100%", height: 300, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: theme.bg }}>
+                    {/* Faux contenu de page derrière — pour juger la transition de révélation. */}
+                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "40px 18px" }}>
+                      <div style={{ width: 54, height: 54, borderRadius: 15, background: introAccentHex, flexShrink: 0 }} />
+                      <div style={{ width: 96, height: 12, borderRadius: 6, background: theme.text, opacity: 0.9 }} />
+                      <div style={{ width: 64, height: 7, borderRadius: 5, background: theme.text, opacity: 0.35 }} />
+                      {[0, 1, 2].map(i => <div key={i} style={{ width: "88%", height: 32, borderRadius: 10, border: `1px solid ${theme.text}18` }} />)}
+                    </div>
+                    <PageIntro
+                      style={curStyle as any}
+                      accent={introAccentHex}
+                      bg={theme.bg}
+                      text={theme.text}
+                      title="Votre nom"
+                      duration={curDur}
+                      oncePerSession={false}
+                      containerRef={introPreviewRef}
+                      replayKey={introReplay + 1}
+                    />
+                  </div>
                 </div>
                 <p style={{ color: "#6E685E", fontSize: 9.5, margin: 0, lineHeight: 1.5 }}>
                   L&apos;animation reprend l&apos;accent, le fond et le nom de ta page. Elle ne joue qu&apos;une fois par session visiteur et se passe au toucher.

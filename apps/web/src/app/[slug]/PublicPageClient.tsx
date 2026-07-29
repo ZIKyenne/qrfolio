@@ -2971,19 +2971,39 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
   const introProfile = (blocks.find(b => b.type === "profile")?.content ?? {}) as any
   const introHex = (c: string) => /^#[0-9a-fA-F]{3,8}$/.test(c || "") ? c : "#C9A84C"
   const showIntro = introEligible && !!(theme as any).intro_enabled
+  const introTitle = introProfile.name || (page as any).title || "Ma page"
+  const introAccent = introHex(theme.primary)
+  // Cache SSR : présent dès le 1er paint (fond de la page + tuile), retiré par
+  // l'intro client une fois son overlay en place → aucun flash blanc/de contenu.
+  const [coverGone, setCoverGone] = useState(false)
+  const introOn = (() => {
+    const h = introAccent.replace("#", ""); const hh = h.length === 3 ? h.split("").map(c => c + c).join("") : h
+    const n = parseInt(hh || "0", 16); const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) > 150 ? "#111111" : "#FFFFFF"
+  })()
 
   return (
     <div style={{ minHeight: "100vh", background: theme.bgGradient || theme.bg, fontFamily: theme.fontBody }}>
+      {showIntro && !coverGone && (
+        <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 2147482999, background: theme.bg, display: "grid", placeItems: "center" }}>
+          <div style={{ width: 108, height: 108, borderRadius: 30, overflow: "hidden", background: introAccent, display: "grid", placeItems: "center", color: introOn, fontSize: 40, fontWeight: 600 }}>
+            {introProfile.avatar
+              ? <img src={introProfile.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : (String(introTitle).trim().charAt(0) || "?").toUpperCase()}
+          </div>
+        </div>
+      )}
       {showIntro && (
         <PageIntro
           style={((theme as any).intro_style || "reveal") as any}
-          accent={introHex(theme.primary)}
+          accent={introAccent}
           bg={theme.bg}
           text={theme.text}
-          title={introProfile.name || (page as any).title || "Ma page"}
+          title={introTitle}
           subtitle={introProfile.tagline || ""}
           avatar={introProfile.avatar || ""}
           duration={(theme as any).intro_duration || 2400}
+          onReady={() => setCoverGone(true)}
         />
       )}
       <style>{`

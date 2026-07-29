@@ -2174,7 +2174,9 @@
 
             {!rightCollapsed && rightTab==="theme" && (
               <div style={{ flex: 1, overflowY: "auto", padding: 14 }}>
-                <ThemePanel theme={theme} onThemeChange={setTheme} userPlan={userPlan} />
+                <ThemePanel theme={theme} onThemeChange={setTheme} userPlan={userPlan}
+                  previewName={(blocks.find(b => b.type === "profile")?.content as any)?.name || pageName}
+                  previewAvatar={(blocks.find(b => b.type === "profile")?.content as any)?.avatar || ""} />
               </div>
             )}
 

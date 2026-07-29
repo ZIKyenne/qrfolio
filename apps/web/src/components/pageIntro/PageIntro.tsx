@@ -21,6 +21,7 @@ type Props = {
   skippable?: boolean
   containerRef?: React.RefObject<HTMLElement | null> | null  // preview builder (cadre) au lieu du body
   replayKey?: number
+  onReady?: () => void   // appelé une fois l'overlay en place (ou l'intro sautée) → retirer le cache SSR
 }
 
 export default function PageIntro({
@@ -37,17 +38,21 @@ export default function PageIntro({
   skippable = DEFAULTS.skippable,
   containerRef = null,
   replayKey = 0,
+  onReady,
 }: Props) {
   const teardownRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
-    if (!enabled || !title) return
+    if (!enabled || !title) { onReady?.(); return }
     if (replayKey > 0) resetIntroSession()
 
     teardownRef.current = initIntro(
       { style, accent, bg, text, title, subtitle, avatar, duration, oncePerSession, skippable },
       containerRef ? containerRef.current || undefined : undefined
     )
+    // L'overlay client est en place (ou l'intro a été sautée : déjà vue cette session)
+    // → on peut retirer le cache SSR sans laisser apparaître la page en dessous.
+    onReady?.()
 
     return () => { if (teardownRef.current) teardownRef.current() }
     // volontairement large : toute modif de thème/contenu relance l'intro (utile en preview builder).

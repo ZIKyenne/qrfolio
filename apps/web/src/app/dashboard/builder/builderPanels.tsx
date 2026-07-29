@@ -753,7 +753,7 @@ import FileUpload from "./FileUpload"
     )
   }
 
-  export function ThemePanel({ theme, onThemeChange, userPlan = null }: { theme: PageTheme; onThemeChange: (t: PageTheme) => void; userPlan?: string | null }) {
+  export function ThemePanel({ theme, onThemeChange, userPlan = null, previewName = "", previewAvatar = "" }: { theme: PageTheme; onThemeChange: (t: PageTheme) => void; userPlan?: string | null; previewName?: string; previewAvatar?: string }) {
     const toast = useToast()
     const [themeTab, setThemeTab] = useState<"themes"|"colors"|"fonts"|"bg"|"blocks"|"intro">("themes")
     const [themeBlocksAdv, setThemeBlocksAdv] = useState(false) // Avance masque par defaut (animation, effet verre) — review #4
@@ -1741,7 +1741,9 @@ import FileUpload from "./FileUpload"
                   <div ref={introPreviewRef} style={{ position: "relative", width: "100%", height: 300, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: theme.bg }}>
                     {/* Faux contenu de page derrière — pour juger la transition de révélation. */}
                     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "40px 18px" }}>
-                      <div style={{ width: 54, height: 54, borderRadius: 15, background: introAccentHex, flexShrink: 0 }} />
+                      <div style={{ width: 54, height: 54, borderRadius: 15, background: introAccentHex, flexShrink: 0, overflow: "hidden", display: "grid", placeItems: "center", color: "#fff", fontSize: 22, fontWeight: 600 }}>
+                        {previewAvatar ? <img src={previewAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (String(previewName || "?").trim().charAt(0) || "?").toUpperCase()}
+                      </div>
                       <div style={{ width: 96, height: 12, borderRadius: 6, background: theme.text, opacity: 0.9 }} />
                       <div style={{ width: 64, height: 7, borderRadius: 5, background: theme.text, opacity: 0.35 }} />
                       {[0, 1, 2].map(i => <div key={i} style={{ width: "88%", height: 32, borderRadius: 10, border: `1px solid ${theme.text}18` }} />)}
@@ -1751,7 +1753,8 @@ import FileUpload from "./FileUpload"
                       accent={introAccentHex}
                       bg={theme.bg}
                       text={theme.text}
-                      title="Votre nom"
+                      title={previewName || "Votre nom"}
+                      avatar={previewAvatar || ""}
                       duration={curDur}
                       oncePerSession={false}
                       containerRef={introPreviewRef}

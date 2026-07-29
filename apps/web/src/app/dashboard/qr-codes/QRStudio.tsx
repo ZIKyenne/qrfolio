@@ -1013,11 +1013,12 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
           ? { ...q, status: d.status, ...(extra?.pause_message !== undefined ? { pause_message: extra.pause_message } : {}) }
           : q
         ))
-        if (activeId === qrId && d.status) {
-          // Mettre a jour le qr actif
-        }
+      } else {
+        toast.error(d.error || "Action impossible")
       }
-    } catch {}
+    } catch {
+      toast.error("Erreur réseau")
+    }
     setQrStatusLoading(null)
     setConfirmAction(null)
     setMenuId(null)

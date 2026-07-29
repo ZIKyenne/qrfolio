@@ -43,40 +43,29 @@ export async function POST(req: NextRequest) {
     }, { status: 400 })
   }
 
-  // Nouveau statut (mapping teste) + timestamps propres a chaque action.
-  const now = new Date().toISOString()
+  // On ne met à jour que les colonnes ESSENTIELLES et sûres : `status` (pilote la
+  // résolution au scan) et `pause_message`. Les timestamps paused_at/archived_at
+  // ne sont lus nulle part ; les inclure faisait ÉCHOUER TOUT l'update s'ils
+  // manquaient en base (SQL partiel) -> la pause échouait en silence.
   const updates: Record<string, any> = {
-    updated_at: now,
+    updated_at: new Date().toISOString(),
     status: ACTION_TO_STATUS[action as keyof typeof ACTION_TO_STATUS],
   }
+  if (action === "pause" && pause_message !== undefined) updates.pause_message = pause_message
 
-  switch (action) {
-    case "activate":
-      updates.paused_at  = null
-      break
-    case "pause":
-      updates.paused_at  = now
-      if (pause_message !== undefined) updates.pause_message = pause_message
-      break
-    case "archive":
-      updates.archived_at = now
-      break
-    case "restore":
-      updates.archived_at = null
-      updates.paused_at   = null
-      break
-    case "expire":
-      break
-  }
-
-  const { error } = await supabase
+  // .select() confirme que l'update a bien porté (proprio OU membre d'équipe via
+  // RLS) : sinon on remonte une VRAIE erreur au lieu d'un faux succès silencieux.
+  const { data: updated, error } = await supabase
     .from("qr_codes")
     .update(updates)
     .eq("id", qr_id)
+    .select("id, status")
+    .maybeSingle()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (!updated) return NextResponse.json({ error: "Modification impossible (droits insuffisants ou QR introuvable)" }, { status: 403 })
 
-  return NextResponse.json({ ok: true, status: updates.status })
+  return NextResponse.json({ ok: true, status: updated.status })
 }
 
 // DELETE définitif (préserve les scans via ON DELETE CASCADE → non, on garde)

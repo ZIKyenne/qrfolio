@@ -3483,15 +3483,15 @@ export default function HomePage() {
           <div>
             {/* Badge */}
             <div className="hero-badge" style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
+              display: "inline-flex", alignItems: "center", gap: 9,
               background: "rgba(201,168,76,0.08)",
-              border: "1px solid rgba(201,168,76,0.25)",
-              borderRadius: 100, padding: "7px 18px", marginBottom: 32,
-              fontSize: 11, color: "#C9A84C", letterSpacing: 2.5,
-              textTransform: "uppercase", fontWeight: 600,
+              border: "1px solid rgba(201,168,76,0.28)",
+              borderRadius: 11, padding: "8px 15px", marginBottom: 30,
+              fontSize: 11, color: "#D8BE72", letterSpacing: 2,
+              textTransform: "uppercase", fontWeight: 700,
               animation: "fadeUp 0.6s ease 0.1s both"
             }}>
-              <span style={{ fontSize: 9, animation: "glowPulse 2s ease-in-out infinite", willChange: "opacity" }}>✦</span>
+              <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: 2, background: "#C9A84C", animation: "glowPulse 2s ease-in-out infinite", willChange: "opacity" }} />
               La page qui remplace votre carte de visite
             </div>
 
@@ -3500,8 +3500,8 @@ export default function HomePage() {
             <h1 style={{
               fontFamily: "Fraunces, serif",
               fontSize: "clamp(42px, 5.2vw, 78px)",
-              color: "#F5F0E8", fontWeight: 700, lineHeight: 1.02,
-              margin: "0 0 26px", letterSpacing: "-0.025em",
+              color: "#F5F0E8", fontWeight: 800, lineHeight: 1.02,
+              margin: "0 0 26px", letterSpacing: "-0.035em",
             }}>
               <span style={{ display: "block", animation: "fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both" }}>
                 Une page pro.
@@ -3511,9 +3511,7 @@ export default function HomePage() {
               </span>
               <span style={{
                 display: "block", animation: "fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.45s both",
-                background: "linear-gradient(100deg, #E9CB6E 0%, #C9A84C 45%, #a98a3c 100%)",
-                backgroundSize: "200% 100%", WebkitBackgroundClip: "text", backgroundClip: "text",
-                WebkitTextFillColor: "transparent", color: "transparent",
+                color: "#C9A84C",
               }}>
                 Zéro réimpression.
               </span>
@@ -3525,8 +3523,8 @@ export default function HomePage() {
               margin: "0 0 38px", maxWidth: 468, fontWeight: 400,
               animation: "fadeUp 0.7s ease 0.6s both"
             }}>
-              Regroupez tout ce que vous êtes sur <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>une seule page</strong> — coordonnées, réseaux, menu, portfolio.
-              Modifiez-la quand vous voulez : <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>votre QR&nbsp;code ne change jamais</strong>.
+              Regroupez vos coordonnées, réseaux, menu et portfolio sur <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>une seule page professionnelle</strong>.
+              Modifiez-la quand vous voulez : <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>votre QR&nbsp;code imprimé, lui, ne change jamais</strong>.
             </p>
 
             {/* CTAs */}
@@ -3553,7 +3551,7 @@ export default function HomePage() {
                   el.style.transform = "translateY(0) scale(1)"
                   el.style.boxShadow = "0 4px 28px rgba(201,168,76,0.45)"
                 }}>
-                Créer ma page gratuitement
+                Créer ma page gratuitement <span aria-hidden="true">→</span>
               </Link>
               <Link href="#how" style={{
                 background: "transparent",
@@ -3575,10 +3573,6 @@ export default function HomePage() {
                   el.style.color = "rgba(245,240,232,0.7)"
                   el.style.background = "transparent"
                 }}>
-                <span aria-hidden="true" style={{
-                  fontSize: 11, display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  width: 20, height: 20, borderRadius: "50%", border: "1px solid currentColor",
-                }}>▶</span>
                 Voir la démo
               </Link>
             </div>
@@ -3588,12 +3582,12 @@ export default function HomePage() {
               display: "flex", gap: 20, marginTop: 26, flexWrap: "wrap",
               animation: "fadeUp 0.7s ease 0.9s both"
             }}>
-              {["Gratuit", "Sans carte bancaire", "Prêt en 5 min"].map((item) => (
+              {["Chiffré", "Hébergé en Europe", "QR dynamique", "Sans engagement"].map((item) => (
                 <span key={item} style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
+                  display: "inline-flex", alignItems: "center", gap: 8,
                   color: "#BCB6A6", fontSize: 12.5
                 }}>
-                  <span style={{ color: "var(--success)", fontSize: 11 }}>✓</span>
+                  <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 2, background: "rgba(201,168,76,0.85)" }} />
                   {item}
                 </span>
               ))}

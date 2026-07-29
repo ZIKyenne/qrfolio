@@ -2492,6 +2492,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               </button>
             )}
           </div>
+          {/* Filtres statut/tri : masques sur mobile (peu utiles avec peu de QR, la
+              recherche suffit) pour desencombrer. Toujours presents sur desktop. */}
+          {!isMobile && (
           <div style={{ display:"flex", gap:5 }}>
             <select value={filterSt} onChange={e => setFilterSt(e.target.value)}
               style={{ flex:1, background:"#111009", border:"1px solid rgba(255,255,255,0.07)", borderRadius:7, color:MUTED, padding:"5px 6px", fontSize:10, outline:"none", cursor:"pointer" }}>
@@ -2512,6 +2515,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               <option value="name-desc">Z - A</option>
             </select>
           </div>
+          )}
         </div>
 
         {/* Liste */}

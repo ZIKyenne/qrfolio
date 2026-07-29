@@ -52,8 +52,9 @@ export default async function QRCodesPage() {
           .qrh-bar { padding:12px 16px !important; position: static !important; }
           .qrh-inner { flex-direction:column; align-items:stretch; height:auto; gap:12px; }
           .qrh-actions { flex-direction:column; align-items:stretch; gap:10px; width:100%; }
-          .qrh-kpis { width:100%; }
-          .qrh-kpis > div { flex:1; }
+          /* KPIs (QR actifs / scans total) masques sur mobile : peu d'info pour la
+             place prise ; les scans restent consultables dans l'onglet Stats. */
+          .qrh-kpis { display:none !important; }
           .qrh-cta { width:100%; justify-content:center; padding:13px !important; font-size:14px !important; }
           .qrh-content { padding:16px 16px 130px !important; }
         }

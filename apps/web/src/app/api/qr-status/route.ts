@@ -4,6 +4,8 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { ALLOWED_TRANSITIONS, ACTION_TO_STATUS, canTransition, type QRStatus } from "./qrStatus"
+import { pageLimit } from "@/lib/plans"
+import { countActiveQrs } from "@/lib/quota"
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
@@ -41,6 +43,24 @@ export async function POST(req: NextRequest) {
       error: `Transition "${action}" non autorisée depuis "${currentStatus}"`,
       allowed: ALLOWED_TRANSITIONS[currentStatus as QRStatus] ?? [],
     }, { status: 400 })
+  }
+
+  // Quota du plan : activer un QR (activate/restore -> "active") est refusé si on
+  // est déjà au plafond de QR actifs. On peut créer autant de pages qu'on veut,
+  // mais seul le nombre d'ACTIFS (visitables) est limité par le plan.
+  if (ACTION_TO_STATUS[action as keyof typeof ACTION_TO_STATUS] === "active") {
+    const { data: prof } = await supabase.from("profiles").select("plan").eq("id", user.id).single()
+    const limit = pageLimit(prof?.plan as string)
+    if (limit !== null) {
+      // Le QR courant n'est pas encore actif (sinon la transition ne serait pas
+      // autorisée), donc l'activer porterait le total à (actifs + 1).
+      const active = await countActiveQrs(supabase, user.id)
+      if (active >= limit) {
+        return NextResponse.json({
+          error: `Limite de ${limit} QR actif${limit > 1 ? "s" : ""} atteinte sur votre plan. Mettez-en un autre en pause (ou passez à un plan supérieur) pour activer celui-ci.`,
+        }, { status: 403 })
+      }
+    }
   }
 
   // On ne met à jour que les colonnes ESSENTIELLES et sûres : `status` (pilote la

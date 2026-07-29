@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
-import { pageLimit } from "@/lib/plans"
+import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyUnique } from "@/lib/slug"
 
 // Cree une page VIERGE (brouillon) et renvoie son id. Utilise par le builder
@@ -44,15 +44,15 @@ export async function POST(req: NextRequest) {
       { cookies: { getAll: () => [], setAll: () => {} } }
     )
 
-    // Garde-fou plan : limite de pages
+    // Plafond anti-abus : on peut créer jusqu'à MAX_PAGES pages (indépendant du
+    // plan). Le quota du plan ne s'applique qu'aux QR ACTIFS (cf. lib/quota).
     const { data: prof } = await supabaseAdmin.from("profiles").select("plan").eq("id", user.id).single()
-    const limit = pageLimit(prof?.plan as string)
-    if (limit !== null) {
-      const { count } = await supabaseAdmin.from("pages").select("id", { count: "exact", head: true }).eq("user_id", user.id)
-      if ((count ?? 0) >= limit) {
-        return NextResponse.json({ error: "limit", limit, message: `Votre plan permet ${limit} page${limit > 1 ? "s" : ""}. Passez a un plan superieur pour en creer plus.` }, { status: 403 })
-      }
+    if ((await countPages(supabaseAdmin, user.id)) >= MAX_PAGES) {
+      return NextResponse.json({ error: "limit", message: `Vous avez atteint le plafond de ${MAX_PAGES} pages.` }, { status: 403 })
     }
+    // Le nouveau QR démarre actif si le quota du plan le permet, sinon en
+    // brouillon (créé mais non visitable tant qu'un slot n'est pas libéré).
+    const qrStatus = await initialQrStatus(supabaseAdmin, user.id, prof?.plan as string)
 
     const body = await req.json().catch(() => ({}))
     const title = (body?.title && typeof body.title === "string" && body.title.trim()) ? body.title.trim().slice(0, 80) : "Ma page"
@@ -78,9 +78,9 @@ export async function POST(req: NextRequest) {
 
     // QR code associe (comme le flux template)
     const shortCode = Math.random().toString(36).slice(2, 10)
-    await supabaseAdmin.from("qr_codes").insert({ page_id: newPage.id, user_id: user.id, short_code: shortCode })
+    await supabaseAdmin.from("qr_codes").insert({ page_id: newPage.id, user_id: user.id, short_code: shortCode, status: qrStatus })
 
-    return NextResponse.json({ pageId: newPage.id, slug: newPage.slug, success: true })
+    return NextResponse.json({ pageId: newPage.id, slug: newPage.slug, success: true, qrStatus, atActiveLimit: qrStatus === "draft" })
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erreur serveur" }, { status: 500 })
   }

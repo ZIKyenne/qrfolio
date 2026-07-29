@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import QRStudio from "./QRStudio"
 import Particles from "@/components/Particles"
 import { accessibleOwnerIds } from "@/lib/team"
+import { pageLimit } from "@/lib/plans"
 import { Plus, QrCode, TrendingUp, Activity, Link2 } from "lucide-react"
 
 export const metadata: Metadata = { title: "QR Studio - QRowg" }
@@ -33,6 +34,8 @@ export default async function QRCodesPage() {
 
   const totalScans = (qrCodes ?? []).reduce((a, q) => a + (q.total_scans ?? 0), 0)
   const activeQR   = (qrCodes ?? []).filter((q: any) => (q.status ?? "active") === "active").length
+  // Quota du plan = QR ACTIFS (visitables). null = illimité.
+  const activeLimit = pageLimit(userPlan)
 
   return (
     <div style={{ minHeight: "100dvh", background: "transparent", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
@@ -78,7 +81,7 @@ export default async function QRCodesPage() {
             {/* KPIs en pastilles */}
             <div className="qrh-kpis" style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {[
-                { label: "QR actifs",   value: activeQR,                      icon: <Activity size={13} color="var(--success)"/>,    color: "var(--success)" },
+                { label: "QR actifs",   value: activeLimit !== null ? `${activeQR} / ${activeLimit}` : activeQR, icon: <Activity size={13} color="var(--success)"/>,    color: "var(--success)" },
                 { label: "Scans total", value: totalScans.toLocaleString("fr-FR"), icon: <TrendingUp size={13} color="var(--accent)"/>, color: "var(--accent)" },
               ].map((k, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "7px 13px" }}>

@@ -983,11 +983,13 @@ export default function ProfilePage() {
   const planLimits   = PLAN_CFG[currentPlan]?.limits ?? { pages:1, views:500, qr:1, team:null }
   const nextPlanKey  = PLAN_ORDER[Math.min((PLAN_ORDER as readonly string[]).indexOf(currentPlan)+1, PLAN_ORDER.length-1)]
   const nextPlan     = PLAN_CFG[nextPlanKey]
-  const pagesUsagePct  = planLimits.pages  ? Math.min((totalPages  / planLimits.pages)  * 100, 100) : 0
+  // Le quota du plan porte sur les QR ACTIFS (visitables), pas sur le total de
+  // pages : on peut créer jusqu'à 300 pages, seuls les actifs consomment un slot.
+  const pagesUsagePct  = planLimits.pages  ? Math.min((activeQR   / planLimits.pages)  * 100, 100) : 0
   const viewsUsagePct  = planLimits.views  ? Math.min((totalViews  / planLimits.views)  * 100, 100) : 0
-  const isNearPages    = planLimits.pages  && totalPages  >= Math.floor(planLimits.pages  * 0.8)
+  const isNearPages    = planLimits.pages  && activeQR    >= Math.floor(planLimits.pages  * 0.8)
   const isNearViews    = planLimits.views  && totalViews  >= Math.floor(planLimits.views  * 0.8)
-  const isAtLimitPages = planLimits.pages  && totalPages  >= planLimits.pages
+  const isAtLimitPages = planLimits.pages  && activeQR    >= planLimits.pages
   const isAtLimitViews = planLimits.views  && totalViews  >= planLimits.views
 
   const hasChanges = form.full_name !== formOriginal.full_name
@@ -1191,7 +1193,7 @@ export default function ProfilePage() {
                 )}
               </div>
               {([
-                { label: "Pages", used: totalPages, limit: planLimits.pages, pct: pagesUsagePct, near: isAtLimitPages },
+                { label: "QR actifs", used: activeQR, limit: planLimits.pages, pct: pagesUsagePct, near: isAtLimitPages },
                 { label: "Vues ce mois", used: totalViews, limit: planLimits.views, pct: viewsUsagePct, near: isAtLimitViews },
               ] as const).map((g, i) => (
                 <div key={i} style={{ marginBottom: i === 0 ? 11 : 0 }}>
@@ -2381,7 +2383,7 @@ export default function ProfilePage() {
                     <div>
                       <p style={{ color:"var(--danger)", fontSize:12, fontWeight:700, margin:"0 0 2px" }}>Limite atteinte</p>
                       <p style={{ color:"rgba(255,107,107,0.8)", fontSize:11, margin:"0 0 8px" }}>
-                        {isAtLimitPages ? "Vous avez atteint la limite de pages de votre plan." : "Vous avez atteint la limite de vues mensuelle."}
+                        {isAtLimitPages ? "Vous avez atteint la limite de QR actifs de votre plan. Mettez un QR en pause ou passez à un plan supérieur pour en activer un autre." : "Vous avez atteint la limite de vues mensuelle."}
                       </p>
                       <a href="/upgrade" style={{ color:"var(--danger)", fontSize:11, fontWeight:700 }}>Upgrader maintenant .</a>
                     </div>

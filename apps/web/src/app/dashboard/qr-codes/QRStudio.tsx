@@ -991,6 +991,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       setQRCodes(prev => [d.qr, ...prev])
       setActiveId(d.qr.id)
       setMobileView("editor")
+      if (d.qr.status === "draft") {
+        toast.success("Copie créée en brouillon : limite de QR actifs atteinte. Activez-la après avoir mis un autre QR en pause.")
+      }
     } catch {
       toast.error("Duplication impossible : erreur reseau")
     } finally {

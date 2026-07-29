@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
-import { pageLimit } from "@/lib/plans"
+import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyUnique } from "@/lib/slug"
 
 // Slug valide (minuscules, accents retires, non-alphanum -> "-", + suffixe
@@ -33,15 +33,13 @@ export async function POST(req: NextRequest) {
       { cookies: { getAll: () => [], setAll: () => {} } }
     )
 
-    // Garde-fou plan : limite de pages (cf. lib/plans)
+    // Plafond anti-abus (cf. lib/quota) : création plafonnée à MAX_PAGES,
+    // indépendamment du plan. Le quota du plan porte sur les QR ACTIFS.
     const { data: prof } = await supabaseAdmin.from("profiles").select("plan").eq("id", user.id).single()
-    const limit = pageLimit(prof?.plan as string)
-    if (limit !== null) {
-      const { count } = await supabaseAdmin.from("pages").select("id", { count: "exact", head: true }).eq("user_id", user.id)
-      if ((count ?? 0) >= limit) {
-        return NextResponse.json({ error: "limit", limit, message: `Votre plan permet ${limit} page${limit > 1 ? "s" : ""}. Passez à un plan supérieur pour en créer plus.` }, { status: 403 })
-      }
+    if ((await countPages(supabaseAdmin, user.id)) >= MAX_PAGES) {
+      return NextResponse.json({ error: "limit", message: `Vous avez atteint le plafond de ${MAX_PAGES} pages.` }, { status: 403 })
     }
+    const qrStatus = await initialQrStatus(supabaseAdmin, user.id, prof?.plan as string)
 
     const body = await req.json()
     const { templateId, templateName, theme, blocks, slug } = body
@@ -115,9 +113,10 @@ export async function POST(req: NextRequest) {
       page_id: newPage.id,
       user_id: user.id,
       short_code: shortCode,
+      status: qrStatus,
     })
 
-    return NextResponse.json({ pageId: newPage.id, success: true })
+    return NextResponse.json({ pageId: newPage.id, success: true, qrStatus, atActiveLimit: qrStatus === "draft" })
 
   } catch (err: any) {
     return NextResponse.json(

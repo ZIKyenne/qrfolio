@@ -597,7 +597,11 @@ export default function TemplatesPage() {
               if (!res.ok || !json.pageId) {
                 return { error: json.error || "Erreur creation page." }
               }
-              toast.success("Page creee avec succes")
+              if (json.atActiveLimit) {
+                toast.success("Page creee en brouillon : limite de QR actifs atteinte. Mettez un QR en pause puis activez celle-ci.")
+              } else {
+                toast.success("Page creee avec succes")
+              }
               setTimeout(() => router.push("/dashboard/builder/" + json.pageId), 500)
               return { ok: true }
             }}

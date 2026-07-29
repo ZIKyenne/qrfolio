@@ -4,7 +4,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
-import { pageLimit } from "@/lib/plans"
+import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyBase } from "@/lib/slug"
 
 function randCode(len = 8): string {
@@ -27,15 +27,15 @@ export async function POST(req: NextRequest) {
   const { qr_id } = await req.json()
   if (!qr_id) return NextResponse.json({ error: "qr_id requis" }, { status: 400 })
 
-  // Garde-fou plan : la duplication cree une page -> bloquer au-dela de la limite (cf. lib/plans)
+  // Plafond anti-abus (cf. lib/quota) : la duplication crée une page -> bloquer
+  // au-delà de MAX_PAGES. Le quota du plan porte sur les QR ACTIFS.
   const { data: prof } = await supabase.from("profiles").select("plan").eq("id", user.id).single()
-  const limit = pageLimit(prof?.plan as string)
-  if (limit !== null) {
-    const { count } = await supabase.from("pages").select("id", { count: "exact", head: true }).eq("user_id", user.id)
-    if ((count ?? 0) >= limit) {
-      return NextResponse.json({ error: "limit", message: `Votre plan permet ${limit} page${limit > 1 ? "s" : ""}. Passez à un plan supérieur pour dupliquer.` }, { status: 403 })
-    }
+  if ((await countPages(supabase, user.id)) >= MAX_PAGES) {
+    return NextResponse.json({ error: "limit", message: `Vous avez atteint le plafond de ${MAX_PAGES} pages.` }, { status: 403 })
   }
+  // La copie démarre active si le quota le permet, sinon en brouillon (cohérent
+  // avec la création : on peut dupliquer sans être bloqué par le plan).
+  const dupQrStatus = await initialQrStatus(supabase, user.id, prof?.plan as string)
 
   // 1. Recuperer le QR original (verif proprietaire)
   const { data: orig, error: e1 } = await supabase
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
   setIfPresent(q, "last_scan_at", null)
   setIfPresent(q, "dest_override", null)
   setIfPresent(q, "dest_history", [])
-  setIfPresent(q, "status", "active")
+  setIfPresent(q, "status", dupQrStatus)
 
   const { data: insertedQr, error: e3 } = await supabase
     .from("qr_codes")

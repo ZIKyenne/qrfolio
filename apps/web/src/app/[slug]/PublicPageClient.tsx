@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, Component } from "react"
 import { ExternalLink } from "lucide-react"
 import SmartImage from "@/components/SmartImage"
+import PageIntro from "@/components/pageIntro/PageIntro"
 import { trackPageView } from "@/lib/trackPageView"
 import { queueEngagement, trackDwell, queueTap } from "@/lib/trackEngagement"
 import { trackLinkClick } from "@/lib/trackLinkClick"
@@ -2832,7 +2833,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export default function PublicPageClient({ page, blocks, showBranding = true }: { page: Page; blocks: Block[]; showBranding?: boolean }) {
+export default function PublicPageClient({ page, blocks, showBranding = true, introEligible = false }: { page: Page; blocks: Block[]; showBranding?: boolean; introEligible?: boolean }) {
   const theme = {
     bg: "#080808", surface: "#111009", primary: "#C9A84C", accent: "var(--success)",
     text: "#F5F0E8", muted: "#8A8478",
@@ -2965,8 +2966,26 @@ export default function PublicPageClient({ page, blocks, showBranding = true }: 
     }
   }, [page.id])
 
+  // Animation d'entrée (Pro+). `introEligible` est résolu CÔTÉ SERVEUR (plan du
+  // propriétaire) ; le flag `intro_enabled` vient du thème éditable dans le builder.
+  const introProfile = (blocks.find(b => b.type === "profile")?.content ?? {}) as any
+  const introHex = (c: string) => /^#[0-9a-fA-F]{3,8}$/.test(c || "") ? c : "#C9A84C"
+  const showIntro = introEligible && !!(theme as any).intro_enabled
+
   return (
     <div style={{ minHeight: "100vh", background: theme.bgGradient || theme.bg, fontFamily: theme.fontBody }}>
+      {showIntro && (
+        <PageIntro
+          style={((theme as any).intro_style || "reveal") as any}
+          accent={introHex(theme.primary)}
+          bg={theme.bg}
+          text={theme.text}
+          title={introProfile.name || (page as any).title || "Ma page"}
+          subtitle={introProfile.tagline || ""}
+          avatar={introProfile.avatar || ""}
+          duration={(theme as any).intro_duration || 2400}
+        />
+      )}
       <style>{`
         @keyframes fadeInDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
         @keyframes profilePulse { 0%,100% { box-shadow: 0 0 0 0 ${theme.primary}30; } 50% { box-shadow: 0 0 0 12px ${theme.primary}00; } }

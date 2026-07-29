@@ -5,6 +5,7 @@ import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react"
 import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
 import { G, MUTED } from "./builderConstants"
 import { useToast } from "@/components/Toast"
+import { canPageIntro } from "@/lib/plans"
 import BannerStudio from "./BannerStudio"
 import ImageUpload from "./ImageUpload"
 import FileUpload from "./FileUpload"
@@ -751,9 +752,9 @@ import FileUpload from "./FileUpload"
     )
   }
 
-  export function ThemePanel({ theme, onThemeChange }: { theme: PageTheme; onThemeChange: (t: PageTheme) => void }) {
+  export function ThemePanel({ theme, onThemeChange, userPlan = null }: { theme: PageTheme; onThemeChange: (t: PageTheme) => void; userPlan?: string | null }) {
     const toast = useToast()
-    const [themeTab, setThemeTab] = useState<"themes"|"colors"|"fonts"|"bg"|"blocks">("themes")
+    const [themeTab, setThemeTab] = useState<"themes"|"colors"|"fonts"|"bg"|"blocks"|"intro">("themes")
     const [themeBlocksAdv, setThemeBlocksAdv] = useState(false) // Avance masque par defaut (animation, effet verre) — review #4
     const [bgMode, setBgMode] = useState<string>(theme.bgMode||"solid")
     const [bgSubTab, setBgSubTab] = useState<"type"|"effects"|"animation"|"presets"|"advanced">("presets")
@@ -911,10 +912,10 @@ import FileUpload from "./FileUpload"
       <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
         {/* Onglets principaux */}
         <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 14, flexShrink: 0 }}>
-          {(["themes","colors","fonts","bg","blocks"] as const).map(tab => (
+          {(["themes","colors","fonts","bg","blocks","intro"] as const).map(tab => (
             <button key={tab} onClick={() => setThemeTab(tab)}
               style={{ flex: 1, padding: "10px 2px", background: "transparent", border: "none", borderBottom: `2px solid ${themeTab===tab ? G : "transparent"}`, color: themeTab===tab ? G : MUTED, fontSize: 10.5, fontWeight: themeTab===tab ? 700 : 400, cursor: "pointer" }}>
-              {tab==="themes" ? "Thèmes" : tab==="colors" ? "Couleurs" : tab==="fonts" ? "Polices" : tab==="bg" ? "Fond" : "Blocs"}
+              {tab==="themes" ? "Thèmes" : tab==="colors" ? "Couleurs" : tab==="fonts" ? "Polices" : tab==="bg" ? "Fond" : tab==="blocks" ? "Blocs" : "Intro"}
             </button>
           ))}
         </div>
@@ -1676,6 +1677,57 @@ import FileUpload from "./FileUpload"
               <p style={{ color: "#6E685E", fontSize: 9.5, margin: 0, lineHeight: 1.5 }}>
                 Astuce : posez ici l&apos;ambiance générale (coins, ombre, animation), puis affinez au cas par cas dans chaque bloc.
               </p>
+            </div>
+          )
+        })()}
+
+        {/* ── ONGLET ANIMATION D'ENTRÉE (Pro+) ── */}
+        {themeTab==="intro" && (() => {
+          const canIntro = canPageIntro(userPlan)
+          const enabled = !!(theme as any).intro_enabled
+          const curStyle = (theme as any).intro_style || "reveal"
+          const curDur = (theme as any).intro_duration || 2400
+          const setIntro = (patch: Partial<PageTheme>) => onThemeChange({ ...theme, ...patch })
+          const STYLES_L: [string, string][] = [["reveal","Révélation"],["fade","Fondu"],["curtain","Rideau"],["pulse","Pulse"],["ring","Anneau"],["stack","Pile"]]
+          if (!canIntro) return (
+            <div style={{ padding: "22px 16px", textAlign: "center", border: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)", borderRadius: 12, background: "rgba(201,168,76,0.05)" }}>
+              <div style={{ fontSize: 26, marginBottom: 8 }}>✨</div>
+              <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700, margin: "0 0 5px" }}>Animation d&apos;entrée</p>
+              <p style={{ color: MUTED, fontSize: 11.5, margin: "0 0 14px", lineHeight: 1.5 }}>Une courte animation aux couleurs de ta page accueille tes visiteurs. Réservé au plan <b style={{ color: G }}>Pro</b> et plus.</p>
+              <a href="/upgrade" style={{ display: "inline-block", background: G, color: "#080808", fontSize: 12, fontWeight: 700, padding: "9px 20px", borderRadius: 9, textDecoration: "none" }}>Passer Pro</a>
+            </div>
+          )
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, cursor: "pointer" }}>
+                <span style={{ color: "#F5F0E8", fontSize: 12.5, fontWeight: 600 }}>Activer l&apos;animation d&apos;entrée</span>
+                <button onClick={() => setIntro({ intro_enabled: !enabled })}
+                  style={{ width: 40, height: 23, borderRadius: 12, border: "none", cursor: "pointer", background: enabled ? G : "rgba(255,255,255,0.12)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                  <span style={{ position: "absolute", top: 3, left: enabled ? 20 : 3, width: 17, height: 17, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+                </button>
+              </label>
+              {enabled && (<>
+                <div>
+                  <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 7px" }}>Style</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                    {STYLES_L.map(([id, label]) => (
+                      <button key={id} onClick={() => setIntro({ intro_style: id })}
+                        style={{ padding: "9px 4px", borderRadius: 9, border: `1px solid ${curStyle===id ? G : "rgba(255,255,255,0.1)"}`, background: curStyle===id ? "color-mix(in srgb, var(--accent) 12%, transparent)" : "rgba(255,255,255,0.02)", color: curStyle===id ? G : MUTED, fontSize: 11, fontWeight: curStyle===id ? 700 : 500, cursor: "pointer" }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                    <span>Durée</span><span style={{ color: G }}>{(curDur / 1000).toFixed(1)} s</span>
+                  </div>
+                  <input type="range" min={800} max={3000} step={100} value={curDur} onChange={e => setIntro({ intro_duration: parseInt(e.target.value, 10) })} style={{ width: "100%", accentColor: G }} />
+                </div>
+                <p style={{ color: "#6E685E", fontSize: 9.5, margin: 0, lineHeight: 1.5 }}>
+                  L&apos;animation reprend l&apos;accent, le fond et le nom de ta page. Elle ne joue qu&apos;une fois par session visiteur et se passe au toucher.
+                </p>
+              </>)}
             </div>
           )
         })()}

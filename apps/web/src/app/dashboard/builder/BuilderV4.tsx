@@ -71,6 +71,17 @@
     const [pageSlug, setPageSlug] = useState("ma-page")
     const [pageStatus, setPageStatus] = useState("draft")
     const [theme, setTheme] = useState<PageTheme>(PRESET_THEMES.midnight_gold)
+    // Plan de l'utilisateur (gating UI de l'animation d'entrée ; l'enforcement réel
+    // est côté serveur au rendu de la page publique).
+    const [userPlan, setUserPlan] = useState<string | null>(null)
+    useEffect(() => {
+      const sb = createClient()
+      sb.auth.getUser().then(({ data }) => {
+        if (!data.user) return
+        sb.from("profiles").select("plan").eq("id", data.user.id).single()
+          .then(({ data: p }) => setUserPlan((p as any)?.plan ?? null))
+      })
+    }, [])
     const [rightTab, setRightTab] = useState<"preview"|"edit"|"theme">("preview")
     const [editTab, setEditTab] = useState<"contenu"|"style"|"layout"|"avance">("contenu")
     // Mode Simple (defaut) = un seul contexte "Contenu" (audit #10/#14 "montrer moins"). Expert = 4 onglets.
@@ -2163,7 +2174,7 @@
 
             {!rightCollapsed && rightTab==="theme" && (
               <div style={{ flex: 1, overflowY: "auto", padding: 14 }}>
-                <ThemePanel theme={theme} onThemeChange={setTheme} />
+                <ThemePanel theme={theme} onThemeChange={setTheme} userPlan={userPlan} />
               </div>
             )}
 

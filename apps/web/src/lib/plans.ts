@@ -29,6 +29,7 @@ export type PlanCaps = {
   qrStudioAdvanced: boolean // personnalisation QR avancée (couleurs / modules / coins)
   ai: boolean               // génération + rapports IA
   removeBranding: boolean   // retire le "Créé avec QRowg" des pages publiques
+  pageIntro: boolean        // animation d'entrée personnalisée sur la page publique
   exportFormats: ExportFormat[]
 }
 
@@ -56,7 +57,7 @@ export const PLANS: Record<PlanId, Plan> = {
     priceAnnual: 0,
     badge: null,
     limits: { pages: 3, views: 200, qr: 3, team: null },
-    caps: { printStudio: false, qrStudioAdvanced: false, ai: false, removeBranding: false, exportFormats: ["png"] },
+    caps: { printStudio: false, qrStudioAdvanced: false, ai: false, removeBranding: false, pageIntro: false, exportFormats: ["png"] },
     features: ["3 pages", "200 vues/mois", "3 QR codes basiques", "Branding QRowg visible", "Analytics de base", "6 templates gratuits"],
     perks: [
       { text: "3 pages", included: true },
@@ -80,7 +81,7 @@ export const PLANS: Record<PlanId, Plan> = {
     priceAnnual: 3.90,
     badge: "MEILLEUR RAPPORT Q/P",
     limits: { pages: 5, views: 850, qr: 7, team: null },
-    caps: { printStudio: true, qrStudioAdvanced: true, ai: false, removeBranding: true, exportFormats: ["png"] },
+    caps: { printStudio: true, qrStudioAdvanced: true, ai: false, removeBranding: true, pageIntro: false, exportFormats: ["png"] },
     features: ["5 pages", "850 vues/mois", "7 QR codes personnalisés", "Sans branding", "10 templates premium", "QR Studio (limité)", "QR Print Studio (limité)"],
     perks: [
       { text: "5 pages", included: true },
@@ -106,7 +107,7 @@ export const PLANS: Record<PlanId, Plan> = {
     priceAnnual: 9.90,
     badge: "POPULAIRE",
     limits: { pages: 25, views: 15000, qr: 35, team: null },
-    caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, exportFormats: ["png", "jpg", "pdf", "svg"] },
+    caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"] },
     features: ["25 pages", "15 000 vues/mois", "35 QR codes avancés", "Tous les templates", "QR Studio complet", "QR Print Studio complet", "Génération IA", "Export PNG / JPG / PDF HD"],
     perks: [
       { text: "25 pages", included: true },
@@ -134,7 +135,7 @@ export const PLANS: Record<PlanId, Plan> = {
     priceAnnual: 24.90,
     badge: null,
     limits: { pages: null, views: null, qr: null, team: 5 },
-    caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, exportFormats: ["png", "jpg", "pdf", "svg"] },
+    caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"] },
     features: ["Pages illimitées", "Vues illimitées", "QR codes illimités", "Génération IA illimitée", "Équipe · 5 membres (bientôt)", "API + marque blanche (bientôt)"],
     perks: [
       { text: "Pages illimitées", included: true },
@@ -176,6 +177,7 @@ export const canQrAdvanced = (id?: string | null): boolean => getPlan(id).caps.q
 export const canAI = (id?: string | null): boolean => getPlan(id).caps.ai
 // true = le plan retire le branding "Créé avec QRowg" des pages publiques
 export const canRemoveBranding = (id?: string | null): boolean => getPlan(id).caps.removeBranding
+export const canPageIntro = (id?: string | null): boolean => getPlan(id).caps.pageIntro
 export const canExport = (id: string | null | undefined, fmt: ExportFormat): boolean => getPlan(id).caps.exportFormats.includes(fmt)
 // Plan minimum requis pour une capacité (pour les messages d'upsell)
 export const minPlanFor = (cap: "printStudio" | "qrStudioAdvanced" | "ai"): PlanId => {

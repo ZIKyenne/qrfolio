@@ -52,6 +52,8 @@
 }
 
 :root {
+  /* Police de l'animation d'entrée des pages (composant PageIntro) : reprend Inter. */
+  --pi-font-family: 'Inter', system-ui, sans-serif;
   --bg: #080808;
   --surface: #111009;
   --gold: #C9A84C;

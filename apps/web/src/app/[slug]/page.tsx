@@ -1,7 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import PublicPageClient from "./PublicPageClient"
-import { canRemoveBranding } from "@/lib/plans"
+import { canRemoveBranding, canPageIntro } from "@/lib/plans"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import type { Metadata } from "next"
 
@@ -67,6 +67,9 @@ export default async function PublicPage({ params }: Props) {
   // "Sans branding" est un avantage payant : on n'affiche le footer QRowg que
   // si le plan du proprietaire ne retire pas le branding (free).
   const showBranding = !canRemoveBranding((page.profiles as any)?.plan)
+  // Animation d'entrée : avantage Pro+, ENFORCÉ ici (le flag intro_enabled du thème
+  // est éditable côté client, donc on revérifie le plan du propriétaire au rendu).
+  const introEligible = canPageIntro((page.profiles as any)?.plan)
 
   const { data: blocks } = await supabase
     .from("blocks")
@@ -97,7 +100,7 @@ export default async function PublicPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
-      <PublicPageClient page={page} blocks={blocks || []} showBranding={showBranding} />
+      <PublicPageClient page={page} blocks={blocks || []} showBranding={showBranding} introEligible={introEligible} />
     </>
   )
 }

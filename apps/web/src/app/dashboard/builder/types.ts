@@ -51,6 +51,10 @@ export interface PageTheme {
   // Défauts hérités par TOUS les blocs (clés réservées __), écrasés par le style propre à chaque bloc.
   // Ex : { __radius: "M", __shadow: "Douce", __glass: true, __anim: "Fondu" }. Absent = aucun style global.
   blockStyle?: Record<string, string | boolean>
+  // ── Animation d'entrée (feature Pro+, gatée côté serveur au rendu public) ──
+  intro_enabled?: boolean
+  intro_style?: string      // "reveal" | "fade" | "curtain" | "pulse" | "ring" | "stack"
+  intro_duration?: number   // ms (garde-fou 800–3000 côté builder)
   // ── Preset metadata ───────────────────────────────────────────────────────
   category?: string
   emoji?: string

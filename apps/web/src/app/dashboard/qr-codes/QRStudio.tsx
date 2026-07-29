@@ -3232,6 +3232,14 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               <span>{emoji}</span>{label}
             </button>
           ))}
+          {/* Onglet "QR instantané" : accès au créateur autonome (Lien/WiFi/Texte/
+              Contact/Appel/Email). Ne pilote pas activeTab -> navigation directe
+              (idiome window.location comme ailleurs). En or : section mise en avant. */}
+          <button type="button" onClick={() => { window.location.href = "/dashboard/qr-link" }}
+            title="Créer un QR instantané : lien, WiFi, contact, appel, email"
+            style={{ flex:1, minHeight:isMobile?48:undefined, padding:isMobile?"14px 8px":"11px 8px", background:"transparent", border:"none", borderBottom:"3px solid transparent", color:G, fontSize:isMobile?13.5:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5, whiteSpace:"nowrap" as const }}>
+            <span>⚡</span>Instantané
+          </button>
         </div>
 
         {/* Fil guidé (mobile) : étape courante + Suivant, sans bloquer les onglets */}

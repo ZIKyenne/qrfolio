@@ -342,19 +342,6 @@ function QRMockup() {
 }
 
 // ── Section wrapper avec fade-in ──────────────────────────────────────────────
-function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const { ref, visible } = useInView()
-  return (
-    <div ref={ref} style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(32px)",
-      transition: `opacity 0.7s ease ${delay}ms, transform 0.7s ease ${delay}ms`
-    }}>
-      {children}
-    </div>
-  )
-}
-
 // ── Features section ──────────────────────────────────────────────────────────
 const FEATURES = [
   {
@@ -3604,42 +3591,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BANDE DE REASSURANCE — signaux de confiance VRAIS, sous le hero.
-          NB : pas de faux chiffres/avis inventes ici. Quand tu auras des vraies
-          donnees (nb de pages creees, note moyenne, logos clients), remplace le
-          bloc ci-dessous par : "★★★★★ 4,9/5 · +X pages creees · +X QR generes". */}
-      <FadeIn>
-        <section aria-label="Garanties" style={{
-          padding: "8px 48px 28px", position: "relative", zIndex: 1,
-        }}>
-          <div style={{
-            maxWidth: 1140, margin: "0 auto",
-            display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center",
-            gap: "14px 34px",
-            paddingTop: 26, borderTop: "1px solid rgba(201,168,76,0.1)",
-          }}>
-            {[
-              { ic: "🔒", label: "Chiffré de bout en bout" },
-              { ic: "🇪🇺", label: "Hébergé en Europe · RGPD" },
-              { ic: "∞",  label: "QR code dynamique illimité" },
-              { ic: "✓",  label: "Sans engagement, sans carte" },
-            ].map((t) => (
-              <span key={t.label} style={{
-                display: "inline-flex", alignItems: "center", gap: 9,
-                color: "#9E9887", fontSize: 13.5, fontWeight: 500,
-              }}>
-                <span aria-hidden="true" style={{
-                  width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13,
-                  background: "rgba(201,168,76,0.09)", border: "1px solid rgba(201,168,76,0.18)",
-                  color: "#C9A84C",
-                }}>{t.ic}</span>
-                {t.label}
-              </span>
-            ))}
-          </div>
-        </section>
-      </FadeIn>
+      {/* (Bande de réassurance retirée : redondante avec les puces du hero.) */}
 
       {/* HOW IT WORKS */}
       <HowItWorks />

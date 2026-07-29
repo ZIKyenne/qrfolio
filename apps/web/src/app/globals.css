@@ -91,6 +91,9 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Fond sombre sur <html> : évite toute frame blanche du navigateur pendant la
+   navigation / avant le 1er paint (la page publique le surcharge à sa couleur). */
+html { background: #080808; }
 body {
   background: #080808;
   color: #F5F0E8;

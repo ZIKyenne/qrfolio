@@ -70,6 +70,10 @@ export default async function PublicPage({ params }: Props) {
   // Animation d'entrée : avantage Pro+, ENFORCÉ ici (le flag intro_enabled du thème
   // est éditable côté client, donc on revérifie le plan du propriétaire au rendu).
   const introEligible = canPageIntro((page.profiles as any)?.plan)
+  // Fond appliqué à html/body DÈS le HTML initial : supprime toute frame blanche
+  // avant le 1er paint (navigation), avant même que le cache SSR ne soit peint.
+  // Sanitizé (hexa uniquement) → aucune injection possible dans le <style>.
+  const safeBg = /^#[0-9a-fA-F]{3,8}$/.test((page as any).theme?.bg || "") ? (page as any).theme.bg : "#080808"
 
   const { data: blocks } = await supabase
     .from("blocks")
@@ -99,6 +103,7 @@ export default async function PublicPage({ params }: Props) {
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `html,body{background:${safeBg}}` }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PublicPageClient page={page} blocks={blocks || []} showBranding={showBranding} introEligible={introEligible} />
     </>

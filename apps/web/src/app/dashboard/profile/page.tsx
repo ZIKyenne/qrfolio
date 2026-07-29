@@ -1072,6 +1072,8 @@ export default function ProfilePage() {
         .hero-tile:hover{transform:translateY(-3px);border-color:color-mix(in srgb, var(--accent) 35%, transparent)!important}
         input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb, var(--accent) 40%, transparent)!important}
         .section-card{animation:fadeIn 0.3s ease}
+        /* Carte "prochaine etape" masquee sur mobile (redondante avec le reste du profil) */
+        @media (max-width: 760px){ .next-step-card{ display:none !important } }
         * { box-sizing: border-box }
       `}</style>
 
@@ -1246,7 +1248,7 @@ export default function ProfilePage() {
           : null
         if (!m) return null
         return (
-          <div className="section-card" style={{ maxWidth: 1100, margin: "14px auto 0", padding: "0 28px" }}>
+          <div className="section-card next-step-card" style={{ maxWidth: 1100, margin: "14px auto 0", padding: "0 28px" }}>
             <NextStepCard icon={m.icon} ctaLabel={m.label} href={m.href ?? undefined} onClick={m.onClick ?? undefined}>{m.text}</NextStepCard>
           </div>
         )

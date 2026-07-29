@@ -153,7 +153,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
   }, [noData, sourceData, deviceData, filteredScans, filteredViews])
 
   return (
-    <div style={{ minHeight: "100dvh", background: "radial-gradient(1100px 520px at 75% -8%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%)", padding: "22px 24px 44px", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
+    <div className="analytics-root" style={{ minHeight: "100dvh", background: "radial-gradient(1100px 520px at 75% -8%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%)", padding: "22px 24px 44px", fontFamily: "DM Sans, sans-serif", position: "relative", overflowX: "clip", maxWidth: "100%", boxSizing: "border-box" as const }}>
       <Particles />
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
@@ -163,6 +163,17 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
         .az{animation:fadeUp .5s cubic-bezier(.2,.8,.2,1) backwards}
         .az-card{transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s, border-color .2s}
         .az-card:hover{transform:translateY(-3px);box-shadow:0 16px 38px rgba(0,0,0,0.5)}
+        /* Anti-debordement horizontal sur mobile : rien ne sort du cadre, scroll
+           vertical uniquement. On empile TOUTES les grilles en 1 colonne (les
+           panneaux geo/blocs/appareils utilisent des grilles inline 2 colonnes)
+           et on garde les charts/medias dans la largeur. */
+        .analytics-root img, .analytics-root svg, .analytics-root canvas,
+        .analytics-root .recharts-responsive-container { max-width: 100%; }
+        @media (max-width: 860px){
+          .analytics-root { padding-left: 14px !important; padding-right: 14px !important; }
+          .analytics-root [style*="grid-template-columns"]{ grid-template-columns: 1fr !important; }
+          .analytics-root [style*="grid-template-columns"]{ gap: 14px !important; }
+        }
       `}</style>
       {/* Header */}
       <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>

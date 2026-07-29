@@ -6,6 +6,7 @@ import dynamic from "next/dynamic"
 import { PLAN_LIST, PLAN_COMPARISON, fmtPrice } from "@/lib/plans"
 import { useIsMobile } from "@/lib/useIsMobile"
 import QrowgLogo from "@/components/QrowgLogo"
+import IntroOverlay from "@/components/IntroOverlay"
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function useInView(threshold = 0.15) {
@@ -3407,6 +3408,7 @@ export default function HomePage() {
 
   return (
     <div style={{ background: "transparent", minHeight: "100vh", fontFamily: "DM Sans, sans-serif" }}>
+      <IntroOverlay />
       <style>{`
         html { scroll-padding-top: 80px; }
         @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }

@@ -4,6 +4,7 @@ import { EMAIL_FROM } from "@/lib/emailFrom"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { hasInternalToken } from "@/lib/rateLimit"
+import { createAdminClient } from "@/lib/supabase/server"
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +15,13 @@ export async function POST(req: NextRequest) {
 
     const { email, name, page_title } = await req.json()
     if (!email) return NextResponse.json({ error: "Email requis" }, { status: 400 })
+
+    // Respecte la préférence utilisateur (opt-out) : alerte de scan désactivée.
+    const { data: prof } = await createAdminClient()
+      .from("profiles").select("preferences").eq("email", email).maybeSingle()
+    if ((prof as any)?.preferences?.scan_alert === false) {
+      return NextResponse.json({ skipped: true })
+    }
 
     const clean = name && String(name).trim() ? escapeHtml(String(name).trim()) : ""
     const greeting = clean ? `Bonjour ${clean},` : "Bonjour,"

@@ -54,9 +54,6 @@ export default function SettingsPage() {
   const [notifs, setNotifs] = useState({ email_leads: true, scan_alert: true, weekly_report: true, product_updates: false, marketing: false })
   const [notifSaved, setNotifSaved] = useState(false)
 
-  // Apparence
-  const [appearance, setAppearance] = useState({ compact_mode: false, animations: true })
-
   // Export RGPD
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState("")
@@ -75,7 +72,15 @@ export default function SettingsPage() {
       if (data) {
         setProfile(data)
         const p = (data as any).preferences || {}
-        setNotifs(n => ({ ...n, email_leads: p.email_leads !== false }))
+        // opt-out (défaut activé) pour email_leads/scan_alert/weekly_report ;
+        // opt-in (défaut désactivé) pour product_updates/marketing.
+        setNotifs({
+          email_leads: p.email_leads !== false,
+          scan_alert: p.scan_alert !== false,
+          weekly_report: p.weekly_report !== false,
+          product_updates: p.product_updates === true,
+          marketing: p.marketing === true,
+        })
       }
       setLoading(false)
     }
@@ -95,12 +100,21 @@ export default function SettingsPage() {
   }
 
   async function saveNotifications() {
-    localStorage.setItem("qrfolio_notifs", JSON.stringify(notifs))
-    // email_leads est réellement persisté en base (pilote la notification /api/emails/new-lead)
+    // Toutes les préférences sont désormais persistées en base et RESPECTÉES côté
+    // envoi : email_leads (/api/emails/new-lead), scan_alert (/api/emails/first-scan),
+    // weekly_report (/api/emails/weekly). product_updates/marketing sont stockées
+    // pour les futures campagnes (pas d'envoi automatique à ce jour).
     if (profile) {
       const supabase = createClient()
       const { data: cur } = await supabase.from("profiles").select("preferences").eq("id", profile.id).single()
-      const prefs = { ...((cur as any)?.preferences || {}), email_leads: notifs.email_leads }
+      const prefs = {
+        ...((cur as any)?.preferences || {}),
+        email_leads: notifs.email_leads,
+        scan_alert: notifs.scan_alert,
+        weekly_report: notifs.weekly_report,
+        product_updates: notifs.product_updates,
+        marketing: notifs.marketing,
+      }
       await supabase.from("profiles").update({ preferences: prefs }).eq("id", profile.id)
     }
     setNotifSaved(true); setTimeout(() => setNotifSaved(false), 2000)
@@ -291,15 +305,9 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        {/* Apparence */}
-        <Section title="Apparence" subtitle="Interface et affichage" icon={<Palette size={16} />}>
-          <div>
-            <Toggle value={appearance.compact_mode} onChange={v => setAppearance(a => ({ ...a, compact_mode: v }))}
-              label="Mode compact" description="Interface plus dense, moins d'espacement" />
-            <Toggle value={appearance.animations} onChange={v => setAppearance(a => ({ ...a, animations: v }))}
-              label="Animations" description="Transitions et effets visuels dans l'interface" />
-          </div>
-        </Section>
+        {/* Section "Apparence" retirée : les toggles (mode compact / animations)
+            n'étaient ni persistés ni appliqués (aucun consommateur) — on ne montre
+            pas de réglage qui ne fait rien. À réintroduire quand ils seront câblés. */}
 
         {/* Mes donnees — droit RGPD a la portabilite */}
         <Section title="Mes données" subtitle="Exporte une copie de tes données" icon={<DatabaseBackup size={16} />}>

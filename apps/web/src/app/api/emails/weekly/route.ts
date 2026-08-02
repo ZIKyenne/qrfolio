@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     // Recuperer tous les users actifs
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, email, full_name, total_scans, total_pages")
+      .select("id, email, full_name, total_scans, total_pages, preferences")
       .gt("total_pages", 0)
 
     if (!profiles?.length) return NextResponse.json({ sent: 0 })
@@ -50,6 +50,8 @@ export async function POST(req: NextRequest) {
 
     let sent = 0
     for (const profile of profiles) {
+      // Respecte la préférence utilisateur (opt-out) : rapport hebdo désactivé.
+      if ((profile as any).preferences?.weekly_report === false) continue
       const clean = profile.full_name && String(profile.full_name).trim() ? escapeHtml(String(profile.full_name).trim()) : ""
       const greeting = clean ? `Bonjour ${clean},` : "Bonjour,"
       const scans = (profile.total_scans ?? 0).toLocaleString("fr-FR")

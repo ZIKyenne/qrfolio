@@ -453,6 +453,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   const [expIncludeName,setExpIncludeName]= useState(false)
   const [expIncludeUrl, setExpIncludeUrl] = useState(false)
   const [expExporting,  setExpExporting]  = useState(false)
+  const [expWarnOpen,   setExpWarnOpen]   = useState(false)
   const [expCopied,     setExpCopied]     = useState<string | null>(null)
   // -- Types stats ---------------------------------------------------------
   type QRStats = {
@@ -1977,12 +1978,17 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   }
 
     // -- Export principal -------------------------------------------------------
-  async function runExport() {
+  function runExport() {
     if (!active || expExporting) return
     if (scanScore && scanScore.score < 30) {
       const crits = scanScore.issues.filter(i => i.severity === "critical")
-      if (crits.length > 0 && !window.confirm("Score critique (" + scanScore.score + "/100). Exporter quand meme ?")) return
+      if (crits.length > 0) { setExpWarnOpen(true); return }
     }
+    void doExport()
+  }
+
+  async function doExport() {
+    if (!active || expExporting) return
     setExpExporting(true)
     try {
       // Plafond 4096 : au-delà, iOS Safari plafonne l'aire du canvas (~16,7 Mpx)
@@ -2449,6 +2455,17 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             <Button variant="danger" onClick={() => deleteQR(confirmId)} loading={!!deletingId} leftIcon={<Trash2 size={13} />}>Supprimer</Button>
           </>}>
           Action irréversible. Toutes les statistiques seront perdues.
+        </Modal>
+      )}
+
+      {/* Avertissement score de scannabilité critique avant export */}
+      {expWarnOpen && (
+        <Modal open onClose={() => setExpWarnOpen(false)} title="Scannabilité critique"
+          footer={<>
+            <Button variant="ghost" onClick={() => setExpWarnOpen(false)}>Annuler</Button>
+            <Button variant="primary" onClick={() => { setExpWarnOpen(false); void doExport() }} leftIcon={<Download size={13} />}>Exporter quand même</Button>
+          </>}>
+          Le score de scannabilité est critique{scanScore ? ` (${scanScore.score}/100)` : ""}. Ce QR Code risque de ne pas être lu de façon fiable. Voulez-vous quand même l'exporter ?
         </Modal>
       )}
 

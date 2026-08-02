@@ -15,6 +15,8 @@ import { createClient } from "@/lib/supabase/client"
 import { useIsMobile } from "@/lib/useIsMobile"
 import { onEnterSpace } from "@/lib/a11y"
 import { useToast } from "@/components/Toast"
+import { Button } from "@/components/ui/Button"
+import { Modal } from "@/components/ui/Modal"
 import { PLAN_RANK, canPrintStudio, minPlanFor } from "@/lib/plans"
 import { createQR, updateQR, getQRBlob, downloadBlob, blobToDataUrl, buildAndDownloadPdf, type QROptions } from "./qrRender"
 import type QRCodeStyling from "qr-code-styling"
@@ -2441,21 +2443,13 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
       {/* -- Modale suppression -------------------------------------------------- */}
       {confirmId !== null && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000, padding:20 }} onClick={() => setConfirmId(null)}>
-          <div style={{ background:"#111009", border:"1px solid rgba(255,107,107,0.3)", borderRadius:16, padding:28, maxWidth:380, width:"100%", fontFamily:"DM Sans, sans-serif" }} onClick={e => e.stopPropagation()}>
-            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
-              <AlertTriangle size={20} color="var(--danger)"/>
-              <p style={{ color:"#F5F0E8", fontSize:15, fontWeight:700, margin:0 }}>Supprimer ce QR Code ?</p>
-            </div>
-            <p style={{ color:MUTED, fontSize:13, margin:"0 0 24px", lineHeight:1.6 }}>Action irreversible. Toutes les statistiques seront perdues.</p>
-            <div style={{ display:"flex", gap:10 }}>
-              <button type="button" onClick={() => setConfirmId(null)} style={{ flex:1, padding:"10px", background:"transparent", border:"1px solid rgba(255,255,255,0.1)", borderRadius:9, color:MUTED, fontSize:13, cursor:"pointer" }}>Annuler</button>
-              <button type="button" onClick={() => deleteQR(confirmId)} disabled={!!deletingId} style={{ flex:1, padding:"10px", background:deletingId?"rgba(255,107,107,0.3)":"linear-gradient(90deg,var(--danger),#e05555)", border:"none", borderRadius:9, color:"#F5F0E8", fontSize:13, fontWeight:700, cursor:deletingId?"wait":"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
-                {deletingId ? <><Loader2 size={13} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Suppression...</> : <><Trash2 size={13}/> Supprimer</>}
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal open onClose={() => setConfirmId(null)} title="Supprimer ce QR Code ?"
+          footer={<>
+            <Button variant="ghost" onClick={() => setConfirmId(null)} disabled={!!deletingId}>Annuler</Button>
+            <Button variant="danger" onClick={() => deleteQR(confirmId)} loading={!!deletingId} leftIcon={<Trash2 size={13} />}>Supprimer</Button>
+          </>}>
+          Action irréversible. Toutes les statistiques seront perdues.
+        </Modal>
       )}
 
       {/* Overlay fermeture menu */}

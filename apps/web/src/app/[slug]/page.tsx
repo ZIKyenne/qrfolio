@@ -101,11 +101,16 @@ export default async function PublicPage({ params }: Props) {
   // Le tracking est fait côté client dans PublicPageClient
   // pour détecter la vraie source (referrer HTTP, paramètres UTM)
 
+  // Ne pas exposer au client (HTML/hydratation, visible par tout visiteur) des
+  // colonnes internes inutiles au rendu public : id propriétaire, domaine perso,
+  // modèle d'origine. (Vérifié : PublicPageClient ne les lit pas.)
+  const { user_id, custom_domain, template_id, ...publicPage } = page as any
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `html,body{background:${safeBg}}` }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
-      <PublicPageClient page={page} blocks={blocks || []} showBranding={showBranding} introEligible={introEligible} />
+      <PublicPageClient page={publicPage} blocks={blocks || []} showBranding={showBranding} introEligible={introEligible} />
     </>
   )
 }

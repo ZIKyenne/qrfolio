@@ -619,10 +619,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   }
 
   // -- Calcul contraste WCAG -------------------------------------------------
-  function hexToRgb(hex: string): [number,number,number] {
-    const h = hex.replace("#","")
-    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)]
-  }
+  // (hexToRgb : on réutilise la fonction module-scope, plus robuste — elle valide
+  // le format hex — au lieu d'une 2e définition qui la shadowait.)
   function relativeLuminance(r:number,g:number,b:number): number {
     const c = [r,g,b].map(v => { const s=v/255; return s<=0.03928?s/12.92:Math.pow((s+0.055)/1.055,2.4) })
     return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]

@@ -136,15 +136,18 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
       const ctr   = parseFloat(((clics / totalViews) * 100).toFixed(1))
       // CTR réel = clics / impressions (bloc réellement vu). null si pas encore d'impression.
       const realCtr = d.impr > 0 ? Math.min(100, parseFloat(((clics / d.impr) * 100).toFixed(1))) : null
+      // CTR affiché = réel (par impression) si mesuré, sinon estimation par vue de page.
+      const ctrIsReal = realCtr != null
+      const effCtr = realCtr != null ? realCtr : ctr
       const dwellAvg = d.dwellN > 0 ? Math.round(d.dwellSum / d.dwellN) : null
-      return { type, cfg, count: d.count, clics, ctr, impr: d.impr, realCtr, dwellAvg }
+      return { type, cfg, count: d.count, clics, ctr, impr: d.impr, realCtr, effCtr, ctrIsReal, dwellAvg }
     }).filter(s => s.cfg.interactive)
   }, [fBlocks, fClicks, totalViews, winImpressions, winDwell])
 
   const sorted = useMemo(() => {
     const arr = [...stats]
     if (sortBy === "clicks") arr.sort((a, b) => b.clics - a.clics)
-    if (sortBy === "ctr")    arr.sort((a, b) => b.ctr - a.ctr)
+    if (sortBy === "ctr")    arr.sort((a, b) => b.effCtr - a.effCtr)
     if (sortBy === "count")  arr.sort((a, b) => b.count - a.count)
     return arr
   }, [stats, sortBy])
@@ -162,7 +165,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
     .map(s => ({
       subject: s.cfg.label,
       Clics:   Math.round((s.clics / radarMax) * 100),
-      CTR:     Math.min(Math.round(s.ctr * 4), 100),
+      CTR:     Math.min(Math.round(s.effCtr * 4), 100),
     }))
 
   return (
@@ -287,8 +290,9 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
                 </div>
                 <span style={{ color: MUTED, fontSize: 11 }}>{row.count}x</span>
                 <span style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{row.clics}</span>
-                <span style={{ color: row.ctr >= 10 ? "var(--success)" : row.ctr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
-                  {row.ctr}%
+                <span title={row.ctrIsReal ? "CTR réel : clics ÷ impressions (bloc réellement vu)" : "Estimation : clics ÷ vues de page (pas encore d'impressions mesurées)"}
+                  style={{ color: row.effCtr >= 10 ? "var(--success)" : row.effCtr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
+                  {row.ctrIsReal ? "" : "~"}{row.effCtr}%
                 </span>
                 <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: (row.clics / maxClics * 100) + "%", background: row.cfg.color, borderRadius: 3, opacity: 0.75, transition: "width 0.6s" }} />

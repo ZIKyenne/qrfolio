@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { Users, Mail, Trash2, ShieldCheck, Pencil, Crown, Loader2, LogOut, Sparkles } from "lucide-react"
 import { useToast } from "@/components/Toast"
+import { Button } from "@/components/ui/Button"
 
 type Role = "owner" | "admin" | "editor" | "viewer"
 type Member = { id: string; user_id: string; role: Role; joined_at: string; profiles?: { email?: string; full_name?: string } }
@@ -159,10 +160,7 @@ export default function TeamPage() {
                   <option value="editor">Éditeur</option>
                   <option value="admin">Admin</option>
                 </select>
-                <button type="submit" disabled={inviting}
-                  style={{ padding: "11px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#EBCE72,#C9A84C)", color: "#0A0A0A", fontWeight: 700, fontSize: 14, cursor: inviting ? "default" : "pointer", opacity: inviting ? 0.6 : 1 }}>
-                  {inviting ? "Envoi…" : "Inviter"}
-                </button>
+                <Button type="submit" variant="primary" loading={inviting}>Inviter</Button>
               </div>
             </form>
           )}
@@ -174,9 +172,7 @@ export default function TeamPage() {
                 Membres{data.teamLimit ? <span style={{ color: "#8A8478", fontWeight: 600, marginLeft: 8, fontSize: 12.5 }}>{data.seatsUsed} / {data.teamLimit}</span> : null}
               </p>
               {data.myRole && data.myRole !== "owner" && (
-                <button type="button" onClick={leaveTeam} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,107,107,0.3)", background: "transparent", color: "var(--danger)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
-                  <LogOut size={13} /> Quitter l'équipe
-                </button>
+                <Button variant="danger" size="sm" onClick={leaveTeam} leftIcon={<LogOut size={13} />}>Quitter l'équipe</Button>
               )}
             </div>
             {/* Propriétaire */}

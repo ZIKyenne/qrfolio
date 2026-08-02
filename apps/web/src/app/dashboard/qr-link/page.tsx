@@ -9,6 +9,7 @@ import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangl
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
+import { Button } from "@/components/ui/Button"
 
 const G = "#C9A84C"
 const MUTED = "#A8A190"
@@ -364,21 +365,20 @@ export default function QrLinkPage() {
 
       {/* Téléchargement */}
       <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={() => download("png")} disabled={!ready || busy !== null}
-          style={{ flex: 1, minHeight: 54, borderRadius: 14, border: "none", cursor: ready ? "pointer" : "not-allowed", background: ready ? `linear-gradient(90deg,${G},#b8953f)` : "rgba(255,255,255,0.06)", color: ready ? "#080808" : MUTED, fontSize: 15.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 9, boxShadow: ready ? "0 6px 20px rgba(201,168,76,0.32)" : "none", transition: "all .15s" }}>
-          {busy === "png" ? "…" : done ? <><Check size={18} /> Téléchargé</> : <><Download size={18} /> Télécharger PNG</>}
-        </button>
-        <button onClick={() => download("svg")} disabled={!ready || busy !== null}
-          style={{ flexShrink: 0, minHeight: 54, padding: "0 22px", borderRadius: 14, border: `1px solid ${G}45`, cursor: ready ? "pointer" : "not-allowed", background: "rgba(201,168,76,0.08)", color: ready ? G : MUTED, fontSize: 14, fontWeight: 700 }}>
-          {busy === "svg" ? "…" : "SVG"}
-        </button>
+        <Button variant="primary" size="lg" onClick={() => download("png")} loading={busy === "png"} disabled={!ready || busy !== null}
+          leftIcon={done ? <Check size={18} /> : <Download size={18} />} style={{ flex: 1 }}>
+          {done ? "Téléchargé" : "Télécharger PNG"}
+        </Button>
+        <Button variant="secondary" size="lg" onClick={() => download("svg")} loading={busy === "svg"} disabled={!ready || busy !== null}>
+          SVG
+        </Button>
       </div>
 
       {/* Enregistrer (persistant, compte dans le quota QR du plan) */}
-      <button onClick={saveInstant} disabled={!ready || saveBusy}
-        style={{ marginTop: 10, width: "100%", minHeight: 48, borderRadius: 13, cursor: ready ? "pointer" : "not-allowed", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", color: ready ? "#F5F0E8" : MUTED, fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        <Save size={16} /> {saveBusy ? "Enregistrement…" : "Enregistrer ce QR"}
-      </button>
+      <Button variant="secondary" fullWidth onClick={saveInstant} loading={saveBusy} disabled={!ready}
+        leftIcon={<Save size={16} />} style={{ marginTop: 10 }}>
+        Enregistrer ce QR
+      </Button>
       {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "9px 0 0" }}>{saveMsg.text}</p>}
 
       {saved.length > 0 && (

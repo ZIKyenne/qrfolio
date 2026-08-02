@@ -11,6 +11,8 @@ import NextStepCard from "@/components/NextStepCard"
 import { accessibleOwnerIds } from "@/lib/team"
 import RecentLeadsCard from "./RecentLeadsCard"
 import { useToast } from "@/components/Toast"
+import { Button } from "@/components/ui/Button"
+import { Modal } from "@/components/ui/Modal"
 
 type Page = { id: string; title: string; slug: string; status: string; total_views: number; created_at: string }
 type Profile = { full_name: string | null; plan: string; total_scans: number; total_pages: number; avatar_url: string | null }
@@ -24,32 +26,13 @@ const PLAN_CONFIG: Record<string, { color: string; label: string }> = {
 
 function DeleteModal({ page, onConfirm, onCancel, deleting }: { page: Page; onConfirm: () => void; onCancel: () => void; deleting: boolean }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 24 }}>
-      <div style={{ background: "#111009", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 16, padding: "28px 32px", maxWidth: 420, width: "100%", fontFamily: "DM Sans, sans-serif" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <AlertTriangle size={18} color="#EF4444" />
-          </div>
-          <h3 style={{ color: "#F5F0E8", fontSize: 17, fontWeight: 700, margin: 0 }}>Supprimer cette page ?</h3>
-        </div>
-        <p style={{ color: "#A8A190", fontSize: 14, lineHeight: 1.6, margin: "0 0 8px" }}>
-          Tu es sur le point de supprimer <span style={{ color: "#F5F0E8", fontWeight: 600 }}>"{page.title}"</span>.
-        </p>
-        <p style={{ color: "#A8A190", fontSize: 13, lineHeight: 1.6, margin: "0 0 24px" }}>
-          Cette action supprimera aussi les blocs, le QR code et toutes les donnees analytics associees. Elle est irreversible.
-        </p>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={onCancel} disabled={deleting}
-            style={{ flex: 1, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "11px", color: "#A8A190", fontSize: 14, cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}>
-            Annuler
-          </button>
-          <button onClick={onConfirm} disabled={deleting}
-            style={{ flex: 1, background: deleting ? "rgba(239,68,68,0.3)" : "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.4)", borderRadius: 10, padding: "11px", color: "#EF4444", fontSize: 14, fontWeight: 700, cursor: deleting ? "wait" : "pointer", fontFamily: "DM Sans, sans-serif" }}>
-            {deleting ? "Suppression..." : "Supprimer definitivement"}
-          </button>
-        </div>
-      </div>
-    </div>
+    <Modal open onClose={onCancel} title="Supprimer cette page ?"
+      footer={<>
+        <Button variant="ghost" onClick={onCancel} disabled={deleting}>Annuler</Button>
+        <Button variant="danger" onClick={onConfirm} loading={deleting} leftIcon={<Trash2 size={15} />}>Supprimer définitivement</Button>
+      </>}>
+      Vous êtes sur le point de supprimer <strong style={{ color: "#F5F0E8" }}>« {page.title} »</strong>. Cette action supprimera aussi les blocs, le QR code et toutes les données analytics associées. Elle est irréversible.
+    </Modal>
   )
 }
 

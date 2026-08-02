@@ -10,6 +10,7 @@ import { useIsMobile } from "@/lib/useIsMobile"
 import NextStepCard from "@/components/NextStepCard"
 import { accessibleOwnerIds } from "@/lib/team"
 import RecentLeadsCard from "./RecentLeadsCard"
+import { useToast } from "@/components/Toast"
 
 type Page = { id: string; title: string; slug: string; status: string; total_views: number; created_at: string }
 type Profile = { full_name: string | null; plan: string; total_scans: number; total_pages: number; avatar_url: string | null }
@@ -54,6 +55,7 @@ function DeleteModal({ page, onConfirm, onCancel, deleting }: { page: Page; onCo
 
 export default function DashboardClient() {
   const isMobile = useIsMobile()
+  const toast = useToast()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [pages, setPages] = useState<Page[]>([])
   const [loading, setLoading] = useState(true)
@@ -111,11 +113,15 @@ export default function DashboardClient() {
   async function deletePage(page: Page) {
     setDeleting(true)
     const supabase = createClient()
-    // Supprimer blocs, QR codes, scans, vues (cascade via FK)
-    await supabase.from("pages").delete().eq("id", page.id)
-    setPages(p => p.filter(pg => pg.id !== page.id))
-    setPageToDelete(null)
+    // Supprimer blocs, QR codes, scans, vues (cascade via FK). On ne retire de
+    // l'UI qu'en cas de SUCCÈS (sinon la page "disparaissait" puis revenait au
+    // reload sans explication).
+    const { error } = await supabase.from("pages").delete().eq("id", page.id)
     setDeleting(false)
+    setPageToDelete(null)
+    if (error) { toast.error("Suppression impossible : " + error.message); return }
+    setPages(p => p.filter(pg => pg.id !== page.id))
+    toast.success("Page supprimée")
     // Refresh profile stats
     load()
   }
@@ -123,9 +129,16 @@ export default function DashboardClient() {
   async function togglePublish(page: Page) {
     const supabase = createClient()
     const newStatus = page.status === "published" ? "draft" : "published"
-    await supabase.from("pages").update({ status: newStatus }).eq("id", page.id)
+    // .select() confirme que l'update a porté : sinon on affichait "En ligne"
+    // alors que la page restait en brouillon (état mensonger).
+    const { data, error } = await supabase.from("pages").update({ status: newStatus }).eq("id", page.id).select("id")
+    if (error || !data || data.length === 0) {
+      toast.error("Action impossible" + (error ? " : " + error.message : ""))
+      return
+    }
     setPages(p => p.map(pg => pg.id === page.id ? { ...pg, status: newStatus } : pg))
     setMenuPage(m => m && m.id === page.id ? { ...m, status: newStatus } : m)
+    toast.success(newStatus === "published" ? "Page publiée" : "Page dépubliée")
   }
 
   // Miniature deterministe (pas de theme stocke) : degrade + initiale, teinte derivee du titre.

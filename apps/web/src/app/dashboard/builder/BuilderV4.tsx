@@ -67,6 +67,14 @@
     const selectedIdKbRef = useRef(selectedId)
     useEffect(() => { blocksKbRef.current = blocks }, [blocks])
     useEffect(() => { selectedIdKbRef.current = selectedId }, [selectedId])
+    // multiSelection était lu depuis le state figé au montage dans le handler
+    // clavier (deps []) -> Ctrl+A/Suppr multi cassés. On passe par une ref fraîche.
+    const multiSelectionKbRef = useRef(multiSelection)
+    useEffect(() => { multiSelectionKbRef.current = multiSelection }, [multiSelection])
+    // Refs vers les actions (redéfinies à chaque render) : le handler clavier doit
+    // appeler la DERNIÈRE version, pas celle capturée au montage.
+    const deleteMultiRef = useRef<() => void>(() => {})
+    const deleteBlockRef = useRef<(id: string) => void>(() => {})
     const [pageName, setPageName] = useState("Ma Page")
     const [pageSlug, setPageSlug] = useState("ma-page")
     const [pageStatus, setPageStatus] = useState("draft")
@@ -255,14 +263,21 @@
         // Ctrl+A — sélectionner tous les blocs
         if (ctrl && (e.key === "a" || e.key === "A") && !isEditing(e)) {
           e.preventDefault()
-          setMultiSelection(blocks.map(b => b.id))
+          setMultiSelection(blocksKbRef.current.map(b => b.id))
           return
         }
-        // Delete/Backspace — supprimer la sélection multiple
-        if ((e.key === "Delete" || e.key === "Backspace") && multiSelection.length > 0 && !isEditing(e)) {
-          e.preventDefault()
-          deleteMulti()
-          return
+        // Delete/Backspace — supprime la sélection multiple, sinon le bloc sélectionné.
+        if ((e.key === "Delete" || e.key === "Backspace") && !isEditing(e)) {
+          if (multiSelectionKbRef.current.length > 0) {
+            e.preventDefault()
+            deleteMultiRef.current()
+            return
+          }
+          if (selectedIdKbRef.current) {
+            e.preventDefault()
+            deleteBlockRef.current(selectedIdKbRef.current)
+            return
+          }
         }
         // Flèches ↑/↓ — a11y clavier du canvas. Uniquement quand un bloc est déjà
         // sélectionné (sinon on laisse le défilement natif). Flèche seule = déplacer
@@ -686,6 +701,9 @@
       setMultiSelection([])
       setSelectedId(null)
     }
+    // Le handler clavier global appelle ces actions via ref (toujours à jour).
+    deleteMultiRef.current = deleteMulti
+    deleteBlockRef.current = deleteBlock
 
     function duplicateMulti() {
       const ids = multiSelection

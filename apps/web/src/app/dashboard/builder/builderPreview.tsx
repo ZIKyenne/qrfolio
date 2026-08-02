@@ -134,7 +134,7 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {ctaCls && <style>{CTA_ANIM_CSS}</style>}
             <div className={ctaCls} style={{ ...bs, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 12, padding: "13px 18px", fontSize: 14, fontWeight: 700 }}>
-              {c.icon && <span>{c.icon}</span>}{c.label||"Bouton"}
+              {c.icon && <span>{c.icon}</span>}<InlineEditable as="span" editable={canEdit} value={c.label} placeholder="Bouton" onCommit={edit("label")} />
             </div>
           </div>
         )
@@ -145,7 +145,7 @@ import { InlineEditable } from "./InlineEditable"
         return (
           <div style={{ padding: "14px 16px", textAlign: (c.align as any)||"center", ...s }}>
             <InlineEditable as="h2" editable={canEdit} value={c.text} placeholder="Titre" onCommit={edit("text")} style={{ fontFamily: theme.fontDisplay, fontSize: sizes[c.size||"medium"], color: hColors[c.color||"default"], fontWeight: 700, margin: "0 0 3px" }} />
-            {c.subtitle && <p style={{ color: muted, fontSize: 12, margin: 0 }}>{c.subtitle}</p>}
+            {c.subtitle && <InlineEditable as="p" editable={canEdit} value={c.subtitle} onCommit={edit("subtitle")} style={{ color: muted, fontSize: 12, margin: 0 }} />}
           </div>
         )
       }
@@ -1763,8 +1763,8 @@ import { InlineEditable } from "./InlineEditable"
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <span style={{ fontSize: compact ? 18 : 22, flexShrink: 0 }}>{icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  {c.title && <p style={{ color, fontSize: compact ? 12 : 13, fontWeight: 700, margin: "0 0 4px", paddingRight: c.dismissible==="Oui" ? 16 : 0 }}>{c.title}</p>}
-                  {c.message && <p style={{ color: text, fontSize: 12, margin: 0, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{c.message}</p>}
+                  {c.title && <InlineEditable as="p" editable={canEdit} value={c.title} onCommit={edit("title")} style={{ color, fontSize: compact ? 12 : 13, fontWeight: 700, margin: "0 0 4px", paddingRight: c.dismissible==="Oui" ? 16 : 0 }} />}
+                  {c.message && <InlineEditable as="p" editable={canEdit} value={c.message} multiline onCommit={edit("message")} style={{ color: text, fontSize: 12, margin: 0, lineHeight: 1.5, whiteSpace: "pre-wrap" }} />}
                   {c.cta_label && c.cta_url && <span style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 8, color, fontSize: 11.5, fontWeight: 700 }}>{c.cta_label} →</span>}
                 </div>
                 {c.dismissible==="Oui" && <span style={{ position: "absolute", top: 7, right: 9, color, opacity: 0.6, fontSize: 16, lineHeight: 1 }}>×</span>}

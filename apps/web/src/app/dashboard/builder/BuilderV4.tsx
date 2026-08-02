@@ -57,11 +57,14 @@
       { id: "3", type: "cta_button", content: { label: "Me contacter", url: "#", style: "gold" }, visible: true },
     ])
 
-    // setBlocks avec push historique automatique
-    const setBlocks = useCallback((updater: Block[] | ((prev: Block[]) => Block[]), skipHistory = false) => {
+    // setBlocks avec push historique automatique.
+    // `coalesceKey` (optionnel) : regroupe les frappes rapides sur un même champ en
+    // une seule entrée d'undo (voir useUndoRedo). Les opérations structurelles n'en
+    // passent pas -> chacune reste une entrée distincte.
+    const setBlocks = useCallback((updater: Block[] | ((prev: Block[]) => Block[]), skipHistory = false, coalesceKey?: string) => {
       setBlocksRaw(prev => {
         const next = typeof updater === "function" ? updater(prev) : updater
-        if (!skipHistory) undoRedo.push(next)
+        if (!skipHistory) undoRedo.push(next, coalesceKey)
         return next
       })
     }, [undoRedo])
@@ -749,7 +752,9 @@
 
     // ── FIX CRITIQUE: updateBlock immédiat + EditPanel key ────────────────────
     function updateBlock(id: string, key: string, value: string) {
-      setBlocks(prev => prev.map(b => b.id === id ? { ...b, content: { ...b.content, [key]: value } } : b))
+      // Clé de coalescing par (bloc, champ) : taper dans un champ = UNE entrée d'undo,
+      // pas une par caractère. Changer de champ/bloc démarre une nouvelle entrée.
+      setBlocks(prev => prev.map(b => b.id === id ? { ...b, content: { ...b.content, [key]: value } } : b), false, `field:${id}:${key}`)
     }
 
     async function sendAI(prompt?: string) {

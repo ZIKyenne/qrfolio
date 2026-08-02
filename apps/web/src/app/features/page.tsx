@@ -249,11 +249,10 @@ export default function FeaturesPage() {
         .feat-2col.rev { }
         @media(max-width:900px){ .feat-2col{ grid-template-columns:1fr !important; gap:40px !important; } }
         @media(max-width:640px){ .feat-sec{ padding:72px 24px !important; } .feat-hero{ padding:120px 24px 80px !important; } }
-        @keyframes fadeUp{ from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        .au1{animation:fadeUp 0.6s ease 0.1s both}
-        .au2{animation:fadeUp 0.6s ease 0.25s both}
-        .au3{animation:fadeUp 0.6s ease 0.4s both}
-        .au4{animation:fadeUp 0.6s ease 0.55s both}
+        .au1{animation:mo-fade-up 0.6s ease 0.1s both}
+        .au2{animation:mo-fade-up 0.6s ease 0.25s both}
+        .au3{animation:mo-fade-up 0.6s ease 0.4s both}
+        .au4{animation:mo-fade-up 0.6s ease 0.55s both}
       `}</style>
 
       {/* NAV */}

@@ -81,7 +81,7 @@ export default function UpgradePage() {
   return (
     <div style={{ minHeight: "100vh", background: "#080808", fontFamily: "DM Sans, sans-serif", padding: "0 24px 80px", position: "relative", isolation: "isolate" }}>
       <Particles behind />
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+      <style>{``}</style>
 
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Back */}

@@ -64,9 +64,9 @@ export default function ResetPasswordForm() {
   if (phase === "checking") {
     return (
       <div style={{ textAlign: "center", padding: "18px 0", color: "#C9C3B6", fontSize: 14, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-        <Loader2 size={22} style={{ animation: "spin 0.7s linear infinite" }} />
+        <Loader2 size={22} style={{ animation: "mo-spin 0.7s linear infinite" }} />
         Vérification du lien…
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <style>{``}</style>
       </div>
     )
   }
@@ -99,7 +99,7 @@ export default function ResetPasswordForm() {
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{``}</style>
       {error && (
         <div role="alert" style={{ background: "var(--danger-bg)", border: "1px solid var(--danger-border)", borderRadius: 11, padding: "11px 14px", fontSize: 13.5, color: "var(--danger)", lineHeight: 1.45 }}>
           {error}
@@ -132,7 +132,7 @@ export default function ResetPasswordForm() {
         boxShadow: "0 6px 20px color-mix(in srgb, var(--accent, #C9A84C) 30%, transparent)",
       }}>
         {pending
-          ? <><Loader2 size={17} style={{ animation: "spin 0.7s linear infinite" }} /> Mise à jour…</>
+          ? <><Loader2 size={17} style={{ animation: "mo-spin 0.7s linear infinite" }} /> Mise à jour…</>
           : <><ShieldCheck size={17} /> Mettre à jour</>}
       </button>
     </form>

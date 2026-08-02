@@ -2450,7 +2450,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             <div style={{ display:"flex", gap:10 }}>
               <button type="button" onClick={() => setConfirmId(null)} style={{ flex:1, padding:"10px", background:"transparent", border:"1px solid rgba(255,255,255,0.1)", borderRadius:9, color:MUTED, fontSize:13, cursor:"pointer" }}>Annuler</button>
               <button type="button" onClick={() => deleteQR(confirmId)} disabled={!!deletingId} style={{ flex:1, padding:"10px", background:deletingId?"rgba(255,107,107,0.3)":"linear-gradient(90deg,var(--danger),#e05555)", border:"none", borderRadius:9, color:"#F5F0E8", fontSize:13, fontWeight:700, cursor:deletingId?"wait":"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
-                {deletingId ? <><Loader2 size={13} style={{ animation:"spin 0.8s linear infinite" }}/> Suppression...</> : <><Trash2 size={13}/> Supprimer</>}
+                {deletingId ? <><Loader2 size={13} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Suppression...</> : <><Trash2 size={13}/> Supprimer</>}
               </button>
             </div>
           </div>
@@ -2574,7 +2574,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:3 }}>
                       {qr.last_scan_at && (new Date().getTime() - new Date(qr.last_scan_at).getTime()) < 86400000 && (
-                        <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--success)", animation:"pulse 1.5s infinite", flexShrink:0 }}/>
+                        <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--success)", animation:"mo-pulse 1.5s infinite", flexShrink:0 }}/>
                       )}
                       <p style={{ color:MUTED, fontSize:9, margin:0 }}>
                         {qr.last_scan_at ? formatDate(qr.last_scan_at) : "Jamais scanné"}
@@ -2595,7 +2595,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       { icon: <Pencil size={11}/>,  label: "Modifier",     action: () => { window.location.href = `/dashboard/builder/${page?.id}` }, color: "#F5F0E8", disabled: false },
                       { icon: isC ? <Check size={11}/> : <Copy size={11}/>, label: isC ? "Copie !" : "Copier lien", action: () => copyQRLink(qr.id, url), color: isC ? "var(--success)" : "#F5F0E8", disabled: false },
                       { icon: <Download size={11}/>, label: "PNG",          action: () => { setActiveId(qr.id); setTimeout(() => downloadPNG(400), 100); setMenuId(null) }, color: "#F5F0E8", disabled: false },
-                      { icon: dupId === qr.id ? <Loader2 size={11} style={{ animation:"spin 0.8s linear infinite" }}/> : <Copy size={11}/>, label: dupId === qr.id ? "Duplication..." : "Dupliquer", action: () => duplicateQR(qr.id), color: "#F5F0E8", disabled: dupId === qr.id },
+                      { icon: dupId === qr.id ? <Loader2 size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Copy size={11}/>, label: dupId === qr.id ? "Duplication..." : "Dupliquer", action: () => duplicateQR(qr.id), color: "#F5F0E8", disabled: dupId === qr.id },
                       ...(qs === "active" ? [{ icon: <Archive size={11}/>, label: "Mettre en pause", action: () => requestAction(qr.id, "pause", "Mettre en pause"), color: "#F97316", disabled: false }] : []),
                       ...(qs === "paused" || qs === "draft" ? [{ icon: <Check size={11}/>, label: "Activer", action: () => changeQRStatus(qr.id, "activate"), color: "var(--success)", disabled: false }] : []),
                       ...(qs !== "archived" ? [{ icon: <Archive size={11}/>, label: "Archiver", action: () => requestAction(qr.id, "archive", "Archiver ce QR"), color: "#6B7280", disabled: false }] : [{ icon: <RotateCcw size={11}/>, label: "Restaurer", action: () => changeQRStatus(qr.id, "restore"), color: "var(--action)", disabled: false }]),
@@ -2604,7 +2604,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       <button key={i} type="button" onClick={item.disabled ? undefined : item.action} disabled={item.disabled}
                         style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"8px 10px", background:"none", border:"none", color:item.disabled ? "rgba(138,132,120,0.4)" : item.color, fontSize:11, cursor:item.disabled ? "not-allowed" : "pointer", borderRadius:7, textAlign:"left" as const }}>
                         {archivingId === qr.id && item.label === "Archiver"
-                          ? <Loader2 size={11} style={{ animation:"spin 0.8s linear infinite" }}/>
+                          ? <Loader2 size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/>
                           : item.icon
                         }
                         {item.label}
@@ -2686,7 +2686,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 <div style={{ position:"relative" }}>
                   {/* Scène immersive (produit fini) */}
                   {scene !== "none" && (
-                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:"min(46vh,360px,100%)", maxWidth:"100%", minHeight:"min(46vh,360px)", animation:"fadeUp .35s ease" }}>
+                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:"min(46vh,360px,100%)", maxWidth:"100%", minHeight:"min(46vh,360px)", animation:"mo-fade-up .35s ease" }}>
                       {!qrPng ? (
                         <div className="skeleton" style={{ width:200, height:200 }} />
                       ) : scene === "phone" ? (
@@ -3026,7 +3026,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       </button>
                       <button type="button" onClick={() => destValue ? setDestConfirm(true) : null} disabled={!destValue || destLoading}
                         style={{ flex:2, padding:"8px", background:destValue?"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))":"rgba(255,255,255,0.05)", border:"none", borderRadius:8, color:destValue?"#080808":"#A8A190", fontSize:11, fontWeight:700, cursor:destValue&&!destLoading?"pointer":"not-allowed", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                        {destLoading ? <><Loader2 size={11} style={{ animation:"spin 0.8s linear infinite" }}/> Enregistrement...</> : destSaved ? <><Check size={11}/> Applique !</> : "Appliquer la destination"}
+                        {destLoading ? <><Loader2 size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Enregistrement...</> : destSaved ? <><Check size={11}/> Applique !</> : "Appliquer la destination"}
                       </button>
                     </div>
 
@@ -3780,7 +3780,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             <div style={{ padding:"12px 14px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", gap:7, flexShrink:0 }}>
               <button type="button" onClick={saveCustomization} disabled={saving}
                 style={{ padding:"10px", background:saved?"rgba(57,255,143,0.12)":"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:saved?"1px solid rgba(57,255,143,0.3)":"none", borderRadius:9, color:saved?"var(--success)":"#080808", fontSize:12, fontWeight:700, cursor:saving?"wait":"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7, opacity:saving?0.7:1, transition:"all 0.2s" }}>
-                {saving ? <><Loader2 size={12} style={{ animation:"spin 0.8s linear infinite" }}/> Enregistrement...</>
+                {saving ? <><Loader2 size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Enregistrement...</>
                   : saved ? <><Check size={12}/> Sauvegarde !</>
                   : <><Palette size={12}/> Enregistrer le style</>}
               </button>
@@ -3803,7 +3803,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             {/* CTA principal : ouvrir l'editeur QR Print Studio */}
             <button type="button" onClick={openEditor} disabled={editorLoading}
               style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:9, padding:"15px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:12, color:"#080808", fontSize:14, fontWeight:800, cursor:editorLoading?"wait":"pointer", boxShadow:"0 8px 26px color-mix(in srgb, var(--accent) 30%, transparent)", opacity:editorLoading?0.7:1 }}>
-              {editorLoading ? <Loader2 size={16} style={{ animation:"spin 0.8s linear infinite" }}/> : <Sparkles size={16}/>}
+              {editorLoading ? <Loader2 size={16} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Sparkles size={16}/>}
               {editorLoading ? "Ouverture..." : "Ouvrir QR Print Studio"}
             </button>
             <p style={{ color:MUTED, fontSize:11.5, textAlign:"center" as const, margin:0, lineHeight:1.5 }}>
@@ -4056,7 +4056,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 <button type="button" onClick={runExport} disabled={expExporting}
                   style={{ padding:isMobile?"15px":"11px", background:`linear-gradient(90deg,${fmt.color},${fmt.color}cc)`, border:"none", borderRadius:isMobile?13:10, color:"#080808", fontSize:isMobile?15:13, fontWeight:800, cursor:expExporting?"wait":"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7, opacity:expExporting?0.7:1, boxShadow:isMobile?`0 6px 20px ${fmt.color}40`:"none" }}>
                   {expExporting
-                    ? <><Loader2 size={14} style={{ animation:"spin 0.8s linear infinite" }}/> Export en cours...</>
+                    ? <><Loader2 size={14} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Export en cours...</>
                     : <><Download size={14}/> Télécharger {fmt.label} {realPx}px</>}
                 </button>
 
@@ -4117,7 +4117,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       </div>
 
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } } @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} } @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} } [data-qr-container] canvas, [data-qr-container] svg { width:100% !important; height:100% !important; display:block; } @media (max-width: 859px) { .qr-grid { display:flex !important; flex-direction:column !important; min-height:0 !important; overflow:visible !important; } .qr-col-preview { order:1 !important; width:100% !important; overflow:visible !important; } .qr-col-settings { order:2 !important; width:100% !important; overflow:visible !important; border-left:none !important; border-top:1px solid rgba(255,255,255,0.06) !important; } .qr-col-list { order:3 !important; width:100% !important; overflow:visible !important; border-right:none !important; border-top:1px solid rgba(255,255,255,0.06) !important; } .qr-scroll { flex:none !important; height:auto !important; max-height:none !important; overflow:visible !important; } } button { transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; } button:active { transform: scale(0.97); } input:focus, select:focus, textarea:focus { border-color: color-mix(in srgb, var(--accent) 55%, transparent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important; } .qr-scroll::-webkit-scrollbar { width:8px; height:8px; } .qr-scroll::-webkit-scrollbar-track { background:transparent; } .qr-scroll::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--accent) 18%, transparent); border-radius:8px; } .qr-scroll::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb, var(--accent) 35%, transparent); }`}</style>
+      <style>{`[data-qr-container] canvas, [data-qr-container] svg { width:100% !important; height:100% !important; display:block; } @media (max-width: 859px) { .qr-grid { display:flex !important; flex-direction:column !important; min-height:0 !important; overflow:visible !important; } .qr-col-preview { order:1 !important; width:100% !important; overflow:visible !important; } .qr-col-settings { order:2 !important; width:100% !important; overflow:visible !important; border-left:none !important; border-top:1px solid rgba(255,255,255,0.06) !important; } .qr-col-list { order:3 !important; width:100% !important; overflow:visible !important; border-right:none !important; border-top:1px solid rgba(255,255,255,0.06) !important; } .qr-scroll { flex:none !important; height:auto !important; max-height:none !important; overflow:visible !important; } } button { transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; } button:active { transform: scale(0.97); } input:focus, select:focus, textarea:focus { border-color: color-mix(in srgb, var(--accent) 55%, transparent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important; } .qr-scroll::-webkit-scrollbar { width:8px; height:8px; } .qr-scroll::-webkit-scrollbar-track { background:transparent; } .qr-scroll::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--accent) 18%, transparent); border-radius:8px; } .qr-scroll::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb, var(--accent) 35%, transparent); }`}</style>
     </div>
   )
 }

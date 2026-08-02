@@ -3026,11 +3026,11 @@ function StoryPhone({ step }: { step: number }) {
               ? (i === 0 ? `linear-gradient(90deg, ${G}, #b8953f)` : i === 2 ? "rgba(56,189,248,0.4)" : i === 4 ? "rgba(57,255,143,0.35)" : "rgba(255,255,255,0.14)")
               : "rgba(255,255,255,0.07)",
             border: colored ? "none" : "1px dashed rgba(201,168,76,0.28)",
-            animation: `fadeUp 0.45s ease ${i * 0.09}s both`,
+            animation: `mo-fade-up 0.45s ease ${i * 0.09}s both`,
           }} />
         ))}
         {colored && (
-          <div style={{ display: "flex", gap: 7, marginTop: 4, animation: "fadeUp 0.4s ease 0.4s both" }}>
+          <div style={{ display: "flex", gap: 7, marginTop: 4, animation: "mo-fade-up 0.4s ease 0.4s both" }}>
             {[G, "var(--action)", "#A78BFA", "var(--success)"].map(c => (
               <span key={c} style={{ width: 20, height: 20, borderRadius: "50%", background: c, boxShadow: `0 0 10px ${c}88` }} />
             ))}
@@ -3042,14 +3042,14 @@ function StoryPhone({ step }: { step: number }) {
   if (step === 2 || step === 3) {
     return (
       <div style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <div style={{ position: "relative", animation: "fadeUp 0.5s ease both" }}>
+        <div style={{ position: "relative", animation: "mo-fade-up 0.5s ease both" }}>
           <QRMiniSvg fg="#F5F0E8" bg="transparent" accent={G} size={140} />
           {step === 3 && (
             <div aria-hidden style={{ position: "absolute", left: "4%", right: "4%", top: "10%", height: 2, borderRadius: 2, background: `linear-gradient(90deg, transparent, ${G}, transparent)`, boxShadow: `0 0 16px 3px ${G}88`, animation: "scanLine 1.8s ease-in-out infinite" }} />
           )}
         </div>
         {step === 3 && (
-          <div style={{ position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 100, background: "rgba(57,255,143,0.14)", border: "1px solid rgba(57,255,143,0.4)", color: "var(--success)", fontSize: 12, fontWeight: 700, animation: "fadeUp 0.4s ease 0.3s both" }}>✓ Scanné</div>
+          <div style={{ position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 100, background: "rgba(57,255,143,0.14)", border: "1px solid rgba(57,255,143,0.4)", color: "var(--success)", fontSize: 12, fontWeight: 700, animation: "mo-fade-up 0.4s ease 0.3s both" }}>✓ Scanné</div>
         )}
       </div>
     )
@@ -3059,7 +3059,7 @@ function StoryPhone({ step }: { step: number }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 16, height: "100%" }}>
       <div style={{ display: "flex", gap: 8 }}>
         {[["1 248", "Scans"], ["86%", "Mobile"]].map(([v, l], i) => (
-          <div key={l} style={{ flex: 1, padding: "10px 12px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.18)", animation: `fadeUp 0.4s ease ${i * 0.1}s both` }}>
+          <div key={l} style={{ flex: 1, padding: "10px 12px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.18)", animation: `mo-fade-up 0.4s ease ${i * 0.1}s both` }}>
             <p style={{ margin: 0, color: G, fontSize: 17, fontWeight: 800 }}>{v}</p>
             <p style={{ margin: 0, color: "#BCB6A6", fontSize: 9.5 }}>{l}</p>
           </div>
@@ -3411,7 +3411,6 @@ export default function HomePage() {
         @keyframes revealUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes sweepLight { 0%{transform:translateX(-140%) skewX(-18deg);opacity:0} 12%{opacity:0.9} 30%{opacity:0} 100%{transform:translateX(140%) skewX(-18deg);opacity:0} }
         @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
         @keyframes glowPulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
         @keyframes heroAura { 0%,100%{opacity:0.82;transform:translateX(-50%) scale(1)} 50%{opacity:1;transform:translateX(-50%) scale(1.06)} }
         @keyframes ctaPulse { 0%,100%{box-shadow:0 4px 28px rgba(201,168,76,0.42)} 50%{box-shadow:0 6px 40px rgba(201,168,76,0.62),0 0 0 6px rgba(201,168,76,0.07)} }
@@ -3476,7 +3475,7 @@ export default function HomePage() {
               borderRadius: 11, padding: "8px 15px", marginBottom: 30,
               fontSize: 11, color: "#D8BE72", letterSpacing: 2,
               textTransform: "uppercase", fontWeight: 700,
-              animation: "fadeUp 0.6s ease 0.1s both"
+              animation: "mo-fade-up 0.6s ease 0.1s both"
             }}>
               <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: 2, background: "#C9A84C", animation: "glowPulse 2s ease-in-out infinite", willChange: "opacity" }} />
               La page qui remplace votre carte de visite
@@ -3490,14 +3489,14 @@ export default function HomePage() {
               color: "#F5F0E8", fontWeight: 800, lineHeight: 1.02,
               margin: "0 0 26px", letterSpacing: "-0.035em",
             }}>
-              <span style={{ display: "block", animation: "fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both" }}>
+              <span style={{ display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both" }}>
                 Une page pro.
               </span>
-              <span style={{ display: "block", animation: "fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.30s both" }}>
+              <span style={{ display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.30s both" }}>
                 Un QR&nbsp;code dynamique.
               </span>
               <span style={{
-                display: "block", animation: "fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.45s both",
+                display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.45s both",
                 color: "#C9A84C",
               }}>
                 Zéro réimpression.
@@ -3508,7 +3507,7 @@ export default function HomePage() {
             <p style={{
               color: "rgba(226,220,206,0.92)", fontSize: 18.5, lineHeight: 1.6,
               margin: "0 0 38px", maxWidth: 468, fontWeight: 400,
-              animation: "fadeUp 0.7s ease 0.6s both"
+              animation: "mo-fade-up 0.7s ease 0.6s both"
             }}>
               Regroupez vos coordonnées, réseaux, menu et portfolio sur <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>une seule page professionnelle</strong>.
               Modifiez-la quand vous voulez : <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>votre QR&nbsp;code imprimé, lui, ne change jamais</strong>.
@@ -3517,7 +3516,7 @@ export default function HomePage() {
             {/* CTAs */}
             <div className="hero-ctas" style={{
               display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center",
-              animation: "fadeUp 0.7s ease 0.75s both"
+              animation: "mo-fade-up 0.7s ease 0.75s both"
             }}>
               <Link href="/auth/signup" style={{
                 background: "linear-gradient(90deg, #C9A84C, #d4a843, #b8953f)",
@@ -3567,7 +3566,7 @@ export default function HomePage() {
             {/* Micro-réassurance */}
             <div className="hero-reassurance" style={{
               display: "flex", gap: 20, marginTop: 26, flexWrap: "wrap",
-              animation: "fadeUp 0.7s ease 0.9s both"
+              animation: "mo-fade-up 0.7s ease 0.9s both"
             }}>
               {["Chiffré", "Hébergé en Europe", "QR dynamique", "Sans engagement"].map((item) => (
                 <span key={item} style={{

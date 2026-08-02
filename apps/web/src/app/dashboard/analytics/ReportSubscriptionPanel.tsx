@@ -152,7 +152,7 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
           {/* Cards fréquence */}
           {loading ? (
             <div style={{ textAlign: "center", padding: "32px", color: MUTED }}>
-              <Loader size={20} color={MUTED} style={{ animation: "spin 0.8s linear infinite" }} />
+              <Loader size={20} color={MUTED} style={{ animation: "mo-spin 0.8s linear infinite" }} />
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -194,7 +194,7 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
                       <button type="button" onClick={() => toggle(freq)} disabled={busy}
                         style={{ width: 44, height: 24, borderRadius: 12, border: "none", background: on ? cfg.color : "rgba(255,255,255,0.1)", cursor: busy ? "wait" : "pointer", position: "relative", transition: "all 0.2s", flexShrink: 0, opacity: busy ? 0.7 : 1 }}>
                         {busy ? (
-                          <Loader size={12} color={on ? "#080808" : MUTED} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", animation: "spin 0.8s linear infinite" }} />
+                          <Loader size={12} color={on ? "#080808" : MUTED} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", animation: "mo-spin 0.8s linear infinite" }} />
                         ) : ok ? (
                           <CheckCircle size={14} color={on ? "#080808" : "var(--success)"} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
                         ) : (
@@ -218,7 +218,7 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
         </div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

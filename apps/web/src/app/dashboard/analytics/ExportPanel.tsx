@@ -339,7 +339,7 @@ export default function ExportPanel({ plan, pages, views, scans, clicks, blocks,
             <button type="button" onClick={doExport} disabled={exporting || selected.size === 0}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: selected.size === 0 ? "rgba(255,255,255,0.05)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border: "none", borderRadius: 10, color: selected.size === 0 ? MUTED : "#080808", fontSize: 13, fontWeight: 700, cursor: selected.size === 0 || exporting ? "not-allowed" : "pointer", opacity: exporting ? 0.7 : 1, transition: "all 0.15s" }}>
               {exporting
-                ? <><Loader size={14} style={{ animation: "spin 0.8s linear infinite" }} /> Export...</>
+                ? <><Loader size={14} style={{ animation: "mo-spin 0.8s linear infinite" }} /> Export...</>
                 : <><Download size={14} /> Télécharger</>
               }
             </button>
@@ -347,7 +347,7 @@ export default function ExportPanel({ plan, pages, views, scans, clicks, blocks,
         </div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

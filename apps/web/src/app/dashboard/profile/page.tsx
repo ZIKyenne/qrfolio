@@ -1057,10 +1057,8 @@ export default function ProfilePage() {
     <div style={{ minHeight: "100dvh", background: "transparent", fontFamily: "DM Sans, sans-serif", position: "relative", isolation: "isolate" }}>
       <Particles behind />
       <style>{`
-        @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes profileFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-        @keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.7}}
         @keyframes heroFloat1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.12)}}
         @keyframes heroFloat2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-50px,20px) scale(1.08)}}
         @keyframes heroGlow{0%,100%{opacity:0.5}50%{opacity:0.9}}
@@ -1111,7 +1109,7 @@ export default function ProfilePage() {
               <button onClick={() => fileRef.current?.click()} disabled={uploadingAvatar} title="Changer la photo"
                 style={{ position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: "50%", background: G, border: "2px solid #0A0906", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>
                 {uploadingAvatar
-                  ? <div style={{ width: 9, height: 9, border: "1.5px solid #080808", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.6s linear infinite" }}/>
+                  ? <div style={{ width: 9, height: 9, border: "1.5px solid #080808", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.6s linear infinite" }}/>
                   : <Camera size={11} color="#080808"/>}
               </button>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) handleAvatarFile(f); e.target.value="" }}/>
@@ -1283,7 +1281,7 @@ export default function ProfilePage() {
                 <div style={{ position:"relative", flexShrink:0 }}>
                   <div style={{ width:72, height:72, borderRadius:"50%", background:profile?.avatar_url?"transparent":`linear-gradient(135deg,${pc},${pc}80)`, border:`2px solid ${pc}40`, overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 20px ${pc}15` }}>
                     {uploadingAvatar ? (
-                      <div style={{ width:22, height:22, border:`2px solid ${pc}30`, borderTopColor:pc, borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>
+                      <div style={{ width:22, height:22, border:`2px solid ${pc}30`, borderTopColor:pc, borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/>
                     ) : profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
                     ) : (
@@ -1374,7 +1372,7 @@ export default function ProfilePage() {
                     style={{ width:"100%", background:"#0F0E0B", border:`1px solid ${usernameStatus==="ok"?"rgba(57,255,143,0.3)":usernameStatus==="taken"||usernameStatus==="invalid"?"rgba(255,107,107,0.3)":"rgba(255,255,255,0.08)"}`, borderRadius:9, padding:"10px 36px 10px 26px", color:"#F5F0E8", fontSize:13, outline:"none", boxSizing:"border-box" as const }}/>
                   {/* Icone statut */}
                   <div style={{ position:"absolute", right:11, top:"50%", transform:"translateY(-50%)" }}>
-                    {usernameStatus==="checking" && <div style={{ width:13, height:13, border:"1.5px solid color-mix(in srgb, var(--accent) 30%, transparent)", borderTopColor:"var(--accent)", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>}
+                    {usernameStatus==="checking" && <div style={{ width:13, height:13, border:"1.5px solid color-mix(in srgb, var(--accent) 30%, transparent)", borderTopColor:"var(--accent)", borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/>}
                     {usernameStatus==="ok"      && <UserCheck size={14} color="var(--success)"/>}
                     {(usernameStatus==="taken"||usernameStatus==="invalid") && <UserX size={14} color="var(--danger)"/>}
                   </div>
@@ -1488,10 +1486,10 @@ export default function ProfilePage() {
                     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                       {[...Array(5)].map((_,i) => (
                         <div key={i} style={{ display:"flex", gap:10, alignItems:"flex-start", padding:"10px 0" }}>
-                          <div style={{ width:32, height:32, borderRadius:9, background:"rgba(255,255,255,0.04)", flexShrink:0, animation:"pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1}s` }}/>
+                          <div style={{ width:32, height:32, borderRadius:9, background:"rgba(255,255,255,0.04)", flexShrink:0, animation:"mo-pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1}s` }}/>
                           <div style={{ flex:1, display:"flex", flexDirection:"column", gap:5 }}>
-                            <div style={{ height:12, width:`${60+i*8}%`, borderRadius:4, background:"rgba(255,255,255,0.04)", animation:"pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1+0.05}s` }}/>
-                            <div style={{ height:10, width:"40%", borderRadius:4, background:"rgba(255,255,255,0.03)", animation:"pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1+0.1}s` }}/>
+                            <div style={{ height:12, width:`${60+i*8}%`, borderRadius:4, background:"rgba(255,255,255,0.04)", animation:"mo-pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1+0.05}s` }}/>
+                            <div style={{ height:10, width:"40%", borderRadius:4, background:"rgba(255,255,255,0.03)", animation:"mo-pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1+0.1}s` }}/>
                           </div>
                         </div>
                       ))}
@@ -1756,7 +1754,7 @@ export default function ProfilePage() {
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                 <div className="rcols-3" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
                   {[...Array(6)].map((_,i) => (
-                    <div key={i} style={{ height:60, borderRadius:9, background:"rgba(255,255,255,0.04)", animation:"pulse 1.5s ease-in-out infinite", animationDelay:`${i*0.1}s` }}/>
+                    <div key={i} style={{ height:60, borderRadius:9, background:"rgba(255,255,255,0.04)", animation:"mo-pulse 1.5s ease-in-out infinite", animationDelay:`${i*0.1}s` }}/>
                   ))}
                 </div>
               </div>
@@ -1880,7 +1878,7 @@ export default function ProfilePage() {
             {secLoading ? (
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {[...Array(3)].map((_,i) => (
-                  <div key={i} style={{ height:52, borderRadius:9, background:"rgba(255,255,255,0.04)", animation:"pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.15}s` }}/>
+                  <div key={i} style={{ height:52, borderRadius:9, background:"rgba(255,255,255,0.04)", animation:"mo-pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.15}s` }}/>
                 ))}
               </div>
             ) : (
@@ -2137,7 +2135,7 @@ export default function ProfilePage() {
                         disabled={job.status === "running"}
                         style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 13px", background:job.status==="done"?"rgba(57,255,143,0.08)":job.status==="error"?"rgba(255,107,107,0.08)":"rgba(56,189,248,0.08)", border:`1px solid ${job.status==="done"?"rgba(57,255,143,0.2)":job.status==="error"?"rgba(255,107,107,0.2)":"rgba(56,189,248,0.2)"}`, borderRadius:7, color:job.status==="done"?"var(--success)":job.status==="error"?"var(--danger)":"var(--action)", fontSize:11, fontWeight:600, cursor:job.status==="running"?"wait":"pointer", flexShrink:0 }}>
                         {job.status==="running"
-                          ? <><div style={{ width:11, height:11, border:"1.5px solid rgba(56,189,248,0.3)", borderTopColor:"var(--action)", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/> Export...</>
+                          ? <><div style={{ width:11, height:11, border:"1.5px solid rgba(56,189,248,0.3)", borderTopColor:"var(--action)", borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/> Export...</>
                           : job.status==="done"
                           ? <><Check size={12}/> OK</>
                           : job.status==="error"
@@ -2232,7 +2230,7 @@ export default function ProfilePage() {
             {subLoading ? (
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                 {[...Array(3)].map((_,i) => (
-                  <div key={i} style={{ height:52, borderRadius:10, background:"rgba(255,255,255,0.04)", animation:"pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.15}s` }}/>
+                  <div key={i} style={{ height:52, borderRadius:10, background:"rgba(255,255,255,0.04)", animation:"mo-pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.15}s` }}/>
                 ))}
               </div>
             ) : (
@@ -2370,8 +2368,8 @@ export default function ProfilePage() {
               <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
                 {[...Array(3)].map((_,i) => (
                   <div key={i} style={{ display:"flex", flexDirection:"column", gap:5 }}>
-                    <div style={{ height:10, width:"60%", borderRadius:4, background:"rgba(255,255,255,0.04)", animation:"pulse 1.4s ease-in-out infinite" }}/>
-                    <div style={{ height:6, borderRadius:3, background:"rgba(255,255,255,0.04)", animation:"pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1}s` }}/>
+                    <div style={{ height:10, width:"60%", borderRadius:4, background:"rgba(255,255,255,0.04)", animation:"mo-pulse 1.4s ease-in-out infinite" }}/>
+                    <div style={{ height:6, borderRadius:3, background:"rgba(255,255,255,0.04)", animation:"mo-pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1}s` }}/>
                   </div>
                 ))}
               </div>
@@ -2718,7 +2716,7 @@ export default function ProfilePage() {
                           onClick={() => confirmRegen ? regenerateApiKey(confirmRegen) : confirmRevoke ? revokeApiKey(confirmRevoke) : null}
                           style={{ flex:2, padding:"9px", background:confirmRevoke?"linear-gradient(90deg,var(--danger),#e05555)":"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:9, color:confirmRevoke?"#F5F0E8":"#080808", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
                           {regenKeyId || deletingKey
-                            ? <><div style={{ width:13, height:13, border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#F5F0E8", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/> Traitement...</>
+                            ? <><div style={{ width:13, height:13, border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#F5F0E8", borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/> Traitement...</>
                             : confirmRevoke ? "Revoquer" : "Regenerer"}
                         </button>
                       </div>
@@ -2939,7 +2937,7 @@ export default function ProfilePage() {
               /* Skeleton */
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {[...Array(2)].map((_,i) => (
-                  <div key={i} style={{ height:60, borderRadius:9, background:"rgba(255,255,255,0.04)", animation:"pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1}s` }}/>
+                  <div key={i} style={{ height:60, borderRadius:9, background:"rgba(255,255,255,0.04)", animation:"mo-pulse 1.4s ease-in-out infinite", animationDelay:`${i*0.1}s` }}/>
                 ))}
               </div>
             ) : domains.length === 0 ? (
@@ -3017,7 +3015,7 @@ export default function ProfilePage() {
                               title="Definir comme principal"
                               style={{ width:26, height:26, background:"color-mix(in srgb, var(--accent) 8%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:G }}>
                               {settingPrimary===dm.id
-                                ? <div style={{ width:11, height:11, border:`1.5px solid color-mix(in srgb, var(--accent) 19%, transparent)`, borderTopColor:G, borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>
+                                ? <div style={{ width:11, height:11, border:`1.5px solid color-mix(in srgb, var(--accent) 19%, transparent)`, borderTopColor:G, borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/>
                                 : <CheckCircle size={12}/>}
                             </button>
                           )}
@@ -3032,7 +3030,7 @@ export default function ProfilePage() {
                             title="Supprimer"
                             style={{ width:26, height:26, background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)" }}>
                             {deletingDomain===dm.id
-                              ? <div style={{ width:11, height:11, border:"1.5px solid rgba(255,107,107,0.3)", borderTopColor:"var(--danger)", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>
+                              ? <div style={{ width:11, height:11, border:"1.5px solid rgba(255,107,107,0.3)", borderTopColor:"var(--danger)", borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/>
                               : <Trash2 size={11}/>}
                           </button>
                         </div>
@@ -3082,7 +3080,7 @@ export default function ProfilePage() {
             action={
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 {prefsSaving && (
-                  <div style={{ width:12, height:12, border:"1.5px solid rgba(249,115,22,0.3)", borderTopColor:"#F97316", borderRadius:"50%", animation:"spin 0.7s linear infinite" }}/>
+                  <div style={{ width:12, height:12, border:"1.5px solid rgba(249,115,22,0.3)", borderTopColor:"#F97316", borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/>
                 )}
                 {prefsSaved && !prefsSaving && (
                   <span style={{ color:"var(--success)", fontSize:10, display:"flex", alignItems:"center", gap:4 }}>

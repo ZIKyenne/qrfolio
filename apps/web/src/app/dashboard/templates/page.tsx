@@ -519,7 +519,7 @@ export default function TemplatesPage() {
                       <button type="button" onClick={(e) => { e.stopPropagation(); if (locked) { router.push("/upgrade"); return } setNamingFor(template.id) }}
                         disabled={!!creating}
                         style={{ flex: isMobile ? 1 : 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: isMobile ? "11px 10px" : "8px 12px", background: locked ? "rgba(255,255,255,0.04)" : isCreating ? "color-mix(in srgb, var(--accent) 20%, transparent)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border: locked ? "1px solid rgba(255,255,255,0.08)" : "none", borderRadius: 9, color: locked ? MUTED : "#080808", fontSize: 11, fontWeight: 700, cursor: creating ? "not-allowed" : "pointer", opacity: creating && !isCreating ? 0.5 : 1, transition: "all 0.15s" }}>
-                        {isCreating ? <><div style={{ width: 10, height: 10, border: "1.5px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Création...</> : locked ? <><Lock size={10} /> Débloquer</> : <>Utiliser <ArrowRight size={10} /></>}
+                        {isCreating ? <><div style={{ width: 10, height: 10, border: "1.5px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> Création...</> : locked ? <><Lock size={10} /> Débloquer</> : <>Utiliser <ArrowRight size={10} /></>}
                       </button>
                     </div>
                   </div>
@@ -573,7 +573,7 @@ export default function TemplatesPage() {
         </div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
 
       {/* ── Modal de nommage ───────────────────────────────────────────── */}
       {namingFor && (() => {
@@ -610,7 +610,6 @@ export default function TemplatesPage() {
       })()}
 
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
         @keyframes popIn { from { opacity:0; transform:translateX(-50%) translateY(8px) scale(0.95) } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1) } }
       `}</style>
     </div>

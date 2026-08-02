@@ -193,8 +193,6 @@ export default function DashboardClient() {
     <div style={{ minHeight: "100dvh", background: "radial-gradient(1200px 600px at 70% -10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%), #080808", padding: isMobile ? "22px 16px 40px" : "30px 28px 48px", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
       <Particles />
       <style>{`
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
         .dz{animation:mo-fade-up .5s cubic-bezier(.2,.8,.2,1) backwards}
         .dz-row{transition:background .15s, transform .15s}
         .dz-row:hover{background:rgba(255,255,255,0.025)!important;transform:translateX(2px)}
@@ -249,7 +247,7 @@ export default function DashboardClient() {
             </h1>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: planCfg.color + "14", border: "1px solid " + planCfg.color + "33", borderRadius: 999, padding: "3px 11px" }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: planCfg.color, boxShadow: "0 0 7px " + planCfg.color, animation: "pulse 2.4s ease-in-out infinite" }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: planCfg.color, boxShadow: "0 0 7px " + planCfg.color, animation: "mo-pulse 2.4s ease-in-out infinite" }} />
                 <span style={{ color: planCfg.color, fontSize: 12, fontWeight: 700 }}>Plan {planCfg.label}</span>
               </span>
               <span style={{ color: MUTED, fontSize: 12.5 }}>

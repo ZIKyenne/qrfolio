@@ -126,12 +126,22 @@ priorité ces cas-là, et on **ne normalise jamais un corps d'animation à l'ave
     masquer le `shimmer` **global** du skeleton (background-position) ;
   - `fadeUp` **au corps identique** au canonique (14px) migré vers `mo-fade-up`
     (Dashboard, Analytics) — première adoption réelle du système.
-- 🔎 **Phase 2b (par écran, avec QA visuel)** — adopter `mo-*` / classes `.mo-*`
-  sur les écrans **quand on les retouche** (ou lors d'une passe QA), en normalisant
-  alors les corps divergents (fadeUp 10/16/20px, variantes de `pulse`) vers le
-  canonique. Jamais en masse à l'aveugle.
-- 🔎 **Phase 3 (avec QA visuel)** — remplacer les ~20 easings par les 4 rôles ;
-  c'est un **changement de ressenti**, donc validé à l'œil, pas en aveugle.
+- ✅ **Phase 2b (faite — convergence des keyframes, autorisée)** — normalisation
+  en masse vers le canonique (léger changement de ressenti assumé) :
+  - `fadeUp` (10/16/20px) → `mo-fade-up` (14px) sur contact, examples, features,
+    not-found, landing, QRStudio ;
+  - `pulse` (6 corps) → `mo-pulse` sur Analytics, Builder, Dashboard, profil,
+    QRStudio, settings, TemplatePreview, upgrade (le `q/[code]` **exclu** : HTML
+    autonome sans globals.css → garde son `pulse` local) ;
+  - `spin` (×28, identiques) → `mo-spin` sur les 26 fichiers ; **fix** : les
+    spinners de `PrintStudio` (qui n'avaient pas de déf locale) pointent désormais
+    sur le `mo-spin` global au lieu de dépendre d'une injection tierce.
+  - _Gotcha rencontré :_ un renommage mécanique `\bpulse\b` a touché une **clé
+    d'objet** `pulse:` (≠ animation) → toujours re-scanner les faux positifs
+    (property access / clés) et laisser `tsc`+build trancher.
+- 🔎 **Phase 3 (en cours, prudente)** — remplacer les easings par les 4 rôles :
+  on ne substitue que les **courbes exactement identiques** (iso) à un rôle ; les
+  courbes réellement distinctes restent (leur remap = changement de ressenti → QA).
 
 **Règle d'or de cette migration :** un renommage (déf + tous les usages du même
 fichier, via remplacement complet) est iso-comportement et sûr ; **normaliser un

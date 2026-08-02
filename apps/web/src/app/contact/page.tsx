@@ -135,10 +135,9 @@ export default function ContactPage() {
         .card-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
         @media(max-width:1000px){ .contact-grid{ grid-template-columns:1fr !important; } .card-row{ grid-template-columns:1fr !important; } }
         @media(max-width:640px){ .contact-hero{ padding:120px 24px 60px !important; } .contact-main{ padding:60px 24px 80px !important; } }
-        @keyframes fadeUp{ from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        .au1{animation:fadeUp 0.5s ease 0.1s both}
-        .au2{animation:fadeUp 0.5s ease 0.2s both}
-        .au3{animation:fadeUp 0.5s ease 0.35s both}
+        .au1{animation:mo-fade-up 0.5s ease 0.1s both}
+        .au2{animation:mo-fade-up 0.5s ease 0.2s both}
+        .au3{animation:mo-fade-up 0.5s ease 0.35s both}
         .faq-ans { overflow:hidden; transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s; }
         @media(prefers-reduced-motion:reduce){ *{ animation:none !important; transition:none !important; } }
       `}</style>

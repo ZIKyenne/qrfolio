@@ -268,7 +268,7 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
               </button>
               <button type="button" onClick={addRoute} disabled={!fDomain || !fPageId || saving}
                 style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:8, color:"#080808", fontSize:12, fontWeight:700, cursor:saving?"wait":"pointer", opacity:saving?0.7:1 }}>
-                {saving ? <><Loader size={12} style={{ animation:"spin 0.8s linear infinite" }}/> Ajout…</> : <><CheckCircle size={12}/> Ajouter la route</>}
+                {saving ? <><Loader size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Ajout…</> : <><CheckCircle size={12}/> Ajouter la route</>}
               </button>
             </div>
           </div>
@@ -278,7 +278,7 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
       {/* Routes existantes */}
       {loading ? (
         <div style={{ textAlign:"center", padding:"32px", color:MUTED }}>
-          <Loader size={18} color={MUTED} style={{ animation:"spin 0.8s linear infinite" }}/>
+          <Loader size={18} color={MUTED} style={{ animation:"mo-spin 0.8s linear infinite" }}/>
         </div>
       ) : displayDomains.length === 0 ? (
         <p style={{ color:MUTED, fontSize:12, textAlign:"center", padding:"20px 0" }}>
@@ -343,7 +343,7 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
                         {/* Supprimer */}
                         <button type="button" onClick={() => deleteRoute(route.id)} disabled={deleting === route.id}
                           style={{ width:26, height:26, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:deleting===route.id?"wait":"pointer", opacity:deleting===route.id?0.5:1, flexShrink:0 }}>
-                          {deleting === route.id ? <Loader size={11} style={{ animation:"spin 0.8s linear infinite" }}/> : <Trash2 size={11}/>}
+                          {deleting === route.id ? <Loader size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Trash2 size={11}/>}
                         </button>
                       </div>
                     ))}
@@ -355,7 +355,7 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
         </div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

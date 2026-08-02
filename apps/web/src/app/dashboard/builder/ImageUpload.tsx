@@ -94,7 +94,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
           style={{ border: `2px dashed ${dragOver ? G : "rgba(201,168,76,0.2)"}`, borderRadius: 10, padding: "24px 16px", textAlign: "center", cursor: "pointer", background: dragOver ? "rgba(201,168,76,0.05)" : "transparent", transition: "all 0.2s" }}>
           {uploading ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 24, height: 24, border: "2px solid rgba(201,168,76,0.2)", borderTopColor: G, borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+              <div style={{ width: 24, height: 24, border: "2px solid rgba(201,168,76,0.2)", borderTopColor: G, borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} />
               <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>Upload en cours...</p>
             </div>
           ) : (
@@ -154,7 +154,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
             <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 9 }}>
               <FolderOpen size={16} color={G} />
               <p style={{ margin: 0, color: "#F5F0E8", fontSize: 14, fontWeight: 700, flex: 1 }}>Ma bibliothèque{libAssets && libAssets.length > 0 ? <span style={{ color: MUTED, fontWeight: 400 }}> · {libAssets.length}</span> : ""}</p>
-              {libBusy && <div style={{ width: 15, height: 15, border: "2px solid rgba(201,168,76,0.25)", borderTopColor: G, borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />}
+              {libBusy && <div style={{ width: 15, height: 15, border: "2px solid rgba(201,168,76,0.25)", borderTopColor: G, borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} />}
               <button onClick={() => setLibOpen(false)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 28, height: 28 }}><X size={14} /></button>
             </div>
             {/* Recherche (#07) — visible des qu'il y a des images */}
@@ -212,7 +212,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
           </div>
         </div>
       )}
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

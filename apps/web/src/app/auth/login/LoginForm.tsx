@@ -28,7 +28,7 @@ function SubmitButton() {
       boxShadow: "0 6px 20px color-mix(in srgb, var(--accent, #C9A84C) 30%, transparent)",
     }}>
       {pending
-        ? <><Loader2 size={17} style={{ animation: "spin 0.7s linear infinite" }} /> Connexion…</>
+        ? <><Loader2 size={17} style={{ animation: "mo-spin 0.7s linear infinite" }} /> Connexion…</>
         : <><LogIn size={17} /> Se connecter</>}
     </button>
   )
@@ -40,7 +40,7 @@ export default function LoginForm() {
   useEffect(() => { setRedirectTo(new URLSearchParams(window.location.search).get("redirect") || "") }, [])
   return (
     <form action={signIn} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{``}</style>
       {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
       <div>
         <label htmlFor="email" style={LABEL}>Email</label>

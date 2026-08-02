@@ -1078,7 +1078,7 @@
                     style={{ width: "100%", background: pageStatus==="published" ? "rgba(57,255,143,0.1)" : `linear-gradient(90deg,${G},#b8953f)`, border: pageStatus==="published" ? "1px solid rgba(57,255,143,0.3)" : "none", borderRadius: 12, padding: "14px", color: pageStatus==="published" ? "var(--success)" : "#080808", fontSize: 14, fontWeight: 700, cursor: pageStatus==="published" ? "default" : "pointer", marginBottom: pageSlug ? 10 : 0, boxShadow: pageStatus==="published" ? "none" : "0 4px 20px rgba(201,168,76,0.3)" }}>
                     {publishing ? (
                       <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
-                        <span style={{display:"inline-block",width:14,height:14,border:"2px solid #08080880",borderTopColor:"#080808",borderRadius:"50%",animation:"spin 0.7s linear infinite"}} />
+                        <span style={{display:"inline-block",width:14,height:14,border:"2px solid #08080880",borderTopColor:"#080808",borderRadius:"50%",animation:"mo-spin 0.7s linear infinite"}} />
                         Publication…
                       </span>
                     ) : publishSuccess ? (
@@ -1818,7 +1818,7 @@
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <span style={{ fontSize: 12, color: "#F5F0E8", fontWeight: 600 }}>Aperçu live</span>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", animation: "pulse 2s infinite" }} />
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", animation: "mo-pulse 2s infinite" }} />
                   </div>
                   {pageSlug && <a href={`/${pageSlug}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: "5px 10px", color: G, textDecoration: "none", fontSize: 10, fontWeight: 700 }}><ExternalLink size={10} /> Voir en direct</a>}
                 </div>
@@ -2337,7 +2337,7 @@
                   <button onClick={generateWithAI} disabled={aiGenLoading}
                     style={{ flexShrink: 0, alignSelf: "stretch", minHeight: isMobile ? 48 : undefined, minWidth: isMobile ? undefined : 120, padding: "0 18px", borderRadius: 10, border: "none", cursor: aiGenLoading ? "wait" : "pointer", background: aiGenLoading ? "rgba(201,168,76,0.4)" : `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: aiGenLoading ? "none" : "0 4px 14px rgba(201,168,76,0.3)" }}>
                     {aiGenLoading
-                      ? <><span style={{ width: 13, height: 13, border: "2px solid rgba(8,8,8,0.3)", borderTopColor: "#080808", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> Génération…</>
+                      ? <><span style={{ width: 13, height: 13, border: "2px solid rgba(8,8,8,0.3)", borderTopColor: "#080808", borderRadius: "50%", animation: "mo-spin 0.7s linear infinite" }} /> Génération…</>
                       : <>✨ Générer ma page</>}
                   </button>
                 </div>
@@ -2395,10 +2395,8 @@
         <style>{`
           @keyframes popoverIn { from { opacity: 0; transform: translateX(-4px) scale(0.97) } to { opacity: 1; transform: translateX(0) scale(1) } }
           @keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
-          @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
           @keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
           @keyframes auroraShift{0%{background-position:0% 0%}33%{background-position:100% 0%}66%{background-position:50% 100%}100%{background-position:0% 0%}}
-          @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
           .iphone-scroll::-webkit-scrollbar{display:none}
           .block-handle:active{cursor:grabbing}
           .panel-collapse{transition:width 0.25s cubic-bezier(0.4,0,0.2,1)}

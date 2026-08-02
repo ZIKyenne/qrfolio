@@ -256,7 +256,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
               </button>
               <button type="button" onClick={save} disabled={!fTo || saving}
                 style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 20px", background:fTo?"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))":"rgba(255,255,255,0.05)", border:"none", borderRadius:9, color:fTo?"#080808":MUTED, fontSize:13, fontWeight:700, cursor:fTo&&!saving?"pointer":"not-allowed", opacity:saving?0.7:1 }}>
-                {saving ? <><Loader size={13} style={{ animation:"spin 0.8s linear infinite" }}/> Enregistrement…</> : <><CheckCircle size={13}/> {editId ? "Modifier" : "Créer la redirection"}</>}
+                {saving ? <><Loader size={13} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Enregistrement…</> : <><CheckCircle size={13}/> {editId ? "Modifier" : "Créer la redirection"}</>}
               </button>
             </div>
           </div>
@@ -265,7 +265,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
         {/* Liste */}
         {loading ? (
           <div style={{ textAlign:"center", padding:"60px", color:MUTED }}>
-            <Loader size={22} color={MUTED} style={{ animation:"spin 0.8s linear infinite" }}/>
+            <Loader size={22} color={MUTED} style={{ animation:"mo-spin 0.8s linear infinite" }}/>
           </div>
         ) : redirects.length === 0 ? (
           <div style={{ textAlign:"center", padding:"56px 20px", background:"#0F0E0B", border:"1px dashed rgba(255,255,255,0.1)", borderRadius:14 }}>
@@ -313,7 +313,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
                     <div style={{ display:"flex", gap:5, flexShrink:0 }}>
                       <button type="button" onClick={() => toggle(r)} disabled={toggling === r.id}
                         style={{ width:28, height:28, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:toggling===r.id?"wait":"pointer", color:r.enabled?"var(--success)":MUTED }}>
-                        {toggling === r.id ? <Loader size={12} style={{ animation:"spin 0.8s linear infinite" }}/> : r.enabled ? <ToggleRight size={13}/> : <ToggleLeft size={13}/>}
+                        {toggling === r.id ? <Loader size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : r.enabled ? <ToggleRight size={13}/> : <ToggleLeft size={13}/>}
                       </button>
                       <button type="button" onClick={() => openEdit(r)}
                         style={{ width:28, height:28, background:"color-mix(in srgb, var(--accent) 8%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 15%, transparent)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:G }}>
@@ -325,7 +325,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
                       </a>
                       <button type="button" onClick={() => del(r.id)} disabled={deleting === r.id}
                         style={{ width:28, height:28, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:deleting===r.id?"wait":"pointer", color:"var(--danger)", opacity:deleting===r.id?0.5:1 }}>
-                        {deleting === r.id ? <Loader size={12} style={{ animation:"spin 0.8s linear infinite" }}/> : <Trash2 size={12}/>}
+                        {deleting === r.id ? <Loader size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Trash2 size={12}/>}
                       </button>
                     </div>
                   </div>
@@ -363,7 +363,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
         </div>
       </div>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

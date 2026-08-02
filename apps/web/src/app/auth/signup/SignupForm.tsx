@@ -28,7 +28,7 @@ function SubmitButton() {
       boxShadow: "0 6px 20px color-mix(in srgb, var(--accent, #C9A84C) 30%, transparent)",
     }}>
       {pending
-        ? <><Loader2 size={17} style={{ animation: "spin 0.7s linear infinite" }} /> Création…</>
+        ? <><Loader2 size={17} style={{ animation: "mo-spin 0.7s linear infinite" }} /> Création…</>
         : <>Créer mon compte <ArrowRight size={17} /></>}
     </button>
   )
@@ -38,7 +38,7 @@ export default function SignupForm({ refCode }: { refCode?: string }) {
   const [show, setShow] = useState(false)
   return (
     <form action={signUp} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{``}</style>
       {refCode && <input type="hidden" name="ref" value={refCode} />}
       <div>
         <label htmlFor="full_name" style={LABEL}>Nom complet</label>

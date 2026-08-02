@@ -333,10 +333,9 @@ export default function ExamplesPage() {
         .filter-btn:focus-visible { outline:2px solid rgba(201,168,76,0.5); outline-offset:3px; }
         @media(max-width:1000px){ .ex-grid{ grid-template-columns:repeat(2,1fr)!important; } }
         @media(max-width:640px){ .ex-grid{ grid-template-columns:1fr!important; } .ex-hero{ padding:120px 24px 60px!important; } .ex-main{ padding:0 24px 80px!important; } .filters-row{ flex-direction:column!important; gap:12px!important; } }
-        @keyframes fadeUp{ from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        .au1{ animation:fadeUp 0.5s ease 0.1s both; }
-        .au2{ animation:fadeUp 0.5s ease 0.25s both; }
-        .au3{ animation:fadeUp 0.5s ease 0.4s both; }
+        .au1{ animation:mo-fade-up 0.5s ease 0.1s both; }
+        .au2{ animation:mo-fade-up 0.5s ease 0.25s both; }
+        .au3{ animation:mo-fade-up 0.5s ease 0.4s both; }
         @media(prefers-reduced-motion:reduce){ *{ animation:none!important; } }
       `}</style>
 

@@ -4527,13 +4527,13 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
           </button>
 
           <button type="button" onClick={() => save()} disabled={saving} style={topBtn(false)}>
-            {saving ? <Loader2 size={13} style={{ animation: "spin 0.8s linear infinite" }} />
+            {saving ? <Loader2 size={13} style={{ animation: "mo-spin 0.8s linear infinite" }} />
               : saved ? <Check size={13} color="var(--success)" /> : <Save size={13} />}
             {saved ? "Enregistré" : "Enregistrer"}
           </button>
           <div style={{ position: "relative" }}>
             <button type="button" onClick={() => setExpOpen(v => !v)} disabled={exporting} style={topBtn(true)}>
-              {exporting ? <Loader2 size={13} style={{ animation: "spin 0.8s linear infinite" }} /> : <Download size={13} />} Exporter
+              {exporting ? <Loader2 size={13} style={{ animation: "mo-spin 0.8s linear infinite" }} /> : <Download size={13} />} Exporter
             </button>
             {expOpen && (
               <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, width: 232, background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.12)", borderRadius: 12, padding: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.16)", zIndex: 60 }}>
@@ -4892,7 +4892,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
               </div>
             </div>
             <div className="qr-scroll" style={{ flex: 1, overflowY: "auto", padding: "8px 10px 16px" }}>
-              {photoLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, color: pMuted, fontSize: 12, padding: "12px 2px" }}><Loader2 size={14} style={{ animation: "spin 0.8s linear infinite" }} /> Recherche…</div>}
+              {photoLoading && <div style={{ display: "flex", alignItems: "center", gap: 8, color: pMuted, fontSize: 12, padding: "12px 2px" }}><Loader2 size={14} style={{ animation: "mo-spin 0.8s linear infinite" }} /> Recherche…</div>}
               {!photoLoading && photoErr && <p style={{ color: pMuted, fontSize: 11, lineHeight: 1.5, padding: "8px 2px" }}>{photoErr}</p>}
               {!photoLoading && !photoErr && !photoResults.length && <p style={{ color: pMuted, fontSize: 11, lineHeight: 1.5, padding: "8px 2px" }}>Cherchez une ambiance (métier, matière, lieu…) et cliquez une photo pour l'ajouter.</p>}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
@@ -5281,7 +5281,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         <div ref={scrollRef} onContextMenu={onCanvasContext} style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "safe center", justifyContent: "safe center", padding: landscapeMobile ? `16px 16px ${anyBottomSheet ? (regOpen ? "60vh" : "54vh") : "92px"}` : 16, background: landscapeMobile ? "#0C0C0E" : "#E5E8ED", position: "relative", transition: "padding .22s cubic-bezier(.2,.8,.2,1)" }}>
           {loading && (
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: pMuted, zIndex: 5, pointerEvents: "none" }}>
-              <Loader2 size={18} style={{ animation: "spin 0.8s linear infinite" }} /> Chargement…
+              <Loader2 size={18} style={{ animation: "mo-spin 0.8s linear infinite" }} /> Chargement…
             </div>
           )}
           <div style={{ margin: "auto", boxShadow: "0 1px 3px rgba(0,0,0,0.10), 0 12px 32px rgba(0,0,0,0.12)", borderRadius: 4, overflow: "hidden", flexShrink: 0 }}>
@@ -5894,7 +5894,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
                     <button key={d.k} type="button" disabled={qrBusy} onClick={() => applyQrRender({ dotStyle: d.k })} title={`Style : ${d.label}`}
                       style={{ ...tb, fontSize: 13, color: qrDot === d.k ? G : INK, opacity: qrBusy ? 0.5 : 1 }}>{d.icon}</button>
                   ))}
-                  {qrBusy && <Loader2 size={13} style={{ animation: "spin 0.8s linear infinite", color: G }} />}
+                  {qrBusy && <Loader2 size={13} style={{ animation: "mo-spin 0.8s linear infinite", color: G }} />}
                   <span style={{ width: 1, height: 20, background: "rgba(0,0,0,0.12)" }} />
                   <button type="button" style={tb} title="Réduire le QR" onClick={() => scaleQrBy(0.9)}>QR−</button>
                   <button type="button" style={tb} title="Agrandir le QR" onClick={() => scaleQrBy(1.1)}>QR+</button>
@@ -6031,7 +6031,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
             </>
           )}
 
-          {starting && <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 8, color: G, fontSize: 13, fontWeight: 600 }}><Loader2 size={15} style={{ animation: "spin 0.8s linear infinite" }} /> Création de votre design…</div>}
+          {starting && <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 8, color: G, fontSize: 13, fontWeight: 600 }}><Loader2 size={15} style={{ animation: "mo-spin 0.8s linear infinite" }} /> Création de votre design…</div>}
         </div>
       )}
 

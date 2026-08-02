@@ -128,7 +128,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
             {isBusiness && !isPrimary && rec.verified && (
               <button type="button" onClick={() => handleSetPrimary(rec.domain)} disabled={settingPrimary === rec.domain}
                 style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", background:"color-mix(in srgb, var(--accent) 8%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:8, color:G, fontSize:11, fontWeight:600, cursor:settingPrimary===rec.domain?"wait":"pointer", opacity:settingPrimary===rec.domain?0.6:1 }}>
-                {settingPrimary === rec.domain ? <Loader size={11} style={{ animation:"spin 0.8s linear infinite" }}/> : <Star size={11}/>}
+                {settingPrimary === rec.domain ? <Loader size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Star size={11}/>}
                 Définir principal
               </button>
             )}
@@ -136,7 +136,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
             {/* Supprimer */}
             <button type="button" onClick={() => handleDelete(rec.id)} disabled={deleting === rec.id}
               style={{ width:30, height:30, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:deleting===rec.id?"wait":"pointer", opacity:deleting===rec.id?0.5:1 }}>
-              {deleting === rec.id ? <Loader size={12} style={{ animation:"spin 0.8s linear infinite" }}/> : <Trash2 size={12}/>}
+              {deleting === rec.id ? <Loader size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Trash2 size={12}/>}
             </button>
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
         </div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

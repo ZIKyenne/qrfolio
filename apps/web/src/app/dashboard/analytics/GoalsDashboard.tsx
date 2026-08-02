@@ -313,7 +313,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
             </button>
             <button type="button" onClick={saveGoal} disabled={!fName || saving}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 20px", background: fName ? "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" : "rgba(255,255,255,0.05)", border: "none", borderRadius: 9, color: fName ? "#080808" : MUTED, fontSize: 13, fontWeight: 700, cursor: fName ? "pointer" : "not-allowed", opacity: saving ? 0.7 : 1 }}>
-              {saving ? <><Loader size={13} style={{ animation: "spin 0.8s linear infinite" }} /> Création...</> : <><CheckCircle size={13} /> Créer l'objectif</>}
+              {saving ? <><Loader size={13} style={{ animation: "mo-spin 0.8s linear infinite" }} /> Création...</> : <><CheckCircle size={13} /> Créer l'objectif</>}
             </button>
           </div>
         </div>
@@ -322,7 +322,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
       {/* Liste des objectifs */}
       {loading ? (
         <div style={{ textAlign: "center", padding: "60px 20px", color: MUTED }}>
-          <Loader size={24} color={MUTED} style={{ animation: "spin 0.8s linear infinite" }} />
+          <Loader size={24} color={MUTED} style={{ animation: "mo-spin 0.8s linear infinite" }} />
         </div>
       ) : goals.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px 20px", background: BG, border: "1px dashed rgba(255,255,255,0.1)", borderRadius: 16 }}>
@@ -365,7 +365,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
 
                   <button type="button" onClick={() => deleteGoal(goal.id)} disabled={deleting === goal.id}
                     style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", opacity: deleting === goal.id ? 0.5 : 1, flexShrink: 0, padding: 4 }}>
-                    {deleting === goal.id ? <Loader size={14} style={{ animation: "spin 0.8s linear infinite" }} /> : <Trash2 size={14} />}
+                    {deleting === goal.id ? <Loader size={14} style={{ animation: "mo-spin 0.8s linear infinite" }} /> : <Trash2 size={14} />}
                   </button>
                 </div>
 
@@ -423,7 +423,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
         </div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

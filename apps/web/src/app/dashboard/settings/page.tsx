@@ -171,7 +171,7 @@ export default function SettingsPage() {
 
   return (
     <div style={{ minHeight: "100dvh", background: "#080808", padding: "32px 28px", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}} input:focus,textarea:focus{border-color:color-mix(in srgb, var(--accent) 50%, transparent)!important;background:#111009!important}`}</style>
+      <style>{`input:focus,textarea:focus{border-color:color-mix(in srgb, var(--accent) 50%, transparent)!important;background:#111009!important}`}</style>
 
       {/* Particules dorées en fond (comble le vide, comme la landing) */}
       <Particles />
@@ -316,7 +316,7 @@ export default function SettingsPage() {
             <button onClick={exportData} disabled={exporting}
               style={{ display: "flex", alignItems: "center", gap: 8, background: "color-mix(in srgb, var(--accent) 7%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)", borderRadius: 10, padding: "12px 18px", color: G, fontSize: 14, fontWeight: 600, cursor: exporting ? "not-allowed" : "pointer", width: "fit-content" }}>
               {exporting
-                ? <><Loader2 size={15} style={{ animation: "spin 0.7s linear infinite" }} /> Préparation…</>
+                ? <><Loader2 size={15} style={{ animation: "mo-spin 0.7s linear infinite" }} /> Préparation…</>
                 : <><Download size={15} /> Télécharger mes données</>}
             </button>
           </div>
@@ -326,7 +326,7 @@ export default function SettingsPage() {
         <Section title="Session" subtitle="Connexion et déconnexion" icon={<LogOut size={16} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--success)", animation: "pulse 2s infinite" }} />
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--success)", animation: "mo-pulse 2s infinite" }} />
               <div style={{ flex: 1 }}>
                 <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: 0 }}>Session active</p>
                 <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{profile?.email}</p>
@@ -338,7 +338,7 @@ export default function SettingsPage() {
               <LogOut size={15} /> Se déconnecter
             </button>
           </div>
-          <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+          <style>{``}</style>
         </Section>
 
         {/* Danger zone — isolee en fin de page, davantage d'espace (#05) */}
@@ -371,7 +371,7 @@ export default function SettingsPage() {
             <button onClick={deleteAccount} disabled={deleteConfirm !== profile?.email || deleting}
               style={{ display: "flex", alignItems: "center", gap: 8, background: deleteConfirm === profile?.email ? "rgba(239,68,68,0.15)" : "rgba(239,68,68,0.05)", border: `1px solid ${deleteConfirm === profile?.email ? "rgba(239,68,68,0.4)" : "rgba(239,68,68,0.15)"}`, borderRadius: 10, padding: "12px 18px", color: deleteConfirm === profile?.email ? "#EF4444" : "rgba(239,68,68,0.4)", fontSize: 14, fontWeight: 700, cursor: deleteConfirm === profile?.email && !deleting ? "pointer" : "not-allowed", width: "fit-content", transition: "all 0.2s" }}>
               {deleting
-                ? <><Loader2 size={15} style={{ animation: "spin 0.7s linear infinite" }} /> Suppression…</>
+                ? <><Loader2 size={15} style={{ animation: "mo-spin 0.7s linear infinite" }} /> Suppression…</>
                 : <><Trash2 size={15} /> Supprimer définitivement mon compte</>}
             </button>
           </div>

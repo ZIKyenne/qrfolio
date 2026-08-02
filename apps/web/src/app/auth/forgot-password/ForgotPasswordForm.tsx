@@ -63,7 +63,7 @@ export default function ForgotPasswordForm() {
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{``}</style>
       {error && (
         <div role="alert" style={{ background: "var(--danger-bg)", border: "1px solid var(--danger-border)", borderRadius: 11, padding: "11px 14px", fontSize: 13.5, color: "var(--danger)", lineHeight: 1.45 }}>
           {error}
@@ -84,7 +84,7 @@ export default function ForgotPasswordForm() {
         boxShadow: "0 6px 20px color-mix(in srgb, var(--accent, #C9A84C) 30%, transparent)",
       }}>
         {pending
-          ? <><Loader2 size={17} style={{ animation: "spin 0.7s linear infinite" }} /> Envoi…</>
+          ? <><Loader2 size={17} style={{ animation: "mo-spin 0.7s linear infinite" }} /> Envoi…</>
           : <><Mail size={17} /> Envoyer le lien</>}
       </button>
 

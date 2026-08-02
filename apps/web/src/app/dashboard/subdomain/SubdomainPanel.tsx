@@ -125,7 +125,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
 
   // ── Indicateur disponibilité ──────────────────────────────────────────────
   const statusIndicator = () => {
-    if (status === "checking") return <Loader size={14} color={MUTED} style={{ animation:"spin 0.7s linear infinite" }}/>
+    if (status === "checking") return <Loader size={14} color={MUTED} style={{ animation:"mo-spin 0.7s linear infinite" }}/>
     if (status === "available") return <CheckCircle size={14} color="var(--success)"/>
     if (status === "own")       return <CheckCircle size={14} color={G}/>
     if (status === "taken" || status === "invalid") return <X size={14} color="var(--danger)"/>
@@ -187,7 +187,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
                 </button>
                 <button type="button" onClick={release} disabled={deleting}
                   style={{ width:30, height:30, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:deleting?"wait":"pointer", opacity:deleting?0.6:1 }}>
-                  {deleting ? <Loader size={13} style={{ animation:"spin 0.7s linear infinite" }}/> : <Trash2 size={13}/>}
+                  {deleting ? <Loader size={13} style={{ animation:"mo-spin 0.7s linear infinite" }}/> : <Trash2 size={13}/>}
                 </button>
               </div>
             </div>
@@ -299,7 +299,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
               disabled={status !== "available" || saving}
               style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px 20px", background: status==="available" ? "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" : "rgba(255,255,255,0.05)", border:"none", borderRadius:9, color: status==="available" ? "#080808" : MUTED, fontSize:13, fontWeight:700, cursor: status==="available" && !saving ? "pointer" : "not-allowed", opacity:saving?0.7:1, transition:"all 0.15s" }}>
               {saving
-                ? <><Loader size={13} style={{ animation:"spin 0.7s linear infinite" }}/> Réservation…</>
+                ? <><Loader size={13} style={{ animation:"mo-spin 0.7s linear infinite" }}/> Réservation…</>
                 : <><Check size={13}/> {currentUsername ? "Modifier le sous-domaine" : "Réserver ce sous-domaine"}</>
               }
             </button>
@@ -312,7 +312,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
         </div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

@@ -156,8 +156,6 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
     <div className="analytics-root" style={{ minHeight: "100dvh", background: "radial-gradient(1100px 520px at 75% -8%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%)", padding: "22px 24px 44px", fontFamily: "DM Sans, sans-serif", position: "relative", overflowX: "clip", maxWidth: "100%", boxSizing: "border-box" as const }}>
       <Particles />
       <style>{`
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
         @keyframes ring{0%{box-shadow:0 0 0 0 rgba(57,255,143,0.5)}70%{box-shadow:0 0 0 8px rgba(57,255,143,0)}100%{box-shadow:0 0 0 0 rgba(57,255,143,0)}}
         .az{animation:mo-fade-up .5s cubic-bezier(.2,.8,.2,1) backwards}
         .az-card{transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s, border-color .2s}
@@ -185,7 +183,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
               {/* Badge EN DIRECT masque tant qu'aucune donnee (audit #04 : pas de "live" trompeur) */}
               {!noData && (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(57,255,143,0.1)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 999, padding: "3px 10px" }}>
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--success)", animation: "pulse 1.8s ease-in-out infinite" }} />
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--success)", animation: "mo-pulse 1.8s ease-in-out infinite" }} />
                   <span style={{ color: "var(--success)", fontSize: 11, fontWeight: 800, letterSpacing: 0.5 }}>EN DIRECT</span>
                 </span>
               )}
@@ -280,7 +278,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
           <div className="az-card" style={{ background: "linear-gradient(135deg, color-mix(in srgb,var(--success) 11%,#0E0D09), #0E0D09)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 14, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: -16, right: -16, width: 80, height: 80, borderRadius: "50%", background: "radial-gradient(circle,rgba(57,255,143,0.16),transparent 70%)" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--success)", animation: live.active ? "ring 1.6s infinite" : "pulse 2s infinite" }} />
+              <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--success)", animation: live.active ? "ring 1.6s infinite" : "mo-pulse 2s infinite" }} />
               <span style={{ color: "var(--success)", fontSize: 11.5, fontWeight: 700 }}>Visiteurs actifs</span>
             </div>
             <p style={{ color: "#F8F4EC", fontSize: 38, fontWeight: 700, margin: 0, fontFamily: "Fraunces, serif", lineHeight: 1 }}>{live.active}</p>

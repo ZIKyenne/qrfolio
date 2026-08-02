@@ -96,12 +96,11 @@ export default function NotFound() {
         body { background:${BG}; }
         @keyframes float404 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
         @keyframes glow404  { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.1)} }
-        @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        .au1{animation:fadeUp 0.5s ease 0.1s both}
-        .au2{animation:fadeUp 0.5s ease 0.25s both}
-        .au3{animation:fadeUp 0.5s ease 0.4s both}
-        .au4{animation:fadeUp 0.5s ease 0.55s both}
-        .au5{animation:fadeUp 0.5s ease 0.7s both}
+        .au1{animation:mo-fade-up 0.5s ease 0.1s both}
+        .au2{animation:mo-fade-up 0.5s ease 0.25s both}
+        .au3{animation:mo-fade-up 0.5s ease 0.4s both}
+        .au4{animation:mo-fade-up 0.5s ease 0.55s both}
+        .au5{animation:mo-fade-up 0.5s ease 0.7s both}
         .ql-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
         .ql-link { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:100px; border:1px solid rgba(255,255,255,0.1); color:rgba(138,132,120,0.75); text-decoration:none; font-size:13px; transition:all 0.2s; }
         .ql-link:hover { border-color:rgba(201,168,76,0.4); color:#F5F0E8; background:rgba(201,168,76,0.06); }

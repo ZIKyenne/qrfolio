@@ -2717,7 +2717,7 @@ export default function TemplatePreviewModal({
 
           {/* Label sous l'iPhone */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, color: MUTED, fontSize: 11 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", animation: "pulse 2s ease-in-out infinite" }} />
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", animation: "mo-pulse 2s ease-in-out infinite" }} />
             Aperçu en temps réel
           </div>
         </div>
@@ -2824,7 +2824,7 @@ export default function TemplatePreviewModal({
             <button type="button" onClick={onUse} disabled={!!isCreating}
               style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", background: canUse ? "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" : "rgba(255,255,255,0.05)", border: canUse ? "none" : "1px solid rgba(255,255,255,0.08)", borderRadius: 11, color: canUse ? "#080808" : MUTED, fontSize: 13, fontWeight: 700, cursor: isCreating ? "wait" : canUse ? "pointer" : "not-allowed", opacity: isCreating ? 0.7 : 1, transition: "all 0.15s" }}>
               {isCreating
-                ? <><div style={{ width: 12, height: 12, border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Création...</>
+                ? <><div style={{ width: 12, height: 12, border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> Création...</>
                 : canUse
                   ? <><ArrowRight size={14} /> Utiliser ce template</>
                   : <><Lock size={12} /> Plan {PLAN_LABELS[template.plan]} requis</>
@@ -2836,8 +2836,6 @@ export default function TemplatePreviewModal({
 
       <style>{`
         @keyframes tplFadeIn { from { opacity: 0; transform: scale(0.97) } to { opacity: 1; transform: scale(1) } }
-        @keyframes spin { to { transform: rotate(360deg) } }
-        @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
         .preview-scroll::-webkit-scrollbar { display: none }
       `}</style>
     </div>

@@ -96,7 +96,7 @@ export default function SslBadge({ domain, verified }: Props) {
       <button type="button" onClick={fetchSsl} disabled={loading}
         style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"2px 8px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:6, color:MUTED, fontSize:10, fontWeight:600, cursor:"pointer" }}>
         {loading
-          ? <Loader size={11} style={{ animation:"spin 0.8s linear infinite" }}/>
+          ? <Loader size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/>
           : <Shield size={11}/>
         }
         {loading ? "Vérification…" : "Vérifier SSL"}
@@ -172,13 +172,13 @@ export default function SslBadge({ domain, verified }: Props) {
           {/* Bouton re-vérifier */}
           <button type="button" onClick={() => { fetchSsl() }}
             style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"7px 12px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, color:MUTED, fontSize:11, cursor:"pointer", justifyContent:"center" }}>
-            {loading ? <Loader size={11} style={{ animation:"spin 0.8s linear infinite" }}/> : <RefreshCw size={11}/>}
+            {loading ? <Loader size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <RefreshCw size={11}/>}
             Actualiser
           </button>
         </div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      <style>{``}</style>
     </div>
   )
 }

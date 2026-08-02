@@ -9,6 +9,8 @@
   import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
   import { PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, type PageTemplate } from "./page-templates"
   import { useUndoRedo, useResize, reorderArray } from "./builderHooks"
+  import { scoreBlock } from "./builderSearch"
+  import { CommandPalette, type PaletteCommand } from "./CommandPalette"
   import { G, MUTED } from "./builderConstants"
   import { BlockPreview } from "./builderPreview"
   // Mémoïsé : lors d'une frappe, seul le bloc édité change de référence (setBlocks
@@ -79,6 +81,7 @@
     // Glisser-déposer (Phase 2 §2.14) : index du bloc glissé + position d'insertion.
     const [dragIdx, setDragIdx] = useState<number | null>(null)
     const [dropBefore, setDropBefore] = useState<number | null>(null)
+    const [paletteOpen, setPaletteOpen] = useState(false) // palette de commandes (Cmd/Ctrl+K)
     // Refs synchronisées : lecture fraîche de la sélection / des blocs depuis le
     // handler clavier global (deps []), sans re-souscrire l'écouteur à chaque frappe.
     const blocksKbRef = useRef(blocks)
@@ -238,6 +241,13 @@
 
       const handler = (e: KeyboardEvent) => {
         const ctrl = e.ctrlKey || e.metaKey // Ctrl Windows / Cmd Mac
+
+        // Ctrl/Cmd+K — Palette de commandes (fonctionne même en cours de saisie)
+        if (ctrl && (e.key === "k" || e.key === "K")) {
+          e.preventDefault()
+          setPaletteOpen(o => !o)
+          return
+        }
 
         // Ctrl+Z — Undo
         if (ctrl && !e.shiftKey && (e.key === "z" || e.key === "Z") && !isEditing(e)) {
@@ -806,48 +816,8 @@
       setAiLoading(false)
     }
 
-    // ── Synonymes et recherche enrichie ───────────────────────────────────────
-    const SYNONYMS: Record<string, string[]> = {
-      "téléphone": ["appel","phone","tel","call"],
-      "mail": ["email","courriel","message","@"],
-      "maps": ["adresse","localisation","lieu","carte","direction","itinéraire"],
-      "avis": ["témoignage","review","note","étoile","recommandation","client"],
-      "musique": ["spotify","deezer","apple music","soundcloud","chanson","album","playlist","artiste"],
-      "restaurant": ["menu","carte","réservation","plat","cuisine","table"],
-      "vente": ["produit","tarif","prix","service","boutique","achat","paiement"],
-      "photo": ["image","galerie","picture","visuel","cover","bannière"],
-      "vidéo": ["youtube","tiktok","clip","stream","twitch","live","vimeo"],
-      "réseau": ["instagram","facebook","twitter","linkedin","snapchat","social"],
-      "événement": ["concert","festival","soirée","date","billet","ticket"],
-      "contact": ["formulaire","email","téléphone","whatsapp","message"],
-      "lien": ["bouton","cta","url","action","click"],
-      "profil": ["bio","présentation","avatar","identité","nom"],
-      "podcast": ["audio","son","écoute","radio","épisode"],
-      "stats": ["statistique","chiffre","nombre","compteur"],
-      "qr": ["qr code","scan","flash"],
-    }
-
-    function searchScore(type: string, def: {label:string;description:string;category:string}, q: string): number {
-      const query = q.toLowerCase().trim()
-      if (!query) return 0
-      const label = def.label.toLowerCase()
-      const desc = def.description.toLowerCase()
-      const cat = def.category.toLowerCase()
-      if (label === query) return 100
-      if (label.startsWith(query)) return 90
-      if (label.includes(query)) return 80
-      if (desc.includes(query)) return 60
-      if (type.toLowerCase().includes(query)) return 50
-      if (cat.includes(query)) return 40
-      for (const [syn, aliases] of Object.entries(SYNONYMS)) {
-        const allTerms = [syn, ...aliases]
-        if (allTerms.some(t => query.includes(t) || t.includes(query))) {
-          if (allTerms.some(t => label.includes(t))) return 35
-          if (allTerms.some(t => desc.includes(t))) return 25
-        }
-      }
-      return 0
-    }
+    // ── Recherche enrichie (moteur pur partagé : builderSearch.ts) ─────────────
+    const searchScore = scoreBlock
 
     const filteredBlocks = (() => {
       if (!search) {
@@ -1021,6 +991,7 @@
             <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "#161616", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 12, padding: "12px 14px", zIndex: 200, opacity: 0, transition: "opacity 0.15s", pointerEvents: "none", minWidth: 200, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
               <p style={{ color: MUTED, fontSize: 9, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 8px" }}>Raccourcis</p>
               {[
+                ["Ctrl+K", "Palette de commandes"],
                 ["Ctrl+Z", "Annuler"],
                 ["Ctrl+⇧+Z", "Rétablir"],
                 ["Ctrl+B", "Bibliothèque"],
@@ -2470,6 +2441,24 @@
             </div>
           </div>
         )}
+
+        <CommandPalette
+          open={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+          blockDefs={BLOCK_DEFS}
+          onInsertBlock={(t) => addBlock(t)}
+          commands={[
+            { id: "undo", label: "Annuler", hint: "Ctrl+Z", keywords: "undo revenir historique", icon: "↶", run: () => { const p = undoRedo.undo(); if (p) applySnapshot(p) } },
+            { id: "redo", label: "Rétablir", hint: "Ctrl+⇧+Z", keywords: "redo refaire", icon: "↷", run: () => { const n = undoRedo.redo(); if (n) applySnapshot(n) } },
+            { id: "save", label: "Enregistrer maintenant", hint: "Ctrl+S", keywords: "sauvegarder save", icon: "💾", run: saveNow },
+            { id: "publish", label: "Publier la page", keywords: "publier ligne", icon: "🚀", run: () => { void handlePublish() } },
+            { id: "preview", label: "Aperçu plein écran", hint: "Ctrl+P", keywords: "prévisualiser voir", icon: "👁", run: () => setPreview(true) },
+            { id: "templates", label: "Modèles de page", keywords: "template modèle gabarit", icon: "✨", run: () => setShowTemplates(true) },
+            { id: "theme", label: "Ouvrir le thème", keywords: "thème couleur police design", icon: "🎨", run: () => setRightTab("theme") },
+            { id: "focus", label: "Mode Focus", hint: "Ctrl+F", keywords: "focus concentration", icon: "◱", run: toggleFocus },
+            { id: "expert", label: expertMode ? "Passer en mode Simple" : "Passer en mode Expert", keywords: "simple expert avancé", icon: "⚙", run: () => setExpertMode(v => !v) },
+          ] as PaletteCommand[]}
+        />
 
         <style>{`
           @keyframes popoverIn { from { opacity: 0; transform: translateX(-4px) scale(0.97) } to { opacity: 1; transform: translateX(0) scale(1) } }

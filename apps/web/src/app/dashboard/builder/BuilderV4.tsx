@@ -1,6 +1,6 @@
   "use client"
 
-  import { useState, useRef, useEffect, useCallback, Component } from "react"
+  import { useState, useRef, useEffect, useCallback, Component, memo } from "react"
   import {
     X, ChevronUp, ChevronDown, Trash2,
     Eye, Plus, Settings, Check, Search, Copy, EyeOff,
@@ -11,6 +11,10 @@
   import { useUndoRedo, useResize } from "./builderHooks"
   import { G, MUTED } from "./builderConstants"
   import { BlockPreview } from "./builderPreview"
+  // Mémoïsé : lors d'une frappe, seul le bloc édité change de référence (setBlocks
+  // via .map préserve les autres) -> les blocs inchangés ne re-rendent plus.
+  // Props stables (block/theme/dayMode, aucun callback) -> aucun risque de rendu périmé.
+  const MemoBlockPreview = memo(BlockPreview)
   import { EditPanel, ThemePanel, Segmented, STYLE_COPY_KEYS } from "./builderPanels"
   import { useIsMobile } from "@/lib/useIsMobile"
   import { useToast } from "@/components/Toast"
@@ -1764,7 +1768,7 @@
                     )}
 
                     <div style={{ overflow: "hidden", minHeight: 36, position: "relative", zIndex: 2, ...blockDecoration(block.content, theme).style }}>
-                      <PreviewBoundary><BlockPreview block={block} theme={theme} dayMode={dayMode} /></PreviewBoundary>
+                      <PreviewBoundary><MemoBlockPreview block={block} theme={theme} dayMode={dayMode} /></PreviewBoundary>
                     </div>
                   </div>
                 )
@@ -1919,7 +1923,7 @@
                               <div key={b.id} onClick={() => { setSelectedId(b.id); setRightTab("edit") }} style={{ cursor: "pointer", ...blockDecoration(b.content, theme).style }}
                                 onMouseEnter={e => e.currentTarget.style.opacity="0.85"}
                                 onMouseLeave={e => e.currentTarget.style.opacity="1"}>
-                                <PreviewBoundary><BlockPreview block={b} theme={theme} dayMode={dayMode} /></PreviewBoundary>
+                                <PreviewBoundary><MemoBlockPreview block={b} theme={theme} dayMode={dayMode} /></PreviewBoundary>
                               </div>
                             ))}
                           <div style={{ padding: "8px", textAlign: "center", ...bgStyle() }}>

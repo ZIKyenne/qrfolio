@@ -1658,6 +1658,10 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
     const file = e.target.files?.[0]
     e.target.value = "" // permettre de re-importer le meme fichier
     if (!file) return
+    // Validation : une image trop lourde est sérialisée en data-URL dans le JSON
+    // du design (auto-sauvegardé toutes les 2,5 s + historique) -> payloads obèses.
+    if (!file.type.startsWith("image/")) { toast.error("Fichier non supporté : choisissez une image."); return }
+    if (file.size > 4 * 1024 * 1024) { toast.error("Image trop lourde (4 Mo max)."); return }
     const reader = new FileReader()
     reader.onload = () => {
       fabric.Image.fromURL(String(reader.result), (img) => {
@@ -1674,6 +1678,8 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   const onReplaceImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; e.target.value = ""
     if (!file) return
+    if (!file.type.startsWith("image/")) { toast.error("Fichier non supporté : choisissez une image."); return }
+    if (file.size > 4 * 1024 * 1024) { toast.error("Image trop lourde (4 Mo max)."); return }
     const fc = fcRef.current; if (!fc) return
     const img = fc.getActiveObject() as fabric.Image | undefined
     if (!img || img.type !== "image" || (img as any).isQR) return // jamais ecraser un QR
@@ -3654,7 +3660,10 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       const tw = targetWidth()
       const url = withBaseZoom(fc, base => fc.toDataURL({ format: type, quality: type === "jpeg" ? 0.92 : 1, multiplier: tw / base.w }))
       const a = document.createElement("a")
-      a.href = url; a.download = `qrfolio-${format}-${expDpi}dpi.${type === "jpeg" ? "jpg" : "png"}`; a.click()
+      a.href = url; a.download = `qrowg-${format}-${expDpi}dpi.${type === "jpeg" ? "jpg" : "png"}`; a.click()
+    } catch {
+      // toDataURL lève SecurityError si une image importée "salit" le canvas (CORS).
+      toast.error("Export impossible. Si une image importée bloque l'export, remplacez-la.")
     } finally { setExporting(false); setExpOpen(false) }
   }
   const exportPdfPro = async () => {
@@ -3679,7 +3688,9 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         pdf.line(0, m + h, L, m + h);   pdf.line(m, pageH, m, pageH - L)           // bas-gauche
         pdf.line(pageW, m + h, pageW - L, m + h); pdf.line(m + w, pageH, m + w, pageH - L) // bas-droite
       }
-      pdf.save(`qrfolio-${format}-${expDpi}dpi.pdf`)
+      pdf.save(`qrowg-${format}-${expDpi}dpi.pdf`)
+    } catch {
+      toast.error("Export PDF impossible. Si une image importée bloque l'export, remplacez-la.")
     } finally { setExporting(false); setExpOpen(false) }
   }
   // Lance l'export choisi dans l'assistant (etape 3) puis referme l'assistant.

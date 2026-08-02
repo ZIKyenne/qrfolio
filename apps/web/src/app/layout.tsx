@@ -52,22 +52,15 @@ export const metadata: Metadata = {
     title: "QRowg — Carte de visite numérique & QR code dynamique pro",
     description:
       "Créez une page de présentation professionnelle, générez un QR code dynamique et suivez chaque scan. Idéal pour restaurants (menu numérique), indépendants, créateurs (portfolio, lien en bio) et commerces.",
-    images: [
-      {
-        url: `${APP_URL}/og-image.png`,
-        width: 1200,
-        height: 630,
-        alt: "QRowg — Page professionnelle avec QR code dynamique",
-        type: "image/png",
-      },
-    ],
+    // Image OG : fournie par le fichier-convention app/opengraph-image.tsx
+    // (générée dynamiquement -> ne peut jamais renvoyer 404, contrairement à
+    // l'ancien /og-image.png statique qui était absent de /public).
   },
   twitter: {
     card: "summary_large_image",
     title: "QRowg — Carte de visite numérique & QR code dynamique pro",
     description:
       "Page mobile pro + QR code dynamique + statistiques. En 5 minutes, sans rien coder.",
-    images: [`${APP_URL}/og-image.png`],
   },
   robots: {
     index: true,
@@ -118,7 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 "Domaine personnalise",
               ],
               inLanguage: "fr-FR",
-              screenshot: `${APP_URL}/og-image.png`,
+              screenshot: `${APP_URL}/opengraph-image`,
             }),
           }}
         />

@@ -1985,7 +1985,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
     }
     setExpExporting(true)
     try {
-      const px = expSize === "custom" ? Math.max(256, Math.min(8192, expCustomSize)) : expSize
+      // Plafond 4096 : au-delà, iOS Safari plafonne l'aire du canvas (~16,7 Mpx)
+      // et renvoie un PNG VIDE sans erreur. 4096 est sûr sur toutes les plateformes.
+      const px = expSize === "custom" ? Math.max(256, Math.min(4096, expCustomSize)) : expSize
       const isTransparent = expFormat === "png-t"
       const opts: QROptions = {
         data: qrUrl, fg, bg, ecc: effectiveEcc,

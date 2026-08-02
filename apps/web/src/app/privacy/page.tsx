@@ -24,12 +24,12 @@ export default function PrivacyPage() {
         <h3>Données analytics</h3>
         <p>Lorsqu’un visiteur scanne votre QR code, nous enregistrons : l’horodatage, le type d’appareil, le pays d’origine et la source de trafic. Aucune donnée personnelle identifiable sur vos visiteurs n’est collectée.</p>
         <h3>Données techniques</h3>
-        <p>Adresse IP anonymisée, navigateur utilisé et journaux d’accès à des fins de sécurité.</p>
+        <p>Votre adresse IP est utilisée de façon <strong>transitoire</strong> pour la sécurité et la limitation des abus (rate-limit) ; elle n’est <strong>pas conservée</strong> dans nos statistiques. Nous enregistrons le type d’appareil et des journaux d’accès techniques.</p>
       </div>
       <div className="ls">
         <h2>2. Cookies</h2>
         <p>QRowg utilise des cookies essentiels au fonctionnement du service (authentification, session). Ces cookies sont strictement nécessaires et ne requièrent pas votre consentement.</p>
-        <p>Nous n’utilisons pas de cookies publicitaires. Vous pouvez désactiver les cookies analytiques depuis les paramètres de votre navigateur.</p>
+        <p>Nous n’utilisons <strong>ni cookies publicitaires ni cookies analytiques tiers</strong>. La mesure d’audience de vos pages repose sur un identifiant de session temporaire (stocké en <code>sessionStorage</code>), effacé à la fermeture de l’onglet — il n’y a donc aucun cookie de suivi à désactiver.</p>
       </div>
       <div className="ls">
         <h2>3. Utilisation des données</h2>

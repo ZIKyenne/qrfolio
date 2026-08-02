@@ -6,6 +6,7 @@ import { Resend } from "resend"
 import { resolveStripeEvent } from "@/lib/webhookLogic"
 import { buildSubscriptionEmail } from "@/lib/subscriptionEmail"
 import { EMAIL_FROM } from "@/lib/emailFrom"
+import { serverError } from "@/lib/apiError"
 
 // Email de bienvenue abonnement (essai/achat) — fire-and-forget, n'echoue jamais.
 async function sendSubscriptionEmail(userId: string, plan: string, billing?: string | null) {
@@ -85,8 +86,7 @@ export async function POST(req: NextRequest) {
         break
     }
   } catch (e: any) {
-    console.error("Webhook handler error:", e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return serverError("stripe/webhook", e)
   }
 
   return NextResponse.json({ received: true })

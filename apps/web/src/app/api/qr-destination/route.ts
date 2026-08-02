@@ -4,6 +4,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { buildDestUrl, validateDest, type DestType } from "./qrDestination"
+import { serverError } from "@/lib/apiError"
 
 // GET ?qr_id=xxx — récupérer destination + historique
 export async function GET(req: NextRequest) {
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
     .select("dest_override, dest_history")
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("qr-destination", error)
   return NextResponse.json({ ok: true, dest_override: data?.dest_override, dest_history: data?.dest_history })
 }
 

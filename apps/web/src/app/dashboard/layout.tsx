@@ -28,7 +28,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/domains", icon: Globe, label: "Domaines" },
   { href: "/dashboard/redirects", icon: Shuffle, label: "Redirections" },
   { href: "/dashboard/profile", icon: User, label: "Profil" },
-  { href: "/dashboard/settings", icon: Settings, label: "Parametres" },
+  { href: "/dashboard/settings", icon: Settings, label: "Paramètres" },
 ]
 
 // Barre mobile : EXACTEMENT 5 destinations (le bouton central "Créer" ouvre un sheet).

@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 
 export async function POST(req: Request) {
   try {
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
         .eq("user_id", user.id)
         .select("id")
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return serverError("qr-style", error)
       }
       return NextResponse.json({ ok: true, count: data?.length ?? 0 })
     }
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
       .select()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return serverError("qr-style", error)
     }
     if (!data || data.length === 0) {
       return NextResponse.json(
@@ -57,6 +58,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, qr: data[0] })
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Erreur serveur" }, { status: 500 })
+    return serverError("qr-style", e)
   }
 }

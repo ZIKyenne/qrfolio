@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { stripe } from "@/lib/stripe"
+import { serverError } from "@/lib/apiError"
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,6 +28,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return serverError("stripe/portal", e)
   }
 }

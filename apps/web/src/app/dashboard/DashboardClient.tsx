@@ -528,7 +528,7 @@ export default function DashboardClient({
               </div>
               {[
                 { icon: "🌐", label: "Domaines perso", href: "/dashboard/domains", color: "var(--success)" },
-                { icon: "⚙️", label: "Parametres", href: "/dashboard/settings", color: MUTED },
+                { icon: "⚙️", label: "Paramètres", href: "/dashboard/settings", color: MUTED },
               ].map((action, i, arr) => (
                 <Link key={i} href={action.href} className="dz-row dz-act"
                   style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 18px", textDecoration: "none", borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none" }}>

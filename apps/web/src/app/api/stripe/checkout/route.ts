@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { serverError } from "@/lib/apiError"
 
 const PRICE_IDS: Record<string, string> = {
   starter: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || "",
@@ -49,7 +50,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url })
   } catch (e: any) {
-    console.error("Stripe checkout error:", e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return serverError("stripe/checkout", e)
   }
 }

@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { ALLOWED_TRANSITIONS, ACTION_TO_STATUS, canTransition, type QRStatus } from "./qrStatus"
 import { pageLimit } from "@/lib/plans"
 import { countActiveQrs } from "@/lib/quota"
+import { serverError } from "@/lib/apiError"
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
     .select("id, status")
     .maybeSingle()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("qr-status", error)
   if (!updated) return NextResponse.json({ error: "Modification impossible (droits insuffisants ou QR introuvable)" }, { status: 403 })
 
   return NextResponse.json({ ok: true, status: updated.status })
@@ -120,7 +121,7 @@ export async function DELETE(req: NextRequest) {
     .eq("id", qr_id)
     .select("id")
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("qr-status", error)
   if (!deleted || deleted.length === 0) {
     return NextResponse.json({ error: "Suppression impossible (droits insuffisants ou QR introuvable)" }, { status: 403 })
   }

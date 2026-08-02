@@ -233,16 +233,17 @@ import { InlineEditable } from "./InlineEditable"
         )
       }
       case "testimonials": {
-        const reviews = [[c.name1,c.text1,c.stars1],[c.name2,c.text2,c.stars2],[c.name3,c.text3,c.stars3]].filter(([n])=>n)
+        // On garde le numéro de slot (i) pour l'édition inline malgré le filtre.
+        const reviews = [1,2,3].map(i => ({ i, name: c[`name${i}`], text: c[`text${i}`], stars: c[`stars${i}`] })).filter(r => r.name)
         return (
           <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 7, ...s }}>
-            {reviews.map(([n,t,stars],i) => (
-              <div key={i} style={{ background: primary+"06", border: `1px solid ${primary}12`, borderRadius: 9, padding: "10px 12px" }}>
+            {reviews.map((r) => (
+              <div key={r.i} style={{ background: primary+"06", border: `1px solid ${primary}12`, borderRadius: 9, padding: "10px 12px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <p style={{ color: text, fontSize: 12, fontWeight: 700, margin: 0 }}>{n}</p>
-                  <p style={{ color: "#FFD700", fontSize: 11, margin: 0 }}>{"★".repeat(parseInt(stars||"5"))}</p>
+                  <InlineEditable as="p" editable={canEdit} value={r.name} onCommit={edit(`name${r.i}`)} style={{ color: text, fontSize: 12, fontWeight: 700, margin: 0 }} />
+                  <p style={{ color: "#FFD700", fontSize: 11, margin: 0 }}>{"★".repeat(parseInt(r.stars||"5"))}</p>
                 </div>
-                <p style={{ color: muted, fontSize: 11, margin: 0, fontStyle: "italic" }}>"{t}"</p>
+                <p style={{ color: muted, fontSize: 11, margin: 0, fontStyle: "italic" }}>"<InlineEditable as="span" editable={canEdit} value={r.text} multiline onCommit={edit(`text${r.i}`)} />"</p>
               </div>
             ))}
           </div>

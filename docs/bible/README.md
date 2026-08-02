@@ -8,7 +8,8 @@
 |---|---|---|---|
 | 1 | [La Vision](01-VISION.md) | Mission, promesses, 10 lois, émotions, philosophie | ✅ v1.0 |
 | 2 | [Design Philosophy](02-DESIGN-PHILOSOPHY.md) | Langage visuel : tokens, couleur, typo, espacement, composants, mobile, a11y, qualité | ✅ v1.0 |
-| 3 | *(à venir)* | — | — |
+| 3 | [Motion System](03-MOTION-SYSTEM.md) | Mouvement : durées, easings par rôle, keyframes canoniques `mo-*`, helpers, reduced-motion | ✅ v1.0 (fondation) |
+| 4 | *(à venir)* | — | — |
 
 ## Principe d'usage
 

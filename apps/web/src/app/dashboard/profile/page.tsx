@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { PLAN_LIST, PLAN_ORDER, fmtPrice } from "@/lib/plans"
 import Particles from "@/components/Particles"
 import { Button } from "@/components/ui/Button"
+import { ActionRow } from "@/components/ui/ActionRow"
 import {
   Copy, Check, Gift, Star, TrendingUp, Users,
   QrCode, Eye, Crown, Camera, Save, ExternalLink,
@@ -2025,19 +2026,15 @@ export default function ProfilePage() {
 
                 {/* Actions globales */}
                 <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
-                  <button type="button" onClick={signOutAllDevices} disabled={signOutAllLoading}
-                    style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:9, cursor:"pointer", textAlign:"left" as const, opacity:signOutAllLoading?0.7:1 }}>
-                    <div style={{ width:32, height:32, borderRadius:8, background:"rgba(255,107,107,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <LogOut size={14} color="var(--danger)"/>
-                    </div>
-                    <div style={{ flex:1 }}>
-                      <p style={{ color:"var(--danger)", fontSize:12, fontWeight:600, margin:0 }}>
-                        {signOutAllLoading ? "Deconnexion en cours..." : "Deconnecter tous les appareils"}
-                      </p>
-                      <p style={{ color:MUTED, fontSize:10, margin:0 }}>Met fin a toutes les sessions actives</p>
-                    </div>
-                    <ChevronRight size={14} color="var(--danger)"/>
-                  </button>
+                  <ActionRow
+                    tone="danger" tinted
+                    icon={<LogOut size={14} />}
+                    title={signOutAllLoading ? "Déconnexion en cours…" : "Déconnecter tous les appareils"}
+                    subtitle="Met fin à toutes les sessions actives"
+                    right={<ChevronRight size={14} color="var(--danger)" />}
+                    onClick={signOutAllDevices}
+                    disabled={signOutAllLoading}
+                  />
                 </div>
 
                 {/* Badges securite */}

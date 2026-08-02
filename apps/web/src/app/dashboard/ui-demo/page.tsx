@@ -10,7 +10,8 @@ import { Tabs } from "@/components/ui/Tabs"
 import { Modal } from "@/components/ui/Modal"
 import { Input, Textarea, Select } from "@/components/ui/Input"
 import { Switch } from "@/components/ui/Switch"
-import { Download, ArrowRight, Trash2, QrCode, BarChart, Palette } from "lucide-react"
+import { ActionRow } from "@/components/ui/ActionRow"
+import { Download, ArrowRight, Trash2, QrCode, BarChart, Palette, LogOut, ShieldCheck, Bell, ChevronRight } from "lucide-react"
 
 const VARIANTS: ButtonVariant[] = ["primary", "secondary", "ghost", "danger"]
 const SIZES: ButtonSize[] = ["sm", "md", "lg"]
@@ -136,6 +137,16 @@ export default function UiDemoPage() {
             </div>
           </div>
         </Card>
+      </div>
+
+      {/* ACTIONROW */}
+      <div style={section}>
+        <h2 style={h2}>ActionRow</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 480 }}>
+          <ActionRow icon={<ShieldCheck size={15} />} tone="success" tinted title="Email vérifié" subtitle="emilien@exemple.fr" right={<Badge tone="success">OK</Badge>} />
+          <ActionRow icon={<Bell size={15} />} tone="neutral" title="Notifications" subtitle="Gérer les alertes email" right={<ChevronRight size={16} color="#8A8478" />} onClick={() => {}} />
+          <ActionRow icon={<LogOut size={15} />} tone="danger" title="Déconnecter tous les appareils" subtitle="Met fin à toutes les sessions actives" onClick={() => {}} />
+        </div>
       </div>
     </div>
   )

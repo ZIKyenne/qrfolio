@@ -301,6 +301,12 @@ button:not(:disabled):active { transform: scale(.97); }
 .ui-input--error, .ui-textarea--error, .ui-select--error { border-color: var(--danger-border) !important; }
 .ui-input::placeholder, .ui-textarea::placeholder { color: #6E685E; }
 
+/* ── UI PRIMITIVES — ActionRow (rangée d'action : icône + titre + sous-titre) ── */
+.ui-actionrow { width: 100%; text-align: left; transition: background var(--mo-fast) var(--mo-ease-standard), border-color var(--mo-fast) var(--mo-ease-standard); }
+.ui-actionrow--clickable { cursor: pointer; }
+.ui-actionrow--clickable:hover { background: rgba(255,255,255,0.05); }
+.ui-actionrow--clickable:disabled { cursor: not-allowed; opacity: .6; }
+
 /* ── UI PRIMITIVES — Switch (accessible : role=switch + aria-checked) ────────── */
 .ui-switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; border-radius: 999px;
   background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.10); cursor: pointer; padding: 0;

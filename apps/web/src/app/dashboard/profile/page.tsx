@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { PLAN_LIST, PLAN_ORDER, fmtPrice } from "@/lib/plans"
 import Particles from "@/components/Particles"
+import { Button } from "@/components/ui/Button"
 import {
   Copy, Check, Gift, Star, TrendingUp, Users,
   QrCode, Eye, Crown, Camera, Save, ExternalLink,
@@ -1422,14 +1423,12 @@ export default function ProfilePage() {
               </div>
 
               {/* Bouton save */}
-              <button onClick={saveProfile}
-                disabled={saving || !hasChanges || usernameStatus==="taken" || usernameStatus==="invalid" || usernameStatus==="checking"}
-                style={{ gridColumn:"1 / -1", display:"flex", alignItems:"center", justifyContent:"center", gap:7, background:saved?"rgba(57,255,143,0.1)":hasChanges?"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))":"rgba(255,255,255,0.04)", border:saved?"1px solid rgba(57,255,143,0.3)":"none", borderRadius:9, padding:"11px", color:saved?"var(--success)":hasChanges?"#080808":"#A8A190", fontSize:13, fontWeight:700, cursor:saving||!hasChanges||usernameStatus==="taken"||usernameStatus==="invalid"||usernameStatus==="checking"?"not-allowed":"pointer", transition:"all 0.2s", opacity:saving?0.7:1 }}>
-                {saved ? <><Check size={13}/> Sauvegarde !</>
-                  : saving ? "Sauvegarde..."
-                  : !hasChanges ? "Aucune modification"
-                  : <><Save size={13}/> Sauvegarder les modifications</>}
-              </button>
+              <Button variant="primary" fullWidth onClick={saveProfile} loading={saving}
+                disabled={!hasChanges || usernameStatus==="taken" || usernameStatus==="invalid" || usernameStatus==="checking"}
+                leftIcon={saved ? <Check size={13}/> : hasChanges ? <Save size={13}/> : undefined}
+                style={{ gridColumn:"1 / -1" }}>
+                {saved ? "Enregistré !" : !hasChanges ? "Aucune modification" : "Sauvegarder les modifications"}
+              </Button>
               </div>
             </div>
           </SectionCard>
@@ -1950,11 +1949,9 @@ export default function ProfilePage() {
                   {showPwdChange && (
                     <div style={{ padding:"0 14px 14px", borderTop:"1px solid rgba(255,255,255,0.05)", display:"flex", flexDirection:"column", gap:10 }}>
                       <div style={{ display:"flex", gap:7, marginTop:12 }}>
-                        <button type="button" onClick={sendPasswordReset} disabled={pwdLoading||pwdSent}
-                          style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6, padding:"9px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, color:MUTED, fontSize:11, cursor:"pointer" }}>
-                          <Mail size={12}/>
-                          {pwdSent ? "Email envoye !" : "Recevoir un email de reinitialisation"}
-                        </button>
+                        <Button variant="secondary" size="sm" fullWidth onClick={sendPasswordReset} disabled={pwdLoading||pwdSent} leftIcon={<Mail size={12}/>}>
+                          {pwdSent ? "Email envoyé !" : "Recevoir un email de réinitialisation"}
+                        </Button>
                       </div>
                       <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                         <div style={{ flex:1, height:1, background:"rgba(255,255,255,0.06)" }}/>
@@ -1984,11 +1981,10 @@ export default function ProfilePage() {
                       {newPwdConfirm && newPwd !== newPwdConfirm && (
                         <p style={{ color:"var(--danger)", fontSize:10, margin:"0" }}>Les mots de passe ne correspondent pas</p>
                       )}
-                      <button type="button" onClick={changePasswordDirect}
-                        disabled={pwdLoading || newPwd.length < 8 || newPwd !== newPwdConfirm}
-                        style={{ padding:"10px", background:newPwd.length>=8&&newPwd===newPwdConfirm?"linear-gradient(90deg,var(--danger),#e05555)":"rgba(255,255,255,0.04)", border:"none", borderRadius:8, color:newPwd.length>=8&&newPwd===newPwdConfirm?"#F5F0E8":MUTED, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                        {pwdLoading ? "Mise a jour..." : <><Lock size={12}/> Mettre a jour le mot de passe</>}
-                      </button>
+                      <Button variant="danger" fullWidth onClick={changePasswordDirect} loading={pwdLoading}
+                        disabled={newPwd.length < 8 || newPwd !== newPwdConfirm} leftIcon={<Lock size={12}/>}>
+                        Mettre à jour le mot de passe
+                      </Button>
                     </div>
                   )}
                 </div>

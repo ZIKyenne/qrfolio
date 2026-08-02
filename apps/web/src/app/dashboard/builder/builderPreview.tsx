@@ -1570,7 +1570,7 @@ import { InlineEditable } from "./InlineEditable"
       )
 
       case "timeline": {
-        const events = Array.from({length:50},(_,k)=>k+1).map(i => ({ date: c[`e${i}_date`], title: c[`e${i}_title`], desc: c[`e${i}_desc`], icon: (c[`e${i}_icon`]||"").trim() })).filter(e => e.title || e.date)
+        const events = Array.from({length:50},(_,k)=>k+1).map(i => ({ i, date: c[`e${i}_date`], title: c[`e${i}_title`], desc: c[`e${i}_desc`], icon: (c[`e${i}_icon`]||"").trim() })).filter(e => e.title || e.date)
         const horizontal = c.layout === "Horizontale"
         const list = events
         if (list.length === 0) return (
@@ -1584,26 +1584,26 @@ import { InlineEditable } from "./InlineEditable"
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 14px" }}>{c.title}</p>}
             {horizontal ? (
               <div style={{ display: "flex", gap: 9, overflowX: "auto", padding: "2px 0 6px" }}>
-                {list.map((e,i) => (
-                  <div key={i} style={{ flexShrink: 0, width: 150, background: "rgba(255,255,255,0.03)", border: `1px solid ${i===list.length-1 ? "var(--success)30" : "rgba(255,255,255,0.07)"}`, borderRadius: 12, padding: "12px" }}>
+                {list.map((e,pos) => (
+                  <div key={e.i} style={{ flexShrink: 0, width: 150, background: "rgba(255,255,255,0.03)", border: `1px solid ${pos===list.length-1 ? "var(--success)30" : "rgba(255,255,255,0.07)"}`, borderRadius: 12, padding: "12px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
                       <div style={{ width: 26, height: 26, borderRadius: 7, background: `${primary}12`, border: `1px solid ${primary}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{e.icon || "•"}</div>
-                      <p style={{ color: primary, fontSize: 11, fontWeight: 700, margin: 0 }}>{e.date}</p>
+                      <InlineEditable as="p" editable={canEdit} value={e.date} onCommit={edit(`e${e.i}_date`)} style={{ color: primary, fontSize: 11, fontWeight: 700, margin: 0 }} />
                     </div>
-                    <p style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px" }}>{e.title}</p>
-                    {e.desc && <p style={{ color: muted, fontSize: 10.5, margin: 0 }}>{e.desc}</p>}
+                    <InlineEditable as="p" editable={canEdit} value={e.title} onCommit={edit(`e${e.i}_title`)} style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px" }} />
+                    {e.desc && <InlineEditable as="p" editable={canEdit} value={e.desc} multiline onCommit={edit(`e${e.i}_desc`)} style={{ color: muted, fontSize: 10.5, margin: 0 }} />}
                   </div>
                 ))}
               </div>
             ) : (
               <div style={{ position: "relative", paddingLeft: 20 }}>
                 <div style={{ position: "absolute", left: 6, top: 8, bottom: 8, width: 2, background: `linear-gradient(180deg,${primary},${primary}40)`, borderRadius: 1 }} />
-                {list.map((e,i) => (
-                  <div key={i} style={{ position: "relative", marginBottom: i<list.length-1 ? 16 : 0 }}>
-                    <div style={{ position: "absolute", left: -17, top: 4, width: 10, height: 10, borderRadius: "50%", background: i===list.length-1 ? "var(--success)" : primary, border: `2px solid ${i===list.length-1 ? "var(--success)40" : primary+"40"}` }} />
-                    <p style={{ color: primary, fontSize: 11, fontWeight: 700, margin: "0 0 2px" }}>{e.date}</p>
-                    <p style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px", display: "flex", alignItems: "center", gap: 5 }}>{e.icon && <span style={{ fontSize: 13 }}>{e.icon}</span>}{e.title}</p>
-                    {e.desc && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{e.desc}</p>}
+                {list.map((e,pos) => (
+                  <div key={e.i} style={{ position: "relative", marginBottom: pos<list.length-1 ? 16 : 0 }}>
+                    <div style={{ position: "absolute", left: -17, top: 4, width: 10, height: 10, borderRadius: "50%", background: pos===list.length-1 ? "var(--success)" : primary, border: `2px solid ${pos===list.length-1 ? "var(--success)40" : primary+"40"}` }} />
+                    <InlineEditable as="p" editable={canEdit} value={e.date} onCommit={edit(`e${e.i}_date`)} style={{ color: primary, fontSize: 11, fontWeight: 700, margin: "0 0 2px" }} />
+                    <p style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px", display: "flex", alignItems: "center", gap: 5 }}>{e.icon && <span style={{ fontSize: 13 }}>{e.icon}</span>}<InlineEditable as="span" editable={canEdit} value={e.title} onCommit={edit(`e${e.i}_title`)} /></p>
+                    {e.desc && <InlineEditable as="p" editable={canEdit} value={e.desc} multiline onCommit={edit(`e${e.i}_desc`)} style={{ color: muted, fontSize: 11, margin: 0 }} />}
                   </div>
                 ))}
               </div>

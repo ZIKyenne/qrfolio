@@ -2382,6 +2382,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             fg: fg || "#0A0A0A", bg: bg || "#FFFFFF", ecc: effectiveEcc,
             dotStyle: styleConf.dotStyle, cornerStyle: styleConf.cornerStyle,
             eyeColor: styleConf.eyeColor, hasLogo: !!styleConf.logoUrl, margin: styleConf.margin,
+            logoSize: styleConf.logoUrl ? (styleConf.logoSize ?? 18) : 0,
           }}
         />
       )}

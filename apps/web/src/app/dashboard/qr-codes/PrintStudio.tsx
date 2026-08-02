@@ -155,7 +155,7 @@ type Props = {
   // Regenere le QR (couleurs / style / correction / marge) via le moteur qrRender de QRStudio
   regenQr?: (opts: { fg?: string; bg?: string; dotStyle?: string; cornerStyle?: string; eyeColor?: string; ecc?: "L" | "M" | "Q" | "H"; margin?: number }) => Promise<string | null>
   // Config initiale du QR injecte, pour que l'editeur QR & la jauge de scannabilite soient exacts d'emblee
-  qrInit?: { fg?: string; bg?: string; ecc?: "L" | "M" | "Q" | "H"; dotStyle?: string; cornerStyle?: string; eyeColor?: string; hasLogo?: boolean; margin?: number }
+  qrInit?: { fg?: string; bg?: string; ecc?: "L" | "M" | "Q" | "H"; dotStyle?: string; cornerStyle?: string; eyeColor?: string; hasLogo?: boolean; margin?: number; logoSize?: number }
 }
 
 // ---- Etat de selection (pour le panneau proprietes) ------------------------
@@ -3645,7 +3645,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
     }
     const metrics: PreflightMetrics = {
       qrSizeMm, contrastRatio: hexContrastRatio(fgHex, contrastBg),
-      quietZoneMm, logoPct: 0, dpi: expDpi, edgeMarginMm, isScreen,
+      quietZoneMm, logoPct: qrInit?.logoSize ?? 0, dpi: expDpi, edgeMarginMm, isScreen,
     }
     setPreflight(printPreflight(metrics))
   }

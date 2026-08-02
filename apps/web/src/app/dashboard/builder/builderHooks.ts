@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback } from "react"
-import type { Block } from "./types"
 
 // ── Historique Undo/Redo ─────────────────────────────────────────────────
 const MAX_HISTORY = 50
@@ -24,8 +23,11 @@ export function shouldCoalesce(
   return now - prevTime < windowMs
 }
 
-export function useUndoRedo(initial: Block[]) {
-  const historyRef = useRef<Block[][]>([JSON.parse(JSON.stringify(initial))])
+// Générique sur T = l'unité d'historique. Le Builder l'utilise avec un SNAPSHOT
+// { blocks, theme, name } pour rendre thème et nom de page annulables (pas seulement
+// les blocs). T doit être sérialisable en JSON (deep clone).
+export function useUndoRedo<T>(initial: T) {
+  const historyRef = useRef<T[]>([JSON.parse(JSON.stringify(initial))])
   const cursorRef = useRef(0)
   const [, forceRender] = useState(0)
   // Suivi du dernier push pour le coalescing des frappes (même champ, rafale courte).
@@ -38,7 +40,7 @@ export function useUndoRedo(initial: Block[]) {
   // sur le même champ REMPLACENT l'entrée de sommet au lieu d'en empiler une par
   // caractère (corrige la saturation de l'historique). Les opérations structurelles
   // (ajout/suppression/déplacement) n'en passent PAS -> chacune = une entrée.
-  const push = useCallback((next: Block[], coalesceKey?: string | null) => {
+  const push = useCallback((next: T, coalesceKey?: string | null) => {
     const now = Date.now()
     const atTip = cursorRef.current === historyRef.current.length - 1
     const clone = JSON.parse(JSON.stringify(next))
@@ -63,7 +65,7 @@ export function useUndoRedo(initial: Block[]) {
   // CHARGEMENT d'une page existante : sinon l'historique garde les blocs de démo
   // du montage, et un Ctrl+Z ramènerait la démo PAR-DESSUS le contenu réel
   // (l'autosave la persisterait) -> perte de contenu.
-  const reset = useCallback((next: Block[]) => {
+  const reset = useCallback((next: T) => {
     historyRef.current = [JSON.parse(JSON.stringify(next))]
     cursorRef.current = 0
     lastKeyRef.current = null

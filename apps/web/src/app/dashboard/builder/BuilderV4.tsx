@@ -44,18 +44,24 @@
   type Message = { role: "user" | "assistant"; content: string }
 
 
+  // Snapshot d'historique : blocs + thème + nom -> undo/redo couvre TOUT le document
+  // (pas seulement les blocs). Voir docs/BUILDER-REBUILD-PLAN.md §2.2.
+  type EditorSnapshot = { blocks: Block[]; theme: PageTheme; name: string }
+  const INITIAL_BLOCKS: Block[] = [
+    { id: "1", type: "profile", content: { name: "Mon Nom", tagline: "Mon activité" }, visible: true },
+    { id: "2", type: "bio", content: { text: "Bienvenue sur ma page !" }, visible: true },
+    { id: "3", type: "cta_button", content: { label: "Me contacter", url: "#", style: "gold" }, visible: true },
+  ]
+  const INITIAL_NAME = "Ma Page"
+
   export default function BuilderV4({ pageId }: { pageId?: string }) {
     const confirm = useConfirm()
-    const undoRedo = useUndoRedo([
-      { id: "1", type: "profile", content: { name: "Mon Nom", tagline: "Mon activité" }, visible: true },
-      { id: "2", type: "bio", content: { text: "Bienvenue sur ma page !" }, visible: true },
-      { id: "3", type: "cta_button", content: { label: "Me contacter", url: "#", style: "gold" }, visible: true },
-    ])
-    const [blocks, setBlocksRaw] = useState<Block[]>([
-      { id: "1", type: "profile", content: { name: "Mon Nom", tagline: "Mon activité" }, visible: true },
-      { id: "2", type: "bio", content: { text: "Bienvenue sur ma page !" }, visible: true },
-      { id: "3", type: "cta_button", content: { label: "Me contacter", url: "#", style: "gold" }, visible: true },
-    ])
+    const undoRedo = useUndoRedo<EditorSnapshot>({ blocks: INITIAL_BLOCKS, theme: PRESET_THEMES.midnight_gold, name: INITIAL_NAME })
+    // Refs synchronisées : thème/nom lus AU MOMENT d'un push d'historique (les push
+    // de blocs et de nom ont besoin du thème courant, et inversement).
+    const themeRef = useRef<PageTheme>(PRESET_THEMES.midnight_gold)
+    const nameRef = useRef(INITIAL_NAME)
+    const [blocks, setBlocksRaw] = useState<Block[]>(INITIAL_BLOCKS)
 
     // setBlocks avec push historique automatique.
     // `coalesceKey` (optionnel) : regroupe les frappes rapides sur un même champ en
@@ -64,7 +70,7 @@
     const setBlocks = useCallback((updater: Block[] | ((prev: Block[]) => Block[]), skipHistory = false, coalesceKey?: string) => {
       setBlocksRaw(prev => {
         const next = typeof updater === "function" ? updater(prev) : updater
-        if (!skipHistory) undoRedo.push(next, coalesceKey)
+        if (!skipHistory) undoRedo.push({ blocks: next, theme: themeRef.current, name: nameRef.current }, coalesceKey)
         return next
       })
     }, [undoRedo])
@@ -88,6 +94,21 @@
     const [pageSlug, setPageSlug] = useState("ma-page")
     const [pageStatus, setPageStatus] = useState("draft")
     const [theme, setTheme] = useState<PageTheme>(PRESET_THEMES.midnight_gold)
+    // Sync refs pour les push d'historique (thème/nom lus au moment du push).
+    useEffect(() => { themeRef.current = theme }, [theme])
+    useEffect(() => { nameRef.current = pageName }, [pageName])
+    // Applique un snapshot (undo/redo) : restaure blocs + thème + nom via les setters
+    // BRUTS -> AUCUN nouveau push. Stable (useCallback) pour le handler clavier.
+    const applySnapshot = useCallback((s: EditorSnapshot) => {
+      setBlocksRaw(s.blocks); setTheme(s.theme); setPageName(s.name)
+    }, [])
+    // Change le thème ET l'enregistre dans l'historique (coalescé "theme" : un réglage
+    // continu de curseur = une seule entrée d'undo). Utilisé par le panneau Thème.
+    const commitTheme = useCallback((updater: PageTheme | ((p: PageTheme) => PageTheme)) => {
+      const nt = typeof updater === "function" ? (updater as (p: PageTheme) => PageTheme)(themeRef.current) : updater
+      setTheme(nt)
+      undoRedo.push({ blocks: blocksKbRef.current, theme: nt, name: nameRef.current }, "theme")
+    }, [undoRedo])
     // Plan de l'utilisateur (gating UI de l'animation d'entrée ; l'enforcement réel
     // est côté serveur au rendu de la page publique).
     const [userPlan, setUserPlan] = useState<string | null>(null)
@@ -219,14 +240,14 @@
         if (ctrl && !e.shiftKey && (e.key === "z" || e.key === "Z") && !isEditing(e)) {
           e.preventDefault()
           const prev = undoRedo.undo()
-          if (prev) setBlocksRaw(prev)
+          if (prev) applySnapshot(prev)
           return
         }
         // Ctrl+Shift+Z / Ctrl+Y — Redo
         if (ctrl && (e.shiftKey && (e.key === "z" || e.key === "Z") || e.key === "y" || e.key === "Y") && !isEditing(e)) {
           e.preventDefault()
           const next = undoRedo.redo()
-          if (next) setBlocksRaw(next)
+          if (next) applySnapshot(next)
           return
         }
 
@@ -486,7 +507,9 @@
         if (blks?.length) {
             const loaded = blks.map(b => { const c = b.content || {}; return { id: b.id, type: b.type, content: c, visible: c.__visible !== undefined ? c.__visible !== false : (b.is_visible !== false), draft: c.__draft || false, locked: c.__locked || false } })
             setBlocksRaw(loaded)
-            undoRedo.reset(loaded) // repart de l'état chargé (évite l'undo->démo qui écrasait le contenu)
+            // Repart de l'état chargé (blocs + thème + nom) : évite l'undo->démo qui
+            // écrasait le contenu, et cale le snapshot d'historique sur la page réelle.
+            undoRedo.reset({ blocks: loaded, theme: (pg?.theme as PageTheme) ?? themeRef.current, name: pg?.title ?? nameRef.current })
           }
         const { data: qr } = await supabase.from("qr_codes").select("short_code,total_scans").eq("page_id", liveId).single()
         if (qr) {
@@ -603,9 +626,13 @@
       if (blocks.length > 1 || nonEmpty > 0) {
         if (!(await confirm({ title: "Appliquer ce modèle ?", message: `Appliquer le modèle « ${tpl.label} » ?\n\nLes blocs actuels seront remplacés et le thème mis à jour. Réversible avec Annuler (Ctrl+Z).`, confirmLabel: "Appliquer" }))) return
       }
-      setTheme(prev => ({ ...prev, ...tpl.theme }))
+      // Transactionnel : blocs + thème appliqués en UNE SEULE entrée d'undo
+      // (setters bruts + un push explicite), plutôt que deux entrées séparées.
+      const nextTheme = { ...themeRef.current, ...tpl.theme }
       const next = tpl.blocks.map(b => ({ id: genId(), type: b.type, content: { ...(BLOCK_DEFS[b.type]?.defaultContent || {}), ...b.content }, visible: true }))
-      setBlocks(next)
+      setBlocksRaw(next)
+      setTheme(nextTheme)
+      undoRedo.push({ blocks: next, theme: nextTheme, name: nameRef.current })
       setSelectedId(null); setRightTab("preview"); setShowTemplates(false)
       if (isMobile) setMobileTab("canvas")   // mobile : on montre la page fraîchement générée
     }
@@ -932,7 +959,7 @@
         <div style={{ height: 50, background: "#0D0D0D", borderBottom: "1px solid rgba(201,168,76,0.12)", display: (preview && isMobile) ? "none" : "flex", alignItems: "center", padding: isMobile ? "0 9px" : "0 14px", gap: isMobile ? 6 : 10, flexShrink: 0, zIndex: 20 }}>
           <a href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 4, textDecoration: "none", color: G, fontFamily: "Fraunces, serif", fontSize: 16, fontWeight: 700 }}>← QRowg</a>
           <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />
-          <input value={pageName} onChange={e => setPageName(e.target.value)} style={{ background: "transparent", border: "none", color: "#F5F0E8", fontSize: 13, fontWeight: 600, outline: "none", width: isMobile ? 96 : 160, minWidth: 0 }} />
+          <input value={pageName} onChange={e => { const v = e.target.value; setPageName(v); undoRedo.push({ blocks: blocksKbRef.current, theme: themeRef.current, name: v }, "pagename") }} style={{ background: "transparent", border: "none", color: "#F5F0E8", fontSize: 13, fontWeight: 600, outline: "none", width: isMobile ? 96 : 160, minWidth: 0 }} />
           {saving && <span style={{ color: MUTED, fontSize: 10 }}>Enregistrement…</span>}
           {saved && !saveError && !saving && <span style={{ color: "var(--success)", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}><Check size={10} /> Enregistré</span>}
           {hasUnsaved && !saving && !saved && !saveError && (
@@ -949,7 +976,7 @@
 
           {/* Boutons Undo / Redo */}
           <div style={{ display: "flex", gap: 3 }}>
-            <button onClick={() => { const p = undoRedo.undo(); if(p) setBlocksRaw(p) }}
+            <button onClick={() => { const p = undoRedo.undo(); if(p) applySnapshot(p) }}
               disabled={!undoRedo.canUndo()}
               title="Annuler — Ctrl+Z"
               style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canUndo() ? "pointer" : "default", color: undoRedo.canUndo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
@@ -957,7 +984,7 @@
               onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.08)" }}>
               <Undo2 size={15} />
             </button>
-            <button onClick={() => { const n = undoRedo.redo(); if(n) setBlocksRaw(n) }}
+            <button onClick={() => { const n = undoRedo.redo(); if(n) applySnapshot(n) }}
               disabled={!undoRedo.canRedo()}
               title="Rétablir — Ctrl+Shift+Z"
               style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canRedo() ? "pointer" : "default", color: undoRedo.canRedo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
@@ -2211,7 +2238,7 @@
 
             {!rightCollapsed && rightTab==="theme" && (
               <div style={{ flex: 1, overflowY: "auto", padding: 14 }}>
-                <ThemePanel theme={theme} onThemeChange={setTheme} userPlan={userPlan}
+                <ThemePanel theme={theme} onThemeChange={commitTheme} userPlan={userPlan}
                   previewName={(blocks.find(b => b.type === "profile")?.content as any)?.name || pageName}
                   previewAvatar={(blocks.find(b => b.type === "profile")?.content as any)?.avatar || ""} />
               </div>

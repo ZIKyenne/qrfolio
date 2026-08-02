@@ -5,7 +5,7 @@
 // historique.
 import { useMemo, useRef, useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail } from "lucide-react"
+import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2 } from "lucide-react"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
@@ -77,6 +77,10 @@ export default function QrLinkPage() {
   const [busy, setBusy] = useState<null | "png" | "svg">(null)
   const [done, setDone] = useState(false)
   const logoInput = useRef<HTMLInputElement>(null)
+  // QR instantanés ENREGISTRÉS (persistants, comptent dans le quota du plan limits.qr)
+  const [saved, setSaved] = useState<any[]>([])
+  const [saveBusy, setSaveBusy] = useState(false)
+  const [saveMsg, setSaveMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
   const data = useMemo(() => payload({ type: qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em }), [qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em])
   const ready = data.length > 0
@@ -85,6 +89,8 @@ export default function QrLinkPage() {
 
   const [history, setHistory] = useState<QrHistEntry[]>([])
   useEffect(() => { try { const h = JSON.parse(localStorage.getItem("qrfolio_qr_history") || "[]"); if (Array.isArray(h)) setHistory(h.slice(0, 8)) } catch {} }, [])
+  // Charge les QR instantanés enregistrés (serveur).
+  useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items) }).catch(() => {}) }, [])
   const saveToHistory = () => setHistory(prev => {
     const entry: QrHistEntry = { type: qrType, url: url.trim(), ssid, wifiPass, wifiEnc, text: text.trim(), vc, phone, em, fg, bg, ecc, styleKey }
     const next = [entry, ...prev.filter(e => payload(e) !== data)].slice(0, 8)
@@ -132,6 +138,31 @@ export default function QrLinkPage() {
         saveToHistory(); setDone(true); setTimeout(() => setDone(false), 1800)
       }
     } finally { setBusy(null) }
+  }
+
+  // Enregistre le QR courant côté serveur (persistant + compté dans le quota limits.qr).
+  async function saveInstant() {
+    if (!ready || saveBusy) return
+    setSaveBusy(true); setSaveMsg(null)
+    try {
+      // On ne stocke pas le mot de passe WiFi en clair dans `inputs` (il figure de
+      // toute façon dans `payload`, inhérent au QR WiFi, protégé par la RLS proprio).
+      const inputs = { type: qrType, url, ssid, wifiEnc, text, vc, phone, em }
+      const res = await fetch("/api/qr-instant", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: qrType, label: previewLabel || null, payload: data, inputs, style: { fg, bg, ecc: effectiveEcc, styleKey } }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setSaveMsg({ text: "Enregistré ✓", ok: true }) }
+      else setSaveMsg({ text: d.error || "Enregistrement impossible", ok: false })
+    } catch { setSaveMsg({ text: "Erreur réseau", ok: false }) }
+    finally { setSaveBusy(false); setTimeout(() => setSaveMsg(null), 3500) }
+  }
+  async function deleteInstant(id: string) {
+    try {
+      const res = await fetch("/api/qr-instant", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) })
+      if (res.ok) setSaved(prev => prev.filter(s => s.id !== id))
+    } catch {}
   }
 
   const secTitle: React.CSSProperties = { color: MUTED, fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 7, marginBottom: 11, textTransform: "uppercase", letterSpacing: 1.4 }
@@ -342,6 +373,31 @@ export default function QrLinkPage() {
           {busy === "svg" ? "…" : "SVG"}
         </button>
       </div>
+
+      {/* Enregistrer (persistant, compte dans le quota QR du plan) */}
+      <button onClick={saveInstant} disabled={!ready || saveBusy}
+        style={{ marginTop: 10, width: "100%", minHeight: 48, borderRadius: 13, cursor: ready ? "pointer" : "not-allowed", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", color: ready ? "#F5F0E8" : MUTED, fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <Save size={16} /> {saveBusy ? "Enregistrement…" : "Enregistrer ce QR"}
+      </button>
+      {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "9px 0 0" }}>{saveMsg.text}</p>}
+
+      {saved.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <p style={secTitle}>{accentBar} Mes QR enregistrés</p>
+          <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
+            {saved.map(s => (
+              <div key={s.id} style={{ position: "relative", flexShrink: 0, width: 98, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: 9 }}>
+                <div style={{ background: s.style?.bg || "#fff", borderRadius: 8, padding: 5, lineHeight: 0 }}>
+                  <QRCanvas value={s.payload || "https://qrowg.com"} size={58} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
+                </div>
+                <span style={{ color: MUTED, fontSize: 9.5, maxWidth: 86, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || s.kind}</span>
+                <button onClick={() => deleteInstant(s.id)} aria-label="Supprimer ce QR"
+                  style={{ position: "absolute", top: 4, right: 4, background: "rgba(239,68,68,0.15)", border: "none", borderRadius: 7, width: 22, height: 22, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={12} /></button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {history.length > 0 && (
         <div style={{ marginTop: 24 }}>

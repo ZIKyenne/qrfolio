@@ -7,7 +7,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { qrLimit } from "@/lib/plans"
 import { countInstantQrs } from "@/lib/quota"
 
-const KINDS = new Set(["link", "wifi", "text", "contact", "call", "email"])
+const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email"])
 const COLS = "id, kind, label, payload, inputs, style, created_at"
 
 export async function GET() {

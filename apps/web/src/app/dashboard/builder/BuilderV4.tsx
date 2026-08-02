@@ -986,10 +986,17 @@
             <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "#161616", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 12, padding: "12px 14px", zIndex: 200, opacity: 0, transition: "opacity 0.15s", pointerEvents: "none", minWidth: 200, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
               <p style={{ color: MUTED, fontSize: 9, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 8px" }}>Raccourcis</p>
               {[
+                ["Ctrl+Z", "Annuler"],
+                ["Ctrl+⇧+Z", "Rétablir"],
                 ["Ctrl+B", "Bibliothèque"],
                 ["Ctrl+E", "Éditeur"],
                 ["Ctrl+P", "Aperçu"],
                 ["Ctrl+F", "Mode Focus"],
+                ["Ctrl+A", "Tout sélectionner"],
+                ["↑ / ↓", "Bloc précédent/suivant"],
+                ["Alt+↑ / ↓", "Déplacer le bloc"],
+                ["Suppr", "Supprimer la sélection"],
+                ["Échap", "Tout désélectionner"],
               ].map(([k, v]) => (
                 <div key={k} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                   <span style={{ color: MUTED, fontSize: 11 }}>{v}</span>
@@ -1730,7 +1737,8 @@
                       if (handle) handle.style.opacity = "0"
                     }}>
 
-                    {!preview && <div className="block-handle" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 18, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.15s", cursor: block.locked ? "not-allowed" : "grab", zIndex: 10 }}>
+                    {/* Poignée : décorative pour l'instant (le glisser-déposer arrive en Phase 2 du plan). Pas de cursor:grab tant que le drag n'est pas réel — voir docs/BUILDER-REBUILD-PLAN.md §2.14. */}
+                    {!preview && <div className="block-handle" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 18, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.15s", cursor: block.locked ? "not-allowed" : "default", zIndex: 10 }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                         {[0,1,2,3,4,5].map(i => <div key={i} style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(201,168,76,0.5)" }} />)}
                       </div>
@@ -2422,7 +2430,6 @@
           @keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
           @keyframes auroraShift{0%{background-position:0% 0%}33%{background-position:100% 0%}66%{background-position:50% 100%}100%{background-position:0% 0%}}
           .iphone-scroll::-webkit-scrollbar{display:none}
-          .block-handle:active{cursor:grabbing}
           .panel-collapse{transition:width 0.25s var(--mo-ease-emphasized)}
           .focus-mode .sidebar{width:64px!important}
           button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 2px solid #C9A84C; outline-offset: 2px; border-radius: 4px; }

@@ -1,7 +1,10 @@
 // ─────────────────────────────────────────────────────────────
-// QRowg — Catalogue de thèmes
-// Source de vérité des thèmes prédéfinis (presets) + helpers de rendu.
-// Importé par le builder (BuilderClient) et la page publique [slug]/page.tsx.
+// QRowg — Catalogue de thèmes (legacy, EN ATTENTE DE PROMOTION)
+// NOTE : l'éditeur actif (BuilderV4) utilise le système de thème de types.ts
+// (PageTheme). Ce fichier n'est plus référencé que par themes.test.ts. On le
+// CONSERVE volontairement pour ses helpers d'ACCESSIBILITÉ testés (readableText /
+// contrastRatio WCAG), destinés au futur garde-fou de contraste (voir
+// docs/BUILDER-REBUILD-PLAN.md §2.12). Ne pas supprimer sans récupérer ces helpers.
 // ─────────────────────────────────────────────────────────────
 
 import type { CSSProperties } from 'react'

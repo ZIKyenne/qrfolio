@@ -858,6 +858,12 @@
       setBlocks(prev => prev.map(b => b.id === id ? { ...b, content: { ...b.content, [key]: value } } : b), false, `field:${id}:${key}`)
     }
 
+    // Édition inline (canvas) : committer STABLE (via ref) pour préserver la
+    // mémoïsation de MemoBlockPreview (une prop callback recréée casserait le memo).
+    const editFieldRef = useRef<(id: string, key: string, value: string) => void>(() => {})
+    editFieldRef.current = updateBlock
+    const onEditField = useCallback((id: string, key: string, value: string) => editFieldRef.current(id, key, value), [])
+
     async function sendAI(prompt?: string) {
       const msg = (prompt || aiInput).trim(); if (!msg || aiLoading) return
       setAiInput("")
@@ -1863,7 +1869,7 @@
                     )}
 
                     <div style={{ overflow: "hidden", minHeight: 36, position: "relative", zIndex: 2, ...blockDecoration(block.content, theme).style }}>
-                      <PreviewBoundary><MemoBlockPreview block={block} theme={theme} dayMode={dayMode} /></PreviewBoundary>
+                      <PreviewBoundary><MemoBlockPreview block={block} theme={theme} dayMode={dayMode} editable={!preview} onEditField={onEditField} /></PreviewBoundary>
                     </div>
                   </div>
                 )

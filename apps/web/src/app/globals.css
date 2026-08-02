@@ -426,6 +426,9 @@ button:not(:disabled):active { transform: scale(.97); }
   .ps-root textarea { font-size: 16px !important; }
 }
 
+/* Édition inline (Builder) : placeholder quand le champ contentEditable est vide. */
+[data-inline-ph]:empty:before { content: attr(data-inline-ph); color: #8A8478; opacity: 0.55; pointer-events: none; }
+
 /* Prevent layout shift */
 img, video, canvas { max-width: 100%; }
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Check, ExternalLink } from "lucide-react"
 import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
 import { G, MUTED } from "./builderConstants"
+import { InlineEditable } from "./InlineEditable"
 
   function FAQItem({ q, a, theme, link, linkLabel, compact }: { q: string; a: string; theme: PageTheme; link?: string; linkLabel?: string; compact?: boolean }) {
     const [open, setOpen] = useState(false)
@@ -81,8 +82,11 @@ import { G, MUTED } from "./builderConstants"
     )
   }
 
-  export function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageTheme; dayMode: boolean }) {
+  export function BlockPreview({ block, theme, dayMode, editable = false, onEditField }: { block: Block; theme: PageTheme; dayMode: boolean; editable?: boolean; onEditField?: (blockId: string, key: string, value: string) => void }) {
     const c = block.content
+    // Édition inline : n'est active que dans le canvas (editable), jamais si verrouillé.
+    const canEdit = editable && !block.locked
+    const edit = (key: string) => (v: string) => onEditField?.(block.id, key, v)
     const bg = "transparent"
     const text = dayMode ? "#1A1A1A" : theme.text
     const muted = dayMode ? "#6B7280" : theme.muted
@@ -103,14 +107,14 @@ import { G, MUTED } from "./builderConstants"
           {c.avatar
             ? <img src={c.avatar} alt="" style={{ width: 72, height: 72, ...avatarShapeStyle(c.avatar_shape), ...avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, primary), objectFit: "cover", margin: "0 auto 10px", display: "block" }} />
             : <div style={{ width: 72, height: 72, ...avatarShapeStyle(c.avatar_shape), ...avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, primary), ...avatarBgStyle(c.avatar_bg, primary, accent), margin: "0 auto 10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 700, color: "#080808" }}>{(c.name||"?")[0].toUpperCase()}</div>}
-          <p style={{ color: text, fontSize: 18, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }}>{c.name || "Mon Nom"}</p>
-          <p style={{ color: muted, fontSize: 13, margin: c.badge ? "0 0 7px" : "0" }}>{c.tagline}</p>
+          <InlineEditable as="p" editable={canEdit} value={c.name} placeholder="Mon Nom" onCommit={edit("name")} style={{ color: text, fontSize: 18, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }} />
+          <InlineEditable as="p" editable={canEdit} value={c.tagline} placeholder="Votre accroche" onCommit={edit("tagline")} style={{ color: muted, fontSize: 13, margin: c.badge ? "0 0 7px" : "0" }} />
           {c.badge && <span style={{ display: "inline-flex", flexWrap: "wrap", gap: 5, justifyContent: "center" }}>{c.badge.split(/[,\n]/).map((b: string) => b.trim()).filter(Boolean).slice(0, 5).map((b: string, i: number) => { const bs = profileBadgeStyle(b, primary); return (<span key={i} style={{ background: bs.bg, border: `1px solid ${bs.border}`, borderRadius: 20, padding: "3px 10px", fontSize: 11, color: bs.color, fontWeight: 600 }}>{bs.icon ? bs.icon + " " : ""}{b}</span>) })}</span>}
         </div>
       )
       case "bio": return (
         <div style={{ padding: "12px 16px", textAlign: (c.align as any)||"left", ...s }}>
-          <p style={{ color: text, fontSize: 13, lineHeight: 1.7, margin: 0 }}>{c.text}</p>
+          <InlineEditable as="p" editable={canEdit} value={c.text} placeholder="Votre texte de présentation…" multiline onCommit={edit("text")} style={{ color: text, fontSize: 13, lineHeight: 1.7, margin: 0 }} />
         </div>
       )
       case "skills": {
@@ -140,14 +144,14 @@ import { G, MUTED } from "./builderConstants"
         const hColors: Record<string,string> = { default: text, primary, accent, muted }
         return (
           <div style={{ padding: "14px 16px", textAlign: (c.align as any)||"center", ...s }}>
-            <h2 style={{ fontFamily: theme.fontDisplay, fontSize: sizes[c.size||"medium"], color: hColors[c.color||"default"], fontWeight: 700, margin: "0 0 3px" }}>{c.text||"Titre"}</h2>
+            <InlineEditable as="h2" editable={canEdit} value={c.text} placeholder="Titre" onCommit={edit("text")} style={{ fontFamily: theme.fontDisplay, fontSize: sizes[c.size||"medium"], color: hColors[c.color||"default"], fontWeight: 700, margin: "0 0 3px" }} />
             {c.subtitle && <p style={{ color: muted, fontSize: 12, margin: 0 }}>{c.subtitle}</p>}
           </div>
         )
       }
       case "rich_text": {
         const tSizes: Record<string,number> = { small: 11, normal: 13, large: 15 }
-        return <div style={{ padding: "8px 16px", textAlign: (c.align as any)||"left", ...s }}><p style={{ color: muted, fontSize: tSizes[c.size||"normal"], lineHeight: 1.7, margin: 0 }}>{c.text}</p></div>
+        return <div style={{ padding: "8px 16px", textAlign: (c.align as any)||"left", ...s }}><InlineEditable as="p" editable={canEdit} value={c.text} placeholder="Votre texte…" multiline onCommit={edit("text")} style={{ color: muted, fontSize: tSizes[c.size||"normal"], lineHeight: 1.7, margin: 0 }} /></div>
       }
       case "faq": {
         const items = [1,2,3,4,5,6,7,8].map(i => ({ q: c[`q${i}`], a: c[`a${i}`]||"", cat: (c[`q${i}_cat`]||"").trim(), link: (c[`q${i}_link`]||"").trim(), linkLabel: (c[`q${i}_link_label`]||"").trim() })).filter(it => it.q)

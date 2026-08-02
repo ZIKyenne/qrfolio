@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 const PRICE_IDS: Record<string, string> = {
   starter: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || "",
@@ -15,7 +16,15 @@ const ANNUAL_PRICE_IDS: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { plan, annual, userId } = await req.json()
+    // Auth OBLIGATOIRE : le userId est dérivé de la session, JAMAIS du body
+    // (sinon n'importe qui pouvait créer une session Checkout rattachée à un
+    // compte arbitraire et faire attribuer un plan via metadata).
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+    const userId = user.id
+
+    const { plan, annual } = await req.json()
 
     // Annuel si demandé ET si un prix annuel est configuré, sinon mensuel
     const priceId = (annual && ANNUAL_PRICE_IDS[plan]) ? ANNUAL_PRICE_IDS[plan] : PRICE_IDS[plan]

@@ -24,6 +24,16 @@ export function useUndoRedo(initial: Block[]) {
     }
   }, [])
 
+  // Réinitialise l'historique à un unique état de base (cursor 0). À utiliser au
+  // CHARGEMENT d'une page existante : sinon l'historique garde les blocs de démo
+  // du montage, et un Ctrl+Z ramènerait la démo PAR-DESSUS le contenu réel
+  // (l'autosave la persisterait) -> perte de contenu.
+  const reset = useCallback((next: Block[]) => {
+    historyRef.current = [JSON.parse(JSON.stringify(next))]
+    cursorRef.current = 0
+    forceRender(n => n + 1)
+  }, [])
+
   const undo = useCallback(() => {
     if (cursorRef.current > 0) {
       cursorRef.current--
@@ -47,7 +57,7 @@ export function useUndoRedo(initial: Block[]) {
   const size = () => historyRef.current.length
   const pos = () => cursorRef.current
 
-  return { getState, push, undo, redo, canUndo, canRedo, size, pos }
+  return { getState, push, reset, undo, redo, canUndo, canRedo, size, pos }
 }
 
 // ── Hook resize panneau ────────────────────────────────────────────────────

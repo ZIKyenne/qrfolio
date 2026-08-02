@@ -27,7 +27,11 @@ export function resolveStripeEvent(
     case "checkout.session.completed": {
       const s = event.data.object as Stripe.Checkout.Session
       const userId = metaUser(s.metadata)
-      const plan = s.metadata?.plan
+      const priceId = s.metadata?.priceId ?? undefined
+      // Le plan est dérivé du PRIX réellement facturé (source de vérité serveur)
+      // ; `metadata.plan` n'est qu'un repli de compat (le checkout est désormais
+      // authentifié, donc metadata est posé côté serveur).
+      const plan = resolvePlan(priceId) ?? s.metadata?.plan
       // Il faut userId ET plan pour activer -> sinon on ne touche à rien.
       if (!userId || !plan) return { type: "noop" }
       return {
@@ -36,7 +40,7 @@ export function resolveStripeEvent(
         plan,
         customerId: s.customer as string,
         subscriptionId: s.subscription as string,
-        priceId: s.metadata?.priceId ?? undefined,
+        priceId,
         billing: s.metadata?.billing ?? undefined,
       }
     }

@@ -462,7 +462,7 @@
         if (blks?.length) {
             const loaded = blks.map(b => { const c = b.content || {}; return { id: b.id, type: b.type, content: c, visible: c.__visible !== undefined ? c.__visible !== false : (b.is_visible !== false), draft: c.__draft || false, locked: c.__locked || false } })
             setBlocksRaw(loaded)
-            undoRedo.push(loaded)
+            undoRedo.reset(loaded) // repart de l'état chargé (évite l'undo->démo qui écrasait le contenu)
           }
         const { data: qr } = await supabase.from("qr_codes").select("short_code,total_scans").eq("page_id", liveId).single()
         if (qr) {

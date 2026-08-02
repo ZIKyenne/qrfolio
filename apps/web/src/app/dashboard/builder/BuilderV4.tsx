@@ -11,6 +11,7 @@
   import { useUndoRedo, useResize, reorderArray } from "./builderHooks"
   import { scoreBlock } from "./builderSearch"
   import { CommandPalette, type PaletteCommand } from "./CommandPalette"
+  import { OutlinePanel } from "./OutlinePanel"
   import { G, MUTED } from "./builderConstants"
   import { BlockPreview } from "./builderPreview"
   // Mémoïsé : lors d'une frappe, seul le bloc édité change de référence (setBlocks
@@ -82,6 +83,7 @@
     const [dragIdx, setDragIdx] = useState<number | null>(null)
     const [dropBefore, setDropBefore] = useState<number | null>(null)
     const [paletteOpen, setPaletteOpen] = useState(false) // palette de commandes (Cmd/Ctrl+K)
+    const [outlineOpen, setOutlineOpen] = useState(false)  // plan de la page (outline)
     // Refs synchronisées : lecture fraîche de la sélection / des blocs depuis le
     // handler clavier global (deps []), sans re-souscrire l'écouteur à chaque frappe.
     const blocksKbRef = useRef(blocks)
@@ -1733,6 +1735,7 @@
                 const isMultiSelected = multiSelection.includes(block.id)
                 return (
                   <div key={block.id}
+                    data-block-id={block.id}
                     onClick={(e) => handleBlockClick(e, block.id, idx)}
                     onDragOver={dragIdx === null ? undefined : (e) => { e.preventDefault(); const r = e.currentTarget.getBoundingClientRect(); const nb = (e.clientY - r.top) < r.height / 2 ? idx : idx + 1; setDropBefore(p => p === nb ? p : nb) }}
                     onDrop={dragIdx === null ? undefined : (e) => { e.preventDefault(); if (dragIdx === null) return; const ib = dropBefore ?? idx; const from = dragIdx; setBlocks(prev => reorderArray(prev, from, ib)); setDragIdx(null); setDropBefore(null) }}
@@ -2462,10 +2465,25 @@
             { id: "publish", label: "Publier la page", keywords: "publier ligne", icon: "🚀", run: () => { void handlePublish() } },
             { id: "preview", label: "Aperçu plein écran", hint: "Ctrl+P", keywords: "prévisualiser voir", icon: "👁", run: () => setPreview(true) },
             { id: "templates", label: "Modèles de page", keywords: "template modèle gabarit", icon: "✨", run: () => setShowTemplates(true) },
+            { id: "outline", label: "Plan de la page", keywords: "plan structure calques navigation sommaire", icon: "☰", run: () => setOutlineOpen(true) },
             { id: "theme", label: "Ouvrir le thème", keywords: "thème couleur police design", icon: "🎨", run: () => setRightTab("theme") },
             { id: "focus", label: "Mode Focus", hint: "Ctrl+F", keywords: "focus concentration", icon: "◱", run: toggleFocus },
             { id: "expert", label: expertMode ? "Passer en mode Simple" : "Passer en mode Expert", keywords: "simple expert avancé", icon: "⚙", run: () => setExpertMode(v => !v) },
           ] as PaletteCommand[]}
+        />
+
+        <OutlinePanel
+          open={outlineOpen}
+          onClose={() => setOutlineOpen(false)}
+          blocks={blocks}
+          blockDefs={BLOCK_DEFS}
+          onSelect={(id) => {
+            setSelectedId(id); setRightTab("edit")
+            if (isMobile) setMobileTab("canvas")
+            setOutlineOpen(false)
+            setTimeout(() => { try { document.querySelector(`[data-block-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }) } catch {} }, 60)
+          }}
+          onMove={(id, dir) => moveBlock(id, dir)}
         />
 
         <style>{`

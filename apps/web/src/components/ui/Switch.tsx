@@ -10,17 +10,19 @@ export interface SwitchProps {
   checked: boolean
   onChange: (v: boolean) => void
   label?: ReactNode
+  /** Nom accessible quand le libellé est rendu à l'extérieur (pas de texte dupliqué). */
+  ariaLabel?: string
   disabled?: boolean
 }
 
-export function Switch({ checked, onChange, label, disabled }: SwitchProps) {
+export function Switch({ checked, onChange, label, ariaLabel, disabled }: SwitchProps) {
   return (
     <label style={{ display: "inline-flex", alignItems: "center", gap: 10, cursor: disabled ? "not-allowed" : "pointer" }}>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
-        aria-label={typeof label === "string" ? label : undefined}
+        aria-label={ariaLabel ?? (typeof label === "string" ? label : undefined)}
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
         className={`ui-switch${checked ? " ui-switch--on" : ""}`}

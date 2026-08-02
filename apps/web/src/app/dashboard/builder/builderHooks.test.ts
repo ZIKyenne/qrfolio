@@ -1,5 +1,38 @@
 import { describe, it, expect } from "vitest"
-import { shouldCoalesce, COALESCE_MS } from "./builderHooks"
+import { shouldCoalesce, COALESCE_MS, reorderArray } from "./builderHooks"
+
+// Réordonnancement par glisser-déposer (Builder, Phase 2 §2.14).
+describe("reorderArray", () => {
+  const A = ["A", "B", "C", "D"]
+
+  it("déplace un élément vers le bas (insertBefore après la cible)", () => {
+    expect(reorderArray(A, 0, 2)).toEqual(["B", "A", "C", "D"]) // A avant C
+    expect(reorderArray(A, 1, 4)).toEqual(["A", "C", "D", "B"]) // B à la fin
+  })
+
+  it("déplace un élément vers le haut", () => {
+    expect(reorderArray(A, 3, 0)).toEqual(["D", "A", "B", "C"]) // D au début
+    expect(reorderArray(A, 2, 1)).toEqual(["A", "C", "B", "D"]) // C avant B
+  })
+
+  it("déposer sur soi-même ne change rien", () => {
+    expect(reorderArray(A, 1, 1)).toEqual(A)
+    expect(reorderArray(A, 1, 2)).toEqual(A)
+  })
+
+  it("borne la destination et ignore un index source hors limites", () => {
+    expect(reorderArray(A, 0, 99)).toEqual(["B", "C", "D", "A"])
+    expect(reorderArray(A, -1, 0)).toEqual(A)
+    expect(reorderArray(A, 9, 0)).toEqual(A)
+  })
+
+  it("ne mute pas le tableau d'origine", () => {
+    const orig = ["A", "B", "C"]
+    const copy = orig.slice()
+    reorderArray(orig, 0, 2)
+    expect(orig).toEqual(copy)
+  })
+})
 
 // Décision de coalescing de l'historique undo/redo (Builder). Regroupe les frappes
 // consécutives sur un même champ en une seule entrée ; garde les opérations

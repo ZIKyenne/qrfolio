@@ -1,5 +1,19 @@
 import { useState, useRef, useCallback } from "react"
 
+// ── Réordonnancement (glisser-déposer) ────────────────────────────────────
+// PURE + testable. Déplace l'élément d'index `from` pour qu'il s'insère AVANT la
+// position `insertBefore` (0..longueur) exprimée dans le tableau D'ORIGINE.
+// Déposer sur soi-même (insertBefore === from ou from+1) = aucun changement.
+export function reorderArray<T>(arr: T[], from: number, insertBefore: number): T[] {
+  if (from < 0 || from >= arr.length) return arr
+  const next = arr.slice()
+  const [item] = next.splice(from, 1)
+  let dest = insertBefore > from ? insertBefore - 1 : insertBefore
+  dest = Math.max(0, Math.min(next.length, dest))
+  next.splice(dest, 0, item)
+  return next
+}
+
 // ── Historique Undo/Redo ─────────────────────────────────────────────────
 const MAX_HISTORY = 50
 // Fenêtre de coalescing : deux push consécutifs portant la MÊME clé et espacés de

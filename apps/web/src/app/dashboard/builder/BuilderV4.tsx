@@ -8,7 +8,7 @@
   } from "lucide-react"
   import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
   import { PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, type PageTemplate } from "./page-templates"
-  import { useUndoRedo, useResize } from "./builderHooks"
+  import { useUndoRedo, useResize, reorderArray } from "./builderHooks"
   import { G, MUTED } from "./builderConstants"
   import { BlockPreview } from "./builderPreview"
   // Mémoïsé : lors d'une frappe, seul le bloc édité change de référence (setBlocks
@@ -76,6 +76,9 @@
     }, [undoRedo])
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [multiSelection, setMultiSelection] = useState<string[]>([])
+    // Glisser-déposer (Phase 2 §2.14) : index du bloc glissé + position d'insertion.
+    const [dragIdx, setDragIdx] = useState<number | null>(null)
+    const [dropBefore, setDropBefore] = useState<number | null>(null)
     // Refs synchronisées : lecture fraîche de la sélection / des blocs depuis le
     // handler clavier global (deps []), sans re-souscrire l'écouteur à chaque frappe.
     const blocksKbRef = useRef(blocks)
@@ -1753,7 +1756,9 @@
                 return (
                   <div key={block.id}
                     onClick={(e) => handleBlockClick(e, block.id, idx)}
-                    style={{ fontFamily: theme.fontBody || "DM Sans, sans-serif", position: "relative", marginBottom: 0, border: "none", borderRadius: isSelected ? 10 : 0, overflow: "visible", cursor: block.locked ? "default" : "pointer", transition: "box-shadow 0.15s, background 0.1s", opacity: block.visible ? (block.draft ? 0.6 : 1) : 0.35, background: isSelected ? "rgba(201,168,76,0.05)" : isMultiSelected ? "rgba(201,168,76,0.06)" : block.draft ? "rgba(251,191,36,0.03)" : "transparent", boxShadow: isSelected ? `inset 0 0 0 2px ${G}, 0 0 0 4px ${G}1f` : isMultiSelected ? `inset 3px 0 0 ${G}80` : block.draft ? "inset 3px 0 0 rgba(251,191,36,0.5)" : block.locked ? "inset 3px 0 0 rgba(99,102,241,0.5)" : "none" }}
+                    onDragOver={dragIdx === null ? undefined : (e) => { e.preventDefault(); const r = e.currentTarget.getBoundingClientRect(); const nb = (e.clientY - r.top) < r.height / 2 ? idx : idx + 1; setDropBefore(p => p === nb ? p : nb) }}
+                    onDrop={dragIdx === null ? undefined : (e) => { e.preventDefault(); if (dragIdx === null) return; const ib = dropBefore ?? idx; const from = dragIdx; setBlocks(prev => reorderArray(prev, from, ib)); setDragIdx(null); setDropBefore(null) }}
+                    style={{ fontFamily: theme.fontBody || "DM Sans, sans-serif", position: "relative", marginBottom: 0, border: "none", borderRadius: isSelected ? 10 : 0, overflow: "visible", cursor: block.locked ? "default" : "pointer", transition: "box-shadow 0.15s, background 0.1s", opacity: idx === dragIdx ? 0.4 : (block.visible ? (block.draft ? 0.6 : 1) : 0.35), background: isSelected ? "rgba(201,168,76,0.05)" : isMultiSelected ? "rgba(201,168,76,0.06)" : block.draft ? "rgba(251,191,36,0.03)" : "transparent", boxShadow: isSelected ? `inset 0 0 0 2px ${G}, 0 0 0 4px ${G}1f` : isMultiSelected ? `inset 3px 0 0 ${G}80` : block.draft ? "inset 3px 0 0 rgba(251,191,36,0.5)" : block.locked ? "inset 3px 0 0 rgba(99,102,241,0.5)" : "none" }}
                     onMouseEnter={e => {
                       if (!isSelected) e.currentTarget.style.boxShadow = `inset 3px 0 0 rgba(201,168,76,0.3)`
                       const overlay = e.currentTarget.querySelector(".block-overlay") as HTMLElement
@@ -1769,8 +1774,18 @@
                       if (handle) handle.style.opacity = "0"
                     }}>
 
-                    {/* Poignée : décorative pour l'instant (le glisser-déposer arrive en Phase 2 du plan). Pas de cursor:grab tant que le drag n'est pas réel — voir docs/BUILDER-REBUILD-PLAN.md §2.14. */}
-                    {!preview && <div className="block-handle" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 18, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.15s", cursor: block.locked ? "not-allowed" : "default", zIndex: 10 }}>
+                    {/* Indicateur d'insertion du glisser-déposer (ligne dorée) */}
+                    {dragIdx !== null && dropBefore === idx && <div style={{ position: "absolute", left: 0, right: 0, top: -1, height: 3, background: G, borderRadius: 2, zIndex: 20, boxShadow: `0 0 6px ${G}`, pointerEvents: "none" }} />}
+                    {dragIdx !== null && idx === blocks.length - 1 && dropBefore === blocks.length && <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 3, background: G, borderRadius: 2, zIndex: 20, boxShadow: `0 0 6px ${G}`, pointerEvents: "none" }} />}
+
+                    {/* Poignée de glisser-déposer (Phase 2, §2.14). draggable natif ; les blocs
+                        verrouillés ne se glissent pas. Réordonnancement clavier (chevrons /
+                        Alt+flèches) conservé pour l'accessibilité. */}
+                    {!preview && <div className="block-handle"
+                      draggable={!block.locked}
+                      onDragStart={e => { e.stopPropagation(); setDragIdx(idx); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", String(idx)) } catch {} }}
+                      onDragEnd={() => { setDragIdx(null); setDropBefore(null) }}
+                      style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 18, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.15s", cursor: block.locked ? "not-allowed" : "grab", zIndex: 10 }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                         {[0,1,2,3,4,5].map(i => <div key={i} style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(201,168,76,0.5)" }} />)}
                       </div>

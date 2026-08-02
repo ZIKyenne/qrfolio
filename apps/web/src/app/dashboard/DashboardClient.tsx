@@ -53,18 +53,30 @@ function DeleteModal({ page, onConfirm, onCancel, deleting }: { page: Page; onCo
   )
 }
 
-export default function DashboardClient() {
+type DashProps = {
+  // Données préchargées côté SERVEUR (évite le double getUser() + le waterfall
+  // client + le spinner initial). Optionnelles : si absentes, on charge au montage.
+  initialProfile?: Profile | null
+  initialPages?: Page[]
+  initialMonthViews?: number
+  initialTodayViews?: number
+  initialWeekViews?: number[]
+}
+
+export default function DashboardClient({
+  initialProfile = null, initialPages = [], initialMonthViews = 0, initialTodayViews = 0, initialWeekViews = [],
+}: DashProps = {}) {
   const isMobile = useIsMobile()
   const toast = useToast()
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [pages, setPages] = useState<Page[]>([])
-  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<Profile | null>(initialProfile)
+  const [pages, setPages] = useState<Page[]>(initialPages)
+  const [loading, setLoading] = useState(!initialProfile) // pas de spinner si déjà seedé par le serveur
   const [pageToDelete, setPageToDelete] = useState<Page | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [hour] = useState(new Date().getHours())
-  const [monthViews, setMonthViews] = useState(0) // vues du mois en cours (quota)
-  const [todayViews, setTodayViews] = useState(0) // vues aujourd'hui (vie du dashboard)
-  const [weekViews, setWeekViews] = useState<number[]>([]) // 7 derniers jours (mini-sparkline)
+  const [monthViews, setMonthViews] = useState(initialMonthViews) // vues du mois en cours (quota)
+  const [todayViews, setTodayViews] = useState(initialTodayViews) // vues aujourd'hui (vie du dashboard)
+  const [weekViews, setWeekViews] = useState<number[]>(initialWeekViews) // 7 derniers jours (mini-sparkline)
   const [menuPage, setMenuPage] = useState<Page | null>(null) // ligne "..." -> bottom sheet d'actions (echappe l'overflow de la carte)
   const [copiedId, setCopiedId] = useState<string | null>(null) // feedback "Lien copie"
 
@@ -108,7 +120,9 @@ export default function DashboardClient() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  // Si le serveur a déjà seedé les données (props), on évite le fetch initial
+  // (et le 2e getUser()). load() reste utilisé pour rafraîchir après une mutation.
+  useEffect(() => { if (!initialProfile) load() }, [])
 
   async function deletePage(page: Page) {
     setDeleting(true)

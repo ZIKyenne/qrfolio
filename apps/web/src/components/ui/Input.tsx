@@ -17,13 +17,19 @@ function Wrapper({ id, label, hint, error, children }: { id: string; label?: Rea
   )
 }
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> { label?: ReactNode; hint?: ReactNode; error?: string }
-export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({ label, hint, error, id, className, ...rest }, ref) {
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> { label?: ReactNode; hint?: ReactNode; error?: string; rightSlot?: ReactNode }
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({ label, hint, error, id, className, rightSlot, style, ...rest }, ref) {
   const gid = useId(); const fid = id || gid
+  const input = (
+    <input ref={ref} id={fid} aria-invalid={!!error || undefined} aria-describedby={hint || error ? `${fid}-desc` : undefined}
+      className={`ui-input${error ? " ui-input--error" : ""}${className ? " " + className : ""}`}
+      style={rightSlot ? { paddingRight: 42, ...style } : style} {...rest} />
+  )
   return (
     <Wrapper id={fid} label={label} hint={hint} error={error}>
-      <input ref={ref} id={fid} aria-invalid={!!error || undefined} aria-describedby={hint || error ? `${fid}-desc` : undefined}
-        className={`ui-input${error ? " ui-input--error" : ""}${className ? " " + className : ""}`} {...rest} />
+      {rightSlot
+        ? <div style={{ position: "relative" }}>{input}<span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", display: "flex" }}>{rightSlot}</span></div>
+        : input}
     </Wrapper>
   )
 })

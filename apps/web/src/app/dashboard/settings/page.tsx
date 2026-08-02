@@ -6,6 +6,7 @@ import { Save, Check, AlertTriangle, Eye, EyeOff, Bell, Shield, Trash2, LogOut, 
 import Particles from "@/components/Particles"
 import { Button } from "@/components/ui/Button"
 import { Switch } from "@/components/ui/Switch"
+import { Input } from "@/components/ui/Input"
 
 type Profile = { id: string; email: string; full_name: string | null; plan: string }
 
@@ -236,25 +237,16 @@ export default function SettingsPage() {
         {/* Mot de passe */}
         <Section title="Sécurité" subtitle="Mot de passe et authentification" icon={<Key size={16} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div>
-              <label style={{ color: MUTED, fontSize: 12, display: "block", marginBottom: 5 }}>Nouveau mot de passe</label>
-              <div style={{ position: "relative" }}>
-                <input type={showPwd ? "text" : "password"} value={newPwd} onChange={e => setNewPwd(e.target.value)}
-                  placeholder="Minimum 8 caractères" style={{ ...inputStyle, paddingRight: 40 }}
-                  onFocus={e => e.target.style.borderColor = "color-mix(in srgb, var(--accent) 50%, transparent)"}
-                  onBlur={e => e.target.style.borderColor = "color-mix(in srgb, var(--accent) 20%, transparent)"} />
-                <button onClick={() => setShowPwd(s => !s)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: MUTED, cursor: "pointer" }}>
+            <Input label="Nouveau mot de passe" type={showPwd ? "text" : "password"} value={newPwd}
+              onChange={e => setNewPwd(e.target.value)} placeholder="Minimum 8 caractères"
+              rightSlot={
+                <button type="button" onClick={() => setShowPwd(s => !s)} aria-label={showPwd ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", display: "flex", padding: 4 }}>
                   {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
-              </div>
-            </div>
-            <div>
-              <label style={{ color: MUTED, fontSize: 12, display: "block", marginBottom: 5 }}>Confirmer le mot de passe</label>
-              <input type={showPwd ? "text" : "password"} value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)}
-                placeholder="Répétez le mot de passe" style={inputStyle}
-                onFocus={e => e.target.style.borderColor = "color-mix(in srgb, var(--accent) 50%, transparent)"}
-                onBlur={e => e.target.style.borderColor = "color-mix(in srgb, var(--accent) 20%, transparent)"} />
-            </div>
+              } />
+            <Input label="Confirmer le mot de passe" type={showPwd ? "text" : "password"} value={confirmPwd}
+              onChange={e => setConfirmPwd(e.target.value)} placeholder="Répétez le mot de passe" />
 
             {/* Strength indicator */}
             {newPwd && (

@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/Button"
 import {
   ArrowRight, Plus, Trash2, Pencil, ToggleLeft,
   ToggleRight, Loader, AlertCircle, CheckCircle,
@@ -250,14 +251,8 @@ export default function RedirectsPanel({ userDomains }: Props) {
             )}
 
             <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
-              <button type="button" onClick={resetForm}
-                style={{ padding:"9px 18px", background:"transparent", border:"1px solid rgba(255,255,255,0.1)", borderRadius:9, color:MUTED, fontSize:12, cursor:"pointer" }}>
-                Annuler
-              </button>
-              <button type="button" onClick={save} disabled={!fTo || saving}
-                style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 20px", background:fTo?"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))":"rgba(255,255,255,0.05)", border:"none", borderRadius:9, color:fTo?"#080808":MUTED, fontSize:13, fontWeight:700, cursor:fTo&&!saving?"pointer":"not-allowed", opacity:saving?0.7:1 }}>
-                {saving ? <><Loader size={13} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Enregistrement…</> : <><CheckCircle size={13}/> {editId ? "Modifier" : "Créer la redirection"}</>}
-              </button>
+              <Button variant="ghost" size="sm" onClick={resetForm}>Annuler</Button>
+              <Button variant="primary" size="sm" onClick={save} loading={saving} disabled={!fTo} leftIcon={<CheckCircle size={13} />}>{editId ? "Modifier" : "Créer la redirection"}</Button>
             </div>
           </div>
         )}

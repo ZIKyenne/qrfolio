@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { Button } from "@/components/ui/Button"
 import {
   Target, Plus, Trash2, TrendingUp, CheckCircle,
   MessageCircle, Calendar, Phone, Mail, ShoppingBag,
@@ -307,14 +308,8 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
           </div>
 
           <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
-            <button type="button" onClick={() => setShowForm(false)}
-              style={{ padding: "9px 18px", background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, color: MUTED, fontSize: 12, cursor: "pointer" }}>
-              Annuler
-            </button>
-            <button type="button" onClick={saveGoal} disabled={!fName || saving}
-              style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 20px", background: fName ? "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" : "rgba(255,255,255,0.05)", border: "none", borderRadius: 9, color: fName ? "#080808" : MUTED, fontSize: 13, fontWeight: 700, cursor: fName ? "pointer" : "not-allowed", opacity: saving ? 0.7 : 1 }}>
-              {saving ? <><Loader size={13} style={{ animation: "mo-spin 0.8s linear infinite" }} /> Création...</> : <><CheckCircle size={13} /> Créer l'objectif</>}
-            </button>
+            <Button variant="ghost" size="sm" onClick={() => setShowForm(false)}>Annuler</Button>
+            <Button variant="primary" size="sm" onClick={saveGoal} loading={saving} disabled={!fName} leftIcon={<CheckCircle size={13} />}>Créer l'objectif</Button>
           </div>
         </div>
       )}

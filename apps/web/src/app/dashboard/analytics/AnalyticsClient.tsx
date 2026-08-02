@@ -13,7 +13,7 @@ import GeoPanel from "./GeoPanel"
 import DevicePanel from "./DevicePanel"
 import ExportPanel from "./ExportPanel"
 import ReportSubscriptionPanel from "./ReportSubscriptionPanel"
-import { buildDailyData, buildDeviceData, buildSourceData, buildScrollFunnel, buildBlockImpressions, buildBlockDwell, buildFunnel, buildTapGrid, buildTapsByBlock, countTaps } from "./analyticsAgg"
+import { buildDailyData, buildDeviceData, buildSourceData, buildScrollFunnel, buildFunnel, buildTapGrid, buildTapsByBlock, countTaps } from "./analyticsAgg"
 import ScrollDepthPanel from "./ScrollDepthPanel"
 import ConversionFunnelPanel from "./ConversionFunnelPanel"
 import HeatmapPanel from "./HeatmapPanel"
@@ -93,8 +93,6 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
     [pageEvents, selectedPage]
   )
   const scrollFunnel = useMemo(() => buildScrollFunnel(filteredEvents), [filteredEvents])
-  const blockImpressions = useMemo(() => buildBlockImpressions(filteredEvents), [filteredEvents])
-  const blockDwell = useMemo(() => buildBlockDwell(filteredEvents), [filteredEvents])
   const tapGrid = useMemo(() => buildTapGrid(filteredEvents, 8, 16), [filteredEvents])
   const tapsByBlock = useMemo(() => buildTapsByBlock(filteredEvents), [filteredEvents])
   const tapTotal = useMemo(() => countTaps(filteredEvents), [filteredEvents])
@@ -451,8 +449,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             clicks={clicks}
             pageViews={filteredViews}
             pages={pages}
-            impressions={blockImpressions}
-            dwell={blockDwell}
+            events={filteredEvents}
           />
         </div>
 

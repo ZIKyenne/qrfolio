@@ -6,6 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts"
 import { Layers, MousePointerClick, Eye, TrendingUp } from "lucide-react"
+import { buildBlockImpressions, buildBlockDwell, type PageEvent } from "./analyticsAgg"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type BlockRow  = { id: string; type: string; page_id: string; position: number; is_visible: boolean }
@@ -18,6 +19,10 @@ interface Props {
   clicks:    ClickRow[]
   pageViews: ViewRow[]
   pages:     PageRow[]
+  // Événements bruts (impression/dwell) filtrés par page : fenêtrés ICI sur la
+  // même période que les clics, pour un CTR réel cohérent (P2-25).
+  events?: PageEvent[]
+  // Repli rétro-compatible (agrégats tout-historique) si `events` absent.
   impressions?: Record<string, number>  // block_id -> nb de fois réellement vu (page_events)
   dwell?: Record<string, number>         // block_id -> temps d'attention moyen en secondes
 }
@@ -70,7 +75,7 @@ function Tip({ active, payload, label }: any) {
   )
 }
 
-export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages, impressions = {}, dwell = {} }: Props) {
+export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages, events, impressions = {}, dwell = {} }: Props) {
   const [period, setPeriod] = useState(30)
   const [sortBy, setSortBy] = useState("clicks")
   const [pageId, setPageId] = useState("all")
@@ -81,6 +86,16 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
     d.setDate(d.getDate() - period)
     return d
   }, [period])
+
+  // Impressions / dwell fenêtrés sur la MÊME période que les clics (P2-25).
+  // Si les événements bruts sont fournis, on les recalcule avec la borne `cutoff` ;
+  // sinon on retombe sur les agrégats tout-historique passés en props (rétro-compat).
+  const winImpressions = useMemo(
+    () => (events ? buildBlockImpressions(events, cutoff.getTime()) : impressions),
+    [events, cutoff, impressions])
+  const winDwell = useMemo(
+    () => (events ? buildBlockDwell(events, cutoff.getTime()) : dwell),
+    [events, cutoff, dwell])
 
   const fClicks = useMemo(() =>
     clicks.filter(c => new Date(c.clicked_at) >= cutoff && (pageId === "all" || c.page_id === pageId)),
@@ -111,8 +126,8 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
       if (!byType[b.type]) byType[b.type] = { count: 0, directClicks: 0, impr: 0, dwellSum: 0, dwellN: 0 }
       byType[b.type].count++
       byType[b.type].directClicks += clicksById[b.id] || 0
-      byType[b.type].impr += impressions[b.id] || 0
-      if (dwell[b.id]) { byType[b.type].dwellSum += dwell[b.id]; byType[b.type].dwellN++ }
+      byType[b.type].impr += winImpressions[b.id] || 0
+      if (winDwell[b.id]) { byType[b.type].dwellSum += winDwell[b.id]; byType[b.type].dwellN++ }
     })
 
     return Object.entries(byType).map(([type, d]) => {
@@ -124,7 +139,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
       const dwellAvg = d.dwellN > 0 ? Math.round(d.dwellSum / d.dwellN) : null
       return { type, cfg, count: d.count, clics, ctr, impr: d.impr, realCtr, dwellAvg }
     }).filter(s => s.cfg.interactive)
-  }, [fBlocks, fClicks, totalViews, impressions, dwell])
+  }, [fBlocks, fClicks, totalViews, winImpressions, winDwell])
 
   const sorted = useMemo(() => {
     const arr = [...stats]

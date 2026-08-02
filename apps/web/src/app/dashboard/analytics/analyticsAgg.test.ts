@@ -100,6 +100,22 @@ describe("buildBlockImpressions", () => {
     ])
     expect(counts).toEqual({ b1: 2, b2: 1 })
   })
+  it("fenetre `since` : ne compte que les impressions posterieures a la borne (P2-25)", () => {
+    const since = new Date("2026-07-15T00:00:00Z").getTime()
+    const counts = buildBlockImpressions([
+      { kind: "impression", ref: "b1", created_at: "2026-07-20T10:00:00Z" }, // dans la fenetre
+      { kind: "impression", ref: "b1", created_at: "2026-07-10T10:00:00Z" }, // avant -> ignore
+      { kind: "impression", ref: "b2", created_at: "2026-07-15T00:00:00Z" }, // borne incluse
+    ], since)
+    expect(counts).toEqual({ b1: 1, b2: 1 })
+  })
+  it("sans `since`, comptage inchange (retro-compat)", () => {
+    const evs: PageEvent[] = [
+      { kind: "impression", ref: "b1", created_at: "2020-01-01T00:00:00Z" },
+      { kind: "impression", ref: "b1" },
+    ]
+    expect(buildBlockImpressions(evs)).toEqual({ b1: 2 })
+  })
 })
 
 describe("blockCtr", () => {
@@ -124,6 +140,14 @@ describe("buildBlockDwell", () => {
   })
   it("aucun dwell -> objet vide", () => {
     expect(buildBlockDwell([{ kind: "scroll", ref: "50" }])).toEqual({})
+  })
+  it("fenetre `since` : moyenne calculee uniquement sur la periode (P2-25)", () => {
+    const since = new Date("2026-07-15T00:00:00Z").getTime()
+    const avg = buildBlockDwell([
+      { kind: "dwell", ref: "b1", value: 30, created_at: "2026-07-20T10:00:00Z" }, // dans la fenetre
+      { kind: "dwell", ref: "b1", value: 10, created_at: "2026-07-01T10:00:00Z" }, // avant -> ignore
+    ], since)
+    expect(avg).toEqual({ b1: 30 })
   })
 })
 

@@ -56,7 +56,15 @@ export function buildSourceData(views: AggView[]): NameValue[] {
 }
 
 // ── Engagement (page_events : scroll + impressions + temps par bloc + clics) ───
-export type PageEvent = { kind: "scroll" | "impression" | "dwell" | "tap"; ref: string; value?: number | null; x?: number | null; y?: number | null; page_id?: string }
+export type PageEvent = { kind: "scroll" | "impression" | "dwell" | "tap"; ref: string; value?: number | null; x?: number | null; y?: number | null; page_id?: string; created_at?: string }
+
+// Vrai si l'evenement est posterieur ou egal a la borne `since` (timestamp ms).
+// Sans borne (undefined) ou sans date, l'evenement est conserve (retro-compat).
+function withinSince(e: PageEvent, since?: number): boolean {
+  if (since === undefined) return true
+  if (!e.created_at) return true
+  return new Date(e.created_at).getTime() >= since
+}
 export type ScrollStep = { depth: string; count: number; pct: number }
 
 // Entonnoir de profondeur de scroll : jalons 25/50/75/100 %. Chaque visiteur qui atteint
@@ -76,10 +84,12 @@ export function buildScrollFunnel(events: PageEvent[]): ScrollStep[] {
 }
 
 // Nombre d'impressions (bloc reellement vu) par block_id.
-export function buildBlockImpressions(events: PageEvent[]): Record<string, number> {
+// `since` (timestamp ms) borne la fenetre : indispensable pour que le CTR reel
+// (clics / impressions) compare des numerateur et denominateur sur la MEME periode.
+export function buildBlockImpressions(events: PageEvent[], since?: number): Record<string, number> {
   const counts: Record<string, number> = {}
   for (const e of events) {
-    if (e.kind === "impression" && e.ref) counts[e.ref] = (counts[e.ref] || 0) + 1
+    if (e.kind === "impression" && e.ref && withinSince(e, since)) counts[e.ref] = (counts[e.ref] || 0) + 1
   }
   return counts
 }
@@ -109,11 +119,12 @@ export function buildFunnel(stages: { label: string; count: number }[]): FunnelS
 }
 
 // Temps d'attention moyen (secondes) par block_id, a partir des evenements 'dwell'.
-export function buildBlockDwell(events: PageEvent[]): Record<string, number> {
+// `since` (timestamp ms) borne la fenetre, coherent avec la periode selectionnee.
+export function buildBlockDwell(events: PageEvent[], since?: number): Record<string, number> {
   const sum: Record<string, number> = {}
   const n: Record<string, number> = {}
   for (const e of events) {
-    if (e.kind === "dwell" && e.ref && typeof e.value === "number") {
+    if (e.kind === "dwell" && e.ref && typeof e.value === "number" && withinSince(e, since)) {
       sum[e.ref] = (sum[e.ref] || 0) + e.value
       n[e.ref] = (n[e.ref] || 0) + 1
     }

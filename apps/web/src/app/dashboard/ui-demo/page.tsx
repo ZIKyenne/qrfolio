@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/Card"
 import { Badge, type BadgeTone } from "@/components/ui/Badge"
 import { Tabs } from "@/components/ui/Tabs"
 import { Modal } from "@/components/ui/Modal"
+import { Input, Textarea, Select } from "@/components/ui/Input"
+import { Switch } from "@/components/ui/Switch"
 import { Download, ArrowRight, Trash2, QrCode, BarChart, Palette } from "lucide-react"
 
 const VARIANTS: ButtonVariant[] = ["primary", "secondary", "ghost", "danger"]
@@ -18,6 +20,8 @@ export default function UiDemoPage() {
   const [loading, setLoading] = useState(false)
   const [tab, setTab] = useState("apercu")
   const [modalOpen, setModalOpen] = useState(false)
+  const [sw1, setSw1] = useState(true)
+  const [sw2, setSw2] = useState(false)
 
   const section: React.CSSProperties = { marginBottom: 40 }
   const h2: React.CSSProperties = { fontFamily: "Fraunces, serif", color: "#F5F0E8", fontSize: 20, fontWeight: 700, margin: "0 0 14px" }
@@ -110,6 +114,28 @@ export default function UiDemoPage() {
         >
           Cette action est irréversible. Testez : <kbd>Tab</kbd> reste piégé dans la modale, <kbd>Échap</kbd> ferme, et le focus revient au bouton d'ouverture.
         </Modal>
+      </div>
+
+      {/* CHAMPS & SWITCH */}
+      <div style={section}>
+        <h2 style={h2}>Champs & Switch</h2>
+        <Card>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 420 }}>
+            <Input label="Nom" placeholder="Votre nom" hint="Le nom affiché publiquement." />
+            <Input label="Email" type="email" placeholder="vous@exemple.fr" error="Adresse email invalide." defaultValue="pasunemail" />
+            <Select label="Statut" defaultValue="active">
+              <option value="active">Actif</option>
+              <option value="paused">En pause</option>
+              <option value="draft">Brouillon</option>
+            </Select>
+            <Textarea label="Bio" placeholder="Quelques mots sur vous…" hint="160 caractères conseillés." />
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
+              <Switch checked={sw1} onChange={setSw1} label="Recevoir les nouveaux messages par email" />
+              <Switch checked={sw2} onChange={setSw2} label="Rapport hebdomadaire" />
+              <Switch checked={false} onChange={() => {}} disabled label="Option désactivée" />
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   )

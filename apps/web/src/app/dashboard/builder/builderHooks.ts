@@ -14,6 +14,12 @@ export function reorderArray<T>(arr: T[], from: number, insertBefore: number): T
   return next
 }
 
+// Clone des blocs avec des identifiants NEUFS (copier/coller, duplication). PURE :
+// genId injecté (testable). Copie le contenu (nouvelle référence), préserve le reste.
+export function cloneBlocks<T extends { id: string; content: Record<string, string> }>(items: T[], genId: () => string): T[] {
+  return items.map(b => ({ ...b, id: genId(), content: { ...b.content } }))
+}
+
 // ── Historique Undo/Redo ─────────────────────────────────────────────────
 const MAX_HISTORY = 50
 // Fenêtre de coalescing : deux push consécutifs portant la MÊME clé et espacés de

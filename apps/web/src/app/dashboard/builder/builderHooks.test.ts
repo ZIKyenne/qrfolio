@@ -1,5 +1,36 @@
 import { describe, it, expect } from "vitest"
-import { shouldCoalesce, COALESCE_MS, reorderArray } from "./builderHooks"
+import { shouldCoalesce, COALESCE_MS, reorderArray, cloneBlocks } from "./builderHooks"
+
+// Clonage de blocs (copier/coller, duplication) — Builder Phase 2 §2.5.
+describe("cloneBlocks", () => {
+  const mkGen = () => { let n = 0; return () => `id-${++n}` }
+
+  it("attribue des identifiants neufs et préserve le contenu + les autres champs", () => {
+    const src = [
+      { id: "a", type: "cta", content: { label: "Salut" }, visible: true, locked: true },
+      { id: "b", type: "bio", content: { text: "x" }, visible: false },
+    ]
+    const out = cloneBlocks(src, mkGen())
+    expect(out.map(b => b.id)).toEqual(["id-1", "id-2"])
+    expect(out[0].type).toBe("cta")
+    expect(out[0].content).toEqual({ label: "Salut" })
+    expect(out[0].visible).toBe(true)
+    expect(out[0].locked).toBe(true)
+    expect(out[1].visible).toBe(false)
+  })
+
+  it("copie le contenu (nouvelle référence, pas d'aliasing) et ne mute pas la source", () => {
+    const src = [{ id: "a", type: "cta", content: { label: "x" }, visible: true }]
+    const out = cloneBlocks(src, mkGen())
+    out[0].content.label = "modifié"
+    expect(src[0].content.label).toBe("x")   // source intacte
+    expect(src[0].id).toBe("a")
+  })
+
+  it("tableau vide -> tableau vide", () => {
+    expect(cloneBlocks([], mkGen())).toEqual([])
+  })
+})
 
 // Réordonnancement par glisser-déposer (Builder, Phase 2 §2.14).
 describe("reorderArray", () => {

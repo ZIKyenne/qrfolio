@@ -8,7 +8,7 @@
   } from "lucide-react"
   import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
   import { PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, type PageTemplate } from "./page-templates"
-  import { useUndoRedo, useResize, reorderArray } from "./builderHooks"
+  import { useUndoRedo, useResize, reorderArray, cloneBlocks } from "./builderHooks"
   import { scoreBlock } from "./builderSearch"
   import { CommandPalette, type PaletteCommand } from "./CommandPalette"
   import { OutlinePanel } from "./OutlinePanel"
@@ -98,6 +98,12 @@
     // appeler la DERNIÈRE version, pas celle capturée au montage.
     const deleteMultiRef = useRef<() => void>(() => {})
     const deleteBlockRef = useRef<(id: string) => void>(() => {})
+    // Presse-papier de blocs + actions copier/coller/dupliquer (appelées via ref
+    // depuis le handler clavier global, toujours à jour). Voir §2.5 du plan.
+    const clipboardRef = useRef<Block[]>([])
+    const copyRef = useRef<() => void>(() => {})
+    const pasteRef = useRef<() => void>(() => {})
+    const duplicateSelRef = useRef<() => void>(() => {})
     const [pageName, setPageName] = useState("Ma Page")
     const [pageSlug, setPageSlug] = useState("ma-page")
     const [pageStatus, setPageStatus] = useState("draft")
@@ -291,6 +297,25 @@
           e.preventDefault()
           setRightCollapsed(false)
           setRightTab("preview")
+          return
+        }
+        // Ctrl+D — Dupliquer la sélection
+        if (ctrl && (e.key === "d" || e.key === "D") && !isEditing(e)) {
+          e.preventDefault()
+          duplicateSelRef.current()
+          return
+        }
+        // Ctrl+C — Copier la sélection (hors saisie ; sinon copie native)
+        if (ctrl && (e.key === "c" || e.key === "C")) {
+          if (!isEditing(e) && (selectedIdKbRef.current || multiSelectionKbRef.current.length > 0)) {
+            e.preventDefault()
+            copyRef.current()
+          }
+          return
+        }
+        // Ctrl+V — Coller (hors saisie ; sinon collage natif dans le champ)
+        if (ctrl && (e.key === "v" || e.key === "V")) {
+          if (!isEditing(e)) { e.preventDefault(); pasteRef.current() }
           return
         }
         // Ctrl+F — Mode Focus
@@ -782,6 +807,34 @@
       setMultiSelection([])
     }
 
+    // ── Dupliquer / Copier / Coller (clavier + palette) ───────────────────────
+    function duplicateSelection() {
+      if (multiSelection.length > 0) duplicateMulti()
+      else if (selectedId) duplicateBlock(selectedId)
+    }
+    function copySelection() {
+      const ids = multiSelection.length > 0 ? multiSelection : (selectedId ? [selectedId] : [])
+      if (!ids.length) return
+      clipboardRef.current = blocks.filter(b => ids.includes(b.id)).map(b => ({ ...b, content: { ...b.content } }))
+    }
+    function pasteClipboard() {
+      const clip = clipboardRef.current
+      if (!clip.length) return
+      const clones = cloneBlocks(clip, genId)
+      const anchorIds = multiSelection.length > 0 ? multiSelection : (selectedId ? [selectedId] : [])
+      setBlocks(p => {
+        let at = p.length
+        if (anchorIds.length) at = Math.max(...anchorIds.map(id => p.findIndex(b => b.id === id))) + 1
+        return [...p.slice(0, at), ...clones, ...p.slice(at)]
+      })
+      setSelectedId(clones[clones.length - 1].id)
+      setMultiSelection(clones.length > 1 ? clones.map(c => c.id) : [])
+      setRightTab("edit")
+    }
+    copyRef.current = copySelection
+    pasteRef.current = pasteClipboard
+    duplicateSelRef.current = duplicateSelection
+
     function toggleVisibleMulti() {
       const ids = multiSelection
       if (ids.length === 0) return
@@ -1001,6 +1054,9 @@
               {[
                 ["Ctrl+K", "Palette de commandes"],
                 ["/", "Insérer un bloc"],
+                ["Ctrl+D", "Dupliquer"],
+                ["Ctrl+C", "Copier"],
+                ["Ctrl+V", "Coller"],
                 ["Ctrl+Z", "Annuler"],
                 ["Ctrl+⇧+Z", "Rétablir"],
                 ["Ctrl+B", "Bibliothèque"],
@@ -2465,6 +2521,9 @@
             { id: "publish", label: "Publier la page", keywords: "publier ligne", icon: "🚀", run: () => { void handlePublish() } },
             { id: "preview", label: "Aperçu plein écran", hint: "Ctrl+P", keywords: "prévisualiser voir", icon: "👁", run: () => setPreview(true) },
             { id: "templates", label: "Modèles de page", keywords: "template modèle gabarit", icon: "✨", run: () => setShowTemplates(true) },
+            { id: "duplicate", label: "Dupliquer la sélection", hint: "Ctrl+D", keywords: "dupliquer clone copie", icon: "⧉", run: duplicateSelection },
+            { id: "copy", label: "Copier la sélection", hint: "Ctrl+C", keywords: "copier", icon: "⎘", run: copySelection },
+            { id: "paste", label: "Coller", hint: "Ctrl+V", keywords: "coller paste", icon: "📋", run: pasteClipboard },
             { id: "outline", label: "Plan de la page", keywords: "plan structure calques navigation sommaire", icon: "☰", run: () => setOutlineOpen(true) },
             { id: "theme", label: "Ouvrir le thème", keywords: "thème couleur police design", icon: "🎨", run: () => setRightTab("theme") },
             { id: "focus", label: "Mode Focus", hint: "Ctrl+F", keywords: "focus concentration", icon: "◱", run: toggleFocus },

@@ -28,7 +28,7 @@ let seq = 0
 const STYLES: Record<ToastKind, { bar: string; icon: string; ico: string }> = {
   success: { bar: "var(--success)", ico: "✓", icon: "rgba(57,255,143,0.14)" },
   error:   { bar: "var(--danger)", ico: "!", icon: "rgba(255,107,107,0.14)" },
-  info:    { bar: "#C9A84C", ico: "i", icon: "rgba(201,168,76,0.14)" },
+  info:    { bar: "var(--accent)", ico: "i", icon: "color-mix(in srgb, var(--accent) 14%, transparent)" },
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {

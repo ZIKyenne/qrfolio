@@ -1513,12 +1513,17 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
     if (!img) return
     setQrBusy(true)
     try {
+      // Garde-fou scannabilité : un logo masque des modules centraux. On plancher
+      // l'ECC à H quand un logo est présent (comme QRStudio) — un L/M + logo donne
+      // un QR potentiellement illisible. S'applique quelle que soit la puce cliquée.
+      const wantEcc = opts.ecc ?? qrEcc
+      const effEcc: "L" | "M" | "Q" | "H" = qrHasLogo && (wantEcc === "L" || wantEcc === "M") ? "H" : wantEcc
       const url = await regenQr({
         fg: opts.fg ?? (qrFg || undefined),
         bg: opts.bg ?? (qrBg || undefined),
         dotStyle: opts.dotStyle ?? (qrDot || undefined),
         cornerStyle: opts.cornerStyle ?? (qrCorner || undefined),
-        ecc: opts.ecc ?? qrEcc,
+        ecc: effEcc,
       })
       if (url) {
         // conserver largeur affichee + centre meme si le QR regenere a d'autres dimensions pixel
@@ -1531,7 +1536,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         if (opts.bg) setQrBg(opts.bg)
         if (opts.dotStyle) setQrDot(opts.dotStyle)
         if (opts.cornerStyle) setQrCorner(opts.cornerStyle)
-        if (opts.ecc) setQrEcc(opts.ecc)
+        if (opts.ecc) setQrEcc(effEcc) // reflète l'ECC réellement appliqué (H si logo)
       }
     } catch { /* noop */ } finally { setQrBusy(false) }
   }

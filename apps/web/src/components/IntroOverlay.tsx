@@ -111,20 +111,20 @@ const QW_CSS = `
 #qw-intro .qw-stack{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(30px,5vh,46px)}
 #qw-intro .qw-mark{position:relative;animation:qw-float 5s ease-in-out 1.6s infinite}
 #qw-intro .qw-mark-glow{position:absolute;inset:-38px;border-radius:60px;background:radial-gradient(circle,rgba(212,169,74,.3),transparent 68%);filter:blur(22px);animation:qw-fade .9s ease-out both}
-#qw-intro .qw-tile{position:relative;width:clamp(112px,15vh,148px);height:clamp(112px,15vh,148px);border-radius:26%;background:linear-gradient(148deg,#f7e3a8 0%,#e6c672 38%,#caa240 72%,#a9812b 100%);box-shadow:0 34px 90px -34px rgba(212,169,74,.85),0 0 0 1px rgba(255,255,255,.12),inset 0 2px 0 rgba(255,255,255,.5),inset 0 -2px 12px rgba(120,86,15,.4);animation:qw-tile .95s cubic-bezier(.16,1,.3,1) both;overflow:hidden}
+#qw-intro .qw-tile{position:relative;width:clamp(112px,15vh,148px);height:clamp(112px,15vh,148px);border-radius:26%;background:linear-gradient(148deg,#f7e3a8 0%,#e6c672 38%,#caa240 72%,#a9812b 100%);box-shadow:0 34px 90px -34px rgba(212,169,74,.85),0 0 0 1px rgba(255,255,255,.12),inset 0 2px 0 rgba(255,255,255,.5),inset 0 -2px 12px rgba(120,86,15,.4);animation:qw-tile .95s var(--mo-ease-entrance) both;overflow:hidden}
 #qw-intro .qw-tile svg{position:absolute;inset:0}
 #qw-intro .qw-tile path{stroke-dasharray:var(--len);animation:qw-draw .42s cubic-bezier(.33,1,.68,1) var(--d) both}
 #qw-intro .qw-tile .qw-line{animation-duration:.55s;animation-timing-function:cubic-bezier(.65,0,.35,1)}
-#qw-intro .qw-tile rect{animation:qw-pop .34s cubic-bezier(.34,1.56,.64,1) var(--d) both}
+#qw-intro .qw-tile rect{animation:qw-pop .34s var(--mo-ease-spring) var(--d) both}
 #qw-intro .qw-scan{position:absolute;left:-10%;right:-10%;top:50%;height:30%;margin-top:-15%;background:linear-gradient(180deg,transparent,rgba(255,255,255,.9) 48%,rgba(255,255,255,.95) 52%,transparent);filter:blur(1px);animation:qw-sweep 1.25s cubic-bezier(.45,0,.55,1) 1.5s both}
-#qw-intro .qw-shine{position:absolute;top:-60%;bottom:-60%;width:34%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:qw-shine 1.1s cubic-bezier(.4,0,.2,1) 2.5s both}
+#qw-intro .qw-shine{position:absolute;top:-60%;bottom:-60%;width:34%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:qw-shine 1.1s var(--mo-ease-emphasized) 2.5s both}
 #qw-intro .qw-flash{position:absolute;inset:-6px;border-radius:30%;background:rgba(255,255,255,.9);filter:blur(18px);pointer-events:none;animation:qw-flash .5s ease-out 2.5s both}
 #qw-intro .qw-word{display:flex;flex-direction:column;align-items:center;gap:22px}
 #qw-intro .qw-lockup{display:flex;align-items:center;gap:14px}
-#qw-intro .qw-qr{display:flex;align-items:center;justify-content:center;padding:6px 14px 8px;border-radius:14px;background:linear-gradient(145deg,#f0d488,#c9a13f);color:#000;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.02em;line-height:1;box-shadow:0 0 40px -12px rgba(212,169,74,.9);animation:qw-letter .85s cubic-bezier(.16,1,.3,1) 1.78s both}
+#qw-intro .qw-qr{display:flex;align-items:center;justify-content:center;padding:6px 14px 8px;border-radius:14px;background:linear-gradient(145deg,#f0d488,#c9a13f);color:#000;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.02em;line-height:1;box-shadow:0 0 40px -12px rgba(212,169,74,.9);animation:qw-letter .85s var(--mo-ease-entrance) 1.78s both}
 #qw-intro .qw-owg{display:flex;font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-.01em;color:#f5efe3}
-#qw-intro .qw-owg span{animation:qw-letter .85s cubic-bezier(.16,1,.3,1) var(--d) both}
-#qw-intro .qw-pill{display:flex;align-items:center;gap:10px;padding:9px 20px;border:1px solid rgba(212,169,74,.35);border-radius:999px;background:rgba(212,169,74,.05);animation:qw-rise .9s cubic-bezier(.16,1,.3,1) 2.3s both}
+#qw-intro .qw-owg span{animation:qw-letter .85s var(--mo-ease-entrance) var(--d) both}
+#qw-intro .qw-pill{display:flex;align-items:center;gap:10px;padding:9px 20px;border:1px solid rgba(212,169,74,.35);border-radius:999px;background:rgba(212,169,74,.05);animation:qw-rise .9s var(--mo-ease-entrance) 2.3s both}
 #qw-intro .qw-dot{width:5px;height:5px;border-radius:50%;background:#d4a94a}
 #qw-intro .qw-tag{font-size:clamp(10px,1.1vw,12px);font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:#d9b45a;text-align:center}
 #qw-intro .qw-loader{display:flex;align-items:center;gap:14px;animation:qw-fade .6s ease-out .3s both}

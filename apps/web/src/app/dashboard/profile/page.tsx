@@ -1065,8 +1065,8 @@ export default function ProfilePage() {
         @keyframes heroIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
         @keyframes ringPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent)}70%{box-shadow:0 0 0 14px color-mix(in srgb, var(--accent) 0%, transparent)}100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent)}}
         @keyframes badgeShine{0%{background-position:-120% 0}60%,100%{background-position:220% 0}}
-        .hero-in{animation:heroIn .6s cubic-bezier(.2,.8,.2,1) backwards}
-        .hero-tile{transition:transform .2s cubic-bezier(.2,.8,.2,1), border-color .2s, background .2s}
+        .hero-in{animation:heroIn .6s var(--mo-ease-standard) backwards}
+        .hero-tile{transition:transform .2s var(--mo-ease-standard), border-color .2s, background .2s}
         .hero-tile:hover{transform:translateY(-3px);border-color:color-mix(in srgb, var(--accent) 35%, transparent)!important}
         input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb, var(--accent) 40%, transparent)!important}
         .section-card{animation:profileFadeIn 0.3s ease}
@@ -1204,7 +1204,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div style={{ height: 7, borderRadius: 4, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: g.limit == null ? "12%" : `${Math.max(3, g.pct)}%`, borderRadius: 4, background: g.near ? "linear-gradient(90deg,var(--danger),#F97316)" : `linear-gradient(90deg,${pc},color-mix(in srgb, var(--accent) 70%, #000))`, transition: "width .8s cubic-bezier(.2,.8,.2,1)" }}/>
+                    <div style={{ height: "100%", width: g.limit == null ? "12%" : `${Math.max(3, g.pct)}%`, borderRadius: 4, background: g.near ? "linear-gradient(90deg,var(--danger),#F97316)" : `linear-gradient(90deg,${pc},color-mix(in srgb, var(--accent) 70%, #000))`, transition: "width .8s var(--mo-ease-standard)" }}/>
                   </div>
                 </div>
               ))}

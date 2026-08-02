@@ -193,10 +193,10 @@ export default function DashboardClient() {
     <div style={{ minHeight: "100dvh", background: "radial-gradient(1200px 600px at 70% -10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%), #080808", padding: isMobile ? "22px 16px 40px" : "30px 28px 48px", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
       <Particles />
       <style>{`
-        .dz{animation:mo-fade-up .5s cubic-bezier(.2,.8,.2,1) backwards}
+        .dz{animation:mo-fade-up .5s var(--mo-ease-standard) backwards}
         .dz-row{transition:background .15s, transform .15s}
         .dz-row:hover{background:rgba(255,255,255,0.025)!important;transform:translateX(2px)}
-        .dz-card{transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s, border-color .2s}
+        .dz-card{transition:transform .2s var(--mo-ease-standard), box-shadow .2s, border-color .2s}
         .dz-arrow{transition:transform .2s}
         .dz-row:hover .dz-arrow,.dz-act:hover .dz-arrow{transform:translateX(3px)}
         .dz-cta{transition:transform .18s, box-shadow .18s}

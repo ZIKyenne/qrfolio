@@ -275,7 +275,7 @@ function QRMockup() {
         transform: hovered
           ? "perspective(1300px) rotateX(0deg) rotateY(0deg) translateY(-6px) scale(1.03)"
           : "perspective(1300px) rotateX(4deg) rotateY(-7deg) scale(1)",
-        transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)"
+        transition: "all 0.5s var(--mo-ease-spring)"
       }}>
         {/* Shimmer */}
         <div style={{
@@ -329,7 +329,7 @@ function QRMockup() {
                 opacity: o,
                 ["--o" as string]: o,
                 boxShadow: goldCells.includes(i) ? "0 0 6px rgba(201,168,76,0.6)" : "none",
-                animation: inView ? `qrReveal 0.5s cubic-bezier(0.34,1.56,0.64,1) ${i * 12}ms both` : "none",
+                animation: inView ? `qrReveal 0.5s var(--mo-ease-spring) ${i * 12}ms both` : "none",
                 willChange: "transform, opacity",
               } as React.CSSProperties} />
             )
@@ -487,7 +487,7 @@ function FeaturesSection() {
                   ? isHovered ? "translateY(-4px)" : "translateY(0)"
                   : "translateY(28px)",
                 opacity: visible ? 1 : 0,
-                transition: `opacity 0.5s ease ${i * 80}ms, transform 0.35s cubic-bezier(0.34,1.56,0.64,1) ${visible ? "0ms" : i * 80 + "ms"}, border-color 0.25s ease, background 0.25s ease`,
+                transition: `opacity 0.5s ease ${i * 80}ms, transform 0.35s var(--mo-ease-spring) ${visible ? "0ms" : i * 80 + "ms"}, border-color 0.25s ease, background 0.25s ease`,
                 boxShadow: big
                   ? `0 14px 50px rgba(0,0,0,0.38), 0 0 70px ${f.accent}12`
                   : isHovered ? `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px ${f.accent}18` : "none",
@@ -534,7 +534,7 @@ function FeaturesSection() {
                       fontSize: 21, flexShrink: 0,
                       boxShadow: isHovered ? `0 0 22px ${f.accent}38` : `0 0 12px ${f.accent}14`,
                       transform: isHovered ? "scale(1.08) rotate(-3deg)" : "scale(1)",
-                      transition: "all 0.28s cubic-bezier(0.34,1.56,0.64,1)",
+                      transition: "all 0.28s var(--mo-ease-spring)",
                     }}>{f.icon}</div>
                     <span style={{
                       color: f.accent,
@@ -771,7 +771,7 @@ function PricingSection() {
       <style>{`
         .plans-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; align-items:center; }
         .plan-card  { border-radius:20px; padding:28px 22px; position:relative; overflow:hidden;
-                      transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s, border-color 0.25s; }
+                      transition:transform 0.3s var(--mo-ease-spring), box-shadow 0.3s, border-color 0.25s; }
         .plan-card:hover { transform:translateY(-6px); }
         .plan-card.highlight { transform:scale(1.05); }
         .plan-card.highlight:hover { transform:scale(1.05) translateY(-6px); }
@@ -810,7 +810,7 @@ function PricingSection() {
             style={{ width:48, height:26, borderRadius:13, background: annual ? "linear-gradient(90deg,#C9A84C,#b8953f)" : "rgba(255,255,255,0.12)",
               border:"none", cursor:"pointer", position:"relative", transition:"background 0.25s", flexShrink:0 }}>
             <span style={{ position:"absolute", top:3, left: annual ? 25 : 3, width:20, height:20, borderRadius:"50%",
-              background:"#fff", transition:"left 0.25s cubic-bezier(0.34,1.56,0.64,1)", boxShadow:"0 1px 4px rgba(0,0,0,0.3)" }}/>
+              background:"#fff", transition:"left 0.25s var(--mo-ease-spring)", boxShadow:"0 1px 4px rgba(0,0,0,0.3)" }}/>
           </button>
           <span style={{ color: annual ? "#F5F0E8" : "rgba(188,182,166,0.6)", fontSize:14, fontWeight: annual ? 600 : 400, transition:"color 0.2s" }}>Annuel</span>
           <span style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(57,255,143,0.12)", border:"1px solid rgba(57,255,143,0.3)",
@@ -1221,7 +1221,7 @@ function TemplateMiniPreview({ preview, accent, hovered = false }: { preview: re
       height: 120, position: "relative", overflow: "hidden",
       transform: hovered ? "scale(1.02)" : "scale(1)",
       transformOrigin: "center",
-      transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.25s",
+      transition: "transform 0.3s var(--mo-ease-spring), border-color 0.25s",
     }}>
       {/* Balayage lumineux au survol : donne vie à l'aperçu (façon page réelle) */}
       {hovered && (
@@ -1295,7 +1295,7 @@ function TemplateCard({ tpl, i, visible }: { tpl: typeof TEMPLATE_DATA[number]; 
         position: "relative", overflow: "hidden",
         transform: visible ? (hovered ? "translateY(-4px)" : "translateY(0)") : "translateY(28px)",
         opacity: visible ? 1 : 0,
-        transition: `opacity 0.5s ease ${i * 80}ms, transform ${hovered ? "0.3s cubic-bezier(0.34,1.56,0.64,1)" : "0.5s ease " + i * 80 + "ms"}, border-color 0.25s, background 0.25s`,
+        transition: `opacity 0.5s ease ${i * 80}ms, transform ${hovered ? "0.3s var(--mo-ease-spring)" : "0.5s ease " + i * 80 + "ms"}, border-color 0.25s, background 0.25s`,
         boxShadow: hovered ? `0 8px 28px rgba(0,0,0,0.35), 0 0 0 1px ${tpl.accent}18` : "none",
         cursor: "default",
       }}
@@ -1633,7 +1633,7 @@ function Navbar() {
         boxShadow:scrolled?"0 4px 32px rgba(0,0,0,0.5)":"none",
         transition:"background 0.3s,border-color 0.3s,box-shadow 0.3s",
       }}>
-        <Link href="/" aria-label="QRowg — accueil" style={{textDecoration:"none",display:"inline-flex",transition:"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)"}}
+        <Link href="/" aria-label="QRowg — accueil" style={{textDecoration:"none",display:"inline-flex",transition:"transform 0.2s var(--mo-ease-spring)"}}
           onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.transform="scale(1.04)"}}
           onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.transform="none"}}>
           <QrowgLogo size={22} />
@@ -1654,7 +1654,7 @@ function Navbar() {
             background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:"#080808",
             textDecoration:"none",fontSize:14,fontWeight:700,padding:"9px 22px",borderRadius:10,
             display:"inline-block",boxShadow:"0 2px 16px rgba(201,168,76,0.3)",
-            transition:"transform 0.2s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.2s",
+            transition:"transform 0.2s var(--mo-ease-spring),box-shadow 0.2s",
           }}
             onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-2px) scale(1.03)";el.style.boxShadow="0 6px 24px rgba(201,168,76,0.5)"}}
             onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.boxShadow="0 2px 16px rgba(201,168,76,0.3)"}}>
@@ -1721,7 +1721,7 @@ function HowItWorks() {
       <style>{`
         .hsteps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;position:relative;}
         .hstep{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;}
-        .hbadge{transition:transform 0.3s cubic-bezier(.34,1.56,.64,1),box-shadow 0.3s ease,border-color 0.3s ease;}
+        .hbadge{transition:transform 0.3s var(--mo-ease-spring),box-shadow 0.3s ease,border-color 0.3s ease;}
         .hstep:hover .hbadge{transform:translateY(-6px) scale(1.05);border-color:rgba(201,168,76,0.6)!important;box-shadow:0 16px 38px rgba(201,168,76,0.3),0 0 0 7px rgba(8,8,8,0.92)!important;}
         .hline{position:absolute;top:31px;left:calc(16.66% + 36px);right:calc(16.66% + 36px);height:2px;
           background:linear-gradient(90deg,transparent,rgba(201,168,76,0.55) 6%,rgba(201,168,76,0.55) 94%,transparent);
@@ -1899,7 +1899,7 @@ function BuilderSection(){
           <a href="/dashboard/builder" style={{display:"inline-flex",alignItems:"center",gap:10,
             background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:"#080808",textDecoration:"none",
             fontSize:14,fontWeight:700,padding:"13px 30px",borderRadius:11,
-            boxShadow:"0 4px 24px rgba(201,168,76,0.35)",transition:"transform 0.2s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.2s"}}
+            boxShadow:"0 4px 24px rgba(201,168,76,0.35)",transition:"transform 0.2s var(--mo-ease-spring),box-shadow 0.2s"}}
             onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-3px) scale(1.03)";el.style.boxShadow="0 8px 32px rgba(201,168,76,0.5)"}}
             onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.boxShadow="0 4px 24px rgba(201,168,76,0.35)"}}>
             Ouvrir le builder <span style={{fontSize:16}}>→</span>
@@ -2033,7 +2033,7 @@ function QRDynamicSection() {
         .qr-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; }
         .qr-card { display:flex; flex-direction:column; align-items:center; gap:14px;
           padding:20px 16px; border-radius:18px; cursor:pointer;
-          transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1), border-color 0.25s, background 0.25s; }
+          transition:transform 0.3s var(--mo-ease-spring), border-color 0.25s, background 0.25s; }
         .qr-card:hover { transform:translateY(-6px) scale(1.03); }
         .qr-card:focus-visible { outline:2px solid rgba(201,168,76,0.6); outline-offset:4px; border-radius:18px; }
         .qr-ben { display:flex; flex-direction:column; gap:14px; }
@@ -2116,7 +2116,7 @@ function QRDynamicSection() {
                 fontSize: 14, fontWeight: 700,
                 padding: "12px 26px", borderRadius: 11,
                 boxShadow: "0 4px 20px rgba(201,168,76,0.35)",
-                transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s",
+                transition: "transform 0.2s var(--mo-ease-spring), box-shadow 0.2s",
               }}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLElement
@@ -2826,7 +2826,7 @@ function UseCasesSection() {
               color: "#080808", textDecoration: "none",
               fontSize: 13, fontWeight: 700,
               padding: "12px 20px", borderRadius: 10,
-              transition: "opacity 0.2s, transform 0.2s cubic-bezier(0.34,1.56,0.64,1)",
+              transition: "opacity 0.2s, transform 0.2s var(--mo-ease-spring)",
             }}
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLElement
@@ -2916,7 +2916,7 @@ function FAQSection() {
           border:1px solid rgba(201,168,76,0.25); display:flex; align-items:center;
           justify-content:center; flex-shrink:0;
           transition:transform 0.3s ease, background 0.2s, border-color 0.2s; }
-        .faq-ans{ overflow:hidden; transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s; }
+        .faq-ans{ overflow:hidden; transition:max-height 0.35s var(--mo-ease-emphasized), opacity 0.3s; }
         @media(max-width:640px){ #faq{ padding:72px 20px !important; } }
         @media(prefers-reduced-motion:reduce){ .faq-ans,.faq-icon{ transition:none !important; } }
       `}</style>
@@ -3067,7 +3067,7 @@ function StoryPhone({ step }: { step: number }) {
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 7, padding: "8px 4px 0" }}>
         {[40, 65, 50, 80, 58, 92, 70].map((h, i) => (
-          <div key={i} style={{ flex: 1, height: `${h}%`, borderRadius: "5px 5px 0 0", background: `linear-gradient(180deg, ${G}, ${G}33)`, transformOrigin: "bottom", animation: `barGrow 0.5s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.07}s both` }} />
+          <div key={i} style={{ flex: 1, height: `${h}%`, borderRadius: "5px 5px 0 0", background: `linear-gradient(180deg, ${G}, ${G}33)`, transformOrigin: "bottom", animation: `barGrow 0.5s var(--mo-ease-spring) ${i * 0.07}s both` }} />
         ))}
       </div>
     </div>
@@ -3291,7 +3291,7 @@ function ComparisonSection() {
           <Link href="/auth/signup" style={{
             background: "linear-gradient(90deg, #C9A84C, #b8953f)", color: "#080808", textDecoration: "none",
             fontSize: 15, fontWeight: 700, padding: "14px 30px", borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 9,
-            boxShadow: "0 4px 24px rgba(201,168,76,0.4)", transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s",
+            boxShadow: "0 4px 24px rgba(201,168,76,0.4)", transition: "transform 0.2s var(--mo-ease-spring), box-shadow 0.2s",
           }}
             onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-2px) scale(1.02)"; el.style.boxShadow = "0 8px 34px rgba(201,168,76,0.5)" }}
             onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "none"; el.style.boxShadow = "0 4px 24px rgba(201,168,76,0.4)" }}>
@@ -3328,7 +3328,7 @@ function PrintStudioSection() {
         .print-grid::-webkit-scrollbar{ height:4px; }
         .print-grid::-webkit-scrollbar-track{ background:rgba(255,255,255,0.04); border-radius:2px; }
         .print-grid::-webkit-scrollbar-thumb{ background:rgba(201,168,76,0.3); border-radius:2px; }
-        .print-card{ transition:transform 0.3s cubic-bezier(.34,1.56,.64,1), border-color 0.25s, box-shadow 0.25s; }
+        .print-card{ transition:transform 0.3s var(--mo-ease-spring), border-color 0.25s, box-shadow 0.25s; }
         .print-card:hover{ transform:translateY(-6px); }
       `}</style>
       <div id="print" style={{ maxWidth: 1140, margin: "0 auto" }}>
@@ -3347,7 +3347,7 @@ function PrintStudioSection() {
             <div key={s.name} className="print-card" style={{
               background: "rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.1)", borderRadius: 18, overflow: "hidden",
               opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(26px)",
-              transition: `opacity 0.5s ease ${i * 80}ms, transform 0.45s cubic-bezier(.34,1.56,.64,1) ${i * 80}ms`,
+              transition: `opacity 0.5s ease ${i * 80}ms, transform 0.45s var(--mo-ease-spring) ${i * 80}ms`,
             }}>
               {/* Aperçu du support */}
               <div style={{ position: "relative", aspectRatio: "4 / 3", display: "flex", alignItems: "center", justifyContent: "center", background: `radial-gradient(120% 100% at 50% 0%, ${s.accent}14, transparent 65%), #0C0B08`, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
@@ -3524,7 +3524,7 @@ export default function HomePage() {
                 color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 700,
                 padding: "15px 32px", borderRadius: 12, display: "inline-block",
                 boxShadow: "0 4px 28px rgba(201,168,76,0.45), 0 0 0 0 rgba(201,168,76,0)",
-                transition: "transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease",
+                transition: "transform 0.25s var(--mo-ease-spring), box-shadow 0.25s ease",
                 letterSpacing: 0.2
               }}
                 onMouseEnter={e => {
@@ -3731,7 +3731,7 @@ export default function HomePage() {
               padding:"16px 40px", borderRadius:13,
               letterSpacing:0.2,
               animation:"ctaPulse 3.4s ease-in-out infinite",
-              transition:"transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s",
+              transition:"transform 0.25s var(--mo-ease-spring), box-shadow 0.25s",
             }}
               onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-3px) scale(1.03)";el.style.animation="none";el.style.boxShadow="0 8px 40px rgba(201,168,76,0.55)"}}
               onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.animation="ctaPulse 3.4s ease-in-out infinite"}}>

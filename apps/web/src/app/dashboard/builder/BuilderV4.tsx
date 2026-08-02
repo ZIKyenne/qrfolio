@@ -1854,7 +1854,7 @@
                       {scoreOpen && missing.length > 0 && (
                         <div style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 5 }}>
                           <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 3 }}>
-                            <div style={{ height: "100%", width: `${Math.max(4, score)}%`, borderRadius: 4, background: col, transition: "width .5s cubic-bezier(.2,.8,.2,1)" }} />
+                            <div style={{ height: "100%", width: `${Math.max(4, score)}%`, borderRadius: 4, background: col, transition: "width .5s var(--mo-ease-standard)" }} />
                           </div>
                           {missing.map(c => (
                             <button key={c.label} type="button" onClick={c.act}
@@ -2399,7 +2399,7 @@
           @keyframes auroraShift{0%{background-position:0% 0%}33%{background-position:100% 0%}66%{background-position:50% 100%}100%{background-position:0% 0%}}
           .iphone-scroll::-webkit-scrollbar{display:none}
           .block-handle:active{cursor:grabbing}
-          .panel-collapse{transition:width 0.25s cubic-bezier(0.4,0,0.2,1)}
+          .panel-collapse{transition:width 0.25s var(--mo-ease-emphasized)}
           .focus-mode .sidebar{width:64px!important}
           button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 2px solid #C9A84C; outline-offset: 2px; border-radius: 4px; }
         `}</style>

@@ -339,7 +339,7 @@ function CarouselPublic({ imgs, title, autoplay, MUTED, FONT_B }: { imgs: string
       {title && <p style={{ color: MUTED, fontSize: 11, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px", fontFamily: FONT_B }}>{title}</p>}
       <div style={{ position: "relative", overflow: "hidden", borderRadius: 14, touchAction: "pan-y" }}
         onPointerDown={onDown} onPointerUp={onUp} onMouseEnter={() => paused.current = true} onMouseLeave={() => paused.current = false}>
-        <div style={{ display: "flex", transition: "transform .45s cubic-bezier(.2,.8,.2,1)", transform: `translateX(-${idx * 100}%)` }}>
+        <div style={{ display: "flex", transition: "transform .45s var(--mo-ease-standard)", transform: `translateX(-${idx * 100}%)` }}>
           {imgs.map((img, i) => <img onError={e => { e.currentTarget.style.display = 'none' }} key={i} src={img} alt="" loading={i === 0 ? "eager" : "lazy"} draggable={false} style={{ width: "100%", height: 240, flexShrink: 0, objectFit: "cover", display: "block", userSelect: "none" }} />)}
         </div>
         {imgs.length > 1 && <>

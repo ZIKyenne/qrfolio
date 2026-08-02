@@ -138,7 +138,7 @@ export default function ContactPage() {
         .au1{animation:mo-fade-up 0.5s ease 0.1s both}
         .au2{animation:mo-fade-up 0.5s ease 0.2s both}
         .au3{animation:mo-fade-up 0.5s ease 0.35s both}
-        .faq-ans { overflow:hidden; transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s; }
+        .faq-ans { overflow:hidden; transition:max-height 0.35s var(--mo-ease-emphasized), opacity 0.3s; }
         @media(prefers-reduced-motion:reduce){ *{ animation:none !important; transition:none !important; } }
       `}</style>
 

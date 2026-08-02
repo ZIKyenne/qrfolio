@@ -316,7 +316,7 @@ export default function TemplatesPage() {
       {isMobile && filtersOpen && (
         <div onClick={() => setFiltersOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(3px)", display: "flex", alignItems: "flex-end", animation: "tplFade .2s ease" }}>
           <style>{`@keyframes tplFade{from{opacity:0}to{opacity:1}}@keyframes tplUp{from{transform:translateY(100%)}to{transform:translateY(0)}}`}</style>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "82vh", overflowY: "auto", background: "#0E0D0A", borderTopLeftRadius: 22, borderTopRightRadius: 22, borderTop: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)", padding: "10px 18px calc(20px + env(safe-area-inset-bottom))", animation: "tplUp .28s cubic-bezier(.2,.8,.2,1)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "82vh", overflowY: "auto", background: "#0E0D0A", borderTopLeftRadius: 22, borderTopRightRadius: 22, borderTop: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)", padding: "10px 18px calc(20px + env(safe-area-inset-bottom))", animation: "tplUp .28s var(--mo-ease-standard)" }}>
             <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.18)", margin: "0 auto 16px" }} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
               <h3 style={{ fontFamily: "Fraunces, serif", fontSize: 21, color: "#F5F0E8", fontWeight: 700, margin: 0 }}>Filtrer</h3>
@@ -398,9 +398,9 @@ export default function TemplatesPage() {
                     background: isSelected ? "color-mix(in srgb, var(--accent) 5%, transparent)" : "#0F0E0B",
                     border: "1.5px solid " + (isSelected ? "color-mix(in srgb, var(--accent) 50%, transparent)" : isHovered ? "color-mix(in srgb, var(--accent) 20%, transparent)" : "rgba(255,255,255,0.06)"),
                     borderRadius: 18, overflow: "hidden", cursor: locked ? "not-allowed" : "pointer",
-                    transition: "transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s, border-color .2s", transform: isSelected ? "translateY(-4px)" : isHovered ? "translateY(-4px)" : "none",
+                    transition: "transform .22s var(--mo-ease-standard), box-shadow .22s, border-color .2s", transform: isSelected ? "translateY(-4px)" : isHovered ? "translateY(-4px)" : "none",
                     opacity: locked ? 0.6 : 1, position: "relative",
-                    animation: "tplUp .45s cubic-bezier(.2,.8,.2,1) backwards", animationDelay: `${(idx % 12) * 45}ms`,
+                    animation: "tplUp .45s var(--mo-ease-standard) backwards", animationDelay: `${(idx % 12) * 45}ms`,
                     boxShadow: isSelected ? "0 14px 38px color-mix(in srgb, var(--accent) 16%, transparent)" : isHovered ? "0 16px 40px rgba(0,0,0,0.5)" : "0 2px 8px rgba(0,0,0,0.2)"
                   }}>
 
@@ -410,7 +410,7 @@ export default function TemplatesPage() {
                     <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 0%, " + template.color + "25, transparent 65%)" }} />
 
                     {/* Mini page mockup */}
-                    <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%) scale(" + (isHovered ? 1.06 : 1) + ")", transition: "transform .3s cubic-bezier(.2,.8,.2,1)", width: "90%", maxWidth: 138, background: template.bg, border: "1px solid " + template.color + "20", borderRadius: 10, overflow: "hidden", zIndex: 1, boxShadow: isHovered ? "0 10px 30px rgba(0,0,0,0.45)" : "0 4px 14px rgba(0,0,0,0.3)" }}>
+                    <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%) scale(" + (isHovered ? 1.06 : 1) + ")", transition: "transform .3s var(--mo-ease-standard)", width: "90%", maxWidth: 138, background: template.bg, border: "1px solid " + template.color + "20", borderRadius: 10, overflow: "hidden", zIndex: 1, boxShadow: isHovered ? "0 10px 30px rgba(0,0,0,0.45)" : "0 4px 14px rgba(0,0,0,0.3)" }}>
                       {/* Barre de couleur */}
                       <div style={{ height: 4, background: "linear-gradient(90deg," + template.color + "," + template.accent + ")" }} />
                       {/* Contenu simulé */}

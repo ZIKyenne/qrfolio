@@ -105,7 +105,7 @@ export default function NotFound() {
         .ql-link { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:100px; border:1px solid rgba(255,255,255,0.1); color:rgba(138,132,120,0.75); text-decoration:none; font-size:13px; transition:all 0.2s; }
         .ql-link:hover { border-color:rgba(201,168,76,0.4); color:#F5F0E8; background:rgba(201,168,76,0.06); }
         .ql-link:focus-visible { outline:2px solid rgba(201,168,76,0.5); outline-offset:3px; border-radius:100px; }
-        .cta-main { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(90deg,#C9A84C,#b8953f); color:#080808; text-decoration:none; font-size:15px; font-weight:700; padding:14px 32px; border-radius:12px; box-shadow:0 4px 24px rgba(201,168,76,0.35); transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.2s; }
+        .cta-main { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(90deg,#C9A84C,#b8953f); color:#080808; text-decoration:none; font-size:15px; font-weight:700; padding:14px 32px; border-radius:12px; box-shadow:0 4px 24px rgba(201,168,76,0.35); transition:transform 0.2s var(--mo-ease-spring),box-shadow 0.2s; }
         .cta-main:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 8px 32px rgba(201,168,76,0.5); }
         .cta-main:focus-visible { outline:2px solid rgba(201,168,76,0.6); outline-offset:4px; border-radius:12px; }
         .cta-sec { display:inline-flex; align-items:center; gap:8px; background:transparent; border:1px solid rgba(201,168,76,0.28); color:rgba(201,168,76,0.9); text-decoration:none; font-size:15px; font-weight:600; padding:14px 28px; border-radius:12px; transition:all 0.2s; }

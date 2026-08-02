@@ -72,7 +72,7 @@ export default function RotateToLandscapeGate({
       )}
 
       {state === "unlocking" && (
-        <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 4500, pointerEvents: "none", animation: "rgUnlock .95s cubic-bezier(.2,.8,.2,1) forwards" }}>
+        <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 4500, pointerEvents: "none", animation: "rgUnlock .95s var(--mo-ease-standard) forwards" }}>
           <style>{`
             @keyframes rgUnlock {
               0%   { opacity: 0;   backdrop-filter: blur(0px); }

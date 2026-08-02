@@ -245,7 +245,7 @@ function ExampleCard({ example }: { example: Example }) {
         border: `1px solid ${hovered ? example.accent + "35" : "rgba(255,255,255,0.08)"}`,
         borderRadius: 20, overflow: "hidden",
         transform: hovered ? "translateY(-4px)" : "translateY(0)",
-        transition: "all 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+        transition: "all 0.3s var(--mo-ease-spring)",
         boxShadow: hovered ? `0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px ${example.accent}18` : "none",
         cursor: "default",
         position: "relative",

@@ -139,9 +139,15 @@ priorité ces cas-là, et on **ne normalise jamais un corps d'animation à l'ave
   - _Gotcha rencontré :_ un renommage mécanique `\bpulse\b` a touché une **clé
     d'objet** `pulse:` (≠ animation) → toujours re-scanner les faux positifs
     (property access / clés) et laisser `tsc`+build trancher.
-- 🔎 **Phase 3 (en cours, prudente)** — remplacer les easings par les 4 rôles :
-  on ne substitue que les **courbes exactement identiques** (iso) à un rôle ; les
-  courbes réellement distinctes restent (leur remap = changement de ressenti → QA).
+- ✅ **Phase 3 (faite — easings exacts)** — 66 `cubic-bezier(...)` **exactement
+  identiques** à un rôle substitués par `var(--mo-ease-*)` dans les `.tsx`
+  (standard 31 · spring 25 · emphasized 6 · entrance 4). C'est **iso** (même
+  courbe). Substitution ciblée `.tsx` uniquement (globals.css / lib/motion.ts /
+  route.ts autonomes exclus → pas de var circulaire ni de var indisponible).
+- 🔎 **Reste (avec QA visuel)** — ~8 courbes réellement **distinctes** subsistent
+  (`.22,1,.36,1`, `.2,.9,.25,1.2`, `.65,0,.35,1`…). Les mapper à un rôle = vrai
+  changement de ressenti → on tranche à l'œil (candidat : faire de `.22,1,.36,1`,
+  la plus fréquente, le easing `entrance` officiel).
 
 **Règle d'or de cette migration :** un renommage (déf + tous les usages du même
 fichier, via remplacement complet) est iso-comportement et sûr ; **normaliser un

@@ -81,7 +81,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 borderLeft: `3px solid ${s.bar}`, borderRadius: 12,
                 boxShadow: "0 12px 40px rgba(0,0,0,0.5)", padding: "13px 14px",
                 fontFamily: "'DM Sans', system-ui, sans-serif",
-                animation: "qf-toast-in .28s cubic-bezier(.2,.8,.2,1)",
+                animation: "qf-toast-in .28s var(--mo-ease-standard)",
               }}
             >
               <span aria-hidden="true" style={{

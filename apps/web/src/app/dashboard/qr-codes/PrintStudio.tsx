@@ -3808,7 +3808,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         .ps-root button:active:not(:disabled) { transform: scale(0.96); }
         .ps-root input, .ps-root select { transition: border-color .14s ease, box-shadow .14s ease; }
         .ps-root input:focus, .ps-root select:focus { border-color: ${G} !important; box-shadow: 0 0 0 2px rgba(201,168,76,0.18); }
-        .ps-fly { animation: psSlide .18s cubic-bezier(.2,.8,.2,1); box-shadow: 8px 0 28px rgba(0,0,0,0.06); }
+        .ps-fly { animation: psSlide .18s var(--mo-ease-standard); box-shadow: 8px 0 28px rgba(0,0,0,0.06); }
         .ps-fly-right { box-shadow: -8px 0 28px rgba(0,0,0,0.07) !important; }
         .ps-fly-right button:hover:not(:disabled) { filter: none; border-color: rgba(201,168,76,0.6) !important; box-shadow: 0 3px 10px rgba(31,36,48,0.1) !important; transform: translateY(-1px); }
         .ps-fly-right button:active:not(:disabled) { transform: translateY(0) scale(0.97); }
@@ -3824,8 +3824,8 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         .ps-rail button:hover:not(:disabled) { filter: none; border-color: rgba(201,168,76,0.55) !important; box-shadow: 0 4px 12px rgba(31,36,48,0.1) !important; transform: translateY(-1px); }
         .ps-rail button:active:not(:disabled) { transform: translateY(0) scale(0.96); }
         .ps-rail button svg { color: ${G}; }
-        .ps-pop { animation: psPop .18s cubic-bezier(.2,.8,.2,1); }
-        .ps-goal { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; animation: psRise .34s cubic-bezier(.2,.8,.2,1) both; }
+        .ps-pop { animation: psPop .18s var(--mo-ease-standard); }
+        .ps-goal { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; animation: psRise .34s var(--mo-ease-standard) both; }
         .ps-goal:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.12); border-color: ${G} !important; }
         @keyframes psRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes psSlide { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
@@ -3853,7 +3853,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
           border-left: none !important; border-top: 1px solid rgba(0,0,0,0.1) !important;
           border-radius: 18px 18px 0 0 !important;
           box-shadow: 0 -14px 44px rgba(0,0,0,0.28) !important;
-          z-index: 60 !important; animation: psSheetUp .26s cubic-bezier(.2,.8,.2,1);
+          z-index: 60 !important; animation: psSheetUp .26s var(--mo-ease-standard);
           padding-bottom: env(safe-area-inset-bottom) !important;
         }
         @keyframes psSheetUp { from { transform: translateY(100%); opacity: .6 } to { transform: translateY(0); opacity: 1 } }
@@ -3880,7 +3880,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
           border-right: none !important; border-top: 1px solid rgba(0,0,0,0.1) !important;
           border-radius: 18px 18px 0 0 !important;
           box-shadow: 0 -14px 44px rgba(0,0,0,0.28) !important;
-          z-index: 58 !important; animation: psSheetUp .26s cubic-bezier(.2,.8,.2,1) !important;
+          z-index: 58 !important; animation: psSheetUp .26s var(--mo-ease-standard) !important;
           padding-bottom: env(safe-area-inset-bottom) !important;
         }
         /* Bottom-sheets gauche (Modeles/Bibliotheque/Photos/Composants) : la zone de contenu
@@ -3919,7 +3919,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         const recap: [string, string][] = [["Format", FORMATS[format].label], ["Fichier", plan.filename], ["Dimensions", `${plan.widthPx} × ${plan.heightPx} px`], ...(plan.widthMm ? [["Taille imprimée", `${plan.widthMm} × ${plan.heightMm} mm`] as [string, string]] : []), ["Qualité", plan.quality]]
         return (
           <div onClick={() => setExpWiz(-1)} style={{ position: "fixed", inset: 0, zIndex: 72, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(2px)", display: "flex", alignItems: landscapeMobile ? "flex-end" : "center", justifyContent: "center", padding: landscapeMobile ? 0 : 24 }}>
-            <div onClick={e => e.stopPropagation()} className="ps-msheet" style={{ width: "100%", maxWidth: landscapeMobile ? "none" : 460, maxHeight: "88vh", overflowY: "auto", background: "#17171B", border: "1px solid rgba(255,255,255,0.08)", borderRadius: landscapeMobile ? "22px 22px 0 0" : 20, padding: "16px 16px calc(16px + env(safe-area-inset-bottom))", boxShadow: "0 -14px 44px rgba(0,0,0,0.5)", animation: "psSheetUp .26s cubic-bezier(.2,.8,.2,1)" }}>
+            <div onClick={e => e.stopPropagation()} className="ps-msheet" style={{ width: "100%", maxWidth: landscapeMobile ? "none" : 460, maxHeight: "88vh", overflowY: "auto", background: "#17171B", border: "1px solid rgba(255,255,255,0.08)", borderRadius: landscapeMobile ? "22px 22px 0 0" : 20, padding: "16px 16px calc(16px + env(safe-area-inset-bottom))", boxShadow: "0 -14px 44px rgba(0,0,0,0.5)", animation: "psSheetUp .26s var(--mo-ease-standard)" }}>
               {/* Stepper */}
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
                 {steps.map((s, i) => (
@@ -4052,7 +4052,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
               background: active ? "rgba(201,168,76,0.2)" : "rgba(255,255,255,0.06)", border: `1px solid ${active ? G : "rgba(255,255,255,0.14)"}`, color: active ? G : "#ECE8E0", opacity: qrBusy ? 0.5 : 1 }}>{label}</button>
         )
         return (
-          <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s cubic-bezier(.2,.8,.2,1)" }}>
+          <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s var(--mo-ease-standard)" }}>
             <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.2)", margin: "0 auto 10px" }} />
             <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
               <span style={{ color: "#F4F1EA", fontSize: 14, fontWeight: 800 }}>{title}</span>
@@ -4148,7 +4148,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
               background: active ? "rgba(201,168,76,0.2)" : "rgba(255,255,255,0.06)", border: `1px solid ${active ? G : "rgba(255,255,255,0.14)"}`, color: active ? G : "#ECE8E0", ...style }}>{label}</button>
         )
         return (
-          <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s cubic-bezier(.2,.8,.2,1)" }}>
+          <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s var(--mo-ease-standard)" }}>
             <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.2)", margin: "0 auto 10px" }} />
             <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
               <span style={{ color: "#F4F1EA", fontSize: 14, fontWeight: 800 }}>{title}</span>
@@ -4215,7 +4215,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
           Le canvas reste visible ; le panneau complet ne s'ouvre que via "Modifier". */}
       {/* Sheets Image focalises : filtres / opacite. */}
       {landscapeMobile && sel?.isImage && imgSheet && (
-        <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s cubic-bezier(.2,.8,.2,1)" }}>
+        <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s var(--mo-ease-standard)" }}>
           <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.2)", margin: "0 auto 10px" }} />
           <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
             <span style={{ color: "#F4F1EA", fontSize: 14, fontWeight: 800 }}>{imgSheet === "filters" ? "Filtres" : "Opacité"}</span>
@@ -4238,7 +4238,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
 
       {/* Sheets Forme focalises : couleur / bordure / ombre. */}
       {landscapeMobile && sel && isShapeSel && shapeSheet && (
-        <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s cubic-bezier(.2,.8,.2,1)" }}>
+        <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s var(--mo-ease-standard)" }}>
           <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.2)", margin: "0 auto 10px" }} />
           <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
             <span style={{ color: "#F4F1EA", fontSize: 14, fontWeight: 800 }}>{shapeSheet === "color" ? "Couleur" : shapeSheet === "border" ? "Bordure" : "Ombre"}</span>
@@ -4297,7 +4297,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
 
       {/* Sheet Bouton (CTA/badge) focalise : texte / couleur du fond. */}
       {landscapeMobile && sel?.label != null && btnSheet && (
-        <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s cubic-bezier(.2,.8,.2,1)" }}>
+        <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s var(--mo-ease-standard)" }}>
           <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.2)", margin: "0 auto 10px" }} />
           <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
             <span style={{ color: "#F4F1EA", fontSize: 14, fontWeight: 800 }}>{btnSheet === "text" ? "Texte du bouton" : "Couleur du fond"}</span>
@@ -4345,7 +4345,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
           </button>
         )
         return (
-          <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s cubic-bezier(.2,.8,.2,1)" }}>
+          <div className="ps-msheet" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 59, background: "#17171B", borderTop: "1px solid rgba(255,255,255,0.09)", borderRadius: "18px 18px 0 0", boxShadow: "0 -14px 44px rgba(0,0,0,0.55)", padding: "10px 14px calc(14px + env(safe-area-inset-bottom))", maxHeight: "64vh", overflowY: "auto", animation: "psSheetUp .26s var(--mo-ease-standard)" }}>
             <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.2)", margin: "0 auto 10px" }} />
             <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
               <span style={{ color: "#F4F1EA", fontSize: 14, fontWeight: 800 }}>Plus d'actions</span>
@@ -4372,7 +4372,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         return (
           <div className="ps-ctxbar" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 41,
             padding: "10px 0 calc(10px + env(safe-area-inset-bottom))", background: "#141417", borderTop: "1px solid rgba(255,255,255,0.09)",
-            boxShadow: "0 -12px 34px rgba(0,0,0,0.45)", animation: "psBar .3s cubic-bezier(.2,.8,.2,1)" }}>
+            boxShadow: "0 -12px 34px rgba(0,0,0,0.45)", animation: "psBar .3s var(--mo-ease-standard)" }}>
             {/* Rangee scrollante (scroll horizontal natif) */}
             <div style={{ display: "flex", alignItems: "stretch", gap: 6, padding: "0 10px", overflowX: "auto", overflowY: "hidden",
               WebkitOverflowScrolling: "touch", touchAction: "pan-x", overscrollBehaviorX: "contain", scrollbarWidth: "none" as any }}>
@@ -4406,7 +4406,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       {/* Menu ⋯ (paysage mobile) : actions secondaires en bottom sheet */}
       {moreOpen && (
         <div onClick={() => setMoreOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.42)", backdropFilter: "blur(2px)", display: "flex", alignItems: "flex-end" }}>
-          <div className="ps-msheet" onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "84vh", overflowY: "auto", background: "#17171B", borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: "10px 14px calc(16px + env(safe-area-inset-bottom))", animation: "psSheetUp .26s cubic-bezier(.2,.8,.2,1)", boxShadow: "0 -14px 44px rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.07)", borderBottom: "none" }}>
+          <div className="ps-msheet" onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "84vh", overflowY: "auto", background: "#17171B", borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: "10px 14px calc(16px + env(safe-area-inset-bottom))", animation: "psSheetUp .26s var(--mo-ease-standard)", boxShadow: "0 -14px 44px rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.07)", borderBottom: "none" }}>
             <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.2)", margin: "0 auto 12px" }} />
 
             {/* Format (masqué ailleurs en mobile -> seul point d'entrée au doigt) */}
@@ -5278,7 +5278,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         )}
 
         {/* Zone canvas (heros) : panneaux flottants -> on recadre pour garder l'artboard centre dans le visible */}
-        <div ref={scrollRef} onContextMenu={onCanvasContext} style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "safe center", justifyContent: "safe center", padding: landscapeMobile ? `16px 16px ${anyBottomSheet ? (regOpen ? "60vh" : "54vh") : "92px"}` : 16, background: landscapeMobile ? "#0C0C0E" : "#E5E8ED", position: "relative", transition: "padding .22s cubic-bezier(.2,.8,.2,1)" }}>
+        <div ref={scrollRef} onContextMenu={onCanvasContext} style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "safe center", justifyContent: "safe center", padding: landscapeMobile ? `16px 16px ${anyBottomSheet ? (regOpen ? "60vh" : "54vh") : "92px"}` : 16, background: landscapeMobile ? "#0C0C0E" : "#E5E8ED", position: "relative", transition: "padding .22s var(--mo-ease-standard)" }}>
           {loading && (
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: pMuted, zIndex: 5, pointerEvents: "none" }}>
               <Loader2 size={18} style={{ animation: "mo-spin 0.8s linear infinite" }} /> Chargement…

@@ -63,7 +63,7 @@ function CtaInline({ label = "Essayer gratuitement" }: { label?: string }) {
       fontSize: 14, fontWeight: 700,
       padding: "11px 26px", borderRadius: 11,
       boxShadow: "0 4px 20px rgba(201,168,76,0.3)",
-      transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s",
+      transition: "transform 0.2s var(--mo-ease-spring), box-shadow 0.2s",
     }}
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLElement

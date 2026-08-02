@@ -157,8 +157,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
       <Particles />
       <style>{`
         @keyframes ring{0%{box-shadow:0 0 0 0 rgba(57,255,143,0.5)}70%{box-shadow:0 0 0 8px rgba(57,255,143,0)}100%{box-shadow:0 0 0 0 rgba(57,255,143,0)}}
-        .az{animation:mo-fade-up .5s cubic-bezier(.2,.8,.2,1) backwards}
-        .az-card{transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s, border-color .2s}
+        .az{animation:mo-fade-up .5s var(--mo-ease-standard) backwards}
+        .az-card{transition:transform .2s var(--mo-ease-standard), box-shadow .2s, border-color .2s}
         .az-card:hover{transform:translateY(-3px);box-shadow:0 16px 38px rgba(0,0,0,0.5)}
         /* Anti-debordement horizontal sur mobile : rien ne sort du cadre, scroll
            vertical uniquement. On empile TOUTES les grilles en 1 colonne (les

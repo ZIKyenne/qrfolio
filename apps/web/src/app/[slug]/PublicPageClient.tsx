@@ -1077,10 +1077,10 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     )
 
     case "instagram_feed": return (
+      // Pas d'intégration de feed Instagram -> on ne publie PAS de fausses
+      // vignettes 📸 (contenu factice nuisant à la crédibilité). Seul le vrai CTA
+      // « Me suivre » est rendu.
       <div style={{ padding: "6px 24px 16px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 5, marginBottom: 10 }}>
-          {[0,1,2,3,4,5].map(i => <div key={i} style={{ aspectRatio: "1", background: "rgba(225,48,108,0.08)", border: "1px solid rgba(225,48,108,0.12)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>📸</div>)}
-        </div>
         <a href={extHref(c.cta_url) || "#"} onClick={() => trackLinkClick(pageId, block.id, c.cta_url||"instagram")} style={{ display: "block", background: "rgba(225,48,108,0.1)", border: "1px solid rgba(225,48,108,0.25)", color: "#E1306C", textAlign: "center", padding: "12px", borderRadius: 9, textDecoration: "none", fontSize: 13, fontWeight: 700, fontFamily: FONT_B }}>{c.cta_label || "Me suivre sur Instagram"}</a>
       </div>
     )

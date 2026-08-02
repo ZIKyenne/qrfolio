@@ -456,12 +456,13 @@ import { G, MUTED } from "./builderConstants"
         )
       }
       case "instagram_feed": return (
+        // Parité avec le rendu public : pas de fausses vignettes (aucun feed réel),
+        // seulement le CTA. On indique dans l'éditeur que le feed n'est pas affiché.
         <div style={{ padding: "10px 16px", ...s }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 3, marginBottom: 10 }}>
-            {[0,1,2,3,4,5].map(i => <div key={i} style={{ background: "rgba(225,48,108,0.06)", border: "1px solid rgba(225,48,108,0.1)", borderRadius: 5, aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📸</div>)}
-          </div>
           {c.username && <p style={{ color: muted, fontSize: 11, textAlign: "center", margin: "0 0 8px" }}>{c.username}</p>}
-          {c.cta_label && <div style={{ background: "rgba(225,48,108,0.15)", border: "1px solid rgba(225,48,108,0.3)", color: "#E1306C", textAlign: "center", padding: "9px", borderRadius: 7, fontSize: 12, fontWeight: 700 }}>{c.cta_label}</div>}
+          {c.cta_label
+            ? <div style={{ background: "rgba(225,48,108,0.15)", border: "1px solid rgba(225,48,108,0.3)", color: "#E1306C", textAlign: "center", padding: "9px", borderRadius: 7, fontSize: 12, fontWeight: 700 }}>{c.cta_label}</div>
+            : emptyHint("📸", "Ajoutez un lien Instagram (bouton « Me suivre »)")}
         </div>
       )
       case "contact_form": return (

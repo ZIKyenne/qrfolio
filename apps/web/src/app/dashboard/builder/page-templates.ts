@@ -291,7 +291,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     theme: T.neon,
     blocks: [
       { type: "profile", content: { name: "GALA NIGHT 2026", tagline: "La soirée de l'année", badge: "🎟️ Dernières places" } },
-      { type: "countdown", content: { title: "La soirée commence dans", target_date: "2026-12-31T21:00", subtitle: "Soyez prêts !" } },
+      { type: "countdown", content: { title: "La soirée commence dans", target: "2026-12-31T21:00", subtitle: "Soyez prêts !" } },
       { type: "event_info", content: { name: "GALA NIGHT 2026", date: "31 décembre 2026", time: "21h - 06h", location: "Palais Brongniart, Paris 2e", price: "à partir de 80€" } },
       { type: "event_program", content: { title: "Le programme" } },
       { type: "cta_button", content: { label: "Réserver mes billets", url: "#", style: "gold", icon: "🎟️", full_width: "yes" } },
@@ -305,7 +305,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     theme: T.rose,
     blocks: [
       { type: "profile", content: { name: "Julie & Marc", tagline: "Se marient le 12 juin 2026", badge: "💍 Save the date" } },
-      { type: "countdown", content: { title: "Jour J dans", target_date: "2026-06-12T15:00", subtitle: "On a hâte de vous voir !" } },
+      { type: "countdown", content: { title: "Jour J dans", target: "2026-06-12T15:00", subtitle: "On a hâte de vous voir !" } },
       { type: "timeline", content: { title: "Le programme", layout: "Verticale", e1_icon: "⛪", e1_date: "15h", e1_title: "Cérémonie", e2_icon: "🥂", e2_date: "17h", e2_title: "Cocktail", e3_icon: "🍽️", e3_date: "20h", e3_title: "Dîner", e4_icon: "🎉", e4_date: "23h", e4_title: "Soirée dansante" } },
       { type: "rsvp", content: { title: "Confirmez votre présence" } },
       { type: "google_maps_embed", content: { label: "Château de la Roseraie", address: "Domaine de la Roseraie, 78000 Versailles", zoom: "14" } },

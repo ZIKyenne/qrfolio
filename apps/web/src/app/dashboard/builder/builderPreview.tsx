@@ -2469,6 +2469,11 @@ import { G, MUTED } from "./builderConstants"
             </div>
             {c.label && <p style={{ color: text, fontSize: 12, fontWeight: 600, margin: 0 }}>{c.label}</p>}
             {c.show_url!=="no" && <p style={{ color: muted, fontSize: 10, margin: 0, fontFamily: "monospace" }}>/q/...</p>}
+            {/* Vérité UX : ce bloc ne s'affiche PAS sur la page publiée (le renderer
+                public renvoie null). On le signale pour ne pas laisser croire à un rendu. */}
+            <p style={{ color: muted, fontSize: 9, margin: "4px 0 0", fontStyle: "italic", maxWidth: 200, lineHeight: 1.4 }}>
+              Aperçu éditeur — ce bloc n'apparaît pas sur la page publiée.
+            </p>
           </div>
         </div>
       )

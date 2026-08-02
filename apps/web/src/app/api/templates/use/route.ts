@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyUnique } from "@/lib/slug"
+import { BLOCK_DEFS } from "@/app/dashboard/builder/types"
 
 // Slug valide (minuscules, accents retires, non-alphanum -> "-", + suffixe
 // aleatoire) via @/lib/slug. Respecte slug_format : ^[a-z0-9_-]{2,60}$
@@ -85,10 +86,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Insertion des blocs AVEC verification d'erreur (plus de page vide silencieuse).
-    if (Array.isArray(blocks) && blocks.length > 0) {
+    // Validation SERVEUR : on n'insère que des blocs dont le type existe réellement
+    // dans BLOCK_DEFS (sinon un type inconnu = bloc invisible/cassé publié en
+    // silence). Les types inconnus sont ignorés et logués. Positions réindexées.
+    const validBlocks = (Array.isArray(blocks) ? blocks : []).filter(
+      (b: any) => b && typeof b.type === "string" && b.type in BLOCK_DEFS,
+    )
+    const skipped = (Array.isArray(blocks) ? blocks.length : 0) - validBlocks.length
+    if (skipped > 0) console.warn(`[templates/use] ${skipped} bloc(s) de type inconnu ignoré(s)`)
+
+    if (validBlocks.length > 0) {
       const { error: blocksError } = await supabaseAdmin.from("blocks").insert(
-        blocks.map((b: any, i: number) => ({
+        validBlocks.map((b: any, i: number) => ({
           page_id: newPage.id,
           type: b.type,
           position: i,

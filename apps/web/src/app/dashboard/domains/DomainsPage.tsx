@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import DnsChecker from "./DnsChecker"
 import MultiBrandDomainsPanel from "./MultiBrandDomainsPanel"
 import DomainRoutesPanel from "./DomainRoutesPanel"
+import { Button } from "@/components/ui/Button"
 import {
   Globe, Plus, Trash2, CheckCircle, Clock, AlertCircle,
   Copy, ExternalLink, Loader, ChevronDown, ChevronUp, X, RefreshCw
@@ -215,14 +216,8 @@ export default function DomainsPage({ pages, plan }: Props) {
                   )}
 
                   <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-                    <button type="button" onClick={() => { setShowForm(false); setError("") }}
-                      style={{ padding:"9px 18px", background:"transparent", border:"1px solid rgba(255,255,255,0.1)", borderRadius:9, color:MUTED, fontSize:12, cursor:"pointer" }}>
-                      Annuler
-                    </button>
-                    <button type="button" onClick={addDomain} disabled={!fDomain || saving}
-                      style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 20px", background:fDomain?"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))":"rgba(255,255,255,0.05)", border:"none", borderRadius:9, color:fDomain?"#080808":MUTED, fontSize:13, fontWeight:700, cursor:fDomain?"pointer":"not-allowed", opacity:saving?0.7:1 }}>
-                      {saving ? <><Loader size={13} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Ajout...</> : <><Globe size={13}/> Ajouter</>}
-                    </button>
+                    <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); setError("") }}>Annuler</Button>
+                    <Button variant="primary" size="sm" onClick={addDomain} loading={saving} disabled={!fDomain} leftIcon={<Globe size={13} />}>Ajouter</Button>
                   </div>
                 </div>
               </div>
@@ -246,10 +241,7 @@ export default function DomainsPage({ pages, plan }: Props) {
                   <span style={{ color:"#F5F0E8", fontSize:13, fontWeight:600, fontFamily:"monospace" }}>votreentreprise.fr</span>
                 </div>
                 <div>
-                  <button type="button" onClick={() => setShowForm(true)}
-                    style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"11px 20px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:10, color:"#080808", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-                    <Plus size={14}/> Ajouter mon domaine
-                  </button>
+                  <Button variant="primary" onClick={() => setShowForm(true)} leftIcon={<Plus size={14} />}>Ajouter mon domaine</Button>
                 </div>
               </div>
             ) : (

@@ -248,6 +248,12 @@
           setPaletteOpen(o => !o)
           return
         }
+        // "/" — ouverture rapide de la palette (menu d'insertion), hors champ de saisie
+        if (e.key === "/" && !ctrl && !isEditing(e)) {
+          e.preventDefault()
+          setPaletteOpen(true)
+          return
+        }
 
         // Ctrl+Z — Undo
         if (ctrl && !e.shiftKey && (e.key === "z" || e.key === "Z") && !isEditing(e)) {
@@ -992,6 +998,7 @@
               <p style={{ color: MUTED, fontSize: 9, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 8px" }}>Raccourcis</p>
               {[
                 ["Ctrl+K", "Palette de commandes"],
+                ["/", "Insérer un bloc"],
                 ["Ctrl+Z", "Annuler"],
                 ["Ctrl+⇧+Z", "Rétablir"],
                 ["Ctrl+B", "Bibliothèque"],
@@ -2446,6 +2453,7 @@
           open={paletteOpen}
           onClose={() => setPaletteOpen(false)}
           blockDefs={BLOCK_DEFS}
+          recentBlockTypes={recentBlocks}
           onInsertBlock={(t) => addBlock(t)}
           commands={[
             { id: "undo", label: "Annuler", hint: "Ctrl+Z", keywords: "undo revenir historique", icon: "↶", run: () => { const p = undoRedo.undo(); if (p) applySnapshot(p) } },

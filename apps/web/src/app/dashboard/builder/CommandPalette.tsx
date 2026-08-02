@@ -27,6 +27,8 @@ interface Props {
   commands: PaletteCommand[]
   blockDefs: Record<string, BlockDefLite>
   onInsertBlock: (type: string) => void
+  /** Types de blocs récents, proposés quand la requête est vide (ressenti « / » insertion). */
+  recentBlockTypes?: string[]
   maxBlocks?: number
 }
 
@@ -37,7 +39,7 @@ type Item =
 const G = "var(--accent)"
 const MUTED = "#8A8478"
 
-export function CommandPalette({ open, onClose, commands, blockDefs, onInsertBlock, maxBlocks = 8 }: Props) {
+export function CommandPalette({ open, onClose, commands, blockDefs, onInsertBlock, recentBlockTypes, maxBlocks = 8 }: Props) {
   const [q, setQ] = useState("")
   const [active, setActive] = useState(0)
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -53,14 +55,20 @@ export function CommandPalette({ open, onClose, commands, blockDefs, onInsertBlo
   }, [commands, query])
 
   const filteredBlocks = useMemo(() => {
-    if (!query) return [] as { type: string; def: BlockDefLite }[]
+    // Requête vide : blocs récents (menu d'insertion rapide, ressenti « / »).
+    if (!query) {
+      return (recentBlockTypes ?? [])
+        .filter(t => blockDefs[t])
+        .slice(0, maxBlocks)
+        .map(t => ({ type: t, def: blockDefs[t] }))
+    }
     return Object.entries(blockDefs)
       .map(([type, def]) => ({ type, def, score: scoreBlock(type, def, query) }))
       .filter(r => r.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, maxBlocks)
       .map(({ type, def }) => ({ type, def }))
-  }, [blockDefs, query, maxBlocks])
+  }, [blockDefs, query, maxBlocks, recentBlockTypes])
 
   // Liste plate ordonnée (commandes puis blocs) pour la navigation clavier.
   const items = useMemo<Item[]>(() => {
@@ -133,7 +141,7 @@ export function CommandPalette({ open, onClose, commands, blockDefs, onInsertBlo
           )}
           {items.slice(0, cmdCount).map((item, i) => rowLabel(item, i))}
           {filteredBlocks.length > 0 && (
-            <p style={{ color: MUTED, fontSize: 9, textTransform: "uppercase", letterSpacing: 2, margin: "8px 4px 2px" }}>Ajouter un bloc</p>
+            <p style={{ color: MUTED, fontSize: 9, textTransform: "uppercase", letterSpacing: 2, margin: "8px 4px 2px" }}>{query ? "Ajouter un bloc" : "Blocs récents"}</p>
           )}
           {items.slice(cmdCount).map((item, i) => rowLabel(item, cmdCount + i))}
         </div>

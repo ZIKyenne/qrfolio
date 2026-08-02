@@ -39,6 +39,16 @@ export async function countPages(supabase: any, userId: string): Promise<number>
   return count ?? 0
 }
 
+// Nombre de QR instantanés enregistrés (feature « QR instantané ») — consomme le
+// quota `limits.qr`, DISTINCT du quota de pages (limits.pages).
+export async function countInstantQrs(supabase: any, userId: string): Promise<number> {
+  const { count } = await supabase
+    .from("instant_qrs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+  return count ?? 0
+}
+
 // Statut initial d'un nouveau QR : actif si le quota du plan le permet, sinon
 // brouillon (créé quand même, mais non visitable tant qu'un slot n'est pas libéré).
 export async function initialQrStatus(

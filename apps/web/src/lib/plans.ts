@@ -166,6 +166,9 @@ export const getPlan = (id?: string | null): Plan => PLANS[(id as PlanId)] ?? PL
 // Limite de pages d'un plan (null = illimité) — utilisée par l'enforcement
 export const pageLimit = (id?: string | null): number | null => getPlan(id).limits.pages
 
+// Limite de QR instantanés enregistrés (null = illimité) — feature « QR instantané ».
+export const qrLimit = (id?: string | null): number | null => getPlan(id).limits.qr
+
 // Équipe : nombre de membres invitables (null = fonctionnalité indisponible sur ce plan).
 export const teamLimit = (id?: string | null): number | null => getPlan(id).limits.team
 export const canTeam = (id?: string | null): boolean => (getPlan(id).limits.team ?? 0) > 0

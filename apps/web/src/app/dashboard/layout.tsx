@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { ToastProvider } from "@/components/Toast"
+import { ConfirmProvider } from "@/components/ui/Confirm"
 import { accessibleOwnerIds } from "@/lib/team"
 
 const DEFAULT_ACCENT = "#C9A84C"
@@ -313,7 +314,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* MAIN CONTENT */}
       <main style={{ flex: 1, overflow: "auto", minWidth: 0, paddingBottom: (isMobile && !hideMobileNav) ? "calc(84px + env(safe-area-inset-bottom))" : 0 }}>
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider><ConfirmProvider>{children}</ConfirmProvider></ToastProvider>
       </main>
 
       {/* Sheet "Créer" (bouton central de la barre mobile) */}

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react"
 import { FileText, X, Upload, FolderOpen, Trash2, Plus, ExternalLink } from "lucide-react"
 import { useImageUpload } from "./useImageUpload"
+import { useConfirm } from "@/components/ui/Confirm"
 
 type Props = {
   value: string
@@ -24,6 +25,7 @@ const MUTED = "#A8A190"
 
 export default function FileUpload({ value, onChange, hint }: Props) {
   const { uploadFile, uploading, listAssets, deleteAsset } = useImageUpload()
+  const confirm = useConfirm()
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState("")
   const [libOpen, setLibOpen] = useState(false)
@@ -43,7 +45,7 @@ export default function FileUpload({ value, onChange, hint }: Props) {
     setLibBusy(true); const url = await uploadFile(file, "docs"); if (url) await refreshLibrary(); setLibBusy(false)
   }
   async function removeAsset(a: { name: string; url: string }) {
-    if (!window.confirm("Supprimer ce fichier de votre bibliothèque ?\n\nS'il est utilisé sur une page publiée, le lien ne fonctionnera plus.")) return
+    if (!(await confirm({ title: "Supprimer ce fichier ?", message: "S'il est utilisé sur une page publiée, le lien ne fonctionnera plus.", confirmLabel: "Supprimer", danger: true }))) return
     setLibBusy(true); const ok = await deleteAsset(a.name); if (ok) { if (value === a.url) onChange(""); await refreshLibrary() } setLibBusy(false)
   }
 

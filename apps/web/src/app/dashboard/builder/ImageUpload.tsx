@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react"
 import { Upload, X, Image as ImageIcon, FolderOpen, Trash2, Plus, Search, Star } from "lucide-react"
 import { useImageUpload } from "./useImageUpload"
+import { useConfirm } from "@/components/ui/Confirm"
 
 type Props = {
   value: string
@@ -13,6 +14,7 @@ type Props = {
 
 export default function ImageUpload({ value, onChange, label, hint }: Props) {
   const { uploadImage, uploading, listAssets, deleteAsset } = useImageUpload()
+  const confirm = useConfirm()
   const inputRef = useRef<HTMLInputElement>(null)
   const libInputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
@@ -44,7 +46,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
     setLibBusy(false)
   }
   async function removeAsset(a: { name: string; url: string }) {
-    if (!window.confirm("Supprimer cette image de votre bibliothèque ?\n\nSi elle est utilisée sur une page publiée, elle n'y apparaîtra plus.")) return
+    if (!(await confirm({ title: "Supprimer cette image ?", message: "Si elle est utilisée sur une page publiée, elle n'y apparaîtra plus.", confirmLabel: "Supprimer", danger: true }))) return
     setLibBusy(true)
     const ok = await deleteAsset(a.name)
     if (ok) { if (value === a.url) onChange(""); await refreshLibrary() }

@@ -18,6 +18,7 @@
   import { EditPanel, ThemePanel, Segmented, STYLE_COPY_KEYS } from "./builderPanels"
   import { useIsMobile } from "@/lib/useIsMobile"
   import { useToast } from "@/components/Toast"
+  import { useConfirm } from "@/components/ui/Confirm"
   import BannerStudio from "./BannerStudio"
   import ImageUpload from "./ImageUpload"
   import FileUpload from "./FileUpload"
@@ -44,6 +45,7 @@
 
 
   export default function BuilderV4({ pageId }: { pageId?: string }) {
+    const confirm = useConfirm()
     const undoRedo = useUndoRedo([
       { id: "1", type: "profile", content: { name: "Mon Nom", tagline: "Mon activité" }, visible: true },
       { id: "2", type: "bio", content: { text: "Bienvenue sur ma page !" }, visible: true },
@@ -593,10 +595,10 @@
 
     // Applique un MODÈLE DE PAGE complet : thème cohérent + jeu de blocs prêt à personnaliser.
     // Remplace les blocs (réversible via Ctrl+Z / undo). Confirme si la page a déjà du contenu.
-    function applyPageTemplate(tpl: PageTemplate) {
+    async function applyPageTemplate(tpl: PageTemplate) {
       const nonEmpty = blocks.filter(b => !(b.type === "profile" && !(b.content?.name))).length
       if (blocks.length > 1 || nonEmpty > 0) {
-        if (!window.confirm(`Appliquer le modèle « ${tpl.label} » ?\n\nLes blocs actuels seront remplacés et le thème mis à jour. Réversible avec Annuler (Ctrl+Z).`)) return
+        if (!(await confirm({ title: "Appliquer ce modèle ?", message: `Appliquer le modèle « ${tpl.label} » ?\n\nLes blocs actuels seront remplacés et le thème mis à jour. Réversible avec Annuler (Ctrl+Z).`, confirmLabel: "Appliquer" }))) return
       }
       setTheme(prev => ({ ...prev, ...tpl.theme }))
       const next = tpl.blocks.map(b => ({ id: genId(), type: b.type, content: { ...(BLOCK_DEFS[b.type]?.defaultContent || {}), ...b.content }, visible: true }))
@@ -1651,11 +1653,11 @@
                       </button>
 
                       {/* Supprimer avec confirmation */}
-                      <button onClick={() => {
+                      <button onClick={async () => {
                           const unlocked = multiSelection.filter(id => !blocks.find(b => b.id===id)?.locked)
                           if (unlocked.length === 0) return
                           const msg = `Supprimer ${unlocked.length} bloc${unlocked.length>1?"s":""}${unlocked.length<multiSelection.length?` (${multiSelection.length-unlocked.length} verrouillé${multiSelection.length-unlocked.length>1?"s":""} ignoré${multiSelection.length-unlocked.length>1?"s":""})`:""}?`
-                          if (window.confirm(msg)) deleteMulti()
+                          if (await confirm({ title: "Supprimer les blocs ?", message: msg, confirmLabel: "Supprimer", danger: true })) deleteMulti()
                         }}
                         title="Supprimer les blocs sélectionnés"
                         style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "6px 11px", color: "#EF4444", fontSize: 11, cursor: "pointer", transition: "all 0.15s" }}

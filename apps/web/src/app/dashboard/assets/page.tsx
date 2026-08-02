@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Images, FileText, Upload, Trash2, Link2, Check, ExternalLink, MoreHorizontal } from "lucide-react"
 import { useImageUpload } from "../builder/useImageUpload"
+import { useConfirm } from "@/components/ui/Confirm"
 
 const G = "#C9A84C"
 const MUTED = "#A8A190"
@@ -17,6 +18,7 @@ function pretty(name: string): string {
 
 export default function AssetsPage() {
   const { uploadImage, uploadFile, listAssets, deleteAsset, uploading } = useImageUpload()
+  const confirm = useConfirm()
   const [tab, setTab] = useState<"image" | "file">("image")
   const [images, setImages] = useState<Asset[] | null>(null)
   const [files, setFiles] = useState<Asset[] | null>(null)
@@ -48,7 +50,7 @@ export default function AssetsPage() {
     await load(); setBusy(false)
   }
   async function onDelete(a: Asset) {
-    if (!window.confirm(`Supprimer « ${pretty(a.name)} » ?\n\nSi ce média est utilisé sur une page publiée, il n'y apparaîtra plus.`)) return
+    if (!(await confirm({ title: "Supprimer ce média ?", message: `Supprimer « ${pretty(a.name)} » ?\n\nSi ce média est utilisé sur une page publiée, il n'y apparaîtra plus.`, confirmLabel: "Supprimer", danger: true }))) return
     setBusy(true); const ok = await deleteAsset(a.name); if (ok) await load(); setBusy(false)
   }
   async function copy(url: string) {

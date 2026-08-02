@@ -16,6 +16,7 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useToast } from "@/components/Toast"
+import { useConfirm } from "@/components/ui/Confirm"
 import { useDeviceOrientation } from "@/lib/useDeviceOrientation"
 import { onEnterSpace } from "@/lib/a11y"
 import { fabric } from "fabric"
@@ -984,6 +985,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   const [shadowAdv, setShadowAdv] = useState(false) // #20 : flou/decalages caches derriere "Avance" en mode simple
   // Notifications : toast global unifié (les suppressions ajoutent une action « Annuler »).
   const toast = useToast()
+  const confirm = useConfirm()
   // Gestes tactiles (#8) : long-press -> dupliquer. Timer + point de depart.
   const lpTimerRef = useRef<number | null>(null)
   const lpStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -1651,9 +1653,9 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
     fc.requestRenderAll(); pushHistorySoon(); setLayersVer(v => v + 1)
   }
   // Repartir d'une page vierge : on retire tout (sauf guides) et on replace le QR
-  const resetCanvas = () => {
+  const resetCanvas = async () => {
     const fc = fcRef.current; if (!fc) return
-    if (typeof window !== "undefined" && !window.confirm("Repartir d'une page vierge ? Le contenu actuel sera supprimé (le QR est replacé au centre).")) return
+    if (!(await confirm({ title: "Repartir d'une page vierge ?", message: "Le contenu actuel sera supprimé (le QR est replacé au centre).", confirmLabel: "Repartir de zéro", danger: true }))) return
     fc.getObjects().slice().forEach(o => { if (!(o as any).isGuide) fc.remove(o) })
     placeQr(fc)
     pushHistorySoon(); refreshSel()
@@ -2904,7 +2906,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
     const meta = PRINT_TEMPLATES.find(t => t.id === id); if (!meta) return
     const vG = vGuideRef.current, hG = hGuideRef.current
     const hasContent = fc.getObjects().some(o => o !== vG && o !== hG && !(o as any).isQR && !(o as any).isQrCard)
-    if (!skipConfirm && hasContent && !window.confirm("Remplacer le contenu actuel par ce modèle ?")) return
+    if (!skipConfirm && hasContent && !(await confirm({ title: "Remplacer le contenu ?", message: "Le contenu actuel sera remplacé par ce modèle.", confirmLabel: "Remplacer" }))) return
 
     setRecentTpl(r => pushRecentTpl(r, id)) // memorise le modele applique (#13)
     if (landscapeMobile) setTplOpen(false) // mobile : fermer la galerie pour voir le modele applique

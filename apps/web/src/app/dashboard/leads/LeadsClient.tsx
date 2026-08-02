@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Inbox, Mail, Phone, Trash2, Check, Search } from "lucide-react"
 import Particles from "@/components/Particles"
+import { useConfirm } from "@/components/ui/Confirm"
 
 const G = "var(--accent, #C9A84C)"
 const MUTED = "#A8A190"
@@ -44,6 +45,7 @@ export default function LeadsClient({ leads: initialLeads, pages, setupNeeded }:
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [query, setQuery] = useState("")
   const supabase = createClient()
+  const confirm = useConfirm()
 
   const pageTitle = (id: string) => pages.find(p => p.id === id)?.title || "Page"
 
@@ -71,7 +73,7 @@ export default function LeadsClient({ leads: initialLeads, pages, setupNeeded }:
   }
   const remove = async (id: string) => {
     const lead = leads.find(l => l.id === id)
-    if (!window.confirm(`Supprimer définitivement ce message${lead?.name ? ` de ${lead.name}` : ""} ?\n\nCette action est irréversible.`)) return
+    if (!(await confirm({ title: "Supprimer ce message ?", message: `Supprimer définitivement ce message${lead?.name ? ` de ${lead.name}` : ""} ?\n\nCette action est irréversible.`, confirmLabel: "Supprimer", danger: true }))) return
     setLeads(prev => prev.filter(l => l.id !== id))
     await supabase.from("leads").delete().eq("id", id)
   }

@@ -5,6 +5,7 @@ import {
   Globe, Check, X, Loader, AlertCircle,
   CheckCircle, Copy, ExternalLink, Pencil, Trash2
 } from "lucide-react"
+import { useConfirm } from "@/components/ui/Confirm"
 
 interface Props {
   currentUsername: string | null
@@ -37,6 +38,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
   const [message,   setMessage]   = useState("")
   const [saving,    setSaving]    = useState(false)
   const [deleting,  setDeleting]  = useState(false)
+  const confirm = useConfirm()
   const [copied,    setCopied]    = useState(false)
   const [error,     setError]     = useState("")
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
@@ -103,7 +105,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
   }
 
   async function release() {
-    if (!confirm("Libérer votre sous-domaine ? Il deviendra disponible pour d'autres utilisateurs.")) return
+    if (!(await confirm({ title: "Libérer le sous-domaine ?", message: "Il deviendra disponible pour d'autres utilisateurs.", confirmLabel: "Libérer", danger: true }))) return
     setDeleting(true)
     try {
       await fetch("/api/subdomain", { method: "DELETE" })

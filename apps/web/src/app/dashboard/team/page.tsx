@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { Users, Mail, Trash2, ShieldCheck, Pencil, Crown, Loader2, LogOut, Sparkles } from "lucide-react"
 import { useToast } from "@/components/Toast"
+import { useConfirm } from "@/components/ui/Confirm"
 import { Button } from "@/components/ui/Button"
 
 type Role = "owner" | "admin" | "editor" | "viewer"
@@ -37,6 +38,7 @@ function RoleBadge({ role }: { role: Role }) {
 
 export default function TeamPage() {
   const toast = useToast()
+  const confirm = useConfirm()
   const [data, setData] = useState<TeamData | null>(null)
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState("")
@@ -85,7 +87,7 @@ export default function TeamPage() {
   }
 
   const removeMember = async (memberId: string, label: string) => {
-    if (!window.confirm(`Retirer ${label} de l'équipe ?`)) return
+    if (!(await confirm({ title: "Retirer ce membre ?", message: `Retirer ${label} de l'équipe ?`, confirmLabel: "Retirer", danger: true }))) return
     try {
       const res = await fetch("/api/team/member", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ memberId }) })
       const d = await res.json()
@@ -106,7 +108,7 @@ export default function TeamPage() {
   }
 
   const leaveTeam = async () => {
-    if (!window.confirm("Quitter cette équipe ? Vous perdrez l'accès au contenu partagé.")) return
+    if (!(await confirm({ title: "Quitter l'équipe ?", message: "Vous perdrez l'accès au contenu partagé.", confirmLabel: "Quitter", danger: true }))) return
     try {
       const res = await fetch("/api/team/member", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leave: true }) })
       const d = await res.json()

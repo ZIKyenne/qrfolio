@@ -112,11 +112,17 @@ export async function DELETE(req: NextRequest) {
     }, { status: 400 })
   }
 
-  const { error } = await supabase
+  // .select() confirme qu'une ligne a bien été supprimée (proprio OU équipe via
+  // RLS) : sinon la RLS bloque en silence et on renverrait un faux { ok:true }.
+  const { data: deleted, error } = await supabase
     .from("qr_codes")
     .delete()
     .eq("id", qr_id)
+    .select("id")
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (!deleted || deleted.length === 0) {
+    return NextResponse.json({ error: "Suppression impossible (droits insuffisants ou QR introuvable)" }, { status: 403 })
+  }
   return NextResponse.json({ ok: true })
 }

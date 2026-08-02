@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server"
 import Anthropic from "@anthropic-ai/sdk"
 import { AI_BRIEF_SCHEMA, aiBriefToTemplate, buildSystemPrompt, type AiBrief } from "@/app/dashboard/builder/ai-generate"
 import { canAI } from "@/lib/plans"
+import { rateLimit } from "@/lib/rateLimit"
 
 export const runtime = "nodejs"
 
@@ -41,6 +42,12 @@ export async function POST(req: NextRequest) {
         { error: "La génération par IA est réservée aux plans Pro et Business.", upgrade: true },
         { status: 403 },
       )
+    }
+
+    // Rate-limit par utilisateur : chaque génération consomme des crédits Anthropic
+    // (Opus, 4000 tokens). Sans plafond, un abonné pourrait faire exploser la facture.
+    if (!(await rateLimit(`ai-gen:${user.id}`, 10, 3600_000))) {
+      return NextResponse.json({ error: "Trop de générations. Réessayez dans une heure." }, { status: 429 })
     }
 
     const body = await req.json().catch(() => null)

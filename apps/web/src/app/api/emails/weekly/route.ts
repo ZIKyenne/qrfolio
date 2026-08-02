@@ -1,6 +1,6 @@
 import { Resend } from "resend"
 import { NextRequest, NextResponse } from "next/server"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { EMAIL_FROM } from "@/lib/emailFrom"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
@@ -22,11 +22,21 @@ export async function POST(req: NextRequest) {
     if (!apiKey) return NextResponse.json({ error: "Service email non configuré" }, { status: 503 })
     const resend = new Resend(apiKey)
 
-    // Verifier secret pour cron job
-    const { secret } = await req.json()
-    if (secret !== process.env.CRON_SECRET) return NextResponse.json({ error: "Non autorise" }, { status: 401 })
+    // Verifier secret (fail-closed) — accepté via header Authorization: Bearer,
+    // query ?secret= (pattern des autres crons) OU body (compat). Vercel Cron
+    // ne peut poser que header/query, d'où la souplesse.
+    const CRON = process.env.CRON_SECRET ?? ""
+    const auth = req.headers.get("authorization")
+    const qsecret = req.nextUrl.searchParams.get("secret")
+    const body = await req.json().catch(() => ({} as any))
+    const bsecret = body?.secret
+    if (CRON === "" || (auth !== `Bearer ${CRON}` && qsecret !== CRON && bsecret !== CRON)) {
+      return NextResponse.json({ error: "Non autorise" }, { status: 401 })
+    }
 
-    const supabase = await createServerSupabaseClient()
+    // Client SERVICE-ROLE : sans session, un client RLS lirait 0 profil (l'email
+    // hebdo n'était donc jamais envoyé). L'admin lit bien tous les profils actifs.
+    const supabase = createAdminClient()
 
     // Recuperer tous les users actifs
     const { data: profiles } = await supabase

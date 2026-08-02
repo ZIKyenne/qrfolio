@@ -42,6 +42,7 @@ export async function POST(req: Request) {
       .from("qr_codes")
       .update(fields)
       .eq("id", qr_id)
+      .eq("user_id", user.id)
       .select()
 
     if (error) {

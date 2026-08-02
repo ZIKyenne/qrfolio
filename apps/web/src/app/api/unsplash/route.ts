@@ -7,11 +7,22 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from "next/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { rateLimit } from "@/lib/rateLimit"
 
 export async function GET(req: NextRequest) {
   const key = process.env.UNSPLASH_ACCESS_KEY
   if (!key) {
     return NextResponse.json({ error: "Recherche d'images non configurée", photos: [] }, { status: 503 })
+  }
+
+  // Proxy vers une API externe à quota : réservé aux utilisateurs connectés
+  // (la recherche d'images ne sert qu'au builder/print studio) + rate-limit.
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "Non authentifié", photos: [] }, { status: 401 })
+  if (!(await rateLimit(`unsplash:${user.id}`, 30, 60_000))) {
+    return NextResponse.json({ error: "Trop de recherches, patientez un instant.", photos: [] }, { status: 429 })
   }
 
   const q = (req.nextUrl.searchParams.get("q") || "background").slice(0, 80)

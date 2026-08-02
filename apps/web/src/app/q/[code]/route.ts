@@ -4,6 +4,7 @@
 import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { resolveOverrideDest, detectDevice, escapeHtml, type OverrideDest } from "./qrResolve"
+import { rateLimit, ipOf } from "@/lib/rateLimit"
 
 // Redirection NON mise en cache : un QR est DYNAMIQUE (le proprietaire peut changer sa
 // destination apres impression) -> chaque scan doit re-resoudre cote serveur. Sans no-store,
@@ -85,7 +86,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     // la requête -> data null -> redirection à tort vers l'accueil pour TOUS les QR.
     const { data: qr, error: qrErr } = await supabase
       .from("qr_codes")
-      .select("*")
+      .select("*, pages(slug)")
       .eq("short_code", code)
       .maybeSingle()
 
@@ -134,9 +135,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     // sur l'INSERT de scan ci-dessous. L'ancien UPDATE manuel etait casse
     // (rpc imbrique comme valeur de colonne -> rejete par Postgres, avale
     // silencieusement) et redondant : retire.
-    supabase.from("scans").insert({
-      qr_code_id: qr.id, page_id: qr.page_id, device,
-    }).then(() => {}, () => {})
+    // Anti-abus best-effort : au-delà de 20 scans/min pour un même code+IP, on
+    // n'enregistre plus (évite le gonflage des stats/quotas par bouclage d'un
+    // short_code). NON bloquant : la redirection n'attend pas ce check.
+    rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
+      if (allow) supabase.from("scans").insert({ qr_code_id: qr.id, page_id: qr.page_id, device }).then(() => {}, () => {})
+    })
 
     // ── Résolution destination (override ou page) ─────────────────────────
     const override = qr.dest_override as OverrideDest
@@ -152,6 +156,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     }
 
     if (qr.page_id) {
+      // Slug déjà joint au lookup initial (pages(slug)) -> pas de 2ᵉ aller-retour DB
+      // sur le chemin le plus fréquent. Repli sur une requête si l'embed manque.
+      const joinedSlug = (qr as any).pages?.slug as string | undefined
+      if (joinedSlug) return redirectNoStore(`${appUrl}/${joinedSlug}`)
       const { data: pg } = await supabase.from("pages").select("slug").eq("id", qr.page_id).maybeSingle()
       if (pg?.slug) return redirectNoStore(`${appUrl}/${pg.slug}`)
     }

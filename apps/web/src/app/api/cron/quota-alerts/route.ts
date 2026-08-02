@@ -11,6 +11,7 @@
 
 import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 import { getPlan } from "@/lib/plans"
 import { EMAIL_FROM } from "@/lib/emailFrom"
 
@@ -115,6 +116,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ sent, errors: errors.length ? errors : undefined })
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "Erreur serveur" }, { status: 500 })
+    return serverError("cron/quota-alerts", e)
   }
 }

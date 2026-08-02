@@ -4,6 +4,7 @@
 
 import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 import { escapeHtml as esc } from "@/lib/escapeHtml"
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ""
@@ -315,6 +316,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ sent, total: due.length, errors })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return serverError("reports/send", err)
   }
 }

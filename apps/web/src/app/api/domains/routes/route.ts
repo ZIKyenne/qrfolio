@@ -3,6 +3,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 
 // GET ?root_domain=xxx — liste les routes d'un domaine
 export async function GET(req: NextRequest) {
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
   if (root) query = query.eq("root_domain", root)
 
   const { data, error } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("domains/routes", error)
   return NextResponse.json({ routes: data ?? [] })
 }
 
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest) {
     .select("*, pages(id, title, slug, status)")
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("domains/routes", error)
   return NextResponse.json({ route: data })
 }
 
@@ -103,6 +104,6 @@ export async function DELETE(req: NextRequest) {
     .eq("id", id)
     .eq("user_id", user.id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("domains/routes", error)
   return NextResponse.json({ ok: true })
 }

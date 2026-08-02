@@ -3,6 +3,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 
 export async function POST(req: NextRequest) {
   try {
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, subscription: data })
   } catch (err: any) {
     console.error("[reports/subscribe]", err)
-    return NextResponse.json({ error: err.message ?? "Erreur serveur" }, { status: 500 })
+    return serverError("reports/subscribe", err)
   }
 }
 
@@ -71,6 +72,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ subscriptions: data ?? [] })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return serverError("reports/subscribe", err)
   }
 }

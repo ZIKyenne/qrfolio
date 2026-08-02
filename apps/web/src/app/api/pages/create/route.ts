@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
@@ -82,6 +83,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ pageId: newPage.id, slug: newPage.slug, success: true, qrStatus, atActiveLimit: qrStatus === "draft" })
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "Erreur serveur" }, { status: 500 })
+    return serverError("pages/create", err)
   }
 }

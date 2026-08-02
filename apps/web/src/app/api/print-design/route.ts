@@ -10,6 +10,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 
 const ALLOWED_FORMATS = ["a4", "square", "story", "carte", "flyer", "table"] as const
 
@@ -49,14 +50,14 @@ export async function POST(req: NextRequest) {
       .select("id")
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return serverError("print-design", error)
     }
     if (!data || data.length === 0) {
       return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
     }
     return NextResponse.json({ ok: true })
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "Erreur serveur" }, { status: 500 })
+    return serverError("print-design", e)
   }
 }
 
@@ -81,13 +82,13 @@ export async function GET(req: NextRequest) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return serverError("print-design", error)
     }
     return NextResponse.json({
       design: data?.print_design ?? null,
       format: data?.print_format ?? "a4",
     })
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "Erreur serveur" }, { status: 500 })
+    return serverError("print-design", e)
   }
 }

@@ -3,6 +3,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 import { normalizeDomain } from "@/lib/domain"
 
 // Destination autorisée : chemin interne "/…" OU URL http(s) absolue.
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("redirects", error)
   return NextResponse.json({ redirect: data })
 }
 
@@ -119,7 +120,7 @@ export async function PATCH(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("redirects", error)
   return NextResponse.json({ redirect: data })
 }
 
@@ -137,6 +138,6 @@ export async function DELETE(req: NextRequest) {
     .eq("id", id)
     .eq("user_id", user.id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("redirects", error)
   return NextResponse.json({ ok: true })
 }

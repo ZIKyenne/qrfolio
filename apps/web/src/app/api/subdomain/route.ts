@@ -3,6 +3,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 
 const RESERVED = new Set([
   "www","app","api","admin","dashboard","auth","login","signup","register",
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest) {
     .select("username")
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("subdomain", error)
 
   return NextResponse.json({
     ok:        true,
@@ -104,6 +105,6 @@ export async function DELETE() {
     .update({ username: null })
     .eq("id", user.id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("subdomain", error)
   return NextResponse.json({ ok: true })
 }

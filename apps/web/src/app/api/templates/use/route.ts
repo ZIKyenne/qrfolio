@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
@@ -110,10 +111,7 @@ export async function POST(req: NextRequest) {
       if (blocksError) {
         // On nettoie la page creee pour ne pas laisser de page vide.
         await supabaseAdmin.from("pages").delete().eq("id", newPage.id)
-        return NextResponse.json(
-          { error: "Erreur creation blocs : " + blocksError.message },
-          { status: 500 }
-        )
+        return serverError("templates/use:blocks", blocksError)
       }
     }
 
@@ -128,9 +126,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ pageId: newPage.id, success: true, qrStatus, atActiveLimit: qrStatus === "draft" })
 
   } catch (err: any) {
-    return NextResponse.json(
-      { error: err?.message || "Erreur serveur" },
-      { status: 500 }
-    )
+    return serverError("templates/use", err)
   }
 }

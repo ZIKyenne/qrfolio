@@ -4,6 +4,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { randomBytes } from "crypto"
+import { serverError } from "@/lib/apiError"
 import dns from "dns/promises"
 import { normalizeDomain, isValidDomain } from "@/lib/domain"
 
@@ -273,7 +274,7 @@ export async function POST(req: NextRequest) {
     if (error.code === "23505") {
       return NextResponse.json({ error: "Ce domaine est déjà vérifié par un autre compte" }, { status: 409 })
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return serverError("domains", error)
   }
 
   return NextResponse.json({ domain: data })

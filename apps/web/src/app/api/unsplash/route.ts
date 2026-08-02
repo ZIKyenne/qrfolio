@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
     }))
     return NextResponse.json({ photos })
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "Erreur serveur", photos: [] }, { status: 500 })
+    console.error("[unsplash]", e?.message ?? e)
+    return NextResponse.json({ error: "Erreur serveur", photos: [] }, { status: 500 })
   }
 }

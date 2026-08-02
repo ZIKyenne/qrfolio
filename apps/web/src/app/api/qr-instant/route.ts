@@ -3,6 +3,7 @@
 // la table dédiée `instant_qrs`. Consomme le quota `limits.qr` (distinct des pages).
 
 import { NextRequest, NextResponse } from "next/server"
+import { serverError } from "@/lib/apiError"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { qrLimit } from "@/lib/plans"
 import { countInstantQrs } from "@/lib/quota"
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
     .insert({ user_id: user.id, kind, label, payload, inputs, style })
     .select(COLS)
     .single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("qr-instant", error)
   return NextResponse.json({ ok: true, item: data })
 }
 
@@ -62,7 +63,7 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: "id requis" }, { status: 400 })
   const { data, error } = await supabase
     .from("instant_qrs").delete().eq("id", id).eq("user_id", user.id).select("id")
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return serverError("qr-instant", error)
   if (!data || data.length === 0) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
   return NextResponse.json({ ok: true })
 }

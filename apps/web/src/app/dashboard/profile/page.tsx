@@ -1058,7 +1058,7 @@ export default function ProfilePage() {
       <Particles behind />
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes profileFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
         @keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.7}}
         @keyframes heroFloat1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.12)}}
@@ -1071,7 +1071,7 @@ export default function ProfilePage() {
         .hero-tile{transition:transform .2s cubic-bezier(.2,.8,.2,1), border-color .2s, background .2s}
         .hero-tile:hover{transform:translateY(-3px);border-color:color-mix(in srgb, var(--accent) 35%, transparent)!important}
         input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb, var(--accent) 40%, transparent)!important}
-        .section-card{animation:fadeIn 0.3s ease}
+        .section-card{animation:profileFadeIn 0.3s ease}
         /* Carte "prochaine etape" masquee sur mobile (redondante avec le reste du profil) */
         @media (max-width: 760px){ .next-step-card{ display:none !important } }
         * { box-sizing: border-box }

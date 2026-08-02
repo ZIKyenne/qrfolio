@@ -281,7 +281,7 @@ function QRMockup() {
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(135deg, transparent 30%, rgba(201,168,76,0.04) 50%, transparent 70%)",
-          animation: "shimmer 3s infinite"
+          animation: "heroShimmer 3s infinite"
         }} />
         {/* Corner accent top-left */}
         <div style={{
@@ -3403,7 +3403,7 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(landingJsonLd(FAQ_ITEMS)) }} />
       <style>{`
         html { scroll-padding-top: 80px; }
-        @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+        @keyframes heroShimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;}}
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
         @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }

@@ -2609,7 +2609,7 @@ export default function TemplatePreviewModal({
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "20px 16px",
         backdropFilter: "blur(6px)",
-        animation: "fadeIn 0.18s ease",
+        animation: "tplFadeIn 0.18s ease",
       }}>
 
       {/* Conteneur central — stop propagation */}
@@ -2835,7 +2835,7 @@ export default function TemplatePreviewModal({
       </div>
 
       <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.97) } to { opacity: 1; transform: scale(1) } }
+        @keyframes tplFadeIn { from { opacity: 0; transform: scale(0.97) } to { opacity: 1; transform: scale(1) } }
         @keyframes spin { to { transform: rotate(360deg) } }
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
         .preview-scroll::-webkit-scrollbar { display: none }

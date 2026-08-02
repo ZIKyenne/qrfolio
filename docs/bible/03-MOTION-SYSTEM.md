@@ -108,8 +108,35 @@ Les animations réellement **spécifiques** (chorégraphie du hero, séquence de
 
 ## 8. État de la migration
 
-- ✅ **Phase 1 (faite)** — fondation additive : `lib/motion.ts` (+ test), section `globals.css`, ce chapitre. **Zéro régression** (rien ne référence encore `mo-*`).
-- ⏳ **Phase 2 (à venir, feu vert requis)** — migrer les composants vers `mo-*`, supprimer les 28+ doublons, **renommer** les keyframes homonymes divergents (ferme le bug de collision). Par zone, `tsc` + tests à chaque pas, aucune régression visuelle.
-- ⏳ **Phase 3 (à venir)** — remplacer les ~20 easings par les 4 rôles.
+**Nuance importante (portée réelle des collisions) :** sous Next App Router, les
+`<style>` par page sont montés/démontés **par route** (exclusifs). Les keyframes
+homonymes de deux pages différentes ne co-existent donc quasiment jamais dans le
+DOM au même instant — le « bug de collision » est surtout **latent**. Il ne mord
+vraiment qu'entre composants **co-montés sur une même vue**, ou face à un keyframe
+**global** (ex. `shimmer` du `.skeleton` dans `globals.css`). On corrige donc en
+priorité ces cas-là, et on **ne normalise jamais un corps d'animation à l'aveugle**
+(un `fadeUp` de 20px vs 14px = ressenti différent → changement visible → QA requis).
 
-> Règle de synchro (Ch. commun) : toute évolution de `motion.ts`/`globals.css` met ce chapitre à jour dans le même commit. La Bible et le code ne divergent jamais.
+- ✅ **Phase 1 (faite)** — fondation additive : `lib/motion.ts` (+ test), section
+  `globals.css`, ce chapitre. Zéro régression (rien ne référençait encore `mo-*`).
+- ✅ **Phase 2a (faite)** — hygiène sûre, iso-comportement :
+  - `fadeIn` renommé `profileFadeIn` / `tplFadeIn` (deux corps radicalement
+    différents : translateY vs scale) ;
+  - `shimmer` local de la landing renommé `heroShimmer` (translateX) pour ne plus
+    masquer le `shimmer` **global** du skeleton (background-position) ;
+  - `fadeUp` **au corps identique** au canonique (14px) migré vers `mo-fade-up`
+    (Dashboard, Analytics) — première adoption réelle du système.
+- 🔎 **Phase 2b (par écran, avec QA visuel)** — adopter `mo-*` / classes `.mo-*`
+  sur les écrans **quand on les retouche** (ou lors d'une passe QA), en normalisant
+  alors les corps divergents (fadeUp 10/16/20px, variantes de `pulse`) vers le
+  canonique. Jamais en masse à l'aveugle.
+- 🔎 **Phase 3 (avec QA visuel)** — remplacer les ~20 easings par les 4 rôles ;
+  c'est un **changement de ressenti**, donc validé à l'œil, pas en aveugle.
+
+**Règle d'or de cette migration :** un renommage (déf + tous les usages du même
+fichier, via remplacement complet) est iso-comportement et sûr ; **normaliser un
+corps** (distance, opacité, easing) est un changement visible → il passe par une
+vérification visuelle.
+
+> Règle de synchro (Ch. commun) : toute évolution de `motion.ts`/`globals.css` met
+> ce chapitre à jour dans le même commit. La Bible et le code ne divergent jamais.

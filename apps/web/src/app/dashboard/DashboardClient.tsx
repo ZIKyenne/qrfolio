@@ -194,9 +194,8 @@ export default function DashboardClient() {
       <Particles />
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-        .dz{animation:fadeUp .5s cubic-bezier(.2,.8,.2,1) backwards}
+        .dz{animation:mo-fade-up .5s cubic-bezier(.2,.8,.2,1) backwards}
         .dz-row{transition:background .15s, transform .15s}
         .dz-row:hover{background:rgba(255,255,255,0.025)!important;transform:translateX(2px)}
         .dz-card{transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s, border-color .2s}

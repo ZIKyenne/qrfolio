@@ -157,10 +157,9 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
       <Particles />
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
         @keyframes ring{0%{box-shadow:0 0 0 0 rgba(57,255,143,0.5)}70%{box-shadow:0 0 0 8px rgba(57,255,143,0)}100%{box-shadow:0 0 0 0 rgba(57,255,143,0)}}
-        .az{animation:fadeUp .5s cubic-bezier(.2,.8,.2,1) backwards}
+        .az{animation:mo-fade-up .5s cubic-bezier(.2,.8,.2,1) backwards}
         .az-card{transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s, border-color .2s}
         .az-card:hover{transform:translateY(-3px);box-shadow:0 16px 38px rgba(0,0,0,0.5)}
         /* Anti-debordement horizontal sur mobile : rien ne sort du cadre, scroll

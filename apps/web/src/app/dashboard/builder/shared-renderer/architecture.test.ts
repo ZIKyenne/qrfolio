@@ -5,15 +5,16 @@ import { BLOCK_DEFS } from "../types"
 // Cohérence des contrats PRÉPARATOIRES (mission B09.1). Garantit qu'aucun bloc n'est
 // activé et que les invariants d'architecture tiennent avant B09.2.
 
-describe("flag de migration — inerte en B09.1", () => {
-  it("aucun bloc n'est activé (flag vide)", () => {
-    expect(SHARED_RENDERER_BLOCKS.size).toBe(0)
+describe("flag de migration — 3 pilotes activés (B09.3)", () => {
+  const PILOTS = ["heading", "values", "pricing"]
+  it("exactement les 3 pilotes sont activés", () => {
+    expect([...SHARED_RENDERER_BLOCKS].sort()).toEqual([...PILOTS].sort())
   })
-  it("resolveRendererStatus renvoie legacy par défaut pour tout bloc", () => {
-    for (const t of Object.keys(BLOCK_DEFS)) expect(resolveRendererStatus(t)).toBe("legacy")
+  it("resolveRendererStatus : shared pour les pilotes, legacy pour les autres", () => {
+    for (const t of Object.keys(BLOCK_DEFS)) expect(resolveRendererStatus(t)).toBe(PILOTS.includes(t) ? "shared" : "legacy")
   })
-  it("un flag simulé bascule un bloc en shared (mécanisme de bascule)", () => {
-    expect(resolveRendererStatus("heading", new Set(["heading"]))).toBe("shared")
+  it("rollback : un set vide ramène tout en legacy (mécanisme de bascule)", () => {
+    for (const t of PILOTS) expect(resolveRendererStatus(t, new Set())).toBe("legacy")
     expect(resolveRendererStatus("pricing", new Set(["heading"]))).toBe("legacy")
   })
 })

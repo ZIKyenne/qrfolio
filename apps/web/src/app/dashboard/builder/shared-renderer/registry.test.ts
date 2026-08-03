@@ -6,13 +6,13 @@ import { BLOCK_DEFS } from "../types"
 
 const PILOTS = new Set(["heading", "values", "pricing"])
 
-describe("flag & statut de migration", () => {
-  it("flag actif VIDE en production (pilotes désactivés par défaut)", () => {
-    expect(SHARED_RENDERER_BLOCKS.size).toBe(0)
+describe("flag & statut de migration (3 pilotes activés)", () => {
+  it("exactement les 3 pilotes sont dans le flag actif", () => {
+    expect([...SHARED_RENDERER_BLOCKS].sort()).toEqual(["heading", "pricing", "values"])
   })
-  it("tous les blocs sont legacy sauf les 3 pilotes (statut pilot)", () => {
+  it("statut : shared pour les 3 pilotes, legacy pour tous les autres", () => {
     for (const t of Object.keys(BLOCK_DEFS)) {
-      expect(migrationStatusOf(t)).toBe(PILOTS.has(t) ? "pilot" : "legacy")
+      expect(migrationStatusOf(t)).toBe(PILOTS.has(t) ? "shared" : "legacy")
     }
   })
   it("exactement 3 pilotes déclarés", () => {
@@ -20,18 +20,15 @@ describe("flag & statut de migration", () => {
   })
 })
 
-describe("résolution éditeur/public (flag par défaut = vide → legacy)", () => {
-  it("aucun bloc n'est résolu en partagé par défaut (retombe legacy)", () => {
-    for (const t of [...PILOTS, "profile", "gallery"]) {
+describe("résolution éditeur/public (flag actif = 3 pilotes)", () => {
+  it("les 3 pilotes sont résolus vers un adapter (éditeur ET public), les autres non", () => {
+    for (const t of PILOTS) {
+      expect(typeof resolveEditorBlock(t)).toBe("function")
+      expect(typeof resolvePublicBlock(t)).toBe("function")
+    }
+    for (const t of ["profile", "gallery"]) {
       expect(resolveEditorBlock(t)).toBeNull()
       expect(resolvePublicBlock(t)).toBeNull()
-    }
-  })
-  it("avec flag actif : le pilote est résolu vers un adapter (éditeur ET public)", () => {
-    const active = new Set(["heading", "values", "pricing"])
-    for (const t of active) {
-      expect(typeof resolveEditorBlock(t, active)).toBe("function")
-      expect(typeof resolvePublicBlock(t, active)).toBe("function")
     }
   })
   it("type inconnu activé par erreur → null (fallback legacy, jamais de crash)", () => {

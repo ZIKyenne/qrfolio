@@ -71,9 +71,11 @@ export type BlockRendererRegistration<TContent = Record<string, any>, TViewModel
   PublicAdapter?: ComponentType<SharedViewProps<TViewModel>>
 }
 
-// ── Flag de migration — VIDE au départ (rien n'est activé) ──────────────────
+// ── Flag de migration — pilotes ACTIVÉS (B09.3) ─────────────────────────────
+// Parité prouvée par renderParity.test.tsx (HTML identique au legacy) + models/bundle.
 // Rollback = retirer un type de ce set → retour legacy immédiat, aucune donnée touchée.
-export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>()
+// Les `case` legacy restent conservés (statut « pilot activé », pas « legacy supprimable »).
+export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>(["heading", "values", "pricing"])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.
 export const PLANNED_PILOT_BLOCKS = ["heading", "values", "pricing"] as const

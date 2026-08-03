@@ -39,9 +39,13 @@ registres **séparés** `editorRegistry`/`publicRegistry`, flag `SHARED_RENDERER
 
 | Bloc | Infra | Statut | Flag | Tests | Rollback | Legacy |
 | --- | --- | --- | --- | --- | --- | --- |
-| heading | modèle + 2 adapters | `pilot` | **désactivé** | modèle+registre+bundle | retirer du flag | conservé |
-| values | modèle + 2 adapters + emptyState | `pilot` | **désactivé** | idem | retirer du flag | conservé |
-| pricing | modèle + 2 adapters | `pilot` | **désactivé** | idem + lien/tracking | retirer du flag | conservé |
+| heading | modèle + 2 adapters | `shared` | **ACTIVÉ (B09.3)** | modèle+registre+bundle+renderParity | retirer du flag | conservé |
+| values | modèle + 2 adapters + emptyState | `shared` | **ACTIVÉ (B09.3)** | idem | retirer du flag | conservé |
+| pricing | modèle + 2 adapters | `shared` | **ACTIVÉ (B09.3)** | idem + lien/tracking | retirer du flag | conservé |
+
+> **B09.3** : parité prouvée par `renderParity.test.tsx` (HTML statique identique au legacy).
+> Flag `SHARED_RENDERER_BLOCKS = {heading, values, pricing}`. Validation pixel navigateur =
+> QA humaine restante (voir `docs/SHARED-RENDERER-PILOT-VALIDATION.md`). Rollback immédiat.
 
 - **Câblage** : `builderPreview` appelle `resolveEditorBlock` et `PublicPageClient`
   `resolvePublicBlock` AVANT le switch. `SHARED_RENDERER_BLOCKS` étant **vide**, les deux

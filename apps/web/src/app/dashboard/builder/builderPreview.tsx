@@ -1613,7 +1613,7 @@ import { InlineEditable } from "./InlineEditable"
       }
 
       case "process_steps": {
-        const steps = Array.from({length:50},(_,k)=>{const i=k+1;return [c[`s${i}_icon`],c[`s${i}_title`],c[`s${i}_desc`]]}).filter(([,t])=>t)
+        const steps = Array.from({length:50},(_,k)=>k+1).map(i=>({ i, icon: c[`s${i}_icon`], title: c[`s${i}_title`], desc: c[`s${i}_desc`] })).filter(st=>st.title)
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
@@ -1625,14 +1625,14 @@ import { InlineEditable } from "./InlineEditable"
                     <div><p style={{ color: text, fontSize: 12, fontWeight: 700, margin: 0 }}>Étape {i}</p></div>
                   </div>
                 ))
-                : steps.map(([icon,title,desc],i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg,${primary},${accent})`, color: "#080808", display: "flex", alignItems: "center", justifyContent: "center", fontSize: icon ? 16 : 13, fontWeight: 700, flexShrink: 0 }}>{icon||i+1}</div>
+                : steps.map((st,pos) => (
+                  <div key={st.i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg,${primary},${accent})`, color: "#080808", display: "flex", alignItems: "center", justifyContent: "center", fontSize: st.icon ? 16 : 13, fontWeight: 700, flexShrink: 0 }}>{st.icon||pos+1}</div>
                     <div style={{ flex: 1 }}>
-                      <p style={{ color: text, fontSize: 12, fontWeight: 700, margin: "4px 0 2px" }}>{title}</p>
-                      {desc && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{desc}</p>}
+                      <InlineEditable as="p" editable={canEdit} value={st.title} onCommit={edit(`s${st.i}_title`)} style={{ color: text, fontSize: 12, fontWeight: 700, margin: "4px 0 2px" }} />
+                      {st.desc && <InlineEditable as="p" editable={canEdit} value={st.desc} multiline onCommit={edit(`s${st.i}_desc`)} style={{ color: muted, fontSize: 11, margin: 0 }} />}
                     </div>
-                    {i < steps.length-1 && <div style={{ position: "absolute", left: 31, marginTop: 32, width: 2, height: 16, background: primary+"30" }} />}
+                    {pos < steps.length-1 && <div style={{ position: "absolute", left: 31, marginTop: 32, width: 2, height: 16, background: primary+"30" }} />}
                   </div>
                 ))}
             </div>
@@ -1641,16 +1641,18 @@ import { InlineEditable } from "./InlineEditable"
       }
 
       case "values": {
-        const vals = Array.from({length:50},(_,k)=>{const i=k+1;return [c[`v${i}_icon`],c[`v${i}_label`],c[`v${i}_desc`]]}).filter(([,l])=>l)
+        const vals = Array.from({length:50},(_,k)=>k+1).map(i=>({ i, icon: c[`v${i}_icon`], label: c[`v${i}_label`], desc: c[`v${i}_desc`] })).filter(v=>v.label)
+        const showDefaults = vals.length === 0
+        const valDefaults = [{ i: 0, icon: " 🤝", label: "Transparence", desc: "" }, { i: 0, icon: " ⚡", label: "Réactivité", desc: "" }, { i: 0, icon: " 🎯", label: "Qualité", desc: "" }]
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {(vals.length===0 ? [[" 🤝","Transparence",""],[" ⚡","Réactivité",""],[" 🎯","Qualité",""]] : vals).map(([icon,label,desc],i) => (
-                <div key={i} style={{ background: primary+"08", border: `1px solid ${primary}15`, borderRadius: 12, padding: "12px 10px", textAlign: "center" }}>
-                  <span style={{ fontSize: 24, display: "block", marginBottom: 6 }}>{icon}</span>
-                  <p style={{ color: text, fontSize: 12, fontWeight: 700, margin: desc ? "0 0 3px" : "0" }}>{label}</p>
-                  {desc && <p style={{ color: muted, fontSize: 10, margin: 0 }}>{desc}</p>}
+              {(showDefaults ? valDefaults : vals).map((v,pos) => (
+                <div key={pos} style={{ background: primary+"08", border: `1px solid ${primary}15`, borderRadius: 12, padding: "12px 10px", textAlign: "center" }}>
+                  <span style={{ fontSize: 24, display: "block", marginBottom: 6 }}>{v.icon}</span>
+                  <InlineEditable as="p" editable={canEdit && !showDefaults} value={v.label} onCommit={edit(`v${v.i}_label`)} style={{ color: text, fontSize: 12, fontWeight: 700, margin: v.desc ? "0 0 3px" : "0" }} />
+                  {v.desc && <InlineEditable as="p" editable={canEdit && !showDefaults} value={v.desc} multiline onCommit={edit(`v${v.i}_desc`)} style={{ color: muted, fontSize: 10, margin: 0 }} />}
                 </div>
               ))}
             </div>
@@ -1659,7 +1661,7 @@ import { InlineEditable } from "./InlineEditable"
       }
 
       case "team": {
-        const members = Array.from({length:50},(_,k)=>k+1).map(i => ({ photo: c[`m${i}_photo`], name: c[`m${i}_name`], role: c[`m${i}_role`], bio: c[`m${i}_bio`], phone: (c[`m${i}_phone`]||"").trim(), email: (c[`m${i}_email`]||"").trim(), linkedin: (c[`m${i}_linkedin`]||"").trim() })).filter(m => m.name)
+        const members = Array.from({length:50},(_,k)=>k+1).map(i => ({ i, photo: c[`m${i}_photo`], name: c[`m${i}_name`], role: c[`m${i}_role`], bio: c[`m${i}_bio`], phone: (c[`m${i}_phone`]||"").trim(), email: (c[`m${i}_email`]||"").trim(), linkedin: (c[`m${i}_linkedin`]||"").trim() })).filter(m => m.name)
         const grid = c.layout === "Grille"
         const contactDots = (m: any) => {
           const ic = [] as string[]
@@ -1676,25 +1678,25 @@ import { InlineEditable } from "./InlineEditable"
             {list.length === 0 && emptyHint("👥", "Ajoutez un membre")}
             {grid ? (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {list.map((m,i) => (
-                  <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "13px 10px" }}>
+                {list.map((m) => (
+                  <div key={m.i} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "13px 10px" }}>
                     {av(m, 52)}
-                    <p style={{ color: text, fontSize: 12.5, fontWeight: 700, margin: "6px 0 1px" }}>{m.name}</p>
-                    {m.role && <p style={{ color: primary, fontSize: 11, margin: 0 }}>{m.role}</p>}
-                    {m.bio && <p style={{ color: muted, fontSize: 10, margin: "2px 0 0" }}>{m.bio}</p>}
+                    <InlineEditable as="p" editable={canEdit} value={m.name} onCommit={edit(`m${m.i}_name`)} style={{ color: text, fontSize: 12.5, fontWeight: 700, margin: "6px 0 1px" }} />
+                    {m.role && <InlineEditable as="p" editable={canEdit} value={m.role} onCommit={edit(`m${m.i}_role`)} style={{ color: primary, fontSize: 11, margin: 0 }} />}
+                    {m.bio && <InlineEditable as="p" editable={canEdit} value={m.bio} multiline onCommit={edit(`m${m.i}_bio`)} style={{ color: muted, fontSize: 10, margin: "2px 0 0" }} />}
                     {contactDots(m)}
                   </div>
                 ))}
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {list.map((m,i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "12px 14px" }}>
+                {list.map((m) => (
+                  <div key={m.i} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "12px 14px" }}>
                     {av(m, 44)}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{m.name}</p>
-                      {m.role && <p style={{ color: primary, fontSize: 11, margin: "0 0 1px" }}>{m.role}</p>}
-                      {m.bio && <p style={{ color: muted, fontSize: 10, margin: 0 }}>{m.bio}</p>}
+                      <InlineEditable as="p" editable={canEdit} value={m.name} onCommit={edit(`m${m.i}_name`)} style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }} />
+                      {m.role && <InlineEditable as="p" editable={canEdit} value={m.role} onCommit={edit(`m${m.i}_role`)} style={{ color: primary, fontSize: 11, margin: "0 0 1px" }} />}
+                      {m.bio && <InlineEditable as="p" editable={canEdit} value={m.bio} multiline onCommit={edit(`m${m.i}_bio`)} style={{ color: muted, fontSize: 10, margin: 0 }} />}
                       {contactDots(m)}
                     </div>
                   </div>

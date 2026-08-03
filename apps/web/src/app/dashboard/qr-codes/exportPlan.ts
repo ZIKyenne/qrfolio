@@ -38,7 +38,7 @@ export function exportBlockedReason(type: ExportType, isPro: boolean): string | 
 // Nom de fichier telecharge.
 export function exportFilename(format: string, dpi: number, type: ExportType): string {
   const ext = type === "jpeg" ? "jpg" : type
-  return `qrfolio-${format}-${dpi}dpi.${ext}`
+  return `qrowg-${format}-${dpi}dpi.${ext}`
 }
 
 // DPI conseille : 72 pour un format ecran (mm = 0), 300 pour l'impression.

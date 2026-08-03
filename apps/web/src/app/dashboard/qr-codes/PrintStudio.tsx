@@ -3528,7 +3528,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       prepExport(fc)
       const url = withBaseZoom(fc, base => fc.toDataURL({ format: "png", multiplier: FORMATS[format].exportW / base.w }))
       const a = document.createElement("a")
-      a.href = url; a.download = `qrfolio-${format}.png`; a.click()
+      a.href = url; a.download = `qrowg-${format}.png`; a.click()
     } finally { setExporting(false) }
   }
 
@@ -3544,7 +3544,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       const { jsPDF } = await import("jspdf")
       const pdf = new jsPDF({ orientation: w > h ? "l" : "p", unit: "px", format: [w, h] })
       pdf.addImage(url, "PNG", 0, 0, w, h)
-      pdf.save(`qrfolio-${format}.pdf`)
+      pdf.save(`qrowg-${format}.pdf`)
     } finally { setExporting(false) }
   }
 
@@ -3615,7 +3615,8 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
 
   // ---- Contrôle qualité impression (Print Center) ---------------------------
   // Mesure le design réel puis délègue la notation au moteur pur printPreflight (testé).
-  // v1 : contraste QR↔fond + taille physique du QR + résolution. Zone silencieuse / marges : à venir (na).
+  // Mesure : contraste QR↔carte, taille physique du QR, résolution, zone silencieuse,
+  // marges de sécurité (géométrie pure). logoPct vient encore de l'init (TODO : mesurer au canvas).
   const openPreflight = () => {
     const fc = fcRef.current
     const isScreen = format === "story"

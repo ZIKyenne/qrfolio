@@ -49,11 +49,11 @@ describe("disponibilite type", () => {
 
 describe("nom de fichier", () => {
   it("jpeg -> extension jpg", () => {
-    expect(exportFilename("a4", 300, "jpeg")).toBe("qrfolio-a4-300dpi.jpg")
+    expect(exportFilename("a4", 300, "jpeg")).toBe("qrowg-a4-300dpi.jpg")
   })
   it("png/pdf", () => {
-    expect(exportFilename("carte", 150, "png")).toBe("qrfolio-carte-150dpi.png")
-    expect(exportFilename("flyer", 300, "pdf")).toBe("qrfolio-flyer-300dpi.pdf")
+    expect(exportFilename("carte", 150, "png")).toBe("qrowg-carte-150dpi.png")
+    expect(exportFilename("flyer", 300, "pdf")).toBe("qrowg-flyer-300dpi.pdf")
   })
 })
 
@@ -72,7 +72,7 @@ describe("exportPlan — agregat", () => {
     expect(p.allowed).toBe(true)
     expect(p.blockedReason).toBeNull()
     expect(p.quality).toMatch(/pro/i)
-    expect(p.filename).toBe("qrfolio-a4-300dpi.pdf")
+    expect(p.filename).toBe("qrowg-a4-300dpi.pdf")
   })
   it("PDF non-pro => bloque avec raison", () => {
     const p = exportPlan({ format: "a4", exportW: 2480, ratio: 210 / 297, widthMm: 210, dpi: 300, type: "pdf", isPro: false })

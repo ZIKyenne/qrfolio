@@ -31,7 +31,7 @@ import {
 import PrintCenterPanel from "./PrintCenterPanel"
 import MobileDock, { type DockTool } from "@/components/mobile/MobileDock"
 import { printPreflight, hexContrastRatio, quietZonePx, edgeMarginPx, type PreflightMetrics, type PreflightResult, type Rect } from "./printPreflight"
-import { alignDeltas, type AlignMode, type Box } from "./alignDistribute"
+import { alignDeltas, distributeDeltas, type AlignMode, type Box } from "./alignDistribute"
 import { qrScannability, scanLevelColor } from "./qrScannability"
 import { selKind, mobileContextTools } from "./mobileContextTools"
 import { stackedAt, boxCenter, type LayerBox } from "./stackedObjects"
@@ -2447,28 +2447,19 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
     fc.requestRenderAll(); pushHistorySoon()
   }
 
+  // Distribution : délègue au module PUR testé (espacement ÉGAL entre objets, par
+  // espaces libres — plus correct que l'ancien calcul « par centres » qui ignorait
+  // les largeurs). Mêmes conventions que alignSelection (boîtes absolues + dx/dy).
   const distribute = (axis: "h" | "v") => {
     const fc = fcRef.current; if (!fc) return
     const sel = fc.getActiveObject()
     if (!sel || sel.type !== "activeSelection") return
     const objs = (sel as fabric.ActiveSelection).getObjects().slice()
     if (objs.length < 3) return
-    // coords absolues (dans l'activeSelection, left/top sont relatifs au centre du groupe)
-    const rect = (o: fabric.Object) => o.getBoundingRect(true)
-    objs.sort((a, b) => axis === "h" ? rect(a).left - rect(b).left : rect(a).top - rect(b).top)
-    const first = rect(objs[0]), last = rect(objs[objs.length - 1])
-    const startC = axis === "h" ? first.left + first.width / 2 : first.top + first.height / 2
-    const endC = axis === "h" ? last.left + last.width / 2 : last.top + last.height / 2
-    const step = (endC - startC) / (objs.length - 1)
-    objs.forEach((o, i) => {
-      if (i === 0 || i === objs.length - 1) return
-      const r = rect(o)
-      const targetC = startC + step * i
-      const curC = axis === "h" ? r.left + r.width / 2 : r.top + r.height / 2
-      if (axis === "h") o.set("left", (o.left ?? 0) + (targetC - curC))
-      else o.set("top", (o.top ?? 0) + (targetC - curC))
-      o.setCoords()
-    })
+    const boxes: Box[] = objs.map(o => { const b = o.getBoundingRect(true); return { left: b.left, top: b.top, width: b.width, height: b.height } })
+    const deltas = distributeDeltas(boxes, axis)
+    objs.forEach((o, i) => { o.set({ left: (o.left ?? 0) + deltas[i].dx, top: (o.top ?? 0) + deltas[i].dy }); o.setCoords() })
+    ;(sel as fabric.ActiveSelection).setCoords()
     fc.requestRenderAll(); pushHistorySoon()
   }
 

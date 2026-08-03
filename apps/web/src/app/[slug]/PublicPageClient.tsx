@@ -8,6 +8,7 @@ import { trackPageView } from "@/lib/trackPageView"
 import { queueEngagement, trackDwell, queueTap } from "@/lib/trackEngagement"
 import { trackLinkClick } from "@/lib/trackLinkClick"
 import { submitLead } from "@/lib/submitLead"
+import { contactFormFields } from "@/lib/leadForms"
 import { themeBackgroundStyle, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, buildVCard, mapEmbedUrl, shareLinks, calendarLinks, spotifyEmbedUrl, youtubeId, socialHref, extHref, docTypeMeta, docActionLabel, announcementMeta, blockDecoration, waLink, telLink, directionsLink, embedVideoUrl, stickyActionHref, ctaButtonStyle, CTA_ANIM_CSS, SOCIAL_NETWORKS_MAP, BANNER_ANIM_CSS } from "../dashboard/builder/types"
 
 type Block = { id: string; type: string; content: Record<string, any>; position: number }
@@ -835,24 +836,11 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       </div>
     ) : null
 
-    case "contact_form": return (
-      <div style={{ padding: "6px 24px 20px" }}>
-        {c.title && <h3 style={{ color: TEXT, fontSize: 18, fontWeight: 700, margin: "0 0 14px", fontFamily: FONT_D }}>{c.title}</h3>}
-        <form style={{ display: "flex", flexDirection: "column", gap: 10 }} onSubmit={e => e.preventDefault()}>
-          {["Nom","Email",...(c.show_phone === "yes" ? ["Téléphone"] : [])].map(f => (
-            <input key={f} placeholder={f} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 10, padding: "12px 15px", color: TEXT, fontSize: 14, outline: "none", fontFamily: FONT_B, width: "100%", boxSizing: "border-box", transition: "border-color 0.2s" }}
-              onFocus={e => e.target.style.borderColor = G + "60"}
-              onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.09)"} />
-          ))}
-          <textarea placeholder="Message" rows={4} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 10, padding: "12px 15px", color: TEXT, fontSize: 14, outline: "none", fontFamily: FONT_B, resize: "vertical", width: "100%", boxSizing: "border-box", transition: "border-color 0.2s" }}
-            onFocus={e => e.target.style.borderColor = G + "60"}
-            onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.09)"} />
-          <button type="submit" style={{ background: `linear-gradient(90deg,${G},${G}cc)`, border: "none", borderRadius: 12, padding: "14px", color: "#080808", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: FONT_B, transition: "transform 0.15s" }}
-            onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-1px)")}
-            onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}>{c.button_label || "Envoyer"}</button>
-        </form>
-      </div>
-    )
+    // Réutilise le formulaire de leads partagé (envoi réel via submitLead → /api/leads,
+    // owner résolu côté serveur, honeypot, état d'envoi, anti-double-clic, accusé email).
+    // Ancienne version : <form> décorative sans handler ⇒ les messages étaient perdus.
+    case "contact_form": return <LeadFormPublic block={block} pageId={pageId} ownerEmail={ownerEmail} leadType="contact" title={c.title || "Contact"} fields={contactFormFields(c)} button={c.button_label || "Envoyer"} accent={`linear-gradient(90deg,${G},${G}cc)`} subject="Nouveau message de contact" TEXT={TEXT} MUTED={MUTED} />
+
 
     case "testimonials": {
       const reviews = [[c.name1,c.text1,c.stars1],[c.name2,c.text2,c.stars2],[c.name3,c.text3,c.stars3]].filter(([n]) => n)

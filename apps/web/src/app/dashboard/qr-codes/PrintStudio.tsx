@@ -3694,9 +3694,29 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       toast.error("Export PDF impossible. Si une image importée bloque l'export, remplacez-la.")
     } finally { setExporting(false); setExpOpen(false) }
   }
+  // Export SVG VECTORIEL de la composition (affiche redimensionnable sans perte :
+  // textes, formes, cadres nets a toute echelle). Reserve Pro comme le SVG du QR nu.
+  // Note : le QR est integre en image (raster HD) ; le QR vectoriel viendra ensuite.
+  const exportSvg = () => {
+    if (!isPro) { onUpsell?.("l'export SVG vectoriel", "pro"); return }
+    const fc = fcRef.current; if (!fc) return
+    setExporting(true)
+    try {
+      prepExport(fc)
+      const svg = withBaseZoom(fc, () => fc.toSVG())
+      const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a"); a.href = url; a.download = `qrowg-${format}.svg`; a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch {
+      toast.error("Export SVG impossible. Si une image importée bloque l'export, remplacez-la.")
+    } finally { setExporting(false); setExpOpen(false) }
+  }
   // Lance l'export choisi dans l'assistant (etape 3) puis referme l'assistant.
   const runExport = () => {
-    if (wizType === "pdf") { void exportPdfPro() } else { exportImage(wizType) }
+    if (wizType === "pdf") { void exportPdfPro() }
+    else if (wizType === "svg") { exportSvg() }
+    else { exportImage(wizType) }
     setExpWiz(-1)
   }
 
@@ -3958,7 +3978,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
                 <div>
                   <p className="ps-sec-label">Type de fichier</p>
                   <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-                    {([["png", "PNG"], ["jpeg", "JPG"], ["pdf", isPro ? "PDF" : "PDF 🔒"]] as [ExportType, string][]).map(([t, l]) => (
+                    {([["png", "PNG"], ["jpeg", "JPG"], ["pdf", isPro ? "PDF" : "PDF 🔒"], ["svg", isPro ? "SVG" : "SVG 🔒"]] as [ExportType, string][]).map(([t, l]) => (
                       <button key={t} type="button" onClick={() => setWizType(t)} style={{ ...chip(wizType === t), flex: 1 }}>{l}</button>
                     ))}
                   </div>

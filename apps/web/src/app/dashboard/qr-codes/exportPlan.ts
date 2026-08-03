@@ -5,7 +5,7 @@
 // qualite, disponibilite (PDF = Pro), nom de fichier. Aucune dependance DOM.
 // =============================================================================
 
-export type ExportType = "png" | "jpeg" | "pdf"
+export type ExportType = "png" | "jpeg" | "pdf" | "svg"
 
 // Largeur exportee en pixels. `exportW` est la largeur de reference a 300 DPI.
 export function exportWidthPx(exportW: number, dpi: number): number {
@@ -24,14 +24,15 @@ export function qualityLabel(dpi: number): string {
   return "Écran / web"
 }
 
-// Le type de fichier est-il autorise pour ce plan ? (PDF reserve au Pro.)
+// Le type de fichier est-il autorise pour ce plan ? (PDF et SVG reserves au Pro.)
 export function canExportType(type: ExportType, isPro: boolean): boolean {
-  return type === "pdf" ? isPro : true
+  return (type === "pdf" || type === "svg") ? isPro : true
 }
 
 // Raison du blocage, ou null si autorise.
 export function exportBlockedReason(type: ExportType, isPro: boolean): string | null {
   if (type === "pdf" && !isPro) return "L'export PDF (traits de coupe, fond perdu) est réservé au plan Pro."
+  if (type === "svg" && !isPro) return "L'export SVG (vectoriel, redimensionnable sans perte) est réservé au plan Pro."
   return null
 }
 

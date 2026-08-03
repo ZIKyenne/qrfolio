@@ -40,9 +40,15 @@ describe("disponibilite type", () => {
     expect(canExportType("pdf", false)).toBe(false)
     expect(canExportType("pdf", true)).toBe(true)
   })
-  it("raison de blocage PDF non-pro", () => {
+  it("SVG autorise seulement en Pro", () => {
+    expect(canExportType("svg", false)).toBe(false)
+    expect(canExportType("svg", true)).toBe(true)
+  })
+  it("raison de blocage PDF/SVG non-pro", () => {
     expect(exportBlockedReason("pdf", false)).toMatch(/Pro/)
     expect(exportBlockedReason("pdf", true)).toBeNull()
+    expect(exportBlockedReason("svg", false)).toMatch(/Pro/)
+    expect(exportBlockedReason("svg", true)).toBeNull()
     expect(exportBlockedReason("png", false)).toBeNull()
   })
 })

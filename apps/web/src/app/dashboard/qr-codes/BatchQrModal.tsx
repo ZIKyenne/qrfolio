@@ -107,6 +107,14 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
         nommer le fichier : <code style={{ color: "var(--accent)" }}>https://…, Table 1</code>.
         Chaque QR reprend le <strong>style courant</strong>.
       </p>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.04)", color: "var(--ink)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+          Importer un fichier (.csv)
+          <input type="file" accept=".csv,.txt,text/csv,text/plain" style={{ display: "none" }}
+            onChange={async e => { const f = e.target.files?.[0]; if (f) { try { setText(await f.text()) } catch {} } e.target.value = "" }} />
+        </label>
+        <span style={{ color: MUTED, fontSize: 11 }}>ou colle ta liste ci-dessous</span>
+      </div>
       <textarea
         value={text}
         onChange={e => setText(e.target.value)}

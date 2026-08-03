@@ -10,8 +10,8 @@
 | Bloc | Catégorie | Famille | Risque | Niveau cible | Divergence connue | Vague | Statut |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | profile | identity | identité-carte | ÉLEVÉ | 2 | - | 2 | legacy |
-| bio | identity | texte | FAIBLE | 3 | - | 1 | legacy |
-| skills | identity | répéteur | STANDARD | 2 | - | 3 | legacy |
+| bio | identity | texte | FAIBLE | 3 | - | 1 | shared (vague 1) |
+| skills | identity | répéteur | STANDARD | 2 | - | 3 | shared (vague 1) |
 | cta_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | calendly | actions | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | social_links | social | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -39,8 +39,8 @@
 | music_links | music | répéteur | STANDARD | 2 | - | 3 | legacy |
 | countdown | event | event-carte | STANDARD | 2 | sans date | 5 | legacy |
 | event_info | event | event-carte | STANDARD | 2 | - | 5 | legacy |
-| divider | layout | layout-atome | FAIBLE | 3 | - | 1 | legacy |
-| spacer | layout | layout-atome | FAIBLE | 3 | - | 1 | legacy |
+| divider | layout | layout-atome | FAIBLE | 3 | - | 1 | shared (vague 1) |
+| spacer | layout | layout-atome | FAIBLE | 3 | - | 1 | shared (vague 1) |
 | product_catalog | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | featured_product | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | offer_comparison | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -54,7 +54,7 @@
 | gift_card | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | services_pricing | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | external_shop | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
-| advantages | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
+| advantages | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 1) |
 | reassurance | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | sales_counter | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | popular_products | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -148,7 +148,7 @@
 | availability | identity | texte | FAIBLE | 3 | - | 1 | legacy |
 | journey | identity | répéteur | STANDARD | 2 | - | 3 | legacy |
 | expertise | identity | répéteur | STANDARD | 2 | - | 3 | legacy |
-| languages | identity | répéteur | STANDARD | 2 | - | 3 | legacy |
+| languages | identity | répéteur | STANDARD | 2 | - | 3 | shared (vague 1) |
 | certifications | identity | répéteur | STANDARD | 2 | - | 3 | legacy |
 | company | identity | texte | FAIBLE | 3 | - | 1 | legacy |
 

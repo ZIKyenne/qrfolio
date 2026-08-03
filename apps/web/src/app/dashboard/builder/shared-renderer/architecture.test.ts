@@ -5,16 +5,16 @@ import { BLOCK_DEFS } from "../types"
 // Cohérence des contrats PRÉPARATOIRES (mission B09.1). Garantit qu'aucun bloc n'est
 // activé et que les invariants d'architecture tiennent avant B09.2.
 
-describe("flag de migration — 3 pilotes activés (B09.3)", () => {
-  const PILOTS = ["heading", "values", "pricing"]
-  it("exactement les 3 pilotes sont activés", () => {
-    expect([...SHARED_RENDERER_BLOCKS].sort()).toEqual([...PILOTS].sort())
+describe("flag de migration — 9 blocs activés (pilotes B09.3 + vague 1 B09.4)", () => {
+  const ACTIVE = ["heading", "values", "pricing", "divider", "spacer", "bio", "skills", "languages", "advantages"]
+  it("exactement les 9 blocs sont activés", () => {
+    expect([...SHARED_RENDERER_BLOCKS].sort()).toEqual([...ACTIVE].sort())
   })
-  it("resolveRendererStatus : shared pour les pilotes, legacy pour les autres", () => {
-    for (const t of Object.keys(BLOCK_DEFS)) expect(resolveRendererStatus(t)).toBe(PILOTS.includes(t) ? "shared" : "legacy")
+  it("resolveRendererStatus : shared pour les 9 actifs, legacy pour les autres", () => {
+    for (const t of Object.keys(BLOCK_DEFS)) expect(resolveRendererStatus(t)).toBe(ACTIVE.includes(t) ? "shared" : "legacy")
   })
   it("rollback : un set vide ramène tout en legacy (mécanisme de bascule)", () => {
-    for (const t of PILOTS) expect(resolveRendererStatus(t, new Set())).toBe("legacy")
+    for (const t of ACTIVE) expect(resolveRendererStatus(t, new Set())).toBe("legacy")
     expect(resolveRendererStatus("pricing", new Set(["heading"]))).toBe("legacy")
   })
 })

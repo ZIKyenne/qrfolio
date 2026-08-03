@@ -57,6 +57,41 @@ export const BLOCK_FIXTURES: Record<string, BlockFixtures> = {
     minimal: { b1_label: "Certifié" },
     complete: { b1_icon: "🏆", b1_label: "Certifié", b2_label: "Vérifié" },
   },
+  // ── Vague 1 (B09.4) ─────────────────────────────────────────────────────────
+  divider: {
+    empty: {},
+    minimal: { style: "gold" },
+    complete: { style: "stars" },
+    invalid: { style: "inconnu" },
+  },
+  spacer: {
+    empty: {},
+    minimal: { size: "md" },
+    complete: { size: "xl" },
+    invalid: { size: "wat" },
+  },
+  bio: {
+    empty: {},
+    minimal: { text: "Développeur passionné." },
+    complete: { text: "Développeur passionné.", align: "center" },
+    longContent: { text: "Lorem ".repeat(60).trim() },
+  },
+  skills: {
+    empty: {},
+    minimal: { tags: "React" },
+    complete: { title: "Compétences", tags: "React, TypeScript, Node" },
+    invalid: { tags: " , ,  " },
+  },
+  languages: {
+    empty: {},
+    minimal: { lang_1_name: "Français" },
+    complete: { title: "Langues", lang_1_flag: "🇫🇷", lang_1_name: "Français", lang_1_level: "Natif", lang_2_name: "Anglais" },
+  },
+  advantages: {
+    empty: {},
+    minimal: { adv1: "Livraison rapide" },
+    complete: { title: "Avantages", adv1: "Livraison rapide", adv2: "Sans engagement" },
+  },
 }
 
 // Fixtures canoniques d'URL — réutilisées par les tests de sécurité des liens.

@@ -13,9 +13,21 @@ const PUBLIC_REACHABLE = [
   "./blocks/heading/PublicHeading.tsx",
   "./blocks/values/PublicValues.tsx",
   "./blocks/pricing/PublicPricing.tsx",
+  "./blocks/divider/PublicDivider.tsx",
+  "./blocks/spacer/PublicSpacer.tsx",
+  "./blocks/bio/PublicBio.tsx",
+  "./blocks/skills/PublicSkills.tsx",
+  "./blocks/languages/PublicLanguages.tsx",
+  "./blocks/advantages/PublicAdvantages.tsx",
   "./models/heading.ts",
   "./models/values.ts",
   "./models/pricing.ts",
+  "./models/divider.ts",
+  "./models/spacer.ts",
+  "./models/bio.ts",
+  "./models/skills.ts",
+  "./models/languages.ts",
+  "./models/advantages.ts",
   "./renderTypes.ts",
 ]
 
@@ -40,7 +52,7 @@ describe("frontière de bundle — public n'importe rien d'éditeur", () => {
 })
 
 describe("modèles purs — sans React ni Supabase", () => {
-  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts"]) {
+  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts"]) {
     it(`${m} : aucun import react/supabase`, () => {
       const imports = read(m).split("\n").filter(l => /^\s*import\b/.test(l)).join("\n")
       expect(/from ["']react["']/.test(imports)).toBe(false)

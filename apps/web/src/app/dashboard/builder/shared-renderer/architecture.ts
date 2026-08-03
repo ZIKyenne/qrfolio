@@ -75,7 +75,12 @@ export type BlockRendererRegistration<TContent = Record<string, any>, TViewModel
 // Parité prouvée par renderParity.test.tsx (HTML identique au legacy) + models/bundle.
 // Rollback = retirer un type de ce set → retour legacy immédiat, aucune donnée touchée.
 // Les `case` legacy restent conservés (statut « pilot activé », pas « legacy supprimable »).
-export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>(["heading", "values", "pricing"])
+export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
+  // Pilotes B09.3
+  "heading", "values", "pricing",
+  // Vague 1 — blocs atomiques simples (B09.4)
+  "divider", "spacer", "bio", "skills", "languages", "advantages",
+])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.
 export const PLANNED_PILOT_BLOCKS = ["heading", "values", "pricing"] as const

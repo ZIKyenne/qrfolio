@@ -1,0 +1,58 @@
+// blockEmptyState.ts — détection PURE du « contenu publiable » d'un bloc.
+// But : l'éditeur ne doit jamais montrer de faux contenu (données de démo) comme s'il
+// serait publié. Pour les blocs qui retournent `null` en public quand ils sont vides,
+// l'éditeur doit afficher un état vide explicite au lieu d'exemples factices.
+//
+// Les clés de champs ci-dessous sont IDENTIQUES à celles filtrées côté public
+// (PublicPageClient) → `hasPublishableContent === false` ⟺ le bloc rend `null` en ligne.
+// Testable sans React (voir blockEmptyState.test.ts).
+
+// Une valeur ne compte comme réelle que si c'est un texte non vide (espaces ignorés) :
+// une ligne blanche, un item « fantôme » (espaces seuls) ne sont PAS du contenu publiable.
+export function hasMeaningfulText(v: any): boolean {
+  return typeof v === "string" && v.trim().length > 0
+}
+
+// Balaye des champs indexés field(1..max) ; vrai dès qu'un est réellement rempli.
+function anyIndexed(c: Record<string, any>, keyAt: (i: number) => any, max = 50): boolean {
+  for (let i = 1; i <= max; i++) if (hasMeaningfulText(keyAt(i))) return true
+  return false
+}
+
+// Détecteur par type de bloc — miroir EXACT du filtre public (même clé « significative »).
+const DETECTORS: Record<string, (c: Record<string, any>) => boolean> = {
+  values:                  c => anyIndexed(c, i => c[`v${i}_label`]),
+  process_steps:           c => anyIndexed(c, i => c[`s${i}_title`]),
+  business_certifications: c => anyIndexed(c, i => c[`c${i}_name`]),
+  on_site_services:        c => anyIndexed(c, i => c[`s${i}_label`]),
+  event_program:           c => anyIndexed(c, i => c[`s${i}_title`]),
+  event_guests:            c => anyIndexed(c, i => c[`g${i}_name`]),
+  lineup:                  c => anyIndexed(c, i => c[`a${i}_name`]),
+  discography:             c => anyIndexed(c, i => c[`a${i}_title`]),
+  concerts:                c => anyIndexed(c, i => c[`c${i}_city`]),
+  merch:                   c => anyIndexed(c, i => c[`name${i}`]),
+  trust_badge:             c => anyIndexed(c, i => c[`b${i}_label`]),
+  info_table:              c => anyIndexed(c, i => c[`r${i}_label`]),
+  engagements:            c => anyIndexed(c, i => c[`e${i}`]),
+  stats_block:             c => anyIndexed(c, i => c[`s${i}_value`]),
+  grid_section:            c => anyIndexed(c, i => c[`c${i}_title`]),
+  tabs_block:              c => anyIndexed(c, i => c[`tab${i}_label`]),
+  accordion_block:         c => anyIndexed(c, i => c[`a${i}_title`]),
+  two_columns:             c => hasMeaningfulText(c.col1_title) || hasMeaningfulText(c.col1_text) || hasMeaningfulText(c.col2_title) || hasMeaningfulText(c.col2_text),
+}
+
+// Vrai si le bloc contient au moins un élément réellement publiable. Pour un type non
+// géré ici, renvoie true (on ne masque jamais par erreur un bloc hors périmètre).
+export function hasPublishableContent(type: string, content: Record<string, any> | undefined | null): boolean {
+  const d = DETECTORS[type]
+  if (!d) return true
+  return d(content || {})
+}
+
+// Types dont l'aperçu éditeur affichait des données de démonstration trompeuses et
+// dont le rendu public est `null` quand vide → doivent afficher un état vide explicite.
+export const EMPTY_STATE_BLOCK_TYPES = Object.keys(DETECTORS)
+
+// Mention courte affichée sous l'état vide : ces blocs disparaissent en ligne s'ils
+// restent vides (cohérent avec le retour `null` du rendu public).
+export const HIDDEN_WHEN_EMPTY_NOTE = "Invisible en ligne tant qu'il est vide"

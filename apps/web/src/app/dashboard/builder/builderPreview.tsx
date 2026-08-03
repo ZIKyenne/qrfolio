@@ -5,6 +5,7 @@ import { Check, ExternalLink } from "lucide-react"
 import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
 import { G, MUTED } from "./builderConstants"
 import { InlineEditable } from "./InlineEditable"
+import { hasPublishableContent, HIDDEN_WHEN_EMPTY_NOTE } from "./blockEmptyState"
 
   function FAQItem({ q, a, theme, link, linkLabel, compact }: { q: string; a: string; theme: PageTheme; link?: string; linkLabel?: string; compact?: boolean }) {
     const [open, setOpen] = useState(false)
@@ -93,11 +94,14 @@ import { InlineEditable } from "./InlineEditable"
     const primary = theme.primary
     const accent = theme.accent
     const s = { background: bg, fontFamily: theme.fontBody || "DM Sans, sans-serif" }
-    // État vide harmonisé (aperçu builder) : invite claire quand un bloc n'a pas encore de contenu.
-    const emptyHint = (icon: string, label: string) => (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "18px 12px", border: `1.5px dashed ${muted}40`, borderRadius: 12, color: muted, textAlign: "center" }}>
-        <span style={{ fontSize: 22, opacity: 0.7 }}>{icon}</span>
+    // État vide harmonisé (aperçu builder) : invite claire quand un bloc n'a pas encore de
+    // contenu. `sub` (optionnel) = mention du comportement en ligne (ex. « invisible tant
+    // qu'il est vide ») pour les blocs qui rendent `null` en public quand ils sont vides.
+    const emptyHint = (icon: string, label: string, sub?: string) => (
+      <div role="note" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "18px 12px", border: `1.5px dashed ${muted}40`, borderRadius: 12, color: muted, textAlign: "center" }}>
+        <span style={{ fontSize: 22, opacity: 0.7 }} aria-hidden>{icon}</span>
         <span style={{ fontSize: 12, fontWeight: 600 }}>{label}</span>
+        {sub && <span style={{ fontSize: 10, fontWeight: 400, opacity: 0.75 }}>{sub}</span>}
       </div>
     )
 
@@ -1542,17 +1546,16 @@ import { InlineEditable } from "./InlineEditable"
         const stats = Array.from({length:50},(_,k)=>{const i=k+1;return [c[`s${i}_icon`],c[`s${i}_value`],c[`s${i}_label`]]}).filter(([,v])=>v)
         return (
           <div style={{ padding: "10px 16px", ...s }}>
+            {!hasPublishableContent("stats_block", c) ? emptyHint("📊", "Ajoutez une statistique", HIDDEN_WHEN_EMPTY_NOTE) : (
             <div style={{ display: "grid", gridTemplateColumns: stats.length<=2 ? "1fr 1fr" : stats.length===3 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 8 }}>
-              {stats.length===0
-                ? [0,1,2].map(i => <div key={i} style={{ background: primary+"08", border: `1px solid ${primary}15`, borderRadius: 12, padding: "14px 10px", textAlign: "center" }}><p style={{ color: primary, fontSize: 22, fontWeight: 700, margin: "0 0 3px" }}>—</p><p style={{ color: muted, fontSize: 10, margin: 0 }}>Label</p></div>)
-                : stats.map(([icon,value,label],i) => (
+              {stats.map(([icon,value,label],i) => (
                   <div key={i} style={{ background: primary+"08", border: `1px solid ${primary}15`, borderRadius: 12, padding: "14px 10px", textAlign: "center" }}>
                     {icon && <span style={{ fontSize: 20, display: "block", marginBottom: 4 }}>{icon}</span>}
                     <p style={{ color: primary, fontSize: 22, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay, lineHeight: 1 }}>{value}</p>
                     <p style={{ color: muted, fontSize: 10, margin: 0 }}>{label}</p>
                   </div>
                 ))}
-            </div>
+            </div>)}
           </div>
         )
       }
@@ -1618,13 +1621,8 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {steps.length===0
-                ? [1,2,3].map(i => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: primary, color: "#080808", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{i}</div>
-                    <div><p style={{ color: text, fontSize: 12, fontWeight: 700, margin: 0 }}>Étape {i}</p></div>
-                  </div>
-                ))
+              {!hasPublishableContent("process_steps", c)
+                ? emptyHint("🪜", "Ajoutez une étape", HIDDEN_WHEN_EMPTY_NOTE)
                 : steps.map((st,pos) => (
                   <div key={st.i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                     <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg,${primary},${accent})`, color: "#080808", display: "flex", alignItems: "center", justifyContent: "center", fontSize: st.icon ? 16 : 13, fontWeight: 700, flexShrink: 0 }}>{st.icon||pos+1}</div>
@@ -1642,20 +1640,19 @@ import { InlineEditable } from "./InlineEditable"
 
       case "values": {
         const vals = Array.from({length:50},(_,k)=>k+1).map(i=>({ i, icon: c[`v${i}_icon`], label: c[`v${i}_label`], desc: c[`v${i}_desc`] })).filter(v=>v.label)
-        const showDefaults = vals.length === 0
-        const valDefaults = [{ i: 0, icon: " 🤝", label: "Transparence", desc: "" }, { i: 0, icon: " ⚡", label: "Réactivité", desc: "" }, { i: 0, icon: " 🎯", label: "Qualité", desc: "" }]
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
+            {!hasPublishableContent("values", c) ? emptyHint("🎯", "Ajoutez une valeur", HIDDEN_WHEN_EMPTY_NOTE) : (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {(showDefaults ? valDefaults : vals).map((v,pos) => (
+              {vals.map((v,pos) => (
                 <div key={pos} style={{ background: primary+"08", border: `1px solid ${primary}15`, borderRadius: 12, padding: "12px 10px", textAlign: "center" }}>
                   <span style={{ fontSize: 24, display: "block", marginBottom: 6 }}>{v.icon}</span>
-                  <InlineEditable as="p" editable={canEdit && !showDefaults} value={v.label} onCommit={edit(`v${v.i}_label`)} style={{ color: text, fontSize: 12, fontWeight: 700, margin: v.desc ? "0 0 3px" : "0" }} />
-                  {v.desc && <InlineEditable as="p" editable={canEdit && !showDefaults} value={v.desc} multiline onCommit={edit(`v${v.i}_desc`)} style={{ color: muted, fontSize: 10, margin: 0 }} />}
+                  <InlineEditable as="p" editable={canEdit} value={v.label} onCommit={edit(`v${v.i}_label`)} style={{ color: text, fontSize: 12, fontWeight: 700, margin: v.desc ? "0 0 3px" : "0" }} />
+                  {v.desc && <InlineEditable as="p" editable={canEdit} value={v.desc} multiline onCommit={edit(`v${v.i}_desc`)} style={{ color: muted, fontSize: 10, margin: 0 }} />}
                 </div>
               ))}
-            </div>
+            </div>)}
           </div>
         )
       }
@@ -1713,7 +1710,7 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {(engList.length===0 ? ["✅ Réponse sous 24h","✅ Satisfaction garantie","✅ Sans engagement"] : engList).map((eng: string, i: number) => (
+              {!hasPublishableContent("engagements", c) ? emptyHint("✅", "Ajoutez un engagement", HIDDEN_WHEN_EMPTY_NOTE) : engList.map((eng: string, i: number) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "rgba(57,255,143,0.05)", border: "1px solid rgba(57,255,143,0.15)", borderRadius: 10 }}>
                   <p style={{ color: text, fontSize: 13, margin: 0, lineHeight: 1.4 }}>{eng}</p>
                 </div>
@@ -1729,7 +1726,7 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px", textAlign: "center" }}>{c.title}</p>}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-              {(badges.length===0 ? [["✔","Vérifié"],["🏆","Certifié"],["⭐","Partenaire officiel"]] : badges).map(([icon,label],i) => (
+              {!hasPublishableContent("trust_badge", c) ? emptyHint("🏆", "Ajoutez un badge de confiance", HIDDEN_WHEN_EMPTY_NOTE) : badges.map(([icon,label],i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 20, padding: "7px 14px" }}>
                   <span style={{ color: "var(--success)", fontSize: 14, fontWeight: 700 }}>{icon}</span>
                   <span style={{ color: text, fontSize: 12, fontWeight: 600 }}>{label}</span>
@@ -1783,7 +1780,7 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
             <div style={{ display: "flex", flexDirection: "column" }}>
-              {(rows.length===0 ? [["Création","2020"],["Clients","500+"],["Pays","12"]] : rows).map(([label,value],i,arr) => (
+              {!hasPublishableContent("info_table", c) ? emptyHint("📋", "Ajoutez une ligne d'info", HIDDEN_WHEN_EMPTY_NOTE) : rows.map(([label,value],i,arr) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: i<arr.length-1 ? `1px solid ${dayMode?"rgba(0,0,0,0.06)":"rgba(255,255,255,0.05)"}` : "none" }}>
                   <span style={{ color: muted, fontSize: 12 }}>{label}</span>
                   <span style={{ color: text, fontSize: 12, fontWeight: 600 }}>{value}</span>
@@ -1984,14 +1981,8 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {certs.length===0
-                ? [["✅","Qualiopi","Ministère du Travail","2023"],["🏆","RGE","ADEME","2024"]].map(([icon,name,org,year],i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: primary+"06", border: `1px solid ${primary}15`, borderRadius: 11, padding: "10px 12px" }}>
-                    <span style={{ fontSize: 20 }}>{icon}</span>
-                    <div style={{ flex: 1 }}><p style={{ color: text, fontSize: 12, fontWeight: 700, margin: 0 }}>{name}</p><p style={{ color: muted, fontSize: 10, margin: 0 }}>{org} · {year}</p></div>
-                    <Check size={13} color={primary} />
-                  </div>
-                ))
+              {!hasPublishableContent("business_certifications", c)
+                ? emptyHint("🏅", "Ajoutez une certification", HIDDEN_WHEN_EMPTY_NOTE)
                 : certs.map(([icon,name,org,year],i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: primary+"06", border: `1px solid ${primary}15`, borderRadius: 11, padding: "10px 12px" }}>
                     <span style={{ fontSize: 20 }}>{icon||"🏅"}</span>
@@ -2009,14 +2000,15 @@ import { InlineEditable } from "./InlineEditable"
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
+            {!hasPublishableContent("on_site_services", c) ? emptyHint("🛎️", "Ajoutez un service sur place", HIDDEN_WHEN_EMPTY_NOTE) : (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {(svcs.length===0 ? [["♿","Accès PMR"],["📶","WiFi gratuit"],["🚗","Parking"],["💳","CB acceptée"]] : svcs).map(([icon,label],i) => (
+              {svcs.map(([icon,label],i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(66,133,244,0.06)", border: "1px solid rgba(66,133,244,0.15)", borderRadius: 10, padding: "10px 12px" }}>
                   <span style={{ fontSize: 20, flexShrink: 0 }}>{icon}</span>
                   <span style={{ color: text, fontSize: 11, fontWeight: 600 }}>{label}</span>
                 </div>
               ))}
-            </div>
+            </div>)}
           </div>
         )
       }
@@ -2070,14 +2062,8 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {albums.length===0
-                ? [["","Album 1","2024","Album"],["","Single","2023","Single"]].map(([,title,year,type],i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 52, height: 52, borderRadius: 8, background: "rgba(29,185,84,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>💿</div>
-                    <div style={{ flex: 1 }}><p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{title}</p><p style={{ color: muted, fontSize: 11, margin: 0 }}>{type} · {year}</p></div>
-                    <span style={{ color: "#1DB954", fontSize: 18 }}>▶</span>
-                  </div>
-                ))
+              {!hasPublishableContent("discography", c)
+                ? emptyHint("💿", "Ajoutez un album ou single", HIDDEN_WHEN_EMPTY_NOTE)
                 : albums.map(([cover,title,year,type],i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     {cover
@@ -2154,14 +2140,8 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {shows.length===0
-                ? [["15 juin","Paris","L Olympia"],["22 juin","Lyon","Le Transbordeur"]].map(([date,city,venue],i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.2)", borderRadius: 12, padding: "12px 14px" }}>
-                    <div style={{ textAlign: "center", flexShrink: 0, minWidth: 44 }}><p style={{ color: "#9146FF", fontSize: 13, fontWeight: 700, margin: 0 }}>{date}</p></div>
-                    <div style={{ flex: 1 }}><p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{city}</p><p style={{ color: muted, fontSize: 11, margin: 0 }}>🎭 {venue}</p></div>
-                    <div style={{ background: "#9146FF", borderRadius: 7, padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#fff" }}>Billets</div>
-                  </div>
-                ))
+              {!hasPublishableContent("concerts", c)
+                ? emptyHint("🎫", "Ajoutez une date de concert", HIDDEN_WHEN_EMPTY_NOTE)
                 : shows.map(([date,city,venue,url],i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.2)", borderRadius: 12, padding: "12px 14px" }}>
                     <div style={{ textAlign: "center", flexShrink: 0, minWidth: 44 }}><p style={{ color: "#9146FF", fontSize: 13, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>{date}</p></div>
@@ -2232,8 +2212,9 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
             {c.description && <p style={{ color: muted, fontSize: 11, margin: "0 0 12px" }}>{c.description}</p>}
+            {!hasPublishableContent("merch", c) ? emptyHint("🛍️", "Ajoutez un produit", HIDDEN_WHEN_EMPTY_NOTE) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
-              {(products.length===0 ? [[null,"T-shirt","25€"],[null,"Vinyle","35€"],[null,"Casquette","20€"]] : products).map(([img,name,price],i) => (
+              {products.map(([img,name,price],i) => (
                 <div key={i} style={{ background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.15)", borderRadius: 10, overflow: "hidden" }}>
                   {img
                     ? <img src={String(img)} alt="" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
@@ -2244,7 +2225,7 @@ import { InlineEditable } from "./InlineEditable"
                   </div>
                 </div>
               ))}
-            </div>
+            </div>)}
             {c.cta_label && <div style={{ background: "linear-gradient(90deg,#9146FF,#7B3FCC)", borderRadius: 9, padding: "11px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#fff" }}>{c.cta_label}</div>}
           </div>
         )
@@ -2257,7 +2238,7 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
             <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {(steps.length===0 ? [["18h00","Accueil","Espace lounge"],["19h00","Concert live","Scène principale"],["22h00","DJ Set","Jusqu au matin"]] : steps).map(([time,title,desc],i,arr) => (
+              {!hasPublishableContent("event_program", c) ? emptyHint("🗓️", "Ajoutez une étape du programme", HIDDEN_WHEN_EMPTY_NOTE) : steps.map(([time,title,desc],i,arr) => (
                 <div key={i} style={{ display: "flex", gap: 14, paddingBottom: i<arr.length-1 ? 14 : 0 }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
                     <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,#EC4899,#F472B6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{time}</div>
@@ -2298,8 +2279,9 @@ import { InlineEditable } from "./InlineEditable"
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
+            {!hasPublishableContent("event_guests", c) ? emptyHint("🎤", "Ajoutez un invité", HIDDEN_WHEN_EMPTY_NOTE) : (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {(guests.length===0 ? [[null,"DJ Shadow","Headliner","DJ & Producteur"],[null,"Marie D.","Conférencière","CEO Startup"]] : guests).map(([photo,name,role,desc],i) => (
+              {guests.map(([photo,name,role,desc],i) => (
                 <div key={i} style={{ background: "rgba(236,72,153,0.06)", border: "1px solid rgba(236,72,153,0.15)", borderRadius: 12, padding: "12px 10px", textAlign: "center" }}>
                   {photo
                     ? <img src={String(photo)} alt="" style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", margin: "0 auto 8px", display: "block", border: "2px solid rgba(236,72,153,0.4)" }} />
@@ -2309,7 +2291,7 @@ import { InlineEditable } from "./InlineEditable"
                   {desc && <p style={{ color: muted, fontSize: 10, margin: "4px 0 0" }}>{desc}</p>}
                 </div>
               ))}
-            </div>
+            </div>)}
           </div>
         )
       }
@@ -2320,7 +2302,7 @@ import { InlineEditable } from "./InlineEditable"
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {(artists.length===0 ? [["DJ Shadow","Scène principale","22h00","yes"],["The Blaze","Scène 2","20h00","no"],["Polo & Pan","Scène électro","18h00","no"]] : artists).map(([name,stage,time,headliner],i) => (
+              {!hasPublishableContent("lineup", c) ? emptyHint("🎧", "Ajoutez un artiste", HIDDEN_WHEN_EMPTY_NOTE) : artists.map(([name,stage,time,headliner],i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: headliner==="yes" ? "rgba(236,72,153,0.1)" : "rgba(255,255,255,0.03)", border: `1.5px solid ${headliner==="yes" ? "rgba(236,72,153,0.4)" : "rgba(255,255,255,0.07)"}`, borderRadius: 12, padding: "11px 14px" }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -2519,20 +2501,25 @@ import { InlineEditable } from "./InlineEditable"
         return <div style={{ padding: "12px 16px", ...s }}>{bannerStyles[c.style||"lines"]}</div>
       }
 
-      case "two_columns": return (
-        <div style={{ padding: "10px 16px", ...s }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            {[[c.col1_icon,c.col1_title,c.col1_text],[c.col2_icon,c.col2_title,c.col2_text]].map(([icon,title,text_col],i) => (
-              <div key={i} style={{ background: primary+"06", border: `1px solid ${primary}15`, borderRadius: 12, padding: "13px 12px" }}>
-                {icon && <span style={{ fontSize: 24, display: "block", marginBottom: 8 }}>{icon}</span>}
-                {title && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 5px" }}>{title}</p>}
-                {text_col && <p style={{ color: muted, fontSize: 11, margin: 0, lineHeight: 1.6 }}>{text_col}</p>}
-                {!title && !text_col && <p style={{ color: muted, fontSize: 11, margin: 0 }}>Colonne {i+1}</p>}
-              </div>
-            ))}
+      case "two_columns": {
+        // Ne rend que les colonnes réellement remplies (comme le public, qui filtre
+        // title||text) → aucune colonne « fantôme » ; état vide explicite si tout est vide.
+        const twoCols = [[c.col1_icon,c.col1_title,c.col1_text],[c.col2_icon,c.col2_title,c.col2_text]].filter(([,title,text_col])=>title||text_col)
+        return (
+          <div style={{ padding: "10px 16px", ...s }}>
+            {!hasPublishableContent("two_columns", c) ? emptyHint("🧱", "Ajoutez le contenu des colonnes", HIDDEN_WHEN_EMPTY_NOTE) : (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {twoCols.map(([icon,title,text_col],i) => (
+                <div key={i} style={{ background: primary+"06", border: `1px solid ${primary}15`, borderRadius: 12, padding: "13px 12px" }}>
+                  {icon && <span style={{ fontSize: 24, display: "block", marginBottom: 8 }}>{icon}</span>}
+                  {title && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 5px" }}>{title}</p>}
+                  {text_col && <p style={{ color: muted, fontSize: 11, margin: 0, lineHeight: 1.6 }}>{text_col}</p>}
+                </div>
+              ))}
+            </div>)}
           </div>
-        </div>
-      )
+        )
+      }
 
       case "grid_section": {
         const cols = parseInt(c.columns||"3")
@@ -2541,19 +2528,19 @@ import { InlineEditable } from "./InlineEditable"
           [c.c3_icon,c.c3_title,c.c3_text],[c.c4_icon,c.c4_title,c.c4_text],
           [c.c5_icon,c.c5_title,c.c5_text],[c.c6_icon,c.c6_title,c.c6_text],
         ].filter(([,t])=>t)
-        const displayCards = cards.length===0 ? Array.from({length:cols}).map((_,i)=>["⚡",`Carte ${i+1}`,"Description"]) : cards
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{c.title}</p>}
+            {!hasPublishableContent("grid_section", c) ? emptyHint("▦", "Ajoutez une carte", HIDDEN_WHEN_EMPTY_NOTE) : (
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 8 }}>
-              {displayCards.slice(0, cols*2).map(([icon,title,txt],i) => (
+              {cards.slice(0, cols*2).map(([icon,title,txt],i) => (
                 <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "12px 10px", textAlign: "center" }}>
                   {icon && <span style={{ fontSize: 22, display: "block", marginBottom: 6 }}>{icon}</span>}
                   <p style={{ color: text, fontSize: 11, fontWeight: 700, margin: "0 0 3px" }}>{title}</p>
                   {txt && <p style={{ color: muted, fontSize: 9, margin: 0 }}>{txt}</p>}
                 </div>
               ))}
-            </div>
+            </div>)}
           </div>
         )
       }
@@ -2586,10 +2573,11 @@ import { InlineEditable } from "./InlineEditable"
 
       case "tabs_block": { const [activeTab, setActiveTab] = [0, (_:number) => {}] as const
         const tabs = Array.from({length:50},(_,k)=>{const i=k+1;return [c[`tab${i}_label`],c[`tab${i}_content`]]}).filter(([l])=>l)
+        if (!hasPublishableContent("tabs_block", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("🗂️", "Ajoutez un onglet", HIDDEN_WHEN_EMPTY_NOTE)}</div>
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             <div style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 12 }}>
-              {(tabs.length===0 ? [["Présentation"],["Tarifs"],["FAQ"]] : tabs).map(([label],i) => (
+              {tabs.map(([label],i) => (
                 <button key={i} onClick={() => setActiveTab(i)}
                   style={{ padding: "8px 14px", background: "transparent", border: "none", borderBottom: `2px solid ${activeTab===i ? primary : "transparent"}`, color: activeTab===i ? primary : muted, fontSize: 11, fontWeight: activeTab===i ? 700 : 400, cursor: "pointer", transition: "all 0.15s" }}>
                   {label}
@@ -2597,9 +2585,7 @@ import { InlineEditable } from "./InlineEditable"
               ))}
             </div>
             <div style={{ minHeight: 60 }}>
-              {tabs.length===0
-                ? <p style={{ color: muted, fontSize: 11, margin: 0 }}>Contenu de l onglet {activeTab+1}</p>
-                : <p style={{ color: text, fontSize: 12, margin: 0, lineHeight: 1.7 }}>{tabs[activeTab]?.[1]||"Ajoutez du contenu..."}</p>}
+              <p style={{ color: text, fontSize: 12, margin: 0, lineHeight: 1.7 }}>{tabs[activeTab]?.[1]||"Ajoutez du contenu..."}</p>
             </div>
           </div>
         )
@@ -2610,8 +2596,9 @@ import { InlineEditable } from "./InlineEditable"
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
+            {!hasPublishableContent("accordion_block", c) ? emptyHint("➕", "Ajoutez une section", HIDDEN_WHEN_EMPTY_NOTE) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {(items.length===0 ? [["Nos services","Détail des services..."],["Nos tarifs","Détail des tarifs..."],["Conditions","Nos conditions..."]] : items).map(([title,content],i) => (
+              {items.map(([title,content],i) => (
                 <div key={i} style={{ border: `1px solid ${openIdx===i ? primary+"40" : "rgba(255,255,255,0.07)"}`, borderRadius: 10, overflow: "hidden" }}>
                   <button onClick={() => setOpenIdx(openIdx===i ? null : i)}
                     style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", background: openIdx===i ? primary+"08" : "transparent", border: "none", color: openIdx===i ? primary : text, fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left" }}>
@@ -2625,7 +2612,7 @@ import { InlineEditable } from "./InlineEditable"
                   )}
                 </div>
               ))}
-            </div>
+            </div>)}
           </div>
         )
       }

@@ -4,20 +4,12 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyUnique } from "@/lib/slug"
+import { DEFAULT_PAGE_THEME } from "@/app/dashboard/builder/types"
 
 // Cree une page VIERGE (brouillon) et renvoie son id. Utilise par le builder
 // quand l'URL est /dashboard/builder/new (aucune page en base a ce stade).
 // Respecte la contrainte slug_format : ^[a-z0-9_-]{2,60}$
-
-const DEFAULT_THEME = {
-  name: "midnight_gold",
-  background: "#080808",
-  primary: "#C9A84C",
-  secondary: "#39FF8F",
-  text: "#F5F0E8",
-  font_display: "Fraunces",
-  font_body: "DM Sans",
-}
+// Le theme est ecrit au FORMAT CANONIQUE unique (voir DEFAULT_PAGE_THEME).
 
 export async function POST(req: NextRequest) {
   try {
@@ -65,7 +57,7 @@ export async function POST(req: NextRequest) {
       const cleanSlug = slugifyUnique(title)
       const res = await supabaseAdmin
         .from("pages")
-        .insert({ user_id: user.id, title, slug: cleanSlug, status: "draft", theme: DEFAULT_THEME })
+        .insert({ user_id: user.id, title, slug: cleanSlug, status: "draft", theme: DEFAULT_PAGE_THEME })
         .select()
         .single()
       if (res.data) { newPage = res.data; break }

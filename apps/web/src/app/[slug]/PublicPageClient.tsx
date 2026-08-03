@@ -10,6 +10,7 @@ import { trackLinkClick } from "@/lib/trackLinkClick"
 import { submitLead } from "@/lib/submitLead"
 import { contactFormFields } from "@/lib/leadForms"
 import { pricingCtaModel } from "../dashboard/builder/pricingCta"
+import { normalizePageTheme } from "../dashboard/builder/types"
 import { themeBackgroundStyle, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, buildVCard, mapEmbedUrl, shareLinks, calendarLinks, spotifyEmbedUrl, youtubeId, socialHref, extHref, docTypeMeta, docActionLabel, announcementMeta, blockDecoration, waLink, telLink, directionsLink, embedVideoUrl, stickyActionHref, ctaButtonStyle, CTA_ANIM_CSS, SOCIAL_NETWORKS_MAP, BANNER_ANIM_CSS } from "../dashboard/builder/types"
 
 type Block = { id: string; type: string; content: Record<string, any>; position: number }
@@ -2824,12 +2825,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PublicPageClient({ page, blocks, showBranding = true, introEligible = false }: { page: Page; blocks: Block[]; showBranding?: boolean; introEligible?: boolean }) {
-  const theme = {
-    bg: "#080808", surface: "#111009", primary: "#C9A84C", accent: "var(--success)",
-    text: "#F5F0E8", muted: "#8A8478",
-    fontDisplay: "Fraunces, serif", fontBody: "DM Sans, sans-serif",
-    ...(page.theme || {}),
-  }
+  // Thème NORMALISÉ à la frontière : même source de vérité que le Builder → parité
+  // garantie, anciens formats pris en charge, aucun JSON invalide ne peut planter le rendu.
+  const theme = normalizePageTheme(page.theme)
 
   // Charge les polices Google du thème — uniquement les polices CUSTOM (Fraunces
   // et DM Sans sont déjà chargées par le layout -> évite une requête redondante + le FOUT).

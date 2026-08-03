@@ -61,6 +61,147 @@ export interface PageTheme {
   tags?: string[]
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// THÈME DE PAGE — FORMAT UNIFIÉ (source de vérité)
+// -----------------------------------------------------------------------------
+// • Format CANONIQUE = l'interface PageTheme ci-dessus (camelCase : bg, fontDisplay,
+//   bgMode…). C'est le SEUL format manipulé par le Builder et le rendu public.
+// • Format de STOCKAGE = identique au canonique (Stratégie A : le JSON `pages.theme`
+//   est écrit tel quel). Pas de conversion snake_case ↔ camelCase en base.
+// • Compatibilité : `normalizePageTheme` accepte aussi d'anciens formats connus
+//   (background/font_display/bg_mode… d'un ancien défaut de création, alias snake_case)
+//   et les ramène au canonique À LA LECTURE. Une page ancienne se « migre » d'elle-même
+//   à sa prochaine sauvegarde (aucune migration SQL nécessaire).
+// • Défaut : `DEFAULT_PAGE_THEME`, UNIQUE source utilisée par la création, le Builder,
+//   le rendu public et le normaliseur.
+// • Ajouter une propriété : l'ajouter à l'interface PageTheme, à DEFAULT_PAGE_THEME si
+//   elle a un défaut, et la préserver dans `normalizePageTheme` (sinon elle sera ignorée).
+// -----------------------------------------------------------------------------
+
+export const DEFAULT_PAGE_THEME: PageTheme = {
+  name: "Midnight Gold",
+  bg: "#080808", surface: "#111009", primary: "#C9A84C", accent: "#39FF8F",
+  text: "#F5F0E8", muted: "#A8A190",
+  fontDisplay: "Fraunces", fontBody: "DM Sans",
+  bgMode: "solid",
+}
+
+const BG_MODES = ["solid", "gradient", "pattern", "image", "mesh", "radial"] as const
+
+// Couleur sûre : hex / rgb(a) / hsl(a) / var(--…). Sinon → fallback.
+function themeColor(v: any, fallback: string): string {
+  if (typeof v !== "string") return fallback
+  const s = v.trim()
+  if (!s || s.length > 100) return fallback
+  if (/^#[0-9a-fA-F]{3,8}$/.test(s)) return s
+  if (/^(rgb|hsl)a?\([0-9.,%\s/-]+\)$/i.test(s)) return s
+  if (/^var\(--[\w-]+\)$/.test(s)) return s
+  return fallback
+}
+// Couleur optionnelle : renvoie undefined si absente/invalide (ne pose pas de défaut).
+function themeColorOpt(v: any): string | undefined {
+  if (typeof v !== "string" || !v.trim()) return undefined
+  const c = themeColor(v, "")
+  return c || undefined
+}
+// Valeur CSS (gradient/mesh/image) : chaîne bornée, sans vecteur d'injection.
+function themeCss(v: any): string | undefined {
+  if (typeof v !== "string") return undefined
+  const s = v.trim()
+  if (!s || s.length > 400) return undefined
+  if (/javascript:|<|expression\s*\(/i.test(s)) return undefined
+  return s
+}
+// Nom de police : chaîne courte sans caractères CSS dangereux. Sinon → fallback.
+function themeFont(v: any, fallback: string): string {
+  if (typeof v !== "string") return fallback
+  const s = v.trim()
+  if (!s || s.length > 60 || /[<>{};"]/.test(s)) return fallback
+  return s
+}
+function themeNum(v: any): number | undefined {
+  const n = typeof v === "string" ? parseFloat(v) : typeof v === "number" ? v : NaN
+  return isFinite(n) ? n : undefined
+}
+
+// Normalise n'importe quelle entrée (canonique, ancien format, JSON, null, invalide…)
+// en un PageTheme COMPLET et sûr. Ne lance jamais d'exception sur donnée malformée.
+export function normalizePageTheme(input: unknown): PageTheme {
+  let raw: any = input
+  if (typeof raw === "string") { try { raw = JSON.parse(raw) } catch { raw = null } }
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { ...DEFAULT_PAGE_THEME }
+
+  const d = DEFAULT_PAGE_THEME
+  // Prend la 1re clé non vide parmi des alias (canonique d'abord, puis formats hérités).
+  const pick = (...keys: string[]) => { for (const k of keys) { const v = raw[k]; if (v != null && v !== "") return v } return undefined }
+
+  const bgModeRaw = pick("bgMode", "bg_mode")
+  const bgMode = BG_MODES.includes(bgModeRaw) ? bgModeRaw : d.bgMode
+
+  const t: PageTheme = {
+    name: typeof raw.name === "string" && raw.name.trim() ? raw.name : d.name,
+    bg: themeColor(pick("bg", "background", "background_color"), d.bg),
+    surface: themeColor(pick("surface", "surface_color"), d.surface),
+    primary: themeColor(pick("primary", "primary_color"), d.primary),
+    accent: themeColor(pick("accent", "accent_color"), d.accent),
+    text: themeColor(pick("text", "text_color"), d.text),
+    muted: themeColor(pick("muted", "muted_color"), d.muted),
+    fontDisplay: themeFont(pick("fontDisplay", "font_display"), d.fontDisplay),
+    fontBody: themeFont(pick("fontBody", "font_body", "font_family"), d.fontBody),
+    bgMode,
+  }
+
+  // ── Optionnels : préservés uniquement si présents ET valides ──────────────
+  const secondary = themeColorOpt(pick("secondary", "secondary_color")); if (secondary) t.secondary = secondary
+  const border = themeColorOpt(pick("border", "border_color")); if (border) t.border = border
+  const bgGradient = themeCss(pick("bgGradient", "bg_gradient")); if (bgGradient) t.bgGradient = bgGradient
+  const bgImage = themeCss(pick("bgImage", "bg_image")); if (bgImage) t.bgImage = bgImage
+  const bgPattern = pick("bgPattern", "bg_pattern"); if (typeof bgPattern === "string" && bgPattern.length <= 40) t.bgPattern = bgPattern
+
+  // Effets visuels
+  if (raw.effect_glow === true) t.effect_glow = true
+  if (raw.effect_noise === true) t.effect_noise = true
+  if (raw.effect_vignette === true) t.effect_vignette = true
+  const glowColor = themeColorOpt(raw.glow_color); if (glowColor) t.glow_color = glowColor
+  const glowIntensity = themeNum(raw.glow_intensity); if (glowIntensity !== undefined) t.glow_intensity = Math.max(0, Math.min(100, glowIntensity))
+  const glowSize = themeNum(raw.glow_size); if (glowSize !== undefined) t.glow_size = Math.max(0, Math.min(2000, glowSize))
+  const noiseOpacity = themeNum(raw.noise_opacity); if (noiseOpacity !== undefined) t.noise_opacity = Math.max(0, Math.min(100, noiseOpacity))
+  const vignetteIntensity = themeNum(raw.vignette_intensity); if (vignetteIntensity !== undefined) t.vignette_intensity = Math.max(0, Math.min(100, vignetteIntensity))
+  const meshC1 = themeColorOpt(raw.mesh_c1); if (meshC1) t.mesh_c1 = meshC1
+  const meshC2 = themeColorOpt(raw.mesh_c2); if (meshC2) t.mesh_c2 = meshC2
+  const meshC3 = themeColorOpt(raw.mesh_c3); if (meshC3) t.mesh_c3 = meshC3
+  const meshBlur = themeNum(raw.mesh_blur); if (meshBlur !== undefined) t.mesh_blur = Math.max(0, Math.min(500, meshBlur))
+  const patternColor = themeColorOpt(raw.pattern_color); if (patternColor) t.pattern_color = patternColor
+  const patternOpacity = themeNum(raw.pattern_opacity); if (patternOpacity !== undefined) t.pattern_opacity = Math.max(0, Math.min(100, patternOpacity))
+  const patternSize = themeNum(raw.pattern_size); if (patternSize !== undefined) t.pattern_size = Math.max(0, Math.min(500, patternSize))
+
+  // Style global des blocs (Record de string|boolean)
+  if (raw.blockStyle && typeof raw.blockStyle === "object" && !Array.isArray(raw.blockStyle)) {
+    const bs: Record<string, string | boolean> = {}
+    for (const [k, v] of Object.entries(raw.blockStyle)) if (typeof v === "string" || typeof v === "boolean") bs[k] = v
+    if (Object.keys(bs).length) t.blockStyle = bs
+  }
+
+  // Animation d'entrée
+  if (raw.intro_enabled === true) t.intro_enabled = true
+  if (typeof raw.intro_style === "string" && raw.intro_style.length <= 40) t.intro_style = raw.intro_style
+  const introDuration = themeNum(raw.intro_duration); if (introDuration !== undefined) t.intro_duration = Math.max(0, Math.min(10000, introDuration))
+
+  // Métadonnées de preset
+  if (typeof raw.category === "string") t.category = raw.category
+  if (typeof raw.emoji === "string") t.emoji = raw.emoji
+  if (Array.isArray(raw.tags)) t.tags = raw.tags.filter((x: any) => typeof x === "string")
+
+  return t
+}
+
+// Fusionne un patch (préréglage partiel) sur une base, puis normalise le résultat.
+export function mergePageTheme(base: unknown, patch: unknown): PageTheme {
+  const b = normalizePageTheme(base)
+  if (!patch || typeof patch !== "object" || Array.isArray(patch)) return b
+  return normalizePageTheme({ ...b, ...(patch as object) })
+}
+
 // Utilitaires couleurs
 export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const m = hex.replace("#","").match(/.{2}/g)

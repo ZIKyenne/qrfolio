@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import PublicPageClient from "./PublicPageClient"
 import { canRemoveBranding, canPageIntro } from "@/lib/plans"
 import { serializeJsonLd } from "@/lib/jsonLd"
+import { normalizePageTheme } from "../dashboard/builder/types"
 import type { Metadata } from "next"
 
 interface Props { params: Promise<{ slug: string }> }
@@ -73,7 +74,9 @@ export default async function PublicPage({ params }: Props) {
   // Fond appliqué à html/body DÈS le HTML initial : supprime toute frame blanche
   // avant le 1er paint (navigation), avant même que le cache SSR ne soit peint.
   // Sanitizé (hexa uniquement) → aucune injection possible dans le <style>.
-  const safeBg = /^#[0-9a-fA-F]{3,8}$/.test((page as any).theme?.bg || "") ? (page as any).theme.bg : "#080808"
+  // Thème normalisé (même frontière que le rendu public) : gère les anciens formats.
+  const safeThemeBg = normalizePageTheme((page as any).theme).bg
+  const safeBg = /^#[0-9a-fA-F]{3,8}$/.test(safeThemeBg) ? safeThemeBg : "#080808"
 
   const { data: blocks } = await supabase
     .from("blocks")

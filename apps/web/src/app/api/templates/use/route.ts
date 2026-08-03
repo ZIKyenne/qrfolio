@@ -4,7 +4,7 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyUnique } from "@/lib/slug"
-import { BLOCK_DEFS } from "@/app/dashboard/builder/types"
+import { BLOCK_DEFS, normalizePageTheme } from "@/app/dashboard/builder/types"
 
 // Slug valide (minuscules, accents retires, non-alphanum -> "-", + suffixe
 // aleatoire) via @/lib/slug. Respecte slug_format : ^[a-z0-9_-]{2,60}$
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
         slug: cleanSlug,
         status: "draft",
         template_id: templateId,
-        theme: theme || {},
+        theme: normalizePageTheme(theme), // écrit au format canonique unique (jamais {} ni format hérité)
       })
       .select()
       .single()

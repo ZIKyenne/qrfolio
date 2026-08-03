@@ -28,6 +28,8 @@
   import QRCanvas from "../qr-codes/QRCanvas"
   import { getQRBlob, downloadBlob } from "../qr-codes/qrRender"
   import { createClient } from "@/lib/supabase/client"
+  import { createSaveController, type SaveController } from "./saveController"
+  import { persistSnapshot, type PageSnapshot } from "./savePage"
 
   // Helper module-scope (evite la temporal-dead-zone du UUID_RE interne au composant).
   const IS_UUID = (s?: string | null): boolean => !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
@@ -583,56 +585,72 @@
       return () => window.removeEventListener("beforeunload", handler)
     }, [])
 
-    // Sauvegarde effective (partagée par le debounce ET le bouton « Enregistrer maintenant »).
-    const doSave = useCallback(async () => {
-      if (!IS_UUID(liveId) || !ready.current) return
-      setSaving(true); setSaveError(false)
-      try {
-        const supabase = createClient()
-        await supabase.from("pages").update({ title: pageName, theme }).eq("id", liveId)
-        const allUuid = blocks.every(b => UUID_RE.test(b.id))
-        if (allUuid) {
-          // Sauvegarde qui CONSERVE les IDs : upsert D'ABORD (le contenu est toujours enregistré),
-          // PUIS suppression des blocs retirés via une liste d'IDs explicite (fiable).
-          // La table `blocks` n'a que : id, page_id, type, position, is_visible, content, styles.
-          // draft/locked/visible n'ont PAS de colonne -> persistes dans content (cles reservees __).
-          const rows = blocks.map((b, i) => ({ id: b.id, page_id: liveId, type: b.type, position: i, content: { ...b.content, __draft: b.draft || false, __locked: b.locked || false, __visible: b.visible !== false }, is_visible: b.visible && !b.draft, styles: {} }))
-          const keep = new Set(blocks.map(b => b.id))
-          if (rows.length) { const { error } = await supabase.from("blocks").upsert(rows, { onConflict: "id" }); if (error) throw error }
-          const { data: existing } = await supabase.from("blocks").select("id").eq("page_id", liveId)
-          const toDelete = (existing || []).map((r: any) => r.id).filter((id: string) => !keep.has(id))
-          if (toDelete.length) await supabase.from("blocks").delete().in("id", toDelete)
-          else if (!rows.length) await supabase.from("blocks").delete().eq("page_id", liveId)
-        } else {
-          // Repli (IDs legacy non-UUID) : delete-all + insert. Les IDs deviennent UUID au prochain chargement.
-          await supabase.from("blocks").delete().eq("page_id", liveId)
-          if (blocks.length > 0) { const { error } = await supabase.from("blocks").insert(blocks.map((b, i) => ({ page_id: liveId, type: b.type, position: i, content: { ...b.content, __draft: b.draft || false, __locked: b.locked || false, __visible: b.visible !== false }, is_visible: b.visible && !b.draft, styles: {} }))); if (error) throw error }
-        }
-        dirty.current = false; setHasUnsaved(false); setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
-      } catch (e: any) {
-        console.error("[QRowg] Échec de sauvegarde des blocs :", e)
-        setSaveErrorMsg(e?.message || e?.hint || "Erreur inconnue")
-        setSaving(false); setSaveError(true)
+    // ── Coordinateur de sauvegarde « single-flight » ───────────────────────────
+    // Sérialise les sauvegardes d'un MÊME client : jamais deux en parallèle, le dernier
+    // snapshot gagne, une sauvegarde ancienne ne peut ni marquer un état neuf comme
+    // « Enregistré » ni supprimer un bloc ajouté après son démarrage. Créé une seule
+    // fois ; la persistance et le snapshot portent tout le contexte (pas de closure stale).
+    const saveCtrlRef = useRef<SaveController<PageSnapshot> | null>(null)
+    if (!saveCtrlRef.current) {
+      saveCtrlRef.current = createSaveController<PageSnapshot>({
+        persist: (snap) => persistSnapshot(createClient(), snap),
+        onChange: (s) => {
+          dirty.current = s.dirty
+          setSaving(s.saving)
+          setHasUnsaved(s.dirty)
+          setSaved(s.status === "saved")
+          setSaveError(s.status === "error")
+          if (s.status === "error" && s.error) setSaveErrorMsg(s.error.message || "Erreur inconnue")
+        },
+      })
+    }
+
+    // Snapshot IMMUABLE de l'état courant (cloné avant tout appel réseau). Renvoie null
+    // tant que la page n'est pas prête (garde anti-écrasement des blocs de démo).
+    const buildSnapshot = useCallback((): PageSnapshot | null => {
+      if (!IS_UUID(liveId) || !ready.current) return null
+      return {
+        liveId: liveId!,
+        pageName,
+        theme: { ...(theme as any) },
+        blocks: blocks.map(b => ({ id: b.id, type: b.type, content: { ...b.content }, visible: b.visible, draft: b.draft, locked: b.locked })),
       }
-    }, [blocks, pageName, theme, liveId])
+    }, [liveId, pageName, theme, blocks])
+
+    // Libère le coordinateur au démontage (coupe les notifications → aucun setState après unmount).
+    // On nulle la ref pour qu'un rendu ultérieur en recrée un (auto-réparation du double-montage
+    // React strict en dev ; sans effet en production où le démontage est définitif).
+    useEffect(() => () => { saveCtrlRef.current?.dispose(); saveCtrlRef.current = null }, [])
 
     useEffect(() => {
       // ready.current : garde anti-ecrasement — on ne sauvegarde pas tant que la page n'est
       // pas chargee (existante) ou creee (nouvelle), pour ne jamais persister les blocs de demo.
       if (!IS_UUID(liveId) || !ready.current) return
+      // Feedback immédiat « non enregistré » ; le coordinateur confirmera après le réseau.
       dirty.current = true; setHasUnsaved(true); setSaved(false)
       clearTimeout(saveTimeout.current)
-      saveTimeout.current = setTimeout(() => { doSave() }, 800)
-    }, [blocks, pageName, theme, liveId, doSave])
+      saveTimeout.current = setTimeout(() => {
+        const snap = buildSnapshot()
+        if (snap) saveCtrlRef.current?.request(snap)
+      }, 800)
+    }, [blocks, pageName, theme, liveId, buildSnapshot])
 
     // Déclenchement manuel immédiat (bouton « Enregistrer maintenant »).
-    function saveNow() { clearTimeout(saveTimeout.current); doSave() }
+    function saveNow() {
+      clearTimeout(saveTimeout.current)
+      const snap = buildSnapshot()
+      if (snap) saveCtrlRef.current?.request(snap)
+    }
 
     async function handlePublish() {
       if (!IS_UUID(liveId)) return
       setPublishing(true)
       setPublishError("")
       try {
+        // Attend que la DERNIÈRE version soit persistée AVANT de publier : évite de publier
+        // un état périmé et une écriture concurrente sur `pages`. (B03 approfondira le flux.)
+        const flushed = await (saveCtrlRef.current?.flush() ?? Promise.resolve(true))
+        if (!flushed) { setPublishError("Enregistrement des dernières modifications impossible. Réessayez."); return }
         const { error } = await createClient()
           .from("pages")
           .update({ status: "published", published_at: new Date().toISOString() })
@@ -654,7 +672,6 @@
       try { if (typeof crypto !== "undefined" && (crypto as any).randomUUID) return (crypto as any).randomUUID() } catch {}
       return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, ch => { const r = Math.floor(Math.random() * 16); const v = ch === "x" ? r : (r & 0x3 | 0x8); return v.toString(16) })
     }
-    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
     function addBlock(type: string, content?: BlockContent) {
       const def = BLOCK_DEFS[type]; if (!def) return
@@ -1008,7 +1025,7 @@
               <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#FBBF24" }} /> {isMobile ? "Enregistrer" : "Modifications non enregistrées · Enregistrer"}
             </button>
           )}
-          {saveError && <button onClick={() => { setSaveError(false); setBlocks(b => [...b]) }} title={saveErrorMsg ? `Erreur : ${saveErrorMsg} — cliquer pour réessayer` : "Réessayer la sauvegarde"} style={{ color: "#EF4444", fontSize: 10, display: "flex", alignItems: "center", gap: 3, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6, padding: "3px 8px", cursor: "pointer", maxWidth: isMobile ? 130 : 340, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flexShrink: 0 }}>⚠ {isMobile ? "Réessayer" : `${saveErrorMsg ? saveErrorMsg : "Échec"} — Réessayer`}</button>}
+          {saveError && <button onClick={() => saveCtrlRef.current?.retry()} title={saveErrorMsg ? `Erreur : ${saveErrorMsg} — cliquer pour réessayer` : "Réessayer la sauvegarde"} style={{ color: "#EF4444", fontSize: 10, display: "flex", alignItems: "center", gap: 3, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6, padding: "3px 8px", cursor: "pointer", maxWidth: isMobile ? 130 : 340, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flexShrink: 0 }}>⚠ {isMobile ? "Réessayer" : `${saveErrorMsg ? saveErrorMsg : "Échec"} — Réessayer`}</button>}
           {pageId && !IS_UUID(pageId) && !liveId && !bootstrapError && <span style={{ color: MUTED, fontSize: 10 }}>Création de la page…</span>}
           {bootstrapError && <span style={{ color: "#EF4444", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }} title={bootstrapError}>⚠ {bootstrapError}</span>}
           {!pageId && !isMobile && <span style={{ color: "#8A8478", fontSize: 9 }}>Mode démo</span>}

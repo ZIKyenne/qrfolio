@@ -2387,7 +2387,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             phone: suppPhone,
             website: suppWebsite,
           }}
-          regenQr={async (opts) => {
+          regenQr={async (opts, format = "png") => {
             try {
               const mergedStyle: QRStyleConfig = {
                 ...styleConf,
@@ -2401,9 +2401,11 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 ecc: opts.ecc ?? effectiveEcc,
                 style: mergedStyle,
                 size: 1000,
-              }, "png")
+              }, format === "svg" ? "svg" : "png")
               if (!blob) return null
-              return await blobToDataUrl(blob)
+              // SVG : on renvoie le markup brut (pour l'injecter en vectoriel dans une
+              // affiche) ; PNG : une data URL (pour l'image du canvas Fabric).
+              return format === "svg" ? await blob.text() : await blobToDataUrl(blob)
             } catch { return null }
           }}
           qrInit={{

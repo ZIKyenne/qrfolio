@@ -154,7 +154,7 @@ type Props = {
   // Donnees deja saisies cote QRStudio, pour pre-remplir les modeles
   prefill?: { name?: string; phone?: string; website?: string }
   // Regenere le QR (couleurs / style / correction / marge) via le moteur qrRender de QRStudio
-  regenQr?: (opts: { fg?: string; bg?: string; dotStyle?: string; cornerStyle?: string; eyeColor?: string; ecc?: "L" | "M" | "Q" | "H"; margin?: number }) => Promise<string | null>
+  regenQr?: (opts: { fg?: string; bg?: string; dotStyle?: string; cornerStyle?: string; eyeColor?: string; ecc?: "L" | "M" | "Q" | "H"; margin?: number }, format?: "png" | "svg") => Promise<string | null>
   // Config initiale du QR injecte, pour que l'editeur QR & la jauge de scannabilite soient exacts d'emblee
   qrInit?: { fg?: string; bg?: string; ecc?: "L" | "M" | "Q" | "H"; dotStyle?: string; cornerStyle?: string; eyeColor?: string; hasLogo?: boolean; margin?: number; logoSize?: number }
 }
@@ -3694,16 +3694,40 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       toast.error("Export PDF impossible. Si une image importée bloque l'export, remplacez-la.")
     } finally { setExporting(false); setExpOpen(false) }
   }
-  // Export SVG VECTORIEL de la composition (affiche redimensionnable sans perte :
-  // textes, formes, cadres nets a toute echelle). Reserve Pro comme le SVG du QR nu.
-  // Note : le QR est integre en image (raster HD) ; le QR vectoriel viendra ensuite.
-  const exportSvg = () => {
+  // Export SVG VECTORIEL de la composition (affiche redimensionnable sans perte).
+  // Le QR est injecte en VECTORIEL (genere en SVG via regenQr) a la position exacte
+  // du QR raster, qu'on exclut de toSVG. Repli gracieux sur le QR raster si le SVG du
+  // QR n'est pas disponible. Reserve Pro comme le SVG du QR nu.
+  const exportSvg = async () => {
     if (!isPro) { onUpsell?.("l'export SVG vectoriel", "pro"); return }
     const fc = fcRef.current; if (!fc) return
     setExporting(true)
     try {
+      // 1. Recupere le QR en SVG + sa boite (avant d'exclure l'image raster).
+      const qrImg = fc.getObjects().find(o => (o as any).isQR) as fabric.Image | undefined
+      let qrSvg: string | null = null
+      let qrRect: { left: number; top: number; width: number; height: number } | null = null
+      if (qrImg && regenQr) {
+        const r = qrImg.getBoundingRect(true)
+        qrRect = { left: r.left, top: r.top, width: r.width, height: r.height }
+        qrSvg = await regenQr(
+          { fg: qrFg || undefined, bg: qrBg || undefined, dotStyle: qrDot || undefined, cornerStyle: qrCorner || undefined, ecc: qrEcc, eyeColor: qrInit?.eyeColor, margin: qrInit?.margin },
+          "svg",
+        )
+      }
+      // 2. toSVG de l'affiche (QR raster exclu si on va injecter le vectoriel).
       prepExport(fc)
-      const svg = withBaseZoom(fc, () => fc.toSVG())
+      const inject = !!(qrImg && qrSvg && qrRect)
+      if (inject) (qrImg as any).excludeFromExport = true
+      let svg = withBaseZoom(fc, () => fc.toSVG())
+      if (inject) (qrImg as any).excludeFromExport = false
+      // 3. Injecte le QR vectoriel a sa position (nested svg place + dimensionne).
+      if (inject) {
+        const inner = qrSvg!.replace(/^[\s\S]*?<svg[^>]*>/i, "").replace(/<\/svg>\s*$/i, "")
+        const vb = qrSvg!.match(/viewBox="([^"]+)"/i)?.[1] || "0 0 1000 1000"
+        const nested = `<svg x="${qrRect!.left}" y="${qrRect!.top}" width="${qrRect!.width}" height="${qrRect!.height}" viewBox="${vb}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`
+        svg = svg.replace(/<\/svg>\s*$/i, nested + "</svg>")
+      }
       const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" })
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a"); a.href = url; a.download = `qrowg-${format}.svg`; a.click()
@@ -3715,7 +3739,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   // Lance l'export choisi dans l'assistant (etape 3) puis referme l'assistant.
   const runExport = () => {
     if (wizType === "pdf") { void exportPdfPro() }
-    else if (wizType === "svg") { exportSvg() }
+    else if (wizType === "svg") { void exportSvg() }
     else { exportImage(wizType) }
     setExpWiz(-1)
   }

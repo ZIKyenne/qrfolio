@@ -83,6 +83,13 @@ export function resolveRendererStatus(type: string, active: ReadonlySet<string> 
   return active.has(type) ? "shared" : "legacy"
 }
 
+// Statut de migration à 3 états : shared si activé, pilot si prêt mais non activé, sinon legacy.
+export function migrationStatusOf(type: string, active: ReadonlySet<string> = SHARED_RENDERER_BLOCKS): RendererMigrationStatus {
+  if (active.has(type)) return "shared"
+  if ((PLANNED_PILOT_BLOCKS as readonly string[]).includes(type)) return "pilot"
+  return "legacy"
+}
+
 // Un enregistrement `shared`/`pilot` DOIT fournir les 3 briques (view model + vue + adapters).
 export function isRegistrationComplete(r: BlockRendererRegistration<any, any>): boolean {
   if (r.status === "legacy") return true

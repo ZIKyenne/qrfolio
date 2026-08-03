@@ -7,6 +7,7 @@ import { G, MUTED } from "./builderConstants"
 import { InlineEditable } from "./InlineEditable"
 import { hasPublishableContent, HIDDEN_WHEN_EMPTY_NOTE } from "./blockEmptyState"
 import { pricingCtaModel } from "./pricingCta"
+import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
 
   function FAQItem({ q, a, theme, link, linkLabel, compact }: { q: string; a: string; theme: PageTheme; link?: string; linkLabel?: string; compact?: boolean }) {
     const [open, setOpen] = useState(false)
@@ -105,6 +106,11 @@ import { pricingCtaModel } from "./pricingCta"
         {sub && <span style={{ fontSize: 10, fontWeight: 400, opacity: 0.75 }}>{sub}</span>}
       </div>
     )
+
+    // Renderer PARTAGÉ (pilotes derrière flag). Flag vide en prod → null → `case` legacy.
+    // Rollback = retirer le type de SHARED_RENDERER_BLOCKS ; aucune donnée touchée.
+    const SharedEditor = resolveEditorBlock(block.type)
+    if (SharedEditor) return <SharedEditor content={c} ctx={{ theme, primary, text, muted, accent, surfaceStyle: s, canEdit, edit }} />
 
     switch (block.type) {
       case "profile": return (

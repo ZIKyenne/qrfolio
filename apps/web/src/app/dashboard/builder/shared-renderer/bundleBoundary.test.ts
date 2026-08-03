@@ -1,0 +1,71 @@
+import { describe, it, expect } from "vitest"
+import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+
+// Garde-fou de séparation des bundles : le chemin PUBLIC ne doit importer aucun symbole
+// éditeur, et les modèles doivent rester purs (sans React ni Supabase).
+
+const read = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8")
+
+// Fichiers atteignables depuis PublicPageClient -> publicRegistry (transitif).
+const PUBLIC_REACHABLE = [
+  "./publicRegistry.tsx",
+  "./blocks/heading/PublicHeading.tsx",
+  "./blocks/values/PublicValues.tsx",
+  "./blocks/pricing/PublicPricing.tsx",
+  "./models/heading.ts",
+  "./models/values.ts",
+  "./models/pricing.ts",
+  "./renderTypes.ts",
+]
+
+// Symboles/chemins strictement éditeur qui ne doivent JAMAIS entrer dans le bundle public.
+const FORBIDDEN_IN_PUBLIC = [
+  "InlineEditable", "editorRegistry", "EditorHeading", "EditorValues", "EditorPricing",
+  "BuilderV4", "builderHooks", "builderPanels", "OutlinePanel", "CommandPalette",
+  "primitives/BlockEmptyState",
+]
+
+describe("frontière de bundle — public n'importe rien d'éditeur", () => {
+  for (const f of PUBLIC_REACHABLE) {
+    it(`${f} : aucun import éditeur interdit`, () => {
+      const src = read(f)
+      // On ne regarde que les lignes d'import (pas les commentaires de doc).
+      const imports = src.split("\n").filter(l => /^\s*import\b/.test(l)).join("\n")
+      for (const bad of FORBIDDEN_IN_PUBLIC) {
+        expect(imports.includes(bad), `${f} importe ${bad}`).toBe(false)
+      }
+    })
+  }
+})
+
+describe("modèles purs — sans React ni Supabase", () => {
+  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts"]) {
+    it(`${m} : aucun import react/supabase`, () => {
+      const imports = read(m).split("\n").filter(l => /^\s*import\b/.test(l)).join("\n")
+      expect(/from ["']react["']/.test(imports)).toBe(false)
+      expect(/supabase/i.test(imports)).toBe(false)
+      expect(imports.includes("trackLinkClick")).toBe(false)
+    })
+  }
+})
+
+describe("marqueurs de comportement des adapters", () => {
+  it("PublicValues rend null si vide", () => {
+    expect(read("./blocks/values/PublicValues.tsx").includes("return null")).toBe(true)
+  })
+  it("PublicPricing : lien <a> réel + tracking", () => {
+    const src = read("./blocks/pricing/PublicPricing.tsx")
+    expect(src.includes("<a ")).toBe(true)
+    expect(src.includes("trackClick")).toBe(true)
+  })
+  it("EditorPricing : CTA non navigable (aria-disabled), pas de <a>", () => {
+    const src = read("./blocks/pricing/EditorPricing.tsx")
+    expect(src.includes('aria-disabled="true"')).toBe(true)
+    expect(src.includes("<a ")).toBe(false)
+  })
+  it("EditorHeading / EditorValues : édition inline préservée", () => {
+    expect(read("./blocks/heading/EditorHeading.tsx").includes("InlineEditable")).toBe(true)
+    expect(read("./blocks/values/EditorValues.tsx").includes("InlineEditable")).toBe(true)
+  })
+})

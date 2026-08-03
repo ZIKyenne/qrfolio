@@ -31,6 +31,30 @@ difficiles : coquille + édition inline, état vide + répéteur, et **adapter d
 5. Le legacy `case` reste présent tant que le pilote n'est pas validé et le legacy retiré
    dans une mission ultérieure.
 
+## État après B09.2 (implémenté)
+
+Infrastructure réelle livrée sous `shared-renderer/` : modèles purs (`models/{heading,values,
+pricing}.ts`), adapters éditeur/public par bloc (`blocks/*/`), primitive `BlockEmptyState`,
+registres **séparés** `editorRegistry`/`publicRegistry`, flag `SHARED_RENDERER_BLOCKS`.
+
+| Bloc | Infra | Statut | Flag | Tests | Rollback | Legacy |
+| --- | --- | --- | --- | --- | --- | --- |
+| heading | modèle + 2 adapters | `pilot` | **désactivé** | modèle+registre+bundle | retirer du flag | conservé |
+| values | modèle + 2 adapters + emptyState | `pilot` | **désactivé** | idem | retirer du flag | conservé |
+| pricing | modèle + 2 adapters | `pilot` | **désactivé** | idem + lien/tracking | retirer du flag | conservé |
+
+- **Câblage** : `builderPreview` appelle `resolveEditorBlock` et `PublicPageClient`
+  `resolvePublicBlock` AVANT le switch. `SHARED_RENDERER_BLOCKS` étant **vide**, les deux
+  renvoient `null` → les `case` legacy s'exécutent → **zéro changement en production**.
+- **Activation (B09.3)** : ajouter `"heading"|"values"|"pricing"` à `SHARED_RENDERER_BLOCKS`,
+  APRÈS validation visuelle legacy↔shared. Rollback = retirer le type (aucune donnée touchée).
+- **Validation visuelle restante** : NON effectuée (l'assistant ne voit pas le rendu). Les
+  adapters reproduisent le JSX legacy à l'identique, mais la parité pixel doit être confirmée
+  en navigateur avant activation.
+- **Isolation bundle** : `bundleBoundary.test` garantit qu'aucun symbole éditeur
+  (`InlineEditable`, adapters éditeur…) n'entre dans le chemin public, et que les modèles sont
+  sans React/Supabase.
+
 ## Explicitement hors pilotes
 
 Formulaires (`contact_form`…), embeds/médias, `qr_code_block`, et tout bloc listé dans

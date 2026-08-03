@@ -18,14 +18,14 @@
 | social_feature | social | répéteur | STANDARD | 2 | - | 3 | legacy |
 | instagram_feed | social | embed/média | ÉLEVÉ | 1 | preview différent | 6 | legacy |
 | product | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
-| pricing | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
+| pricing | commerce | commerce-carte | STANDARD | 2 | - | 4 | pilot (flag off) |
 | promo_banner | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | menu_section | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | services_list | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | image | media | carte | STANDARD | 2 | - | 4 | legacy |
 | gallery | media | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
 | video | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
-| heading | info | texte | FAIBLE | 3 | - | 1 | legacy |
+| heading | info | texte | FAIBLE | 3 | - | 1 | pilot (flag off) |
 | rich_text | info | texte | FAIBLE | 3 | - | 1 | legacy |
 | faq | info | répéteur | STANDARD | 2 | - | 3 | legacy |
 | testimonials | info | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -100,7 +100,7 @@
 | scan_counter | info | carte | STANDARD | 2 | - | 4 | legacy |
 | timeline | info | répéteur | STANDARD | 2 | - | 3 | legacy |
 | process_steps | info | répéteur | STANDARD | 2 | - | 3 | legacy |
-| values | info | répéteur | STANDARD | 2 | - | 3 | legacy |
+| values | info | répéteur | STANDARD | 2 | - | 3 | pilot (flag off) |
 | team | info | répéteur | STANDARD | 2 | - | 3 | legacy |
 | engagements | info | répéteur | STANDARD | 2 | - | 3 | legacy |
 | trust_badge | info | répéteur | STANDARD | 2 | - | 3 | legacy |

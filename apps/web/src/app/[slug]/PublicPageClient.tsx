@@ -11,6 +11,7 @@ import { submitLead } from "@/lib/submitLead"
 import { contactFormFields } from "@/lib/leadForms"
 import { pricingCtaModel } from "../dashboard/builder/pricingCta"
 import { normalizePageTheme } from "../dashboard/builder/types"
+import { resolvePublicBlock } from "../dashboard/builder/shared-renderer/publicRegistry"
 import { themeBackgroundStyle, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, buildVCard, mapEmbedUrl, shareLinks, calendarLinks, spotifyEmbedUrl, youtubeId, socialHref, extHref, docTypeMeta, docActionLabel, announcementMeta, blockDecoration, waLink, telLink, directionsLink, embedVideoUrl, stickyActionHref, ctaButtonStyle, CTA_ANIM_CSS, SOCIAL_NETWORKS_MAP, BANNER_ANIM_CSS } from "../dashboard/builder/types"
 
 type Block = { id: string; type: string; content: Record<string, any>; position: number }
@@ -661,6 +662,11 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
   const SURFACE = theme.surface || "#111009"
   const FONT_D = theme.fontDisplay || "Fraunces, serif"
   const FONT_B = theme.fontBody || "DM Sans, sans-serif"
+
+  // Renderer PARTAGÉ (pilotes derrière flag). Flag vide en prod → null → `case` legacy.
+  // Rollback = retirer le type de SHARED_RENDERER_BLOCKS ; aucune donnée touchée.
+  const SharedPublic = resolvePublicBlock(block.type)
+  if (SharedPublic) return <SharedPublic content={c} ctx={{ theme, G, TEXT, MUTED, FONT_D, FONT_B, pageId, blockId: block.id, trackClick: (t: string) => trackLinkClick(pageId, block.id, t) }} />
 
   switch (block.type) {
     case "profile": return (

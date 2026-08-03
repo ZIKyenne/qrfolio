@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { PLAN_RANK, canPrintStudio, minPlanFor } from "@/lib/plans"
 import { createQR, updateQR, getQRBlob, downloadBlob, blobToDataUrl, buildAndDownloadPdf, type QROptions } from "./qrRender"
+import { composeLogo } from "./logoCompose"
 import type QRCodeStyling from "qr-code-styling"
 
 // Editeur libre (Fabric.js) : charge uniquement cote client (touche au DOM)
@@ -564,9 +565,28 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   // ECC force H si logo actif (logo masque des modules QR)
   const effectiveEcc = styleConf.logoUrl ? "H" : ecLevel
 
+  // Logo COMPOSE (conteneur forme + fond) — derive du logo brut, recalcule quand la
+  // forme/le fond changent. Le logo brut reste dans styleConf (sauvegarde) ; cette
+  // version composee n'est utilisee qu'au RENDU (renderStyle), pas de double stockage.
+  const [composedLogo, setComposedLogo] = useState("")
+  useEffect(() => {
+    let cancelled = false
+    const src = styleConf.logoUrl
+    if (!src) { setComposedLogo(""); return }
+    composeLogo(src, { shape: styleConf.logoShape, bg: styleConf.logoBg, bgColor: styleConf.logoBgColor })
+      .then(u => { if (!cancelled) setComposedLogo(u) })
+      .catch(() => { if (!cancelled) setComposedLogo(src) })
+    return () => { cancelled = true }
+  }, [styleConf.logoUrl, styleConf.logoShape, styleConf.logoBg, styleConf.logoBgColor])
+
+  // Style de RENDU : logo remplace par sa version composee (fallback = logo brut).
+  const renderStyle = (styleConf.logoUrl && composedLogo && composedLogo !== styleConf.logoUrl)
+    ? { ...styleConf, logoUrl: composedLogo }
+    : styleConf
+
   // Construit les options de rendu QR a partir de l'etat courant
   function qrOpts(size: number): QROptions {
-    return { data: qrUrl, fg, bg, ecc: effectiveEcc, style: styleConf, size }
+    return { data: qrUrl, fg, bg, ecc: effectiveEcc, style: renderStyle, size }
   }
 
   // Rendu de l'apercu principal via qr-code-styling
@@ -588,7 +608,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
     let cancelled = false
     ;(async () => {
       try {
-        const blob = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: styleConf, size: 600 }, "png")
+        const blob = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: renderStyle, size: 600 }, "png")
         const url = await blobToDataUrl(blob)
         if (!cancelled) setQrPng(url)
       } catch { /* ignore */ }
@@ -931,7 +951,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   async function buildExportCanvas(px: number, transparent: boolean): Promise<HTMLCanvasElement> {
     const opts: QROptions = {
       data: qrUrl, fg, bg, ecc: effectiveEcc,
-      style: { ...styleConf, transparent: transparent || styleConf.transparent },
+      style: { ...renderStyle, transparent: transparent || renderStyle.transparent },
       size: px,
     }
     const blob = await getQRBlob(opts, "png")
@@ -1892,7 +1912,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
     }
     setEditorLoading(true)
     try {
-      const qrBlob = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: styleConf, size: 1000 }, "png")
+      const qrBlob = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: renderStyle, size: 1000 }, "png")
       if (!qrBlob) throw new Error("Generation du QR impossible")
       const dataUrl = await blobToDataUrl(qrBlob)
       setEditorQrUrl(dataUrl)
@@ -1912,7 +1932,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
     try {
       // Generer le QR a la bonne taille via qr-code-styling (logo inclus)
       const qrPx    = Math.min(tpl.w, tpl.h)
-      const qrBlob  = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: styleConf, size: qrPx }, "png")
+      const qrBlob  = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: renderStyle, size: qrPx }, "png")
       if (!qrBlob) throw new Error("qr gen failed")
       const qrDataUrl = await blobToDataUrl(qrBlob)
       // Charger les polices choisies avant de dessiner (sinon rendu en police de secours)
@@ -1949,7 +1969,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
     setSuppExporting(true)
     try {
       const qrPx    = Math.min(tpl.w, tpl.h) * 2
-      const qrBlob  = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: styleConf, size: qrPx }, "png")
+      const qrBlob  = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: renderStyle, size: qrPx }, "png")
       if (!qrBlob) throw new Error("qr gen failed")
       const qrDataUrl = await blobToDataUrl(qrBlob)
       try { const d = (document as Document & { fonts?: { load: (f: string) => Promise<unknown> } }); if (d.fonts) { await Promise.all([d.fonts.load(`700 32px '${suppFont}'`), d.fonts.load(`400 24px '${suppSubFont}'`)]) } } catch { /* noop */ }
@@ -1997,7 +2017,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       const isTransparent = expFormat === "png-t"
       const opts: QROptions = {
         data: qrUrl, fg, bg, ecc: effectiveEcc,
-        style: { ...styleConf, transparent: isTransparent || styleConf.transparent, margin: expMargin },
+        style: { ...renderStyle, transparent: isTransparent || renderStyle.transparent, margin: expMargin },
         size: px,
       }
 

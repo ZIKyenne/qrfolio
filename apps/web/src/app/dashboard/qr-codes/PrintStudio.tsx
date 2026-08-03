@@ -3607,7 +3607,9 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   // ---- Contrôle qualité impression (Print Center) ---------------------------
   // Mesure le design réel puis délègue la notation au moteur pur printPreflight (testé).
   // Mesure : contraste QR↔carte, taille physique du QR, résolution, zone silencieuse,
-  // marges de sécurité (géométrie pure). logoPct vient encore de l'init (TODO : mesurer au canvas).
+  // marges de sécurité (géométrie pure). logoPct vient de qrInit.logoSize — c'est la
+  // bonne source : le logo est cuit dans l'image QR et l'éditeur QR de Print Studio ne
+  // modifie pas sa taille (couleurs/modules/coins/ECC seulement).
   const openPreflight = () => {
     const fc = fcRef.current
     const isScreen = format === "story"

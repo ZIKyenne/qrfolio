@@ -6,6 +6,7 @@ import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NE
 import { G, MUTED } from "./builderConstants"
 import { InlineEditable } from "./InlineEditable"
 import { hasPublishableContent, HIDDEN_WHEN_EMPTY_NOTE } from "./blockEmptyState"
+import { pricingCtaModel } from "./pricingCta"
 
   function FAQItem({ q, a, theme, link, linkLabel, compact }: { q: string; a: string; theme: PageTheme; link?: string; linkLabel?: string; compact?: boolean }) {
     const [open, setOpen] = useState(false)
@@ -338,6 +339,9 @@ import { hasPublishableContent, HIDDEN_WHEN_EMPTY_NOTE } from "./blockEmptyState
       }
       case "pricing": {
         const plans = [[c.title1,c.price1,c.desc1,c.old_price1],[c.title2,c.price2,c.desc2,c.old_price2],[c.title3,c.price3,c.desc3,c.old_price3]].filter(([t])=>t)
+        // CTA : même modèle que le rendu public (parité). Rendu ici en élément NON
+        // navigable (le clic dans le canvas ne doit jamais quitter le Builder).
+        const cta = pricingCtaModel(c)
         return (
           <div style={{ padding: "10px 16px", ...s }}>
             {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
@@ -348,7 +352,8 @@ import { hasPublishableContent, HIDDEN_WHEN_EMPTY_NOTE } from "./blockEmptyState
                   <p style={{ color: muted, fontSize: 9, margin: "0 0 3px", textTransform: "uppercase", letterSpacing: 1 }}>{t}</p>
                   <p style={{ color: primary, fontSize: 20, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }}>{p}</p>
                   {op && <p style={{ color: muted, fontSize: 11, margin: "0 0 3px", textDecoration: "line-through" }}>{op}</p>}
-                  <p style={{ color: muted, fontSize: 9, margin: 0 }}>{d}</p>
+                  <p style={{ color: muted, fontSize: 9, margin: cta.visible ? "0 0 8px" : 0 }}>{d}</p>
+                  {cta.visible && <div aria-disabled="true" title="Lien actif uniquement sur la page publiée" style={{ background: primary+"12", border: `1px solid ${primary}25`, color: primary, borderRadius: 7, padding: "6px", fontSize: 10, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cta.label}</div>}
                 </div>
               ) })}
             </div>

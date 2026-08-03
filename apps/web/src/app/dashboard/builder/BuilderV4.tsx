@@ -32,6 +32,7 @@
   import { persistSnapshot, type PageSnapshot } from "./savePage"
   import { createPublishController } from "./publish"
   import { publishPage } from "./publishActions"
+  import { safeErrorMessage, loadStateFromError, type LoadState } from "./builderErrors"
 
   // Helper module-scope (evite la temporal-dead-zone du UUID_RE interne au composant).
   const IS_UUID = (s?: string | null): boolean => !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
@@ -191,6 +192,10 @@
     // on cree d'abord la page puis on bascule sur son vrai UUID.
     const [liveId, setLiveId] = useState<string | undefined>(() => (IS_UUID(pageId) ? pageId : undefined))
     const [bootstrapError, setBootstrapError] = useState("")
+    // État de chargement d'une page existante : distingue chargé / absente / accès refusé /
+    // erreur récupérable. loadNonce permet de relancer le chargement (bouton « Réessayer »).
+    const [loadState, setLoadState] = useState<LoadState>("loading")
+    const [loadNonce, setLoadNonce] = useState(0)
     const creatingRef = useRef(false)
     const [showPublishPopup, setShowPublishPopup] = useState(false)
     const [publishing, setPublishing] = useState(false)
@@ -551,35 +556,60 @@
     useEffect(() => {
       if (!IS_UUID(liveId)) return
       const supabase = createClient()
+      let cancelled = false                 // ignore les résultats si l'effet est remplacé/démonté
+      const alive = () => !cancelled && mountedRef.current
+      setLoadState("loading")
       async function load() {
-        const { data: pg } = await supabase.from("pages").select("title,slug,status,theme,total_views").eq("id", liveId).single()
-        if (pg) { setPageName(pg.title); setPageSlug(pg.slug); setPageStatus(pg.status||"draft"); if (pg.theme) setTheme(pg.theme as PageTheme); setPageStats(s => ({ ...s, views: pg.total_views||0 })) }
-        const { data: blks } = await supabase.from("blocks").select("*").eq("page_id", liveId).order("position")
-        if (blks?.length) {
+        try {
+          // 1) Page (CRITIQUE). Erreur/absence → écran dédié, et surtout ready RESTE false
+          //    (aucun autosave sur une page fantôme ou inaccessible → aucun écrasement).
+          const { data: pg, error: pageErr } = await supabase.from("pages").select("title,slug,status,theme,total_views").eq("id", liveId).single()
+          if (!alive()) return
+          if (pageErr || !pg) { setLoadState(loadStateFromError(pageErr, false)); return }
+
+          // 2) Blocs (CRITIQUES pour l'édition). Une erreur bloque le chargement (récupérable).
+          const { data: blks, error: blkErr } = await supabase.from("blocks").select("*").eq("page_id", liveId).order("position")
+          if (!alive()) return
+          if (blkErr) { setLoadState(loadStateFromError(blkErr, false)); return }
+
+          // Application de l'état chargé (uniquement après succès des lectures critiques →
+          // pas de rendu partiel incohérent).
+          setPageName(pg.title); setPageSlug(pg.slug); setPageStatus(pg.status || "draft")
+          if (pg.theme) setTheme(pg.theme as PageTheme)
+          setPageStats(s => ({ ...s, views: pg.total_views || 0 }))
+          if (blks?.length) {
             const loaded = blks.map(b => { const c = b.content || {}; return { id: b.id, type: b.type, content: c, visible: c.__visible !== undefined ? c.__visible !== false : (b.is_visible !== false), draft: c.__draft || false, locked: c.__locked || false } })
             setBlocksRaw(loaded)
             // Repart de l'état chargé (blocs + thème + nom) : évite l'undo->démo qui
             // écrasait le contenu, et cale le snapshot d'historique sur la page réelle.
-            undoRedo.reset({ blocks: loaded, theme: (pg?.theme as PageTheme) ?? themeRef.current, name: pg?.title ?? nameRef.current })
+            undoRedo.reset({ blocks: loaded, theme: (pg.theme as PageTheme) ?? themeRef.current, name: pg.title ?? nameRef.current })
           }
-        const { data: qr } = await supabase.from("qr_codes").select("short_code,total_scans").eq("page_id", liveId).single()
-        if (qr) {
-          setQrShortCode(qr.short_code||"")
-          setPageStats(s => ({ ...s, scans: qr.total_scans||0 }))
+
+          // 3) Lectures NON critiques (QR, clics) : une erreur n'empêche PAS l'édition.
+          const { data: qr } = await supabase.from("qr_codes").select("short_code,total_scans").eq("page_id", liveId).single()
+          if (alive() && qr) { setQrShortCode(qr.short_code || ""); setPageStats(s => ({ ...s, scans: qr.total_scans || 0 })) }
+          const since = new Date(); since.setDate(since.getDate() - 90)
+          const { data: clk } = await supabase.from("block_clicks").select("block_id").eq("page_id", liveId).gte("clicked_at", since.toISOString())
+          if (alive() && clk?.length) {
+            const counts: Record<string, number> = {}
+            for (const r of clk as any[]) { if (r.block_id) counts[r.block_id] = (counts[r.block_id] || 0) + 1 }
+            setClickCounts(counts)
+          }
+
+          if (!alive()) return
+          // Page chargée : la sauvegarde peut désormais s'activer sans risque d'écraser.
+          // (ready passé à true APRÈS tous les setState → l'autosave d'hydratation, qui lit
+          // ready.current === false pendant le chargement, ne se déclenche pas.)
+          ready.current = true
+          setLoadState("loaded")
+        } catch (e) {
+          // Exception (réseau, JSON, inattendue) : écran récupérable, ready reste false.
+          if (alive()) setLoadState(loadStateFromError(e, false))
         }
-        // Compteur de clics par bloc (90 derniers jours) — lecture proprio via RLS
-        const since = new Date(); since.setDate(since.getDate() - 90)
-        const { data: clk } = await supabase.from("block_clicks").select("block_id").eq("page_id", liveId).gte("clicked_at", since.toISOString())
-        if (clk?.length) {
-          const counts: Record<string, number> = {}
-          for (const r of clk as any[]) { if (r.block_id) counts[r.block_id] = (counts[r.block_id] || 0) + 1 }
-          setClickCounts(counts)
-        }
-        // Page chargee : la sauvegarde peut desormais s'activer sans risque d'ecraser.
-        ready.current = true
       }
       load()
-    }, [liveId])
+      return () => { cancelled = true }
+    }, [liveId, loadNonce])
 
     // Avertit avant de fermer/recharger l'onglet s'il reste des changements non sauvegardes.
     useEffect(() => {
@@ -603,7 +633,8 @@
           setHasUnsaved(s.dirty)
           setSaved(s.status === "saved")
           setSaveError(s.status === "error")
-          if (s.status === "error" && s.error) setSaveErrorMsg(s.error.message || "Erreur inconnue")
+          // Message SÛR (jamais le message Supabase brut : table, code SQL, détail RLS).
+          if (s.status === "error" && s.error) setSaveErrorMsg(safeErrorMessage(s.error))
         },
       })
     }
@@ -1022,6 +1053,32 @@
         base = { background: theme.bgGradient || theme.bg, ...animStyle }
       }
       return base
+    }
+
+    // Chargement d'une page existante en échec : écran clair plutôt qu'un builder rempli de
+    // blocs de démo (page fantôme). not_found/forbidden = terminaux ; error = « Réessayer ».
+    if (IS_UUID(liveId) && (loadState === "not_found" || loadState === "forbidden" || loadState === "error")) {
+      const info = loadState === "not_found"
+        ? { icon: "🗑️", title: "Cette page n'existe plus", sub: "Elle a peut-être été supprimée." }
+        : loadState === "forbidden"
+        ? { icon: "🔒", title: "Vous n'avez plus accès à cette page", sub: "Demandez au propriétaire de vous réinviter." }
+        : { icon: "⚠️", title: "Impossible de charger la page", sub: "Vérifiez votre connexion puis réessayez." }
+      return (
+        <div style={{ height: "100dvh", background: "#080808", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "DM Sans, sans-serif", color: "#F5F0E8", padding: 24 }}>
+          <div role="alert" style={{ maxWidth: 380, textAlign: "center", background: "#111009", border: "1px solid rgba(201,168,76,0.16)", borderRadius: 16, padding: "32px 28px" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }} aria-hidden>{info.icon}</div>
+            <h1 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 8px", fontFamily: "Fraunces, serif" }}>{info.title}</h1>
+            <p style={{ fontSize: 13, color: "#8A8478", margin: "0 0 22px", lineHeight: 1.6 }}>{info.sub}</p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+              {loadState === "error" && (
+                <button onClick={() => { setLoadState("loading"); setLoadNonce(n => n + 1) }}
+                  style={{ background: `linear-gradient(90deg,${G},#b8953f)`, border: "none", borderRadius: 10, padding: "11px 20px", color: "#080808", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Réessayer</button>
+              )}
+              <a href="/dashboard" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "11px 20px", color: "#F5F0E8", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Retour au tableau de bord</a>
+            </div>
+          </div>
+        </div>
+      )
     }
 
     return (

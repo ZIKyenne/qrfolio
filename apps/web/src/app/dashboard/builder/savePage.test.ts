@@ -109,6 +109,17 @@ describe("persistSnapshot — propagation stricte des erreurs (aucun faux succè
   })
 })
 
+describe("persistSnapshot — l'erreur lancée préserve code/status/stage (classification UI)", () => {
+  it("upsert échoué → Error avec code + stage", async () => {
+    const { client } = makeClient({ existing: [{ id: A }, { id: B }], errors: { upsert: { code: "42501", status: 403, message: "permission denied for table blocks" } } })
+    await expect(persistSnapshot(client, snapAB)).rejects.toMatchObject({ code: "42501", status: 403, stage: "block_upsert" })
+  })
+  it("update page échouée → stage page_update", async () => {
+    const { client } = makeClient({ errors: { pageUpdate: { code: "PGRST301", message: "JWT expired" } } })
+    await expect(persistSnapshot(client, snapAB)).rejects.toMatchObject({ code: "PGRST301", stage: "page_update" })
+  })
+})
+
 describe("persistSnapshot — chemin legacy (IDs non-UUID)", () => {
   it("delete-all + insert, sans upsert", async () => {
     const { client, ops } = makeClient()

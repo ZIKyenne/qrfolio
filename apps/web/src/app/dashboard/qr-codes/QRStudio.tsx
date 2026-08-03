@@ -20,6 +20,7 @@ import { Modal } from "@/components/ui/Modal"
 import { PLAN_RANK, canPrintStudio, minPlanFor } from "@/lib/plans"
 import { createQR, updateQR, getQRBlob, downloadBlob, blobToDataUrl, buildAndDownloadPdf, type QROptions } from "./qrRender"
 import { composeLogo } from "./logoCompose"
+import { BatchQrModal } from "./BatchQrModal"
 import type QRCodeStyling from "qr-code-styling"
 
 // Editeur libre (Fabric.js) : charge uniquement cote client (touche au DOM)
@@ -446,6 +447,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   const [applyAllOk,   setApplyAllOk]   = useState(false)
   const [selectedCat,  setSelectedCat]  = useState("classic")
   const [upsell,        setUpsell]        = useState<{ feature: string; plan: string } | null>(null)
+  const [batchOpen,     setBatchOpen]     = useState(false)  // génération de QR en lot (B2B)
   const [expFormat,     setExpFormat]     = useState<"png"|"png-t"|"webp"|"svg"|"pdf">("png")
   const [expSize,       setExpSize]       = useState<512|1024|2048|4096|"custom">(1024)
   const [expCustomSize, setExpCustomSize] = useState(1024)
@@ -2469,6 +2471,15 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         )
       })()}
 
+      {/* -- Génération de QR en lot (B2B) --------------------------------------- */}
+      <BatchQrModal
+        open={batchOpen}
+        onClose={() => setBatchOpen(false)}
+        isPro={canPro}
+        onUpsell={(feature, plan) => setUpsell({ feature, plan: plan || "pro" })}
+        genBlob={(value, ext) => getQRBlob({ data: value, fg, bg, ecc: effectiveEcc, style: renderStyle, size: 1000 }, ext)}
+      />
+
       {/* -- Modale suppression -------------------------------------------------- */}
       {confirmId !== null && (
         <Modal open onClose={() => setConfirmId(null)} title="Supprimer ce QR Code ?"
@@ -3902,6 +3913,16 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
           return (
           <div className="qr-scroll" style={{ flex:1, overflowY:"auto", padding:"14px" }}>
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+
+              {/* -- Génération en lot (B2B) ---------------------------------- */}
+              <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, padding:12 }}>
+                <p style={{ color:"#F5F0E8", fontSize:13, fontWeight:700, margin:"0 0 3px" }}>Générer en lot {!canPro && <span style={{ color:MUTED, fontSize:10, fontWeight:600 }}>🔒 Pro</span>}</p>
+                <p style={{ color:MUTED, fontSize:10, margin:"0 0 10px", lineHeight:1.4 }}>Une liste d'URL → un QR par ligne dans ce style, téléchargés en ZIP (tables, billets, produits…).</p>
+                <button type="button" onClick={() => canPro ? setBatchOpen(true) : setUpsell({ feature:"la génération de QR en lot", plan:"pro" })}
+                  style={{ width:"100%", padding:"10px", borderRadius:10, border:"1px solid color-mix(in srgb, var(--accent) 40%, transparent)", background:"color-mix(in srgb, var(--accent) 14%, transparent)", color:"var(--accent)", fontSize:13, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+                  <QrCode size={14}/> Générer un lot de QR
+                </button>
+              </div>
 
               {/* -- Format (cartes) ------------------------------------------ */}
               <div>

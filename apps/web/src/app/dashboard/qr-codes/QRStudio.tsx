@@ -144,6 +144,7 @@ const PRESET_CATS = [
   { id:"creator",    label:"Createur",   emoji:"🎬" },
   { id:"tech",       label:"Tech",       emoji:"⚡" },
   { id:"event",      label:"Event",      emoji:"🎉" },
+  { id:"retail",     label:"Retail",     emoji:"🛍️" },
 ]
 
 const PRESETS: Preset[] = [
@@ -216,6 +217,16 @@ const PRESETS: Preset[] = [
   { id:"concert-live",      label:"Concert Live",    cat:"event", fg:"#EF4444", bg:"#0A0A0A", dotStyle:"neon",    cornerStyle:"circle",  gradient:"linear", fg2:"#F59E0B", plan:"pro" },
   { id:"birthday-gold",     label:"Birthday Gold",   cat:"event", fg:"#E0B84C", bg:"#1A140A", dotStyle:"rounded", cornerStyle:"circle",  plan:"free" },
   { id:"networking-elite",  label:"Networking Elite",cat:"event", fg:"#334155", bg:"#F1F5F9", dotStyle:"minimal", cornerStyle:"rounded", plan:"pro" },
+
+  // == RETAIL / COMMERCE ======================================================
+  { id:"boutique-chic",     label:"Boutique Chic",   cat:"retail", fg:"#2B2B2B", bg:"#F6F1EA", dotStyle:"rounded", cornerStyle:"rounded", plan:"free" },
+  { id:"promo-rouge",       label:"Promo Rouge",     cat:"retail", fg:"#DC2626", bg:"#FFF7F7", dotStyle:"square",  cornerStyle:"square",  plan:"free" },
+  { id:"soldes-flash",      label:"Soldes Flash",    cat:"retail", fg:"#EA580C", bg:"#FFFBEB", dotStyle:"rounded", cornerStyle:"circle",  gradient:"diagonal", fg2:"#F59E0B", plan:"pro" },
+  { id:"black-friday",      label:"Black Friday",    cat:"retail", fg:"#E0B84C", bg:"#0A0A0A", dotStyle:"square",  cornerStyle:"square",  ecc:"H", density:"high", plan:"pro" },
+  { id:"mode-premium",      label:"Mode Premium",    cat:"retail", fg:"#111827", bg:"#FAF5F7", eyeColor:"#DB2777", dotStyle:"minimal", cornerStyle:"circle",  plan:"pro" },
+  { id:"epicerie-verte",    label:"Épicerie Verte",  cat:"retail", fg:"#15803D", bg:"#F0FDF4", dotStyle:"dot",     cornerStyle:"circle",  plan:"free" },
+  { id:"pharmacie",         label:"Pharmacie",       cat:"retail", fg:"#059669", bg:"#FFFFFF", dotStyle:"rounded", cornerStyle:"rounded", plan:"free" },
+  { id:"vitrine-or",        label:"Vitrine Or",      cat:"retail", fg:"#C9A84C", bg:"#0D0B06", dotStyle:"luxury",  cornerStyle:"luxury",  eyeColor:"#E8C766", ecc:"H", density:"high", margin:12, plan:"business" },
 ]
 
 const CORNER_STYLES = [

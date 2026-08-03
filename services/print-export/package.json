@@ -1,0 +1,17 @@
+{
+  "name": "qrowg-print-export",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Microservice CMYK/PDF-X vectoriel pour QRowg (SVG -> Chromium PDF -> Ghostscript CMYK).",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "execa": "^9.5.2",
+    "express": "^4.21.2",
+    "puppeteer": "^23.11.1"
+  }
+}

@@ -10,6 +10,8 @@ import { useMemo, useState } from "react"
 import { Modal } from "@/components/ui/Modal"
 import { Button } from "@/components/ui/Button"
 import { parseBatchInput, batchFilenames } from "./batchQr"
+import { impositionLayout } from "./impositionLayout"
+import { blobToDataUrl, downloadBlob } from "./qrRender"
 
 interface Props {
   open: boolean
@@ -26,35 +28,62 @@ const MUTED = "#8A8478"
 export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 500 }: Props) {
   const [text, setText] = useState("")
   const [ext, setExt] = useState<"png" | "svg">("png")
+  const [mode, setMode] = useState<"zip" | "sheet">("zip") // ZIP séparés vs planche PDF
+  const [cellMm, setCellMm] = useState(40)                  // taille d'un QR sur la planche (mm)
+  const [cutMarks, setCutMarks] = useState(true)            // traits de coupe sur la planche
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(0)
 
   const parsed = useMemo(() => parseBatchInput(text, max), [text, max])
   const count = parsed.rows.length
+  // Aperçu d'imposition (perPage/pages) pour le mode planche.
+  const sheet = useMemo(() => impositionLayout({ count: count || 1, pageW: 210, pageH: 297, cell: cellMm, margin: 10, gutter: 5 }), [count, cellMm])
 
   if (!open) return null
+
+  // ZIP de fichiers séparés (un par ligne).
+  const runZip = async () => {
+    const JSZip = (await import("jszip")).default
+    const zip = new JSZip()
+    const names = batchFilenames(parsed.rows, ext)
+    for (let i = 0; i < parsed.rows.length; i++) {
+      const blob = await genBlob(parsed.rows[i].value, ext)
+      if (blob) zip.file(names[i], blob)
+      setDone(i + 1)
+    }
+    const out = await zip.generateAsync({ type: "blob" })
+    downloadBlob(out, `qrowg-lot-${count}.zip`)
+  }
+
+  // Planche PDF A4 : N QR par page, grille centrée, traits de coupe optionnels.
+  const runSheet = async () => {
+    const { jsPDF } = await import("jspdf")
+    const lay = impositionLayout({ count, pageW: 210, pageH: 297, cell: cellMm, margin: 10, gutter: 5 })
+    const pdf = new jsPDF({ unit: "mm", format: "a4" })
+    let curPage = 0
+    for (let n = 0; n < lay.cells.length; n++) {
+      const c = lay.cells[n]
+      if (c.page > curPage) { pdf.addPage(); curPage = c.page }
+      const blob = await genBlob(parsed.rows[n].value, "png")
+      if (blob) pdf.addImage(await blobToDataUrl(blob), "PNG", c.x, c.y, lay.cellSize, lay.cellSize)
+      if (cutMarks) {
+        pdf.setDrawColor(180); pdf.setLineWidth(0.1)
+        pdf.rect(c.x, c.y, lay.cellSize, lay.cellSize) // contour de coupe leger
+      }
+      setDone(n + 1)
+    }
+    pdf.save(`qrowg-planche-${count}.pdf`)
+  }
 
   const run = async () => {
     if (!isPro) { onUpsell?.("la génération de QR en lot", "pro"); return }
     if (count === 0 || busy) return
     setBusy(true); setDone(0)
     try {
-      const JSZip = (await import("jszip")).default
-      const zip = new JSZip()
-      const names = batchFilenames(parsed.rows, ext)
-      for (let i = 0; i < parsed.rows.length; i++) {
-        const blob = await genBlob(parsed.rows[i].value, ext)
-        if (blob) zip.file(names[i], blob)
-        setDone(i + 1)
-      }
-      const out = await zip.generateAsync({ type: "blob" })
-      const url = URL.createObjectURL(out)
-      const a = document.createElement("a")
-      a.href = url; a.download = `qrowg-lot-${count}.zip`; a.click()
-      setTimeout(() => URL.revokeObjectURL(url), 1500)
+      if (mode === "sheet") await runSheet(); else await runZip()
       onClose()
     } catch {
-      // silencieux : l'appelant peut afficher un toast si besoin ; on relâche l'état.
+      // silencieux : on relâche l'état ; l'utilisateur peut réessayer.
     } finally { setBusy(false) }
   }
 
@@ -70,7 +99,7 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
       footer={<>
         <Button variant="ghost" onClick={onClose} disabled={busy}>Annuler</Button>
         <Button variant="primary" onClick={run} loading={busy} disabled={count === 0}>
-          {busy ? `Génération ${done}/${count}…` : `Générer le ZIP (${count})`}
+          {busy ? `Génération ${done}/${count}…` : mode === "sheet" ? `Générer la planche PDF (${count})` : `Générer le ZIP (${count})`}
         </Button>
       </>}>
       <p style={{ margin: "0 0 10px", lineHeight: 1.6 }}>
@@ -86,10 +115,33 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
         style={{ width: "100%", boxSizing: "border-box", background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, color: "var(--ink)", fontSize: 14, padding: 12, resize: "vertical", outline: "none", fontFamily: "monospace" }}
       />
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
-        <span style={{ color: MUTED, fontSize: 12.5 }}>Format</span>
-        <button type="button" onClick={() => setExt("png")} style={chip(ext === "png")}>PNG</button>
-        <button type="button" onClick={() => setExt("svg")} style={chip(ext === "svg")}>SVG (vectoriel)</button>
+        <span style={{ color: MUTED, fontSize: 12.5, minWidth: 46 }}>Sortie</span>
+        <button type="button" onClick={() => setMode("zip")} style={chip(mode === "zip")}>Fichiers (ZIP)</button>
+        <button type="button" onClick={() => setMode("sheet")} style={chip(mode === "sheet")}>Planche PDF</button>
       </div>
+
+      {mode === "zip" ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+          <span style={{ color: MUTED, fontSize: 12.5, minWidth: 46 }}>Format</span>
+          <button type="button" onClick={() => setExt("png")} style={chip(ext === "png")}>PNG</button>
+          <button type="button" onClick={() => setExt("svg")} style={chip(ext === "svg")}>SVG (vectoriel)</button>
+        </div>
+      ) : (
+        <div style={{ marginTop: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ color: MUTED, fontSize: 12.5, minWidth: 46 }}>Taille</span>
+            {[30, 40, 50].map(s => (
+              <button key={s} type="button" onClick={() => setCellMm(s)} style={chip(cellMm === s)}>{s} mm</button>
+            ))}
+          </div>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, cursor: "pointer", color: "var(--ink)", fontSize: 13 }}>
+            <input type="checkbox" checked={cutMarks} onChange={e => setCutMarks(e.target.checked)} style={{ accentColor: "var(--accent)", width: 16, height: 16 }} />
+            Traits de coupe (contour de chaque QR)
+          </label>
+          <p style={{ color: MUTED, fontSize: 11, margin: "8px 0 0" }}>Planche A4 · {sheet.perPage} QR par page{count > 0 ? ` · ${sheet.pages} page${sheet.pages > 1 ? "s" : ""}` : ""}.</p>
+        </div>
+      )}
+
       <p style={{ color: MUTED, fontSize: 12, margin: "10px 0 0" }}>
         {count > 0 ? `${count} QR seront générés` : "Colle ta liste ci-dessus"}
         {parsed.truncated && ` · limité à ${max} (le reste est ignoré)`}

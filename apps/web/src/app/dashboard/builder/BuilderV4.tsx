@@ -30,6 +30,8 @@
   import { createClient } from "@/lib/supabase/client"
   import { createSaveController, type SaveController } from "./saveController"
   import { persistSnapshot, type PageSnapshot } from "./savePage"
+  import { createPublishController } from "./publish"
+  import { publishPage } from "./publishActions"
 
   // Helper module-scope (evite la temporal-dead-zone du UUID_RE interne au composant).
   const IS_UUID = (s?: string | null): boolean => !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
@@ -193,6 +195,7 @@
     const [showPublishPopup, setShowPublishPopup] = useState(false)
     const [publishing, setPublishing] = useState(false)
     const [publishSuccess, setPublishSuccess] = useState(false)
+    const [publishWasUpdate, setPublishWasUpdate] = useState(false) // succès = mise à jour (déjà publiée) vs 1re publication
     const [publishError, setPublishError] = useState("")
     const [qrShortCode, setQrShortCode] = useState("")
     // Cible du QR (lien de scan) + telechargement PNG genere en local (sans API externe).
@@ -605,6 +608,35 @@
       })
     }
 
+    // Refs fraîches pour les closures stables du contrôleur de publication (créé une fois).
+    const liveIdRef = useRef(liveId); useEffect(() => { liveIdRef.current = liveId }, [liveId])
+    const mountedRef = useRef(true); useEffect(() => () => { mountedRef.current = false }, [])
+
+    // ── Contrôleur de publication ───────────────────────────────────────────────
+    // Contrat : intention → flush (persiste le DERNIER snapshot via le coordinateur) →
+    // mutation serveur (statut + revalidation ISR) → succès. Garde single-flight impérative
+    // (anti double-clic). Aucun « Publié » n'est affiché tant que le serveur n'a pas confirmé.
+    const publishCtrlRef = useRef<ReturnType<typeof createPublishController> | null>(null)
+    if (!publishCtrlRef.current) {
+      publishCtrlRef.current = createPublishController({
+        flush: () => saveCtrlRef.current?.flush() ?? Promise.resolve(true),
+        publish: () => publishPage(liveIdRef.current!),
+        onChange: (s) => {
+          if (!mountedRef.current) return // aucun setState après démontage
+          setPublishing(s.phase === "publishing")
+          if (s.phase === "publishing") setPublishError("")
+          if (s.phase === "error") setPublishError(s.message)
+          if (s.phase === "published") {
+            setPublishError("")
+            setPageStatus("published")
+            setPublishWasUpdate(s.alreadyPublished)
+            setPublishSuccess(true)
+            setTimeout(() => { if (mountedRef.current) setPublishSuccess(false) }, 3500)
+          }
+        },
+      })
+    }
+
     // Snapshot IMMUABLE de l'état courant (cloné avant tout appel réseau). Renvoie null
     // tant que la page n'est pas prête (garde anti-écrasement des blocs de démo).
     const buildSnapshot = useCallback((): PageSnapshot | null => {
@@ -642,28 +674,11 @@
       if (snap) saveCtrlRef.current?.request(snap)
     }
 
-    async function handlePublish() {
+    // Publication / mise à jour : délègue au contrôleur (flush → mutation serveur →
+    // revalidation). La garde single-flight vit dans le contrôleur (double-clic sûr).
+    function handlePublish() {
       if (!IS_UUID(liveId)) return
-      setPublishing(true)
-      setPublishError("")
-      try {
-        // Attend que la DERNIÈRE version soit persistée AVANT de publier : évite de publier
-        // un état périmé et une écriture concurrente sur `pages`. (B03 approfondira le flux.)
-        const flushed = await (saveCtrlRef.current?.flush() ?? Promise.resolve(true))
-        if (!flushed) { setPublishError("Enregistrement des dernières modifications impossible. Réessayez."); return }
-        const { error } = await createClient()
-          .from("pages")
-          .update({ status: "published", published_at: new Date().toISOString() })
-          .eq("id", liveId)
-        if (error) throw error
-        setPageStatus("published")
-        setPublishSuccess(true)
-        setTimeout(() => setPublishSuccess(false), 3500)
-      } catch (err: any) {
-        setPublishError(err?.message || "Erreur lors de la publication.")
-      } finally {
-        setPublishing(false)
-      }
+      void publishCtrlRef.current?.publishLatest()
     }
 
     // ID de bloc = UUID valide (colonne uuid en base) -> IDs stables entre sauvegardes,
@@ -1198,24 +1213,26 @@
                     </div>
                   </div>
 
-                  {/* Bouton principal */}
-                  <button onClick={handlePublish} disabled={publishing || pageStatus==="published"}
-                    style={{ width: "100%", background: pageStatus==="published" ? "rgba(57,255,143,0.1)" : `linear-gradient(90deg,${G},#b8953f)`, border: pageStatus==="published" ? "1px solid rgba(57,255,143,0.3)" : "none", borderRadius: 12, padding: "14px", color: pageStatus==="published" ? "var(--success)" : "#080808", fontSize: 14, fontWeight: 700, cursor: pageStatus==="published" ? "default" : "pointer", marginBottom: pageSlug ? 10 : 0, boxShadow: pageStatus==="published" ? "none" : "0 4px 20px rgba(201,168,76,0.3)" }}>
+                  {/* Bouton principal — publie (brouillon) ou met à jour la page publique
+                      (déjà publiée : réenregistre + revalide le cache ISR pour rendre les
+                      derniers changements visibles immédiatement). */}
+                  <button onClick={handlePublish} disabled={publishing || !IS_UUID(liveId)} aria-busy={publishing}
+                    style={{ width: "100%", background: `linear-gradient(90deg,${G},#b8953f)`, border: "none", borderRadius: 12, padding: "14px", color: "#080808", fontSize: 14, fontWeight: 700, cursor: publishing ? "default" : "pointer", opacity: publishing ? 0.7 : 1, marginBottom: pageSlug ? 10 : 0, boxShadow: "0 4px 20px rgba(201,168,76,0.3)" }}>
                     {publishing ? (
                       <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
                         <span style={{display:"inline-block",width:14,height:14,border:"2px solid #08080880",borderTopColor:"#080808",borderRadius:"50%",animation:"mo-spin 0.7s linear infinite"}} />
-                        Publication…
+                        {pageStatus==="published" ? "Mise à jour…" : "Publication…"}
                       </span>
                     ) : publishSuccess ? (
                       <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
-                        <span style={{fontSize:16}}>✓</span> Page publiée !
+                        <span style={{fontSize:16}}>✓</span> {publishWasUpdate ? "Page à jour !" : "Page publiée !"}
                       </span>
-                    ) : pageStatus==="published" ? "✓ Déjà publiée" : "🚀 Publier maintenant"}
+                    ) : pageStatus==="published" ? "🔄 Mettre à jour la page" : "🚀 Publier maintenant"}
                   </button>
 
                   {/* Erreur publication */}
                   {publishError && (
-                    <div style={{marginBottom:10,padding:"9px 12px",background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:9,color:"#F87171",fontSize:12,display:"flex",alignItems:"center",gap:6}}>
+                    <div role="alert" style={{marginBottom:10,padding:"9px 12px",background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:9,color:"#F87171",fontSize:12,display:"flex",alignItems:"center",gap:6}}>
                       <span>⚠</span>
                       <span>{publishError}</span>
                       <button onClick={()=>setPublishError("")} style={{marginLeft:"auto",background:"none",border:"none",cursor:"pointer",color:"#F87171",fontSize:14,lineHeight:1}}>×</button>

@@ -3676,7 +3676,11 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       const w = targetWidth(), h = Math.round(w / FORMATS[format].ratio)
       const url = withBaseZoom(fc, base => fc.toDataURL({ format: "png", multiplier: w / base.w }))
       const { jsPDF } = await import("jspdf")
-      const bleed = expMarks ? Math.round(w * 0.03) : 0
+      // Fond perdu = 3 mm NORMALISÉS (standard imprimeur), converti en px selon la
+      // largeur physique du format (au lieu d'un 3 % qui donnait 6,3 mm en A4 et
+      // 2,5 mm en carte de visite). 0 si format écran (pas de mm).
+      const widthMm = FORMAT_MM[format] || 0
+      const bleed = (expMarks && widthMm > 0) ? Math.round(3 * (w / widthMm)) : 0
       const pageW = w + bleed * 2, pageH = h + bleed * 2
       const pdf = new jsPDF({ orientation: pageW > pageH ? "l" : "p", unit: "px", format: [pageW, pageH] })
       pdf.addImage(url, "PNG", bleed, bleed, w, h)

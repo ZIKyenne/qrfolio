@@ -82,6 +82,8 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   "divider", "spacer", "bio", "skills", "languages", "advantages",
   // Vague 2 — CTA & cartes simples (B09.5)
   "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review",
+  // Vague 3 — répétiteurs simples (B09.6)
+  "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

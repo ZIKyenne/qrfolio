@@ -27,6 +27,13 @@ const PUBLIC_REACHABLE = [
   "./blocks/google_review/PublicGoogleReview.tsx",
   "./primitives/BlockCtaLink.tsx",
   "./views/IconLabelCta.tsx",
+  "./blocks/process_steps/PublicProcessSteps.tsx",
+  "./blocks/on_site_services/PublicOnSiteServices.tsx",
+  "./blocks/engagements/PublicEngagements.tsx",
+  "./blocks/trust_badge/PublicTrustBadge.tsx",
+  "./blocks/stats_block/PublicStatsBlock.tsx",
+  "./blocks/event_program/PublicEventProgram.tsx",
+  "./models/repeaterExtract.ts",
   "./models/heading.ts",
   "./models/values.ts",
   "./models/pricing.ts",
@@ -60,7 +67,7 @@ describe("frontière de bundle — public n'importe rien d'éditeur", () => {
 })
 
 describe("modèles purs — sans React ni Supabase", () => {
-  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts"]) {
+  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts", "./models/processSteps.ts", "./models/onSiteServices.ts", "./models/engagements.ts", "./models/trustBadge.ts", "./models/statsBlock.ts", "./models/eventProgram.ts", "./models/repeaterExtract.ts"]) {
     it(`${m} : aucun import react/supabase`, () => {
       const imports = read(m).split("\n").filter(l => /^\s*import\b/.test(l)).join("\n")
       expect(/from ["']react["']/.test(imports)).toBe(false)

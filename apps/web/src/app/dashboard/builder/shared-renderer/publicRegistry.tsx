@@ -19,6 +19,12 @@ import { PublicDownloadFile } from "./blocks/download_file/PublicDownloadFile"
 import { PublicOrderOnline } from "./blocks/order_online/PublicOrderOnline"
 import { PublicDonation } from "./blocks/donation/PublicDonation"
 import { PublicGoogleReview } from "./blocks/google_review/PublicGoogleReview"
+import { PublicProcessSteps } from "./blocks/process_steps/PublicProcessSteps"
+import { PublicOnSiteServices } from "./blocks/on_site_services/PublicOnSiteServices"
+import { PublicEngagements } from "./blocks/engagements/PublicEngagements"
+import { PublicTrustBadge } from "./blocks/trust_badge/PublicTrustBadge"
+import { PublicStatsBlock } from "./blocks/stats_block/PublicStatsBlock"
+import { PublicEventProgram } from "./blocks/event_program/PublicEventProgram"
 
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
@@ -36,6 +42,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   order_online: PublicOrderOnline,
   donation: PublicDonation,
   google_review: PublicGoogleReview,
+  process_steps: PublicProcessSteps,
+  on_site_services: PublicOnSiteServices,
+  engagements: PublicEngagements,
+  trust_badge: PublicTrustBadge,
+  stats_block: PublicStatsBlock,
+  event_program: PublicEventProgram,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

@@ -68,7 +68,7 @@
 | tabs_block | layout | répéteur | STANDARD | 2 | non interactif en édition | 3 | legacy |
 | accordion_block | layout | répéteur | STANDARD | 2 | non interactif en édition | 3 | legacy |
 | info_box | layout | texte | FAIBLE | 3 | - | 1 | legacy |
-| event_program | event | répéteur | STANDARD | 2 | - | 3 | legacy |
+| event_program | event | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
 | event_ticketing | event | event-carte | STANDARD | 2 | - | 5 | legacy |
 | event_guests | event | répéteur | STANDARD | 2 | - | 3 | legacy |
 | lineup | event | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -95,15 +95,15 @@
 | service_area | business | carte | STANDARD | 2 | - | 4 | legacy |
 | legal_info | business | texte | FAIBLE | 3 | - | 1 | legacy |
 | business_certifications | business | répéteur | STANDARD | 2 | - | 3 | legacy |
-| on_site_services | business | répéteur | STANDARD | 2 | - | 3 | legacy |
-| stats_block | info | répéteur | STANDARD | 2 | - | 3 | legacy |
+| on_site_services | business | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
+| stats_block | info | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
 | scan_counter | info | carte | STANDARD | 2 | - | 4 | legacy |
 | timeline | info | répéteur | STANDARD | 2 | - | 3 | legacy |
-| process_steps | info | répéteur | STANDARD | 2 | - | 3 | legacy |
+| process_steps | info | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
 | values | info | répéteur | STANDARD | 2 | - | 3 | shared (activé) |
 | team | info | répéteur | STANDARD | 2 | - | 3 | legacy |
-| engagements | info | répéteur | STANDARD | 2 | - | 3 | legacy |
-| trust_badge | info | répéteur | STANDARD | 2 | - | 3 | legacy |
+| engagements | info | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
+| trust_badge | info | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
 | quote_block | info | texte | FAIBLE | 3 | - | 1 | legacy |
 | announcement | info | texte | FAIBLE | 3 | - | 1 | legacy |
 | info_table | info | répéteur | STANDARD | 2 | - | 3 | legacy |

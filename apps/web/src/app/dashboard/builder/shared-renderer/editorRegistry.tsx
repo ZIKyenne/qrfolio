@@ -19,6 +19,12 @@ import { EditorDownloadFile } from "./blocks/download_file/EditorDownloadFile"
 import { EditorOrderOnline } from "./blocks/order_online/EditorOrderOnline"
 import { EditorDonation } from "./blocks/donation/EditorDonation"
 import { EditorGoogleReview } from "./blocks/google_review/EditorGoogleReview"
+import { EditorProcessSteps } from "./blocks/process_steps/EditorProcessSteps"
+import { EditorOnSiteServices } from "./blocks/on_site_services/EditorOnSiteServices"
+import { EditorEngagements } from "./blocks/engagements/EditorEngagements"
+import { EditorTrustBadge } from "./blocks/trust_badge/EditorTrustBadge"
+import { EditorStatsBlock } from "./blocks/stats_block/EditorStatsBlock"
+import { EditorEventProgram } from "./blocks/event_program/EditorEventProgram"
 
 const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   heading: EditorHeading,
@@ -36,6 +42,12 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   order_online: EditorOrderOnline,
   donation: EditorDonation,
   google_review: EditorGoogleReview,
+  process_steps: EditorProcessSteps,
+  on_site_services: EditorOnSiteServices,
+  engagements: EditorEngagements,
+  trust_badge: EditorTrustBadge,
+  stats_block: EditorStatsBlock,
+  event_program: EditorEventProgram,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

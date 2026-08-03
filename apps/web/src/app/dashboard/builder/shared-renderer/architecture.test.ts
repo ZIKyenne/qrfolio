@@ -5,12 +5,12 @@ import { BLOCK_DEFS } from "../types"
 // Cohérence des contrats PRÉPARATOIRES (mission B09.1). Garantit qu'aucun bloc n'est
 // activé et que les invariants d'architecture tiennent avant B09.2.
 
-describe("flag de migration — 15 blocs activés (pilotes + vagues 1 & 2)", () => {
-  const ACTIVE = ["heading", "values", "pricing", "divider", "spacer", "bio", "skills", "languages", "advantages", "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review"]
-  it("exactement les 15 blocs sont activés", () => {
+describe("flag de migration — 21 blocs activés (pilotes + vagues 1 & 2)", () => {
+  const ACTIVE = ["heading", "values", "pricing", "divider", "spacer", "bio", "skills", "languages", "advantages", "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review", "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program"]
+  it("exactement les 21 blocs sont activés", () => {
     expect([...SHARED_RENDERER_BLOCKS].sort()).toEqual([...ACTIVE].sort())
   })
-  it("resolveRendererStatus : shared pour les 15 actifs, legacy pour les autres", () => {
+  it("resolveRendererStatus : shared pour les 21 actifs, legacy pour les autres", () => {
     for (const t of Object.keys(BLOCK_DEFS)) expect(resolveRendererStatus(t)).toBe(ACTIVE.includes(t) ? "shared" : "legacy")
   })
   it("rollback : un set vide ramène tout en legacy (mécanisme de bascule)", () => {

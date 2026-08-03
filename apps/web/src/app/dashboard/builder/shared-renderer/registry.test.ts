@@ -4,13 +4,13 @@ import { resolvePublicBlock } from "./publicRegistry"
 import { SHARED_RENDERER_BLOCKS, PLANNED_PILOT_BLOCKS, migrationStatusOf } from "./architecture"
 import { BLOCK_DEFS } from "../types"
 
-const ACTIVE = new Set(["heading", "values", "pricing", "divider", "spacer", "bio", "skills", "languages", "advantages", "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review", "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program", "testimonials", "business_stats", "brands", "lineup", "reassurance", "timeline"])
+const ACTIVE = new Set(["heading", "values", "pricing", "divider", "spacer", "bio", "skills", "languages", "advantages", "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review", "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program", "testimonials", "business_stats", "brands", "lineup", "reassurance", "timeline", "menu_section", "services_list", "promo_banner", "gift_card", "event_info", "event_ticketing"])
 
-describe("flag & statut de migration (27 blocs activés)", () => {
-  it("exactement les 27 blocs sont dans le flag actif", () => {
+describe("flag & statut de migration (33 blocs activés)", () => {
+  it("exactement les 33 blocs sont dans le flag actif", () => {
     expect([...SHARED_RENDERER_BLOCKS].sort()).toEqual([...ACTIVE].sort())
   })
-  it("statut : shared pour les 27 actifs, legacy pour tous les autres", () => {
+  it("statut : shared pour les 33 actifs, legacy pour tous les autres", () => {
     for (const t of Object.keys(BLOCK_DEFS)) {
       expect(migrationStatusOf(t)).toBe(ACTIVE.has(t) ? "shared" : "legacy")
     }
@@ -20,8 +20,8 @@ describe("flag & statut de migration (27 blocs activés)", () => {
   })
 })
 
-describe("résolution éditeur/public (flag actif = 27 blocs)", () => {
-  it("les 27 blocs sont résolus vers un adapter (éditeur ET public), les autres non", () => {
+describe("résolution éditeur/public (flag actif = 33 blocs)", () => {
+  it("les 33 blocs sont résolus vers un adapter (éditeur ET public), les autres non", () => {
     for (const t of ACTIVE) {
       expect(typeof resolveEditorBlock(t)).toBe("function")
       expect(typeof resolvePublicBlock(t)).toBe("function")

@@ -19,9 +19,9 @@
 | instagram_feed | social | embed/média | ÉLEVÉ | 1 | preview différent | 6 | legacy |
 | product | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | pricing | commerce | commerce-carte | STANDARD | 2 | - | 4 | shared (activé) |
-| promo_banner | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
-| menu_section | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
-| services_list | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
+| promo_banner | commerce | commerce-carte | STANDARD | 2 | - | 4 | shared (vague 5) |
+| menu_section | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 5) |
+| services_list | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 5) |
 | image | media | carte | STANDARD | 2 | - | 4 | legacy |
 | gallery | media | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
 | video | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
@@ -38,7 +38,7 @@
 | spotify_player | music | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | music_links | music | répéteur | STANDARD | 2 | - | 3 | legacy |
 | countdown | event | event-carte | STANDARD | 2 | sans date | 5 | legacy |
-| event_info | event | event-carte | STANDARD | 2 | - | 5 | legacy |
+| event_info | event | event-carte | STANDARD | 2 | - | 5 | shared (vague 5) |
 | divider | layout | layout-atome | FAIBLE | 3 | - | 1 | shared (vague 1) |
 | spacer | layout | layout-atome | FAIBLE | 3 | - | 1 | shared (vague 1) |
 | product_catalog | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -51,7 +51,7 @@
 | business_stats | commerce | commerce-carte | STANDARD | 2 | - | 4 | shared (vague 4) |
 | partners | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | brands | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 4) |
-| gift_card | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
+| gift_card | commerce | commerce-carte | STANDARD | 2 | - | 4 | shared (vague 5) |
 | services_pricing | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | external_shop | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | advantages | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 1) |
@@ -69,7 +69,7 @@
 | accordion_block | layout | répéteur | STANDARD | 2 | non interactif en édition | 3 | legacy |
 | info_box | layout | texte | FAIBLE | 3 | - | 1 | legacy |
 | event_program | event | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
-| event_ticketing | event | event-carte | STANDARD | 2 | - | 5 | legacy |
+| event_ticketing | event | event-carte | STANDARD | 2 | - | 5 | shared (vague 5) |
 | event_guests | event | répéteur | STANDARD | 2 | - | 3 | legacy |
 | lineup | event | répéteur | STANDARD | 2 | - | 3 | shared (vague 4) |
 | event_access | event | event-carte | STANDARD | 2 | - | 5 | legacy |
@@ -157,8 +157,9 @@
 - **142 blocs** — Risque : 15 FAIBLE · 87 STANDARD · 40 ÉLEVÉ.
 - **Niveau de partage cible** : 1 bloc N0 (QR) · 29 N1 · 79 N2 · 33 N3.
 - **Vagues** : 1(15) · 2(21) · 3(46) · 4(16) · 5(7) · 6(28) · 7(8) · 8(1).
-- **Statut réel actuel** : **27/142 `shared` activés** (3 pilotes + vagues 1-4), 115 `legacy`.
+- **Statut réel actuel** : **33/142 `shared` activés** (3 pilotes + vagues 1-5), 109 `legacy`.
   Vague 4 (B09.7) : testimonials, business_stats, brands, lineup, reassurance, timeline.
+  Vague 5 (B09.8) : menu_section, services_list, promo_banner, gift_card, event_info, event_ticketing.
 
 ## Divergences connues (ne migrent pas avant correction)
 

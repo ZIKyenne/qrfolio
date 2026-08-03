@@ -86,6 +86,8 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program",
   // Vague 4 — répétiteurs & blocs métier intermédiaires (B09.7)
   "testimonials", "business_stats", "brands", "lineup", "reassurance", "timeline",
+  // Vague 5 — blocs commerce & événement avancés (B09.8)
+  "menu_section", "services_list", "promo_banner", "gift_card", "event_info", "event_ticketing",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

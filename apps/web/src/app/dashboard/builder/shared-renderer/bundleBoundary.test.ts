@@ -19,6 +19,14 @@ const PUBLIC_REACHABLE = [
   "./blocks/skills/PublicSkills.tsx",
   "./blocks/languages/PublicLanguages.tsx",
   "./blocks/advantages/PublicAdvantages.tsx",
+  "./blocks/whatsapp_button/PublicWhatsappButton.tsx",
+  "./blocks/email_button/PublicEmailButton.tsx",
+  "./blocks/download_file/PublicDownloadFile.tsx",
+  "./blocks/order_online/PublicOrderOnline.tsx",
+  "./blocks/donation/PublicDonation.tsx",
+  "./blocks/google_review/PublicGoogleReview.tsx",
+  "./primitives/BlockCtaLink.tsx",
+  "./views/IconLabelCta.tsx",
   "./models/heading.ts",
   "./models/values.ts",
   "./models/pricing.ts",
@@ -52,7 +60,7 @@ describe("frontière de bundle — public n'importe rien d'éditeur", () => {
 })
 
 describe("modèles purs — sans React ni Supabase", () => {
-  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts"]) {
+  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts"]) {
     it(`${m} : aucun import react/supabase`, () => {
       const imports = read(m).split("\n").filter(l => /^\s*import\b/.test(l)).join("\n")
       expect(/from ["']react["']/.test(imports)).toBe(false)

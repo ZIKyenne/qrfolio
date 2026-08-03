@@ -13,6 +13,12 @@ import { EditorBio } from "./blocks/bio/EditorBio"
 import { EditorSkills } from "./blocks/skills/EditorSkills"
 import { EditorLanguages } from "./blocks/languages/EditorLanguages"
 import { EditorAdvantages } from "./blocks/advantages/EditorAdvantages"
+import { EditorWhatsappButton } from "./blocks/whatsapp_button/EditorWhatsappButton"
+import { EditorEmailButton } from "./blocks/email_button/EditorEmailButton"
+import { EditorDownloadFile } from "./blocks/download_file/EditorDownloadFile"
+import { EditorOrderOnline } from "./blocks/order_online/EditorOrderOnline"
+import { EditorDonation } from "./blocks/donation/EditorDonation"
+import { EditorGoogleReview } from "./blocks/google_review/EditorGoogleReview"
 
 const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   heading: EditorHeading,
@@ -24,6 +30,12 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   skills: EditorSkills,
   languages: EditorLanguages,
   advantages: EditorAdvantages,
+  whatsapp_button: EditorWhatsappButton,
+  email_button: EditorEmailButton,
+  download_file: EditorDownloadFile,
+  order_online: EditorOrderOnline,
+  donation: EditorDonation,
+  google_review: EditorGoogleReview,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

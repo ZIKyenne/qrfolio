@@ -13,6 +13,12 @@ import { PublicBio } from "./blocks/bio/PublicBio"
 import { PublicSkills } from "./blocks/skills/PublicSkills"
 import { PublicLanguages } from "./blocks/languages/PublicLanguages"
 import { PublicAdvantages } from "./blocks/advantages/PublicAdvantages"
+import { PublicWhatsappButton } from "./blocks/whatsapp_button/PublicWhatsappButton"
+import { PublicEmailButton } from "./blocks/email_button/PublicEmailButton"
+import { PublicDownloadFile } from "./blocks/download_file/PublicDownloadFile"
+import { PublicOrderOnline } from "./blocks/order_online/PublicOrderOnline"
+import { PublicDonation } from "./blocks/donation/PublicDonation"
+import { PublicGoogleReview } from "./blocks/google_review/PublicGoogleReview"
 
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
@@ -24,6 +30,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   skills: PublicSkills,
   languages: PublicLanguages,
   advantages: PublicAdvantages,
+  whatsapp_button: PublicWhatsappButton,
+  email_button: PublicEmailButton,
+  download_file: PublicDownloadFile,
+  order_online: PublicOrderOnline,
+  donation: PublicDonation,
+  google_review: PublicGoogleReview,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

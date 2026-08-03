@@ -127,15 +127,15 @@
 | call_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | directions_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | sticky_bar | actions | cta | STANDARD | 3 | - | 2 | legacy |
-| whatsapp_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
-| email_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
-| download_file | actions | cta | STANDARD | 3 | - | 2 | legacy |
+| whatsapp_button | actions | cta | STANDARD | 3 | - | 2 | shared (vague 2) |
+| email_button | actions | cta | STANDARD | 3 | - | 2 | shared (vague 2) |
+| download_file | actions | cta | STANDARD | 3 | - | 2 | shared (vague 2) |
 | vcard | actions | cta | STANDARD | 3 | - | 2 | legacy |
-| google_review | actions | cta | STANDARD | 3 | - | 2 | legacy |
+| google_review | actions | cta | STANDARD | 3 | - | 2 | shared (vague 2) |
 | table_booking | actions | cta | STANDARD | 3 | - | 2 | legacy |
-| order_online | actions | cta | STANDARD | 3 | - | 2 | legacy |
+| order_online | actions | cta | STANDARD | 3 | - | 2 | shared (vague 2) |
 | free_gift | actions | cta | STANDARD | 3 | - | 2 | legacy |
-| donation | actions | form | ÉLEVÉ | 1 | - | 7 | legacy |
+| donation | actions | form | ÉLEVÉ | 1 | - | 7 | shared (vague 2) |
 | multi_cta | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | app_download | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | promo_code | actions | cta | STANDARD | 3 | - | 2 | legacy |

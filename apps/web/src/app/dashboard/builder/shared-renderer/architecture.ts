@@ -80,6 +80,8 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   "heading", "values", "pricing",
   // Vague 1 — blocs atomiques simples (B09.4)
   "divider", "spacer", "bio", "skills", "languages", "advantages",
+  // Vague 2 — CTA & cartes simples (B09.5)
+  "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

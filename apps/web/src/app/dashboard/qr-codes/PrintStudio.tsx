@@ -31,6 +31,7 @@ import {
 import PrintCenterPanel from "./PrintCenterPanel"
 import MobileDock, { type DockTool } from "@/components/mobile/MobileDock"
 import { printPreflight, hexContrastRatio, quietZonePx, edgeMarginPx, type PreflightMetrics, type PreflightResult, type Rect } from "./printPreflight"
+import { countOutOfGamut } from "./cmyk"
 import { alignDeltas, distributeDeltas, type AlignMode, type Box } from "./alignDistribute"
 import { qrScannability, scanLevelColor } from "./qrScannability"
 import { selKind, mobileContextTools } from "./mobileContextTools"
@@ -3644,9 +3645,16 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         } catch { /* mesure indisponible -> na */ }
       }
     }
+    // Couleurs du design (QR + carte + fond + remplissages) -> alerte hors-gamut CMYK.
+    const designColors = [
+      fgHex, contrastBg,
+      typeof fc.backgroundColor === "string" ? fc.backgroundColor : undefined,
+      ...fc.getObjects().map((o: any) => (typeof o.fill === "string" ? o.fill : undefined)),
+    ]
     const metrics: PreflightMetrics = {
       qrSizeMm, contrastRatio: hexContrastRatio(fgHex, contrastBg),
       quietZoneMm, logoPct: qrInit?.logoSize ?? 0, dpi: expDpi, edgeMarginMm, isScreen,
+      cmykRiskyColors: countOutOfGamut(designColors),
     }
     setPreflight(printPreflight(metrics))
   }

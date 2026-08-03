@@ -90,7 +90,7 @@ describe("printPreflight — score global", () => {
     expect(r.stars).toBe(5)
     expect(r.grade).toBe("Prêt pour l'imprimeur")
     expect(r.scanDistanceM).toBe(0.4)
-    expect(r.checks.every(c => c.status === "ok")).toBe(true)
+    expect(r.checks.filter(c => c.weight > 0).every(c => c.status === "ok")).toBe(true) // contrôles scorés (le CMYK est un avis hors-score)
   })
   it("warn = demi-poids ; le score baisse sans tomber à 0", () => {
     const r = printPreflight({ ...perfect, contrastRatio: 3 }) // 3 -> warn (>=2.5, <4)
@@ -163,5 +163,12 @@ describe("printPreflight — na & format écran", () => {
     expect(r.stars).toBe(3)
     expect(r.grade).toBe("En attente de mesure")
     expect(r.applicable).toBe(0)
+  })
+  it("couleurs CMYK à risque : avertissement informatif, hors score", () => {
+    expect(get({ ...perfect, cmykRiskyColors: 2 }, "cmyk").status).toBe("warn")
+    expect(get({ ...perfect, cmykRiskyColors: 0 }, "cmyk").status).toBe("ok")
+    expect(get({ ...perfect }, "cmyk").status).toBe("na")
+    // Poids 0 -> n'affecte pas le score.
+    expect(printPreflight({ ...perfect, cmykRiskyColors: 2 }).score).toBe(printPreflight({ ...perfect, cmykRiskyColors: 0 }).score)
   })
 })

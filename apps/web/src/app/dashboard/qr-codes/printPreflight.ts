@@ -20,6 +20,7 @@ export type PreflightMetrics = {
   dpi?: number | null            // résolution d'export
   edgeMarginMm?: number | null   // distance du bord le plus proche (élément ↔ bord), en mm
   isScreen?: boolean             // format écran (Story) -> les contrôles d'impression physique passent en info
+  cmykRiskyColors?: number | null // nb de couleurs très vives risquant de virer en CMYK (avertissement, hors score)
 }
 
 export type PreflightResult = {
@@ -220,6 +221,19 @@ export function printPreflight(m: PreflightMetrics): PreflightResult {
           : "Élément au ras du bord — le rentrer dans la marge de sécurité.",
       })
     }
+  }
+
+  // 7) Couleurs imprimables (CMYK) — AVERTISSEMENT informatif (poids 0, hors score).
+  // Le vrai rendu CMYK dépend de l'imprimeur ; on signale juste les couleurs à risque.
+  {
+    const n = m.cmykRiskyColors
+    const s: CheckStatus = typeof n !== "number" ? "na" : n <= 0 ? "ok" : "warn"
+    checks.push({
+      id: "cmyk", label: "Couleurs imprimables (CMYK)", status: s, weight: 0,
+      detail: s === "na" ? "Non évaluées."
+        : n === 0 ? "Couleurs compatibles avec l'impression."
+        : `${n} couleur(s) très vive(s) risquent de virer en CMYK — prévoyez une épreuve imprimeur.`,
+    })
   }
 
   // Score : somme des contributions / somme des poids applicables.

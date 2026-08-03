@@ -84,6 +84,8 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review",
   // Vague 3 — répétiteurs simples (B09.6)
   "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program",
+  // Vague 4 — répétiteurs & blocs métier intermédiaires (B09.7)
+  "testimonials", "business_stats", "brands", "lineup", "reassurance", "timeline",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

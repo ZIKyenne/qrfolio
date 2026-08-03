@@ -28,7 +28,7 @@
 | heading | info | texte | FAIBLE | 3 | - | 1 | shared (activé) |
 | rich_text | info | texte | FAIBLE | 3 | - | 1 | legacy |
 | faq | info | répéteur | STANDARD | 2 | - | 3 | legacy |
-| testimonials | info | répéteur | STANDARD | 2 | - | 3 | legacy |
+| testimonials | info | répéteur | STANDARD | 2 | - | 3 | shared (vague 4) |
 | visit_counter | info | carte | STANDARD | 2 | - | 4 | legacy |
 | documents | info | carte | STANDARD | 2 | - | 4 | legacy |
 | google_maps | business | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
@@ -48,14 +48,14 @@
 | before_after | commerce | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
 | portfolio_work | commerce | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
 | google_reviews_block | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
-| business_stats | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
+| business_stats | commerce | commerce-carte | STANDARD | 2 | - | 4 | shared (vague 4) |
 | partners | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
-| brands | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
+| brands | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 4) |
 | gift_card | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | services_pricing | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | external_shop | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | advantages | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 1) |
-| reassurance | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
+| reassurance | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 4) |
 | sales_counter | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | popular_products | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | qr_code_block | layout | QR | ÉLEVÉ | 0 | public=null (allowlist) | 8 | legacy |
@@ -71,7 +71,7 @@
 | event_program | event | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
 | event_ticketing | event | event-carte | STANDARD | 2 | - | 5 | legacy |
 | event_guests | event | répéteur | STANDARD | 2 | - | 3 | legacy |
-| lineup | event | répéteur | STANDARD | 2 | - | 3 | legacy |
+| lineup | event | répéteur | STANDARD | 2 | - | 3 | shared (vague 4) |
 | event_access | event | event-carte | STANDARD | 2 | - | 5 | legacy |
 | event_register | event | form | ÉLEVÉ | 1 | - | 7 | legacy |
 | rsvp | event | form | ÉLEVÉ | 1 | - | 7 | legacy |
@@ -98,7 +98,7 @@
 | on_site_services | business | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
 | stats_block | info | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
 | scan_counter | info | carte | STANDARD | 2 | - | 4 | legacy |
-| timeline | info | répéteur | STANDARD | 2 | - | 3 | legacy |
+| timeline | info | répéteur | STANDARD | 2 | - | 3 | shared (vague 4) |
 | process_steps | info | répéteur | STANDARD | 2 | - | 3 | shared (vague 3) |
 | values | info | répéteur | STANDARD | 2 | - | 3 | shared (activé) |
 | team | info | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -157,7 +157,8 @@
 - **142 blocs** — Risque : 15 FAIBLE · 87 STANDARD · 40 ÉLEVÉ.
 - **Niveau de partage cible** : 1 bloc N0 (QR) · 29 N1 · 79 N2 · 33 N3.
 - **Vagues** : 1(15) · 2(21) · 3(46) · 4(16) · 5(7) · 6(28) · 7(8) · 8(1).
-- **Statut réel actuel** : 142/142 `legacy` (aucune migration effectuée en B09.1).
+- **Statut réel actuel** : **27/142 `shared` activés** (3 pilotes + vagues 1-4), 115 `legacy`.
+  Vague 4 (B09.7) : testimonials, business_stats, brands, lineup, reassurance, timeline.
 
 ## Divergences connues (ne migrent pas avant correction)
 

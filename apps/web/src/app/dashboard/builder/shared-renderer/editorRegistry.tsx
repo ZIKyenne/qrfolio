@@ -25,6 +25,12 @@ import { EditorEngagements } from "./blocks/engagements/EditorEngagements"
 import { EditorTrustBadge } from "./blocks/trust_badge/EditorTrustBadge"
 import { EditorStatsBlock } from "./blocks/stats_block/EditorStatsBlock"
 import { EditorEventProgram } from "./blocks/event_program/EditorEventProgram"
+import { EditorTestimonials } from "./blocks/testimonials/EditorTestimonials"
+import { EditorBusinessStats } from "./blocks/business_stats/EditorBusinessStats"
+import { EditorBrands } from "./blocks/brands/EditorBrands"
+import { EditorLineup } from "./blocks/lineup/EditorLineup"
+import { EditorReassurance } from "./blocks/reassurance/EditorReassurance"
+import { EditorTimeline } from "./blocks/timeline/EditorTimeline"
 
 const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   heading: EditorHeading,
@@ -48,6 +54,12 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   trust_badge: EditorTrustBadge,
   stats_block: EditorStatsBlock,
   event_program: EditorEventProgram,
+  testimonials: EditorTestimonials,
+  business_stats: EditorBusinessStats,
+  brands: EditorBrands,
+  lineup: EditorLineup,
+  reassurance: EditorReassurance,
+  timeline: EditorTimeline,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

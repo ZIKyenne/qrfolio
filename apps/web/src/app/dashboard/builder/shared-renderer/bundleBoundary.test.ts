@@ -33,6 +33,12 @@ const PUBLIC_REACHABLE = [
   "./blocks/trust_badge/PublicTrustBadge.tsx",
   "./blocks/stats_block/PublicStatsBlock.tsx",
   "./blocks/event_program/PublicEventProgram.tsx",
+  "./blocks/testimonials/PublicTestimonials.tsx",
+  "./blocks/business_stats/PublicBusinessStats.tsx",
+  "./blocks/brands/PublicBrands.tsx",
+  "./blocks/lineup/PublicLineup.tsx",
+  "./blocks/reassurance/PublicReassurance.tsx",
+  "./blocks/timeline/PublicTimeline.tsx",
   "./models/repeaterExtract.ts",
   "./models/heading.ts",
   "./models/values.ts",
@@ -67,7 +73,7 @@ describe("frontière de bundle — public n'importe rien d'éditeur", () => {
 })
 
 describe("modèles purs — sans React ni Supabase", () => {
-  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts", "./models/processSteps.ts", "./models/onSiteServices.ts", "./models/engagements.ts", "./models/trustBadge.ts", "./models/statsBlock.ts", "./models/eventProgram.ts", "./models/repeaterExtract.ts"]) {
+  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts", "./models/processSteps.ts", "./models/onSiteServices.ts", "./models/engagements.ts", "./models/trustBadge.ts", "./models/statsBlock.ts", "./models/eventProgram.ts", "./models/testimonials.ts", "./models/businessStats.ts", "./models/brands.ts", "./models/lineup.ts", "./models/reassurance.ts", "./models/timeline.ts", "./models/repeaterExtract.ts"]) {
     it(`${m} : aucun import react/supabase`, () => {
       const imports = read(m).split("\n").filter(l => /^\s*import\b/.test(l)).join("\n")
       expect(/from ["']react["']/.test(imports)).toBe(false)

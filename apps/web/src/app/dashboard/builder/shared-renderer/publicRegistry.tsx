@@ -25,6 +25,12 @@ import { PublicEngagements } from "./blocks/engagements/PublicEngagements"
 import { PublicTrustBadge } from "./blocks/trust_badge/PublicTrustBadge"
 import { PublicStatsBlock } from "./blocks/stats_block/PublicStatsBlock"
 import { PublicEventProgram } from "./blocks/event_program/PublicEventProgram"
+import { PublicTestimonials } from "./blocks/testimonials/PublicTestimonials"
+import { PublicBusinessStats } from "./blocks/business_stats/PublicBusinessStats"
+import { PublicBrands } from "./blocks/brands/PublicBrands"
+import { PublicLineup } from "./blocks/lineup/PublicLineup"
+import { PublicReassurance } from "./blocks/reassurance/PublicReassurance"
+import { PublicTimeline } from "./blocks/timeline/PublicTimeline"
 
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
@@ -48,6 +54,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   trust_badge: PublicTrustBadge,
   stats_block: PublicStatsBlock,
   event_program: PublicEventProgram,
+  testimonials: PublicTestimonials,
+  business_stats: PublicBusinessStats,
+  brands: PublicBrands,
+  lineup: PublicLineup,
+  reassurance: PublicReassurance,
+  timeline: PublicTimeline,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

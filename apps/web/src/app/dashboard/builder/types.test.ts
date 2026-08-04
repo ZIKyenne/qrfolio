@@ -485,8 +485,8 @@ describe("embedVideoUrl", () => {
   it("URL nocookie deja collee -> reconnue (idempotent)", () => {
     expect(embedVideoUrl("https://www.youtube-nocookie.com/embed/abc123")).toBe("https://www.youtube-nocookie.com/embed/abc123")
   })
-  it("lien inconnu -> tel quel", () => {
-    expect(embedVideoUrl("https://exemple.com/video")).toBe("https://exemple.com/video")
+  it("lien inconnu -> vide (aucun repli brut, sécurité B09.11)", () => {
+    expect(embedVideoUrl("https://exemple.com/video")).toBe("")
   })
   it("vide -> vide", () => {
     expect(embedVideoUrl("")).toBe("")

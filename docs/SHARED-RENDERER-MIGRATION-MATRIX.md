@@ -163,6 +163,14 @@
   Vague 6 (B09.9) : image, portfolio_work, favorite_links, concerts, merch, app_download.
   Vague 7 (B09.10) : video_local, audio_player, pdf_viewer, spotify_embed, spotify_player, before_after.
 
+- **B09.11 (correction de divergences, AUCUNE migration)** : 45 shared / 97 legacy inchangés.
+  Fondations sécurisées → blocs **prêts à migrer** (B09.12) : `video`, `google_maps_embed`
+  (helpers d'embed désormais stricts, aucune iframe arbitraire) ; `album_block` (parité CTA
+  rétablie) ; `latest_release`, `discography`, `playlist_block`, `presave`, `podcast_links`,
+  `product_catalog` (contrat d'image partagé `SharedImageModel` pour aligner `<img>`/`SmartImage`).
+  Toujours **bloqués** : `embed_block` (URL d'iframe arbitraire), `media_before_after` (slider
+  accessible non conçu), tout média privé/URL signée. Voir `SHARED-RENDERER-BLOCKING-DIVERGENCES.md`.
+
 ## Divergences connues (ne migrent pas avant correction)
 
 Voir `blockContracts.ts` (`KNOWN_DIVERGENCES`, `KNOWN_ORPHAN_FIELDS`, `KNOWN_PUBLIC_NULL_BLOCKS`).

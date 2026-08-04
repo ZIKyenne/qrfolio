@@ -559,13 +559,17 @@ export function embedVideoUrl(raw?: string): string {
   const u = (raw || "").trim()
   if (!u) return ""
   // youtube-nocookie.com : lecteur identique mais sans cookie de tracking avant lecture (RGPD).
-  let m = u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube(?:-nocookie)?\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([\w-]+)/)
+  // Frontière d'hôte (début / `//` du schéma / sous-domaine `.`) : refuse les domaines
+  // ressemblants (evil-youtube.com, youtube.com.evil.com, youtu.be.evil.com…).
+  let m = u.match(/(?:^|\/\/|\.)(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube(?:-nocookie)?\.com\/embed\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([\w-]+)/i)
   if (m) return `https://www.youtube-nocookie.com/embed/${m[1]}`
-  m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  m = u.match(/(?:^|\/\/|\.)(?:player\.)?vimeo\.com\/(?:video\/)?(\d+)/i)
   if (m) return `https://player.vimeo.com/video/${m[1]}`
-  m = u.match(/dailymotion\.com\/video\/([\w]+)/) || u.match(/dai\.ly\/([\w]+)/)
+  m = u.match(/(?:^|\/\/|\.)(?:dailymotion\.com\/video|dai\.ly)\/([\w]+)/i)
   if (m) return `https://www.dailymotion.com/embed/video/${m[1]}`
-  return u
+  // Sécurité (B09.11) : aucun repli sur l'URL brute — une URL non reconnue ne doit JAMAIS
+  // atteindre un iframe.src (sinon iframe arbitraire / domaine ressemblant / phishing).
+  return ""
 }
 
 // Extrait l'ID d'une video YouTube (watch, youtu.be, shorts, embed, live) en ignorant les
@@ -836,7 +840,10 @@ export function buildVCard(d: { name?: string; phone?: string; email?: string; c
 // Renvoie "" si rien d'exploitable.
 export function mapEmbedUrl(address?: string, embedUrl?: string, zoom?: string): string {
   const custom = (embedUrl || "").trim()
-  if (/^https?:\/\//i.test(custom)) return custom
+  // Sécurité (B09.11) : un embed personnalisé n'est accepté QUE s'il provient d'un domaine
+  // Google Maps (https, hôte google.<tld>, chemin /maps). Toute autre URL (iframe arbitraire,
+  // faux domaine « google.com.evil.com », schéma dangereux) est ignorée → repli sur l'adresse.
+  if (/^https:\/\/(?:www\.|maps\.)?google\.[a-z.]{2,7}\/maps[/?]/i.test(custom)) return custom
   const enc = encodeURIComponent((address || "").trim())
   if (!enc) return ""
   const z = /^\d{1,2}$/.test(String(zoom || "")) ? String(zoom) : "15"

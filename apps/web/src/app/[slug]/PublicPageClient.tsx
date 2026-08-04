@@ -12,6 +12,7 @@ import { contactFormFields } from "@/lib/leadForms"
 import { pricingCtaModel } from "../dashboard/builder/pricingCta"
 import { normalizePageTheme } from "../dashboard/builder/types"
 import { resolvePublicBlock } from "../dashboard/builder/shared-renderer/publicRegistry"
+import { albumBlockCtaModel } from "../dashboard/builder/shared-renderer/models/albumBlockCta"
 import { themeBackgroundStyle, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, buildVCard, mapEmbedUrl, shareLinks, calendarLinks, spotifyEmbedUrl, youtubeId, socialHref, extHref, docTypeMeta, docActionLabel, announcementMeta, blockDecoration, waLink, telLink, directionsLink, embedVideoUrl, stickyActionHref, ctaButtonStyle, CTA_ANIM_CSS, SOCIAL_NETWORKS_MAP, BANNER_ANIM_CSS } from "../dashboard/builder/types"
 
 type Block = { id: string; type: string; content: Record<string, any>; position: number }
@@ -2668,6 +2669,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     }
     case "album_block": {
       const platforms = [[c.spotify_url, "🎧 Spotify", "#1DB954"], [c.apple_url, "🍎 Apple", "#FC3C44"], [c.deezer_url, "🎶 Deezer", "#A238FF"]].filter(([u]) => u)
+      // Parité CTA (B09.11) : album_block n'a pas de champ cta_url → le libellé cta_label est un
+      // repli NON navigable, affiché comme dans l'éditeur quand aucune plateforme n'est définie.
+      const albumCta = albumBlockCtaModel(c)
       return (c.title || c.cover) ? (
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ background: "rgba(29,185,84,0.06)", border: "1px solid rgba(29,185,84,0.2)", borderRadius: 15, overflow: "hidden" }}>
@@ -2678,6 +2682,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
               <div style={{ display: "flex", gap: 10, marginBottom: c.description ? 11 : 13 }}>{c.year && <span style={{ color: "#1DB954", fontSize: 12, fontWeight: 600 }}>{c.year}</span>}{c.tracks && <span style={{ color: MUTED, fontSize: 12 }}>· {c.tracks}</span>}</div>
               {c.description && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 13px", lineHeight: 1.6 }}>{c.description}</p>}
               {platforms.length > 0 && <div style={{ display: "flex", gap: 8 }}>{platforms.map(([url, label, color]: any[], i: number) => <a key={i} href={extHref(String(url))} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, String(url))} style={{ flex: 1, background: `${color}18`, border: `1px solid ${color}33`, borderRadius: 9, padding: "9px", textAlign: "center", fontSize: 12, fontWeight: 700, color, textDecoration: "none" }}>{label}</a>)}</div>}
+              {albumCta.visible && <div style={{ background: "#1DB954", borderRadius: 9, padding: "11px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#000" }}>{albumCta.label}</div>}
             </div>
           </div>
         </div>

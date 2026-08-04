@@ -1844,7 +1844,7 @@
           )}
 
           {/* CANVAS */}
-          <div style={{ flex: 1, overflowY: "auto", padding: preview && isMobile ? "0 0 96px" : isMobile ? "12px" : "20px", background: "#0A0A0A", display: isMobile && mobileTab !== "canvas" ? "none" : undefined }}
+          <div style={{ flex: 1, overflowY: "auto", padding: preview && isMobile ? "0 0 96px" : isMobile ? "12px" : "20px", background: BUILDER_REDESIGN ? "#070707" : "#0A0A0A", display: isMobile && mobileTab !== "canvas" ? "none" : undefined }}
             onClick={e => { if (e.target === e.currentTarget) { setSelectedId(null); setMultiSelection([]) } }}>
             {/* C04 — Toolbar canvas responsive (flag ON, desktop). Flag OFF = rien (canvas inchangé). */}
             {BUILDER_REDESIGN && !isMobile && !preview && canvasMode === "edit" && (() => {

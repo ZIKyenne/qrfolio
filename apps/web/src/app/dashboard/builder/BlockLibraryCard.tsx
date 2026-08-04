@@ -22,10 +22,12 @@ export function BlockLibraryCard({ item, mobile, onAdd, onToggleFavorite, onOpen
     <div
       data-block-card={item.type}
       data-premium={item.isPremium ? "1" : "0"}
+      onMouseEnter={mobile ? undefined : e => { e.currentTarget.style.background = BUILDER_UI.surface.cardHover; e.currentTarget.style.borderColor = BUILDER_UI.border.accentSoft }}
+      onMouseLeave={mobile ? undefined : e => { e.currentTarget.style.background = BUILDER_UI.surface.card; e.currentTarget.style.borderColor = BUILDER_UI.border.subtle }}
       style={{
         position: "relative", display: "flex", flexDirection: "column",
-        border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, background: "rgba(255,255,255,0.02)",
-        overflow: "hidden",
+        border: `1px solid ${BUILDER_UI.border.subtle}`, borderRadius: BUILDER_UI.radius.md, background: BUILDER_UI.surface.card,
+        overflow: "hidden", transition: BUILDER_UI.transition,
       }}
     >
       {/* Action principale : AJOUTER (occupe la carte, un seul bouton) */}

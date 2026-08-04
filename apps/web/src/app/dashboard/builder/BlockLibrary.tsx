@@ -147,7 +147,7 @@ export function BlockLibrary(props: BlockLibraryProps) {
 
       {/* GRILLE */}
       <div role="list" aria-label="Blocs disponibles"
-        style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: mobile ? "0 12px calc(env(safe-area-inset-bottom) + 16px)" : "0 12px 16px", display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 8, alignContent: "start" }}>
+        style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: mobile ? "0 12px calc(env(safe-area-inset-bottom) + 16px)" : "0 12px 16px", display: "grid", gridTemplateColumns: mobile ? "1fr" : "repeat(auto-fill, minmax(230px, 1fr))", gap: 8, alignContent: "start" }}>
         {visible.map(item => (
           <div role="listitem" key={item.type}>
             <BlockLibraryCard item={item} mobile={mobile} onAdd={onAdd} onToggleFavorite={onToggleFavorite} onOpenDetail={setDetail} />

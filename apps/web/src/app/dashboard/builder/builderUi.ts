@@ -51,8 +51,17 @@ export const BUILDER_UI = {
   } as Record<string, string>,
   // Typographie (px) — hiérarchie lisible, minimum lisible sur mobile.
   font: { heading: 15, title: 13, body: 12.5, label: 11, hint: 10.5, meta: 10, badge: 9.5 },
+  // Ombres douces (chrome uniquement — jamais par bloc, cf. perf §28).
+  shadow: {
+    card: "0 1px 2px rgba(0,0,0,0.28)",
+    soft: "0 8px 30px rgba(0,0,0,0.45)",
+    page: "0 12px 48px rgba(0,0,0,0.55)",
+    sheet: "0 -16px 44px rgba(0,0,0,0.55)",
+  },
   // Motion : durées courtes + easing unique. Respecter prefers-reduced-motion (globals.css).
   motion: { fast: "140ms", base: "200ms", easing: "cubic-bezier(.2,.7,.2,1)" },
+  // Transition prête à l'emploi (couleurs/bordures) — courte, sobre.
+  transition: "background 160ms ease, border-color 160ms ease, color 160ms ease, opacity 160ms ease",
 } as const
 
 export type BuilderUiTone = keyof typeof BUILDER_UI.tone

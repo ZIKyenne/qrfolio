@@ -27,8 +27,12 @@ export function BuilderRedesignHarness() {
   const [gap, setGap] = useState<number | null>(null)
   const [vp, setVp] = useState({ w: 1280, h: 900 })
   const rd = useBuilderRedesign()
+  // Le drapeau (env inliné build vs process.env runtime) peut diverger si .env.local change sur un
+  // serveur dev déjà lancé → mismatch d'hydratation. On n'affiche le diagnostic qu'APRÈS montage.
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight })
     onResize(); window.addEventListener("resize", onResize); return () => window.removeEventListener("resize", onResize)
   }, [])
@@ -80,11 +84,11 @@ export function BuilderRedesignHarness() {
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "#080808", color: "#F5F0E8", fontFamily: "DM Sans, sans-serif" }}>
       {/* Diagnostic (dev seulement) §20 */}
-      <div data-testid="diagnostic" data-flag={rd ? "1" : "0"} data-surface={surface} data-selected={selectedId ?? ""} data-count={blocks.length} data-gap={gap ?? ""}
+      <div data-testid="diagnostic" data-flag={mounted ? (rd ? "1" : "0") : ""} data-surface={surface} data-selected={selectedId ?? ""} data-count={blocks.length} data-gap={gap ?? ""}
         style={{ flexShrink: 0, padding: "6px 10px", borderBottom: "1px solid rgba(201,168,76,0.2)", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", fontSize: 11 }}>
         <button data-testid="to-desktop" onClick={() => setSurface("desktop")} style={ctl(surface === "desktop")}>Desktop</button>
         <button data-testid="to-mobile" onClick={() => setSurface("mobile")} style={ctl(surface === "mobile")}>Mobile</button>
-        <span style={{ marginLeft: "auto", color: "#8A8478" }}>flag=<b data-testid="flag">{rd ? "on" : "off"}</b> · vp={vp.w}×{vp.h} · sel=<b data-testid="sel">{selectedId ?? "—"}</b> · n=<b data-testid="count">{blocks.length}</b></span>
+        <span style={{ marginLeft: "auto", color: "#8A8478" }}>flag=<b data-testid="flag">{mounted ? (rd ? "on" : "off") : "…"}</b>{mounted ? ` · vp=${vp.w}×${vp.h}` : ""} · sel=<b data-testid="sel">{selectedId ?? "—"}</b> · n=<b data-testid="count">{blocks.length}</b></span>
       </div>
 
       <div style={{ flex: 1, minHeight: 0, position: "relative" }}>

@@ -79,7 +79,7 @@ export function ResponsiveCanvas({ children, mobile, initialDevice = "fluid", se
 
   return (
     <div data-testid="responsive-canvas" data-device={device} data-orientation={orientation} data-mode={mode}
-      style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, background: "#0A0A0A" }}>
+      style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, background: BUILDER_UI.surface.app }}>
 
       {/* Chrome d'édition : caché en mode aperçu (§11) */}
       {mode === "edit" && (
@@ -120,10 +120,11 @@ export function ResponsiveCanvas({ children, mobile, initialDevice = "fluid", se
             transform: zoom !== 1 ? `scale(${clampZoom(zoom)})` : undefined,
             transformOrigin: "top center",
             borderRadius: framed ? (device === "mobile" ? 26 : 14) : 0,
-            border: framed ? "1px solid rgba(255,255,255,0.12)" : "none",
-            boxShadow: framed ? "0 10px 40px rgba(0,0,0,0.45)" : "none",
+            border: framed ? `1px solid ${BUILDER_UI.border.strong}` : "none",
+            boxShadow: framed ? BUILDER_UI.shadow.page : "none",
             overflow: framed ? "hidden" : "visible",
-            background: framed ? "#0A0A0A" : "transparent",
+            background: framed ? BUILDER_UI.surface.base : "transparent",
+            transition: "width 180ms ease, transform 120ms ease",
           }}>
           {/* Repère haut (§19) */}
           {framed && <div aria-hidden="true" style={{ height: 4, background: "rgba(255,255,255,0.06)" }} />}

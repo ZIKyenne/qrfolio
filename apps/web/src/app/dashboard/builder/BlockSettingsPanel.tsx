@@ -194,7 +194,9 @@ export function BlockSettingsPanel(props: BlockSettingsPanelProps) {
                 <button type="button" data-action="delete" disabled={!!block.locked}
                   onClick={() => handlers.delete?.()}
                   aria-label="Supprimer le bloc"
-                  style={{ width: "100%", minHeight: mobile ? 46 : 38, borderRadius: 9, border: "1px solid color-mix(in srgb, var(--danger) 34%, transparent)", background: "color-mix(in srgb, var(--danger) 10%, transparent)", color: "var(--danger)", fontSize: 12.5, fontWeight: 700, cursor: block.locked ? "not-allowed" : "pointer", opacity: block.locked ? 0.5 : 1 }}>
+                  onMouseEnter={e => { if (!block.locked) e.currentTarget.style.background = "color-mix(in srgb, var(--danger) 12%, transparent)" }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent" }}
+                  style={{ width: "100%", minHeight: mobile ? 46 : 38, borderRadius: BUILDER_UI.radius.sm, border: "1px solid color-mix(in srgb, var(--danger) 26%, transparent)", background: "transparent", color: "var(--danger)", fontSize: 12.5, fontWeight: 700, cursor: block.locked ? "not-allowed" : "pointer", opacity: block.locked ? 0.5 : 1, transition: BUILDER_UI.transition }}>
                   🗑 Supprimer ce bloc
                 </button>
               </div>

@@ -118,6 +118,13 @@ donc : (1) la **source unique de tokens** ; (2) la **centralisation value-preser
 navigateur réelle et restent **stagés derrière le flag** — à réaliser lors de l'activation staging,
 guidés par les tokens et les snapshots ici posés.
 
+## Suite C09 (finition premium)
+
+Au-delà de la centralisation C07, la passe **C09** applique des améliorations visibles vérifiées en
+navigateur : grille bibliothèque auto-responsive, canvas plus profond + ombre de page, boutons
+d'insertion élégants, zone dangereuse *ghost*, cartes à élévation, micro-transitions (tokens `shadow`
+et `transition` ajoutés à `builderUi.ts`). Détails + captures avant/après : `BUILDER-PREMIUM-FINISHING.md`.
+
 ## Décision staging
 
 **Prêt pour canary/staging** (flag OFF par défaut). L'activation `ON par défaut` reste conditionnée à

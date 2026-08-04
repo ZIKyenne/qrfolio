@@ -1,6 +1,11 @@
-// InsertBetweenBlocks.tsx — Bouton « + » d'insertion entre deux blocs (mission C04, §13).
-// Discret au repos, visible au hover/focus (desktop) ; toujours accessible et ≥ 44 px sur mobile.
-// Ouvre la bibliothèque à l'index d'insertion donné (géré par le parent). A11y : bouton nommé.
+"use client"
+
+// InsertBetweenBlocks.tsx — Bouton « + » d'insertion entre deux blocs (missions C04/C09).
+// Desktop : ligne fine + cercle discret, révélé au hover/focus (sobre au repos). Mobile : cercle plus
+// grand toujours accessible (≥ 44 px). Ouvre la bibliothèque à l'index d'insertion (géré par le parent).
+
+import { useState } from "react"
+import { BUILDER_UI } from "./builderUi"
 
 export interface InsertBetweenBlocksProps {
   /** Index d'insertion (position de gap). */
@@ -10,21 +15,32 @@ export interface InsertBetweenBlocksProps {
 }
 
 export function InsertBetweenBlocks({ index, mobile, onInsert }: InsertBetweenBlocksProps) {
+  const [active, setActive] = useState(false)
+  // Desktop : discret au repos, net au survol/focus. Mobile : toujours visible.
+  const shown = mobile || active
   return (
     <div className="insert-gap" data-insert-gap={index}
-      style={{ position: "relative", height: mobile ? 40 : 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      onMouseEnter={() => setActive(true)} onMouseLeave={() => setActive(false)}
+      style={{ position: "relative", height: mobile ? 40 : 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {/* Ligne de repère (desktop), révélée au hover */}
+      {!mobile && (
+        <span aria-hidden="true" style={{ position: "absolute", left: 8, right: 8, height: 1, background: "color-mix(in srgb, var(--accent) 30%, transparent)", opacity: shown ? 1 : 0, transition: BUILDER_UI.transition }} />
+      )}
       <button
         type="button"
         data-insert={index}
         onClick={() => onInsert(index)}
+        onFocus={() => setActive(true)} onBlur={() => setActive(false)}
         aria-label={`Insérer un bloc à la position ${index + 1}`}
         title="Insérer un bloc ici"
         style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-          width: mobile ? 44 : 26, height: mobile ? 44 : 22, borderRadius: 999,
-          border: "1px solid color-mix(in srgb, var(--accent) 40%, transparent)",
-          background: "color-mix(in srgb, var(--accent) 14%, #0A0A0A)", color: "var(--accent)",
-          fontSize: mobile ? 20 : 15, fontWeight: 700, cursor: "pointer", lineHeight: 1,
+          position: "relative", display: "flex", alignItems: "center", justifyContent: "center",
+          width: mobile ? 44 : 22, height: mobile ? 44 : 22, borderRadius: BUILDER_UI.radius.pill,
+          border: `1px solid ${shown ? BUILDER_UI.border.accent : BUILDER_UI.border.subtle}`,
+          background: shown ? BUILDER_UI.accentBg.chip : BUILDER_UI.surface.chrome,
+          color: shown ? BUILDER_UI.text.accent : BUILDER_UI.text.muted,
+          fontSize: mobile ? 20 : 14, fontWeight: 700, cursor: "pointer", lineHeight: 1,
+          opacity: mobile ? 1 : (shown ? 1 : 0.55), transition: BUILDER_UI.transition,
         }}
       >
         +

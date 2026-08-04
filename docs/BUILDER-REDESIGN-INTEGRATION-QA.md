@@ -69,6 +69,12 @@ canvas + réglages (desktop) et bascule vers le shell mobile, autour d'**une seu
 Les harnesses par vague restent verts (blocks, block-library, block-settings, builder-canvas,
 builder-mobile). Voir chaque `docs/BUILDER-*-REDESIGN.md`.
 
+## Suite C08 (QA staging)
+
+Voir `BUILDER-STAGING-QA-REPORT.md` : runbook de déploiement staging + gabarit de QA authentifiée à
+dérouler par un humain (Supabase joignable). L'agent a exécuté toutes les portes locales (vertes) mais
+**pas** la QA authentifiée (Supabase injoignable en sandbox). Décision : **canary prolongé**.
+
 ## Limite d'honnêteté
 
 L'agent ne peut pas exécuter la QA **authentifiée** (Supabase injoignable depuis le sandbox). La

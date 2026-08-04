@@ -74,6 +74,14 @@ override navigateur). Voir `BUILDER-REDESIGN-INTEGRATION-QA.md`.
 **Canary** : flag OFF par défaut, activable par ENV (staging) ou override navigateur (dev/QA).
 Pas d'activation production par défaut tant que la QA authentifiée réelle n'est pas faite.
 
+## Mise à jour C08 (QA staging & décision)
+
+Le runbook de déploiement staging + la QA authentifiée complète sont dans
+`BUILDER-STAGING-QA-REPORT.md`. Portes locales toutes vertes. La QA **authentifiée** (Supabase réel)
+n'a **pas** pu être exécutée par l'agent (sandbox sans accès Supabase) → **décision inchangée : canary,
+flag OFF par défaut.** Procédure staging = définir `NEXT_PUBLIC_BUILDER_REDESIGN=1` sur le **Preview
+Vercel uniquement**, dérouler le runbook, puis décider. Rollback = retirer la variable (aucune migration).
+
 ## Mise à jour C07 (harmonisation visuelle)
 
 Le style est désormais centralisé (`builderUi.ts`) et des snapshots visuels de référence existent

@@ -163,6 +163,12 @@
   Vague 6 (B09.9) : image, portfolio_work, favorite_links, concerts, merch, app_download.
   Vague 7 (B09.10) : video_local, audio_player, pdf_viewer, spotify_embed, spotify_player, before_after.
 
+- **B09.13 (architecture formulaires, AUCUNE migration)** : 51 shared / 91 legacy inchangés.
+  Infrastructure INACTIVE sous `shared-renderer/forms/` (modèles purs, payload, machine d'états,
+  vue commune, adapter éditeur aperçu, registre préparatoire) pour les 6 formulaires
+  (contact/quote/reservation/booking/register/rsvp), tous **toujours legacy**. Pilotes retenus pour
+  B09.14 : `contact_form`, `quote_form`. Voir `SHARED-RENDERER-FORMS-ARCHITECTURE.md`.
+
 - **Vague 8 (B09.12)** : video, google_maps_embed, album_block, discography, podcast_links,
   product_catalog → **51 shared / 91 legacy**. Embeds allowlistés (SafeEmbedModel) + contrat
   `SharedImageModel` (`<img>` éditeur / `SmartImage` public). Restent legacy : `latest_release`,

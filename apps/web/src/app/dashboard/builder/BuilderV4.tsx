@@ -19,6 +19,8 @@
   // Props stables (block/theme/dayMode, aucun callback) -> aucun risque de rendu périmé.
   const MemoBlockPreview = memo(BlockPreview)
   import { EditPanel, ThemePanel, Segmented, STYLE_COPY_KEYS } from "./builderPanels"
+  import { BuilderStatus } from "./BuilderStatus"
+  import { BUILDER_REDESIGN } from "./builderFlags"
   import { useIsMobile } from "@/lib/useIsMobile"
   import { useToast } from "@/components/Toast"
   import { useConfirm } from "@/components/ui/Confirm"
@@ -1092,6 +1094,11 @@
           <a href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 4, textDecoration: "none", color: G, fontFamily: "Fraunces, serif", fontSize: 16, fontWeight: 700 }}>← QRowg</a>
           <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />
           <input value={pageName} onChange={e => { const v = e.target.value; setPageName(v); undoRedo.push({ blocks: blocksKbRef.current, theme: themeRef.current, name: v }, "pagename") }} style={{ background: "transparent", border: "none", color: "#F5F0E8", fontSize: 13, fontWeight: 600, outline: "none", width: isMobile ? 96 : 160, minWidth: 0 }} />
+          {/* Statut de sauvegarde. Flag ON (C01) : indicateur unifié tokenisé + a11y (role=status/aria-live).
+              Flag OFF : coquille historique inchangée (zéro régression). */}
+          {BUILDER_REDESIGN ? (
+            <BuilderStatus mobile={isMobile} saving={saving} saved={saved} saveError={saveError} saveErrorMsg={saveErrorMsg} hasUnsaved={hasUnsaved} onSave={saveNow} onRetry={() => saveCtrlRef.current?.retry()} />
+          ) : (<>
           {saving && <span style={{ color: MUTED, fontSize: 10 }}>Enregistrement…</span>}
           {saved && !saveError && !saving && <span style={{ color: "var(--success)", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}><Check size={10} /> Enregistré</span>}
           {hasUnsaved && !saving && !saved && !saveError && (
@@ -1101,6 +1108,7 @@
             </button>
           )}
           {saveError && <button onClick={() => saveCtrlRef.current?.retry()} title={saveErrorMsg ? `Erreur : ${saveErrorMsg} — cliquer pour réessayer` : "Réessayer la sauvegarde"} style={{ color: "#EF4444", fontSize: 10, display: "flex", alignItems: "center", gap: 3, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6, padding: "3px 8px", cursor: "pointer", maxWidth: isMobile ? 130 : 340, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flexShrink: 0 }}>⚠ {isMobile ? "Réessayer" : `${saveErrorMsg ? saveErrorMsg : "Échec"} — Réessayer`}</button>}
+          </>)}
           {pageId && !IS_UUID(pageId) && !liveId && !bootstrapError && <span style={{ color: MUTED, fontSize: 10 }}>Création de la page…</span>}
           {bootstrapError && <span style={{ color: "#EF4444", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }} title={bootstrapError}>⚠ {bootstrapError}</span>}
           {!pageId && !isMobile && <span style={{ color: "#8A8478", fontSize: 9 }}>Mode démo</span>}

@@ -24,8 +24,9 @@
   import { BlockSettingsPanel } from "./BlockSettingsPanel"
   import { CanvasToolbar } from "./CanvasToolbar"
   import { MobileBuilderShell } from "./MobileBuilderShell"
+  import { InsertBetweenBlocks } from "./InsertBetweenBlocks"
   import { deviceFrameWidth, deviceLabel, canvasChrome, fitZoom, stepZoom, toggleOrientation, type CanvasDevice, type CanvasOrientation, type CanvasMode } from "./builderCanvas"
-  import { BUILDER_REDESIGN } from "./builderFlags"
+  import { useBuilderRedesign } from "./builderFlags"
   import { useIsMobile } from "@/lib/useIsMobile"
   import { useToast } from "@/components/Toast"
   import { useConfirm } from "@/components/ui/Confirm"
@@ -440,6 +441,8 @@
     const [canvasOrientation, setCanvasOrientation] = useState<CanvasOrientation>("portrait")
     const [canvasZoom, setCanvasZoom] = useState(1)
     const [canvasMode, setCanvasMode] = useState<CanvasMode>("edit")
+    // C06 — activation progressive : valeur ENV au 1er rendu (SSR-safe), override canary après montage.
+    const BUILDER_REDESIGN = useBuilderRedesign()
     const [blockMenu, setBlockMenu] = useState<string | null>(null) // #10 : actions secondaires d'un bloc en bottom sheet
     const [scoreOpen, setScoreOpen] = useState(false) // #16 : score de profil replie en pastille par defaut
     const [blockSearchFocus, setBlockSearchFocus] = useState(false) // #13 : recherche de bloc focus -> on masque la barre du bas pour degager les resultats
@@ -735,13 +738,34 @@
       return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, ch => { const r = Math.floor(Math.random() * 16); const v = ch === "x" ? r : (r & 0x3 | 0x8); return v.toString(16) })
     }
 
-    function addBlock(type: string, content?: BlockContent) {
+    function addBlock(type: string, content?: BlockContent, insertAt?: number | null) {
       const def = BLOCK_DEFS[type]; if (!def) return
       const id = genId()
-      setBlocks(p => [...p, { id, type, content: content||{...def.defaultContent}, visible: true }])
+      const nb = { id, type, content: content||{...def.defaultContent}, visible: true }
+      // C06 — index d'insertion optionnel (bouton « + » entre blocs). Absent = ajout en fin (inchangé).
+      setBlocks(p => {
+        if (insertAt == null) return [...p, nb]
+        const at = Math.max(0, Math.min(p.length, insertAt))
+        const next = p.slice(); next.splice(at, 0, nb); return next
+      })
       setSelectedId(id); setRightTab("edit")
       if (isMobile) setMobileTab("panel")   // mobile : on ouvre direct l'éditeur du bloc ajouté
       pushRecent(type)
+      // Scroll vers le nouveau bloc (page longue).
+      setTimeout(() => { try { document.querySelector(`[data-block-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }) } catch {} }, 60)
+    }
+    // Index d'insertion en attente (déposé par un bouton « + » entre blocs, consommé au prochain ajout).
+    const insertGapRef = useRef<number | null>(null)
+    function onInsertAtGap(index: number) {
+      insertGapRef.current = index
+      if (isMobile) setMobileTab("blocks")   // mobile : ouvrir la bibliothèque
+      else setActiveCategory("identity")     // desktop : la bibliothèque (panneau gauche) est déjà visible
+    }
+    // Ajout depuis la bibliothèque, en respectant l'index « + » en attente (puis on le consomme).
+    function addFromLibrary(type: string) {
+      const at = insertGapRef.current
+      insertGapRef.current = null
+      addBlock(type, undefined, at ?? undefined)
     }
 
     // Applique un MODÈLE DE PAGE complet : thème cohérent + jeu de blocs prêt à personnaliser.
@@ -1369,7 +1393,7 @@
                 la bibliothèque legacy ci-dessous reste strictement inchangée (zéro régression). */}
             {BUILDER_REDESIGN && !blocksCollapsed && (
               <div style={{ position: "absolute", inset: 0, zIndex: 6, display: "flex", flexDirection: "column", background: "#0A0A0A" }}>
-                <BlockLibrary favorites={favorites} recents={recentBlocks} mobile={isMobile} onAdd={(t) => addBlock(t)} onToggleFavorite={toggleFav} />
+                <BlockLibrary favorites={favorites} recents={recentBlocks} mobile={isMobile} onAdd={addFromLibrary} onToggleFavorite={toggleFav} />
               </div>
             )}
             {/* Bouton collapse/expand */}
@@ -1997,6 +2021,13 @@
                       if (handle) handle.style.opacity = "0"
                     }}>
 
+                    {/* C06 — bouton « + » d'insertion entre blocs (flag ON, desktop, mode édition) */}
+                    {BUILDER_REDESIGN && !isMobile && !preview && canvasMode === "edit" && dragIdx === null && (
+                      <div className="insert-between" style={{ position: "absolute", top: -9, left: 0, right: 0, zIndex: 16, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+                        <div style={{ pointerEvents: "auto" }}><InsertBetweenBlocks index={idx} onInsert={onInsertAtGap} /></div>
+                      </div>
+                    )}
+
                     {/* Indicateur d'insertion du glisser-déposer (ligne dorée) */}
                     {dragIdx !== null && dropBefore === idx && <div style={{ position: "absolute", left: 0, right: 0, top: -1, height: 3, background: G, borderRadius: 2, zIndex: 20, boxShadow: `0 0 6px ${G}`, pointerEvents: "none" }} />}
                     {dragIdx !== null && idx === blocks.length - 1 && dropBefore === blocks.length && <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 3, background: G, borderRadius: 2, zIndex: 20, boxShadow: `0 0 6px ${G}`, pointerEvents: "none" }} />}
@@ -2054,6 +2085,13 @@
                   </div>
                 )
               })}
+
+              {/* C06 — insertion en fin de page via « + » (flag ON, desktop) */}
+              {BUILDER_REDESIGN && !isMobile && !preview && canvasMode === "edit" && blocks.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "center", padding: "6px 0" }}>
+                  <InsertBetweenBlocks index={blocks.length} onInsert={onInsertAtGap} />
+                </div>
+              )}
 
               {!preview && <button onClick={() => { setActiveCategory("identity"); setSearch("") }}
                 style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "rgba(201,168,76,0.04)", border: "2px dashed rgba(201,168,76,0.2)", borderRadius: 14, padding: "18px", color: MUTED, fontSize: 14, fontWeight: 600, cursor: "pointer", marginTop: 8, transition: "all 0.2s" }}
@@ -2524,7 +2562,9 @@
         )}
 
         {/* #13 : pendant la recherche de bloc, on masque la barre du bas -> les resultats prennent toute la hauteur au-dessus du clavier */}
-        {isMobile && !preview && !(blockSearchFocus && mobileTab === "blocks") && (
+        {/* C06 — le shell mobile (flag ON) remplace la barre historique : on l'évite pour ne pas
+            créer deux navigations simultanées (§4). */}
+        {isMobile && !BUILDER_REDESIGN && !preview && !(blockSearchFocus && mobileTab === "blocks") && (
           <div style={{ flexShrink: 0, display: "flex", background: "#0C0C0C", borderTop: "1px solid rgba(255,255,255,0.08)", paddingBottom: "env(safe-area-inset-bottom)" }}>
             {([
               { id: "blocks", label: "Blocs", icon: "🧱" },

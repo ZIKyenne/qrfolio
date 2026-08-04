@@ -1,0 +1,63 @@
+// Fixtures de rendu pour le harness E2E des blocs shared (B11). Déterministes, sans média
+// distant instable (images = asset local /icon.png ou data:image ; embeds = providers réels
+// pour vérifier l'URL canonique, pas leur chargement). Base = defaultContent du bloc, surchargé
+// par FILL pour peupler les répéteurs/médias qui rendraient sinon un état vide.
+const IMG = "/icon.png" // asset local same-origin, déterministe
+
+export const FILL: Record<string, Record<string, any>> = {
+  // ── répéteurs / cartes (waves 1-5) ──
+  testimonials: { name1: "Alice Martin", text1: "Service impeccable, je recommande.", stars1: "5", name2: "Bob Durand", text2: "Très pro.", stars2: "4" },
+  business_stats: { stat1_icon: "🚀", stat1_value: "500+", stat1_label: "Clients", stat2_value: "12", stat2_label: "Ans" },
+  brands: { title: "Ils nous font confiance", brand1_icon: "🍎", brand1_name: "Apple", brand2_icon: "🎧", brand2_name: "Spotify" },
+  lineup: { title: "Line-up", a1_name: "DJ Snake", a1_stage: "Mainstage", a1_time: "22:00", a1_headliner: "yes", a2_name: "Petit Biscuit", a2_time: "20:00" },
+  reassurance: { g1_icon: "🚚", g1_label: "Livraison rapide", g1_desc: "Sous 48h", g2_icon: "🔒", g2_label: "Paiement sûr" },
+  timeline: { title: "Parcours", e1_date: "2020", e1_title: "Création", e1_desc: "Lancement", e2_date: "2023", e2_title: "Croissance" },
+  menu_section: { category: "Entrées", item1_name: "Salade César", item1_price: "9€", item1_desc: "Poulet, parmesan", item2_name: "Soupe", item2_price: "6€" },
+  services_list: { title: "Nos services", s1_icon: "✂️", s1_name: "Coupe", s1_desc: "30 min", s2_icon: "🎨", s2_name: "Couleur" },
+  promo_banner: { emoji: "🔥", text: "Soldes -50%", subtext: "Jusqu'à dimanche", cta_label: "En profiter", cta_url: "https://exemple.com" },
+  gift_card: { title: "Offrez une expérience", description: "Carte cadeau", amount1: "25€", amount2: "50€", amount3: "100€", cta_label: "Offrir", cta_url: "https://exemple.com" },
+  event_info: { name: "Vernissage", date: "12 sept.", time: "18:00", location: "Galerie Nord", price: "Gratuit", cta_label: "Je viens", cta_url: "https://exemple.com" },
+  event_ticketing: { event_name: "Concert live", date: "20 oct.", location: "Zénith", price: "35€", label: "Réserver", url: "https://exemple.com", platform: "Weezevent" },
+  // ── média simples (wave 6) ──
+  image: { src: IMG, alt: "Logo QRowg", caption: "Notre logo", ratio: "square" },
+  portfolio_work: { title: "Réalisations", work1_img: IMG, work1_title: "Projet A", work1_desc: "Branding", work2_title: "Projet B", cta_label: "Tout voir", cta_url: "https://exemple.com" },
+  favorite_links: { title: "Mes liens", link_1_icon: "🌐", link_1_label: "Site web", link_1_url: "https://exemple.com", link_2_icon: "📸", link_2_label: "Instagram", link_2_url: "https://exemple.com" },
+  concerts: { title: "Tournée", c1_date: "12/09", c1_city: "Paris", c1_venue: "Olympia", c1_url: "https://exemple.com", c2_date: "15/09", c2_city: "Lyon" },
+  merch: { title: "Boutique", img1: IMG, name1: "T-shirt", price1: "25€", img2: IMG, name2: "Casquette", price2: "18€", cta_label: "Voir tout", cta_url: "https://exemple.com" },
+  app_download: { ios_url: "https://apps.apple.com/app/id1", android_url: "https://play.google.com/store/apps/details?id=x" },
+  // ── média interactifs (wave 7) ──
+  video_local: { src: "https://exemple.com/video.mp4", poster: IMG, title: "Ma vidéo", ratio: "16:9" },
+  audio_player: { src: "https://exemple.com/audio.mp3", cover: IMG, title: "Mon titre", artist: "Artiste", show_download: "yes" },
+  pdf_viewer: { title: "Brochure PDF", description: "Notre catalogue", url: "https://exemple.com/doc.pdf", pages: "12", cta_label: "Consulter" },
+  spotify_embed: { url: "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT", size: "md" },
+  spotify_player: { title: "Ma musique", url: "https://open.spotify.com/artist/x" },
+  before_after: { title: "Avant / Après", before_img: IMG, after_img: IMG, before_label: "Avant", after_label: "Après" },
+  // ── débloqués (wave 8) ──
+  video: { url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", title: "Vidéo démo" },
+  google_maps_embed: { label: "Nous trouver", address: "10 rue de la Paix, Paris", height: "md", show_directions: "yes" },
+  album_block: { title: "Mon Album", artist: "Mon Nom", cover: IMG, year: "2025", tracks: "12 titres", spotify_url: "https://open.spotify.com/album/x", apple_url: "https://music.apple.com/x" },
+  discography: { title: "Discographie", a1_cover: IMG, a1_title: "Premier", a1_year: "2022", a1_type: "Album", a1_url: "https://open.spotify.com/album/x", a2_title: "Single", a2_type: "Single" },
+  podcast_links: { podcast_name: "Mon Podcast", cover_url: IMG, description: "Chaque semaine", spotify_url: "https://open.spotify.com/show/x", apple_url: "https://podcasts.apple.com/x" },
+  product_catalog: { title: "Catalogue", p1_img: IMG, p1_name: "Produit A", p1_price: "29€", p1_desc: "Best-seller", p1_url: "https://exemple.com", p2_name: "Produit B", p2_price: "39€", cta_label: "Acheter" },
+  // ── répéteurs info/business (waves 3-4) ──
+  process_steps: { title: "Comment ça marche", s1_title: "Étape 1", s1_desc: "Inscription", s2_title: "Étape 2", s2_desc: "Création" },
+  on_site_services: { s1_icon: "📶", s1_label: "Wifi gratuit", s2_icon: "🅿️", s2_label: "Parking" },
+  engagements: { e1: "Sans engagement", e2: "Annulation gratuite", e3: "Satisfait ou remboursé" },
+  trust_badge: { b1_icon: "✅", b1_label: "Certifié bio", b2_icon: "🏆", b2_label: "Élu produit de l'année" },
+  stats_block: { s1_icon: "👥", s1_value: "10k", s1_label: "Abonnés", s2_icon: "⭐", s2_value: "4.9", s2_label: "Note" },
+  event_program: { title: "Programme", s1_time: "09h", s1_title: "Accueil", s1_desc: "Café", s2_time: "10h", s2_title: "Conférence" },
+  advantages: { title: "Avantages", adv1: "Rapide", adv2: "Fiable", adv3: "Abordable" },
+  // ── CTA / atomes (waves 1-2) : defaultContent suffit généralement, on renforce ──
+  whatsapp_button: { phone: "+33612345678", label: "Écrivez-nous" },
+  email_button: { email: "contact@exemple.com", label: "Nous écrire" },
+  download_file: { label: "Télécharger le guide", url: "https://exemple.com/guide.pdf" },
+  order_online: { label: "Commander", url: "https://exemple.com" },
+  donation: { label: "Soutenir", url: "https://ko-fi.com/x", platform: "Ko-fi" },
+  google_review: { label: "Laisser un avis", url: "https://g.page/r/x" },
+  heading: { text: "Titre de section", subtitle: "Un sous-titre" },
+  bio: { text: "Créateur de contenu passionné par le web et la musique." },
+  values: { title: "Nos valeurs", v1: "Qualité", v2: "Écoute", v3: "Innovation" },
+  pricing: { title: "Tarifs", title1: "Starter", price1: "9€", desc1: "Pour débuter", title2: "Pro", price2: "29€", desc2: "Le plus choisi", cta_label: "Choisir", cta_url: "https://exemple.com" },
+  skills: { title: "Compétences", skill1: "Design", skill2: "Développement", skill3: "SEO" },
+  languages: { title: "Langues", lang1: "Français", level1: "Natif", lang2: "Anglais", level2: "Courant" },
+}

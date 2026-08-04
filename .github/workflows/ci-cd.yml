@@ -12,6 +12,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch: {}   # déclenche manuellement le job E2E Playwright (voir job "e2e")
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -46,3 +47,40 @@ jobs:
 
       - name: Tests unitaires
         run: pnpm test
+
+  # ── QA navigateur Playwright (B11) — MANUEL uniquement (workflow_dispatch) ──
+  # Ne s'exécute pas sur chaque push : le serveur Next dev requiert des variables
+  # d'environnement (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY au minimum).
+  # Configurer ces secrets côté repo, puis lancer ce workflow à la main. Périmètre : tests
+  # PUBLICS (smoke landing + harness des 51 blocs shared). Les parcours authentifiés
+  # nécessitent en plus E2E_TEST_EMAIL / E2E_TEST_PASSWORD (compte de test dédié).
+  e2e:
+    name: 🎭 Playwright (public, manuel)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.1.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Playwright (smoke + blocs shared)
+        run: pnpm test:e2e --grep "landing|51 blocs"
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_APP_URL: http://localhost:3100
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

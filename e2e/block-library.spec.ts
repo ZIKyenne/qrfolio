@@ -47,6 +47,7 @@ test.describe("bibliothèque de blocs (harness)", () => {
 
   test("changement de catégorie", async ({ page }) => {
     await page.goto(URL, { waitUntil: "domcontentloaded" })
+    await expect(page.getByTestId("block-library")).toBeVisible()
     await page.locator('[data-tab="music"]').click()
     await expect(page.locator('[data-tab="music"]')).toHaveAttribute("aria-selected", "true")
     await expect(page.locator('[data-block-card="spotify_embed"]')).toBeVisible()

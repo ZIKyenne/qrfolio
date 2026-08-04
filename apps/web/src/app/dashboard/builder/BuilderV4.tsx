@@ -21,6 +21,7 @@
   import { EditPanel, ThemePanel, Segmented, STYLE_COPY_KEYS } from "./builderPanels"
   import { BuilderStatus } from "./BuilderStatus"
   import { BlockLibrary } from "./BlockLibrary"
+  import { BlockSettingsPanel } from "./BlockSettingsPanel"
   import { BUILDER_REDESIGN } from "./builderFlags"
   import { useIsMobile } from "@/lib/useIsMobile"
   import { useToast } from "@/components/Toast"
@@ -2188,7 +2189,33 @@
             )}
 
             {!rightCollapsed && rightTab==="edit" && (
-              <div style={{ flex: 1, overflowY: "auto", padding: 14 }}>
+              <div style={{ flex: 1, overflowY: "auto", padding: 14, position: "relative" }}>
+                {/* C03 — Réglages refondus (flag ON) : coquille Simple/Avancé + injection du panneau
+                    legacy (EditPanel) pour le design/disposition et les blocs non pilotes. Flag OFF =
+                    éditeur historique ci-dessous strictement inchangé (zéro régression). */}
+                {BUILDER_REDESIGN && (
+                  <div style={{ position: "absolute", inset: 0, zIndex: 6, background: "#161616" }}>
+                    <BlockSettingsPanel
+                      block={selectedBlock ?? null}
+                      mobile={isMobile}
+                      index={selectedBlock ? blocks.findIndex(b => b.id === selectedBlock.id) : 0}
+                      total={blocks.length}
+                      onChange={(k, v) => { if (selectedBlock) updateBlock(selectedBlock.id, k, v) }}
+                      onDuplicate={() => { if (selectedBlock) duplicateBlock(selectedBlock.id) }}
+                      onDelete={() => { if (selectedBlock) deleteBlock(selectedBlock.id) }}
+                      onToggleVisible={() => { if (selectedBlock) toggleVisible(selectedBlock.id) }}
+                      onToggleLock={() => { if (selectedBlock) toggleLock(selectedBlock.id) }}
+                      onToggleDraft={() => { if (selectedBlock) toggleDraft(selectedBlock.id) }}
+                      onResetBlock={() => { if (selectedBlock) resetBlock(selectedBlock.id) }}
+                      onRequestClose={() => setSelectedId(null)}
+                      onOpenLibrary={() => { if (isMobile) setMobileTab("blocks") }}
+                      onOpenOutline={() => setOutlineOpen(true)}
+                      confirm={(m) => confirm({ title: "Confirmer", message: m, confirmLabel: "Confirmer" })}
+                      renderLegacyContent={(b) => <EditPanel key={b.id+"-c"} block={b} onChange={(k, v) => updateBlock(b.id, k, v)} only="content" />}
+                      renderLegacyDesign={(b) => <EditPanel key={b.id+"-l"} block={b} onChange={(k, v) => updateBlock(b.id, k, v)} only="layout" />}
+                    />
+                  </div>
+                )}
                 {!selectedBlock
                   ? <div style={{ textAlign: "center", padding: "50px 14px" }}>
                       <Settings size={28} color={MUTED} style={{ margin: "0 auto 8px", opacity: 0.2, display: "block" }} />

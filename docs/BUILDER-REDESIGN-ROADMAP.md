@@ -74,7 +74,7 @@ Cette couche **n'impose rien à l'UI** : elle décrit le modèle. La coquille l'
 | --- | --- | --- | --- |
 | **1 (C01, faite)** | Fondation pure + flag + **1 incrément visible sûr** (statut save unifié `BuilderStatus`, gaté flag) | statuts, +modèle complet | tests purs + `renderToStaticMarkup` ; navigateur au flag ON |
 | **2 (C02, faite)** | Bibliothèque de blocs refondue : `builderLibrary.ts` (modèle pur) + `BlockLibrary`/`BlockLibraryCard` + harness Playwright public. Recherche normalisée/multi-mots, catégories, favoris/récents réutilisés, recommandations déterministes, premium (affichage), a11y (boutons frères). Voir `BUILDER-BLOCK-LIBRARY-REDESIGN.md` | nav, glossaire | **navigateur RÉEL via harness** (sans Supabase) ✅ |
-| **3** | Réglages de bloc sectionnés (Contenu…Avancé) + mode simple/expert + toolbar contextuelle | sections, mode, actions | navigateur |
+| **3 (C03, faite)** | Réglages de bloc Simple/Avancé : `builderSettings.ts` (modèle pur) + `BlockSettingsPanel`/`SettingsFieldRenderer`/`BlockContextToolbar` + harness Playwright public. 10 pilotes en simple curaté, fallback legacy `EditPanel` injecté pour le reste (0 perte). Voir `BUILDER-SETTINGS-REDESIGN.md` | sections, mode, actions | **navigateur RÉEL via harness** ✅ |
 | **4** | Canvas : zoom, cadre appareil, `+` entre blocs, repères page longue | layout | navigateur |
 | **5** | Mobile : bottom-sheets pour réglages, clavier, safe-area, paysage | mobileTabs, layout | navigateur mobile |
 | **6** | Productivité : outline docké + DnD, plus de commandes palette, presets | nav, actions | navigateur |

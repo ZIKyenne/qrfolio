@@ -3,6 +3,12 @@
 -- ============================================================
 
 -- ============================================================
+-- ⚠️ LEGACY / NON UTILISÉ (acté le 2026-08-05) — cf. docs/TEMPLATE-ENGINE-PLAN.md
+-- La table `page_templates` ci-dessous N'EST PLUS LUE : la galerie
+-- (dashboard/templates) et le builder consomment désormais la source CODE
+-- `app/dashboard/builder/page-templates.ts` (généralisée par `templateEngine.ts`).
+-- Conservée pour l'historique local ; ne pas y ajouter de nouveaux templates.
+-- ============================================================
 -- TEMPLATES DE BASE (stockés comme référence JSON)
 -- Ces données sont utilisées par le frontend pour pré-remplir
 -- une nouvelle page selon la catégorie choisie.

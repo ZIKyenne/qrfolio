@@ -1,0 +1,115 @@
+import { describe, it, expect } from "vitest"
+import {
+  TEMPLATE_STYLES, TEMPLATE_STYLE_LIST, TEMPLATE_STRUCTURES, DEFAULT_LAYOUT, TEMPLATE_LAYOUTS,
+  composeTemplate, composeByKeys, structureFromTemplate, unknownBlockTypes,
+  type TemplateLayout,
+} from "./templateEngine"
+import { PAGE_TEMPLATES, AMBIANCE_THEMES, AMBIANCE_KEYS } from "./page-templates"
+import { BLOCK_DEFS } from "./types"
+
+describe("registres du moteur", () => {
+  it("TEMPLATE_STYLES reflète les thèmes d'ambiance", () => {
+    expect(Object.keys(TEMPLATE_STYLES).sort()).toEqual([...AMBIANCE_KEYS].sort())
+    expect(TEMPLATE_STYLE_LIST.length).toBe(AMBIANCE_KEYS.length)
+    for (const s of TEMPLATE_STYLE_LIST) {
+      expect(s.key).toBeTruthy()
+      expect(s.label).toBeTruthy()
+      expect(s.theme).toBe(AMBIANCE_THEMES[s.key])
+    }
+  })
+  it("TEMPLATE_STRUCTURES = une structure par template existant (sans thème)", () => {
+    expect(TEMPLATE_STRUCTURES.length).toBe(PAGE_TEMPLATES.length)
+    for (const s of TEMPLATE_STRUCTURES) {
+      expect(s).not.toHaveProperty("theme")
+      expect(Array.isArray(s.blocks)).toBe(true)
+      expect(s.blocks.length).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe("intégrité des structures (types de blocs réels)", () => {
+  it("aucune structure ne référence un type de bloc inconnu", () => {
+    for (const s of TEMPLATE_STRUCTURES) {
+      expect(unknownBlockTypes(s), `${s.key}: types inconnus`).toEqual([])
+    }
+  })
+})
+
+describe("composeTemplate — rétrocompatibilité (round-trip)", () => {
+  it("reproduit blocs + thème de chaque template existant", () => {
+    for (const t of PAGE_TEMPLATES) {
+      const style = { key: "x", label: t.theme.name, theme: t.theme }
+      const composed = composeTemplate(structureFromTemplate(t), style)
+      expect(composed.blocks, `${t.key}: blocs`).toEqual(t.blocks)
+      expect(composed.theme, `${t.key}: thème`).toBe(t.theme)
+      expect(composed.group).toBe(t.group)
+      expect(composed.label).toBe(t.label)
+    }
+  })
+})
+
+describe("composeTemplate — pureté & déterminisme", () => {
+  it("ne mute pas la structure d'entrée (contenu cloné)", () => {
+    const s = TEMPLATE_STRUCTURES[0]
+    const before = JSON.stringify(s.blocks)
+    const composed = composeTemplate(s, TEMPLATE_STYLE_LIST[0])
+    composed.blocks[0].content.__mutated = "x"
+    expect(JSON.stringify(s.blocks)).toBe(before) // original intact
+  })
+  it("déterministe (deux compositions identiques)", () => {
+    const a = composeTemplate(TEMPLATE_STRUCTURES[0], TEMPLATE_STYLES.gold)
+    const b = composeTemplate(TEMPLATE_STRUCTURES[0], TEMPLATE_STYLES.gold)
+    expect(a).toEqual(b)
+  })
+})
+
+describe("composeTemplate — combinaisons croisées (le cœur du moteur)", () => {
+  it("une structure × un AUTRE style = thème appliqué, blocs conservés, tous types valides", () => {
+    const resto = TEMPLATE_STRUCTURES.find(s => s.group === "Restauration")!
+    const composed = composeTemplate(resto, TEMPLATE_STYLES.slate) // style volontairement différent
+    expect(composed.theme).toBe(AMBIANCE_THEMES.slate)
+    expect(composed.blocks.length).toBe(resto.blocks.length)
+    expect(composed.blocks.every(b => !!BLOCK_DEFS[b.type])).toBe(true)
+    expect(composed.styleKey).toBe("slate")
+  })
+  it("clé composée = structure__style, unique par combinaison", () => {
+    const keys = new Set<string>()
+    for (const s of TEMPLATE_STRUCTURES.slice(0, 5)) {
+      for (const st of TEMPLATE_STYLE_LIST.slice(0, 5)) {
+        keys.add(composeTemplate(s, st).key)
+      }
+    }
+    expect(keys.size).toBe(25) // 5 structures × 5 styles = 25 clés distinctes
+  })
+})
+
+describe("axe layout (T1 : identité + transform pur)", () => {
+  it("DEFAULT_LAYOUT = identité", () => {
+    const s = TEMPLATE_STRUCTURES[0]
+    expect(composeTemplate(s, TEMPLATE_STYLE_LIST[0], DEFAULT_LAYOUT).blocks).toEqual(
+      s.blocks.map(b => ({ type: b.type, content: { ...b.content } })),
+    )
+    expect(TEMPLATE_LAYOUTS.default).toBe(DEFAULT_LAYOUT)
+  })
+  it("un layout avec transformBlocks est appliqué + suffixe de clé", () => {
+    const reverse: TemplateLayout = { key: "reverse", label: "Inversé", transformBlocks: bs => [...bs].reverse() }
+    const s = TEMPLATE_STRUCTURES[0]
+    const composed = composeTemplate(s, TEMPLATE_STYLES.gold, reverse)
+    expect(composed.blocks[0].type).toBe(s.blocks[s.blocks.length - 1].type)
+    expect(composed.key).toBe(`${s.key}__gold__reverse`)
+  })
+})
+
+describe("composeByKeys", () => {
+  it("résout structure + style + layout connus", () => {
+    const k = TEMPLATE_STRUCTURES[0].key
+    const c = composeByKeys(k, "gold")
+    expect(c).not.toBeNull()
+    expect(c!.theme).toBe(AMBIANCE_THEMES.gold)
+  })
+  it("null si une clé est inconnue", () => {
+    expect(composeByKeys("inconnu", "gold")).toBeNull()
+    expect(composeByKeys(TEMPLATE_STRUCTURES[0].key, "inconnu")).toBeNull()
+    expect(composeByKeys(TEMPLATE_STRUCTURES[0].key, "gold", "inconnu")).toBeNull()
+  })
+})

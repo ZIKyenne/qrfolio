@@ -5,12 +5,12 @@ import { BLOCK_DEFS } from "../types"
 // Cohérence des contrats PRÉPARATOIRES (mission B09.1). Garantit qu'aucun bloc n'est
 // activé et que les invariants d'architecture tiennent avant B09.2.
 
-describe("flag de migration — 39 blocs activés (pilotes + vagues 1 à 6)", () => {
-  const ACTIVE = ["heading", "values", "pricing", "divider", "spacer", "bio", "skills", "languages", "advantages", "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review", "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program", "testimonials", "business_stats", "brands", "lineup", "reassurance", "timeline", "menu_section", "services_list", "promo_banner", "gift_card", "event_info", "event_ticketing", "image", "portfolio_work", "favorite_links", "concerts", "merch", "app_download"]
-  it("exactement les 39 blocs sont activés", () => {
+describe("flag de migration — 45 blocs activés (pilotes + vagues 1 à 7)", () => {
+  const ACTIVE = ["heading", "values", "pricing", "divider", "spacer", "bio", "skills", "languages", "advantages", "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review", "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program", "testimonials", "business_stats", "brands", "lineup", "reassurance", "timeline", "menu_section", "services_list", "promo_banner", "gift_card", "event_info", "event_ticketing", "image", "portfolio_work", "favorite_links", "concerts", "merch", "app_download", "video_local", "audio_player", "pdf_viewer", "spotify_embed", "spotify_player", "before_after"]
+  it("exactement les 45 blocs sont activés", () => {
     expect([...SHARED_RENDERER_BLOCKS].sort()).toEqual([...ACTIVE].sort())
   })
-  it("resolveRendererStatus : shared pour les 39 actifs, legacy pour les autres", () => {
+  it("resolveRendererStatus : shared pour les 45 actifs, legacy pour les autres", () => {
     for (const t of Object.keys(BLOCK_DEFS)) expect(resolveRendererStatus(t)).toBe(ACTIVE.includes(t) ? "shared" : "legacy")
   })
   it("rollback : un set vide ramène tout en legacy (mécanisme de bascule)", () => {

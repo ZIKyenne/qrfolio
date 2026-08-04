@@ -11,3 +11,16 @@ export function safeMediaSrc(url: unknown): string | null {
   if (u.length > 2048) return null
   return u
 }
+
+// Sécurisation d'une source AUDIO/VIDÉO native (`<audio src>` / `<video src>`). Autorise
+// http(s), chemin interne, domaine/relatif et data:audio|video ; neutralise les schémas
+// exécutables/dangereux (javascript:, vbscript:, file:, blob:, data: non-AV). Longueur bornée.
+export function safeAvSrc(url: unknown): string | null {
+  if (typeof url !== "string") return null
+  const u = url.trim()
+  if (!u) return null
+  if (/^data:(audio|video)\//i.test(u)) return u
+  if (/^(javascript:|vbscript:|file:|blob:|data:)/i.test(u)) return null
+  if (u.length > 2048) return null
+  return u
+}

@@ -35,7 +35,7 @@
 | opening_hours | business | carte | STANDARD | 2 | - | 4 | legacy |
 | contact_form | business | form | ÉLEVÉ | 1 | - | 7 | legacy |
 | reservation_form | business | form | ÉLEVÉ | 1 | phone orphelin | 7 | legacy |
-| spotify_player | music | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
+| spotify_player | music | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 7) |
 | music_links | music | répéteur | STANDARD | 2 | - | 3 | legacy |
 | countdown | event | event-carte | STANDARD | 2 | sans date | 5 | legacy |
 | event_info | event | event-carte | STANDARD | 2 | - | 5 | shared (vague 5) |
@@ -45,7 +45,7 @@
 | featured_product | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | offer_comparison | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | packs | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
-| before_after | commerce | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
+| before_after | commerce | média-liste | ÉLEVÉ | 2 | - | 6 | shared (vague 7) |
 | portfolio_work | commerce | média-liste | ÉLEVÉ | 2 | - | 6 | shared (vague 6) |
 | google_reviews_block | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | business_stats | commerce | commerce-carte | STANDARD | 2 | - | 4 | shared (vague 4) |
@@ -78,7 +78,7 @@
 | add_to_calendar | event | event-carte | STANDARD | 2 | options éditeur/public | 5 | legacy |
 | participants_count | event | event-carte | STANDARD | 2 | - | 5 | legacy |
 | tickets_left | event | event-carte | STANDARD | 2 | - | 5 | legacy |
-| spotify_embed | music | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
+| spotify_embed | music | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 7) |
 | latest_release | music | musique | ÉLEVÉ | 1 | - | 6 | legacy |
 | discography | music | répéteur | STANDARD | 2 | - | 3 | legacy |
 | album_block | music | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
@@ -110,9 +110,9 @@
 | founder_message | info | texte | FAIBLE | 3 | - | 1 | legacy |
 | image_carousel | media | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
 | media_before_after | media | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
-| video_local | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
-| audio_player | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
-| pdf_viewer | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
+| video_local | media | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 7) |
+| audio_player | media | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 7) |
+| pdf_viewer | media | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 7) |
 | youtube_gallery | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | tiktok_gallery | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | video_testimonials | media | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
@@ -157,10 +157,11 @@
 - **142 blocs** — Risque : 15 FAIBLE · 87 STANDARD · 40 ÉLEVÉ.
 - **Niveau de partage cible** : 1 bloc N0 (QR) · 29 N1 · 79 N2 · 33 N3.
 - **Vagues** : 1(15) · 2(21) · 3(46) · 4(16) · 5(7) · 6(28) · 7(8) · 8(1).
-- **Statut réel actuel** : **39/142 `shared` activés** (3 pilotes + vagues 1-6), 103 `legacy`.
+- **Statut réel actuel** : **45/142 `shared` activés** (3 pilotes + vagues 1-7), 97 `legacy`.
   Vague 4 (B09.7) : testimonials, business_stats, brands, lineup, reassurance, timeline.
   Vague 5 (B09.8) : menu_section, services_list, promo_banner, gift_card, event_info, event_ticketing.
   Vague 6 (B09.9) : image, portfolio_work, favorite_links, concerts, merch, app_download.
+  Vague 7 (B09.10) : video_local, audio_player, pdf_viewer, spotify_embed, spotify_player, before_after.
 
 ## Divergences connues (ne migrent pas avant correction)
 

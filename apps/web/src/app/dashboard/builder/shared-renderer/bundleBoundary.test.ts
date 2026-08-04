@@ -51,6 +51,12 @@ const PUBLIC_REACHABLE = [
   "./blocks/concerts/PublicConcerts.tsx",
   "./blocks/merch/PublicMerch.tsx",
   "./blocks/app_download/PublicAppDownload.tsx",
+  "./blocks/video_local/PublicVideoLocal.tsx",
+  "./blocks/audio_player/PublicAudioPlayer.tsx",
+  "./blocks/pdf_viewer/PublicPdfViewer.tsx",
+  "./blocks/spotify_embed/PublicSpotifyEmbed.tsx",
+  "./blocks/spotify_player/PublicSpotifyPlayer.tsx",
+  "./blocks/before_after/PublicBeforeAfter.tsx",
   "./models/repeaterExtract.ts",
   "./models/heading.ts",
   "./models/values.ts",
@@ -85,7 +91,7 @@ describe("frontière de bundle — public n'importe rien d'éditeur", () => {
 })
 
 describe("modèles purs — sans React ni Supabase", () => {
-  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts", "./models/processSteps.ts", "./models/onSiteServices.ts", "./models/engagements.ts", "./models/trustBadge.ts", "./models/statsBlock.ts", "./models/eventProgram.ts", "./models/testimonials.ts", "./models/businessStats.ts", "./models/brands.ts", "./models/lineup.ts", "./models/reassurance.ts", "./models/timeline.ts", "./models/menuSection.ts", "./models/servicesList.ts", "./models/promoBanner.ts", "./models/giftCard.ts", "./models/eventInfo.ts", "./models/eventTicketing.ts", "./models/image.ts", "./models/portfolioWork.ts", "./models/favoriteLinks.ts", "./models/concerts.ts", "./models/merch.ts", "./models/appDownload.ts", "./models/mediaUrl.ts", "./models/repeaterExtract.ts"]) {
+  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts", "./models/processSteps.ts", "./models/onSiteServices.ts", "./models/engagements.ts", "./models/trustBadge.ts", "./models/statsBlock.ts", "./models/eventProgram.ts", "./models/testimonials.ts", "./models/businessStats.ts", "./models/brands.ts", "./models/lineup.ts", "./models/reassurance.ts", "./models/timeline.ts", "./models/menuSection.ts", "./models/servicesList.ts", "./models/promoBanner.ts", "./models/giftCard.ts", "./models/eventInfo.ts", "./models/eventTicketing.ts", "./models/image.ts", "./models/portfolioWork.ts", "./models/favoriteLinks.ts", "./models/concerts.ts", "./models/merch.ts", "./models/appDownload.ts", "./models/mediaUrl.ts", "./models/videoLocal.ts", "./models/audioPlayer.ts", "./models/pdfViewer.ts", "./models/spotifyEmbed.ts", "./models/spotifyPlayer.ts", "./models/beforeAfter.ts", "./models/repeaterExtract.ts"]) {
     it(`${m} : aucun import react/supabase`, () => {
       const imports = read(m).split("\n").filter(l => /^\s*import\b/.test(l)).join("\n")
       expect(/from ["']react["']/.test(imports)).toBe(false)

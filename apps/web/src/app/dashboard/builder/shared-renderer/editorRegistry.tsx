@@ -43,6 +43,12 @@ import { EditorFavoriteLinks } from "./blocks/favorite_links/EditorFavoriteLinks
 import { EditorConcerts } from "./blocks/concerts/EditorConcerts"
 import { EditorMerch } from "./blocks/merch/EditorMerch"
 import { EditorAppDownload } from "./blocks/app_download/EditorAppDownload"
+import { EditorVideoLocal } from "./blocks/video_local/EditorVideoLocal"
+import { EditorAudioPlayer } from "./blocks/audio_player/EditorAudioPlayer"
+import { EditorPdfViewer } from "./blocks/pdf_viewer/EditorPdfViewer"
+import { EditorSpotifyEmbed } from "./blocks/spotify_embed/EditorSpotifyEmbed"
+import { EditorSpotifyPlayer } from "./blocks/spotify_player/EditorSpotifyPlayer"
+import { EditorBeforeAfter } from "./blocks/before_after/EditorBeforeAfter"
 
 const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   heading: EditorHeading,
@@ -84,6 +90,12 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   concerts: EditorConcerts,
   merch: EditorMerch,
   app_download: EditorAppDownload,
+  video_local: EditorVideoLocal,
+  audio_player: EditorAudioPlayer,
+  pdf_viewer: EditorPdfViewer,
+  spotify_embed: EditorSpotifyEmbed,
+  spotify_player: EditorSpotifyPlayer,
+  before_after: EditorBeforeAfter,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

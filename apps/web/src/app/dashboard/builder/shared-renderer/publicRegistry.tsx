@@ -43,6 +43,12 @@ import { PublicFavoriteLinks } from "./blocks/favorite_links/PublicFavoriteLinks
 import { PublicConcerts } from "./blocks/concerts/PublicConcerts"
 import { PublicMerch } from "./blocks/merch/PublicMerch"
 import { PublicAppDownload } from "./blocks/app_download/PublicAppDownload"
+import { PublicVideoLocal } from "./blocks/video_local/PublicVideoLocal"
+import { PublicAudioPlayer } from "./blocks/audio_player/PublicAudioPlayer"
+import { PublicPdfViewer } from "./blocks/pdf_viewer/PublicPdfViewer"
+import { PublicSpotifyEmbed } from "./blocks/spotify_embed/PublicSpotifyEmbed"
+import { PublicSpotifyPlayer } from "./blocks/spotify_player/PublicSpotifyPlayer"
+import { PublicBeforeAfter } from "./blocks/before_after/PublicBeforeAfter"
 
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
@@ -84,6 +90,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   concerts: PublicConcerts,
   merch: PublicMerch,
   app_download: PublicAppDownload,
+  video_local: PublicVideoLocal,
+  audio_player: PublicAudioPlayer,
+  pdf_viewer: PublicPdfViewer,
+  spotify_embed: PublicSpotifyEmbed,
+  spotify_player: PublicSpotifyPlayer,
+  before_after: PublicBeforeAfter,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

@@ -20,6 +20,7 @@
   const MemoBlockPreview = memo(BlockPreview)
   import { EditPanel, ThemePanel, Segmented, STYLE_COPY_KEYS } from "./builderPanels"
   import { BuilderStatus } from "./BuilderStatus"
+  import { BlockLibrary } from "./BlockLibrary"
   import { BUILDER_REDESIGN } from "./builderFlags"
   import { useIsMobile } from "@/lib/useIsMobile"
   import { useToast } from "@/components/Toast"
@@ -1324,6 +1325,13 @@
 
           {/* SIDEBAR BLOCS */}
           <div style={{ width: isMobile ? "100%" : (blocksCollapsed ? 64 : blocksResize.width), background: "#0A0A0A", borderRight: "none", display: isMobile && mobileTab !== "blocks" ? "none" : "flex", flexDirection: "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: blocksCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
+            {/* C02 — Bibliothèque refondue en overlay (flag ON, panneau déplié). Flag OFF ou rail replié :
+                la bibliothèque legacy ci-dessous reste strictement inchangée (zéro régression). */}
+            {BUILDER_REDESIGN && !blocksCollapsed && (
+              <div style={{ position: "absolute", inset: 0, zIndex: 6, display: "flex", flexDirection: "column", background: "#0A0A0A" }}>
+                <BlockLibrary favorites={favorites} recents={recentBlocks} mobile={isMobile} onAdd={(t) => addBlock(t)} onToggleFavorite={toggleFav} />
+              </div>
+            )}
             {/* Bouton collapse/expand */}
             <button onClick={toggleBlocks} title={blocksCollapsed ? "Ouvrir" : "Réduire"}
               style={{ position: "absolute", top: 8, right: 8, zIndex: 20, width: 22, height: 22, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, color: MUTED, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>

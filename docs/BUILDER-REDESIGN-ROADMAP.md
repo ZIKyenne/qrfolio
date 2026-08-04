@@ -72,8 +72,8 @@ Cette couche **n'impose rien à l'UI** : elle décrit le modèle. La coquille l'
 
 | Vague | Périmètre | Consomme `builderUx` | QA requise |
 | --- | --- | --- | --- |
-| **1 (cette mission)** | Fondation pure + flag + **1 incrément visible sûr** (statut save unifié `BuilderStatus`, gaté flag) | statuts, +modèle complet | tests purs + `renderToStaticMarkup` ; navigateur au flag ON |
-| **2** | Bibliothèque de blocs tokenisée (aperçu, recommandés, tags, gratuit/premium) | nav, glossaire | navigateur (compte de test) |
+| **1 (C01, faite)** | Fondation pure + flag + **1 incrément visible sûr** (statut save unifié `BuilderStatus`, gaté flag) | statuts, +modèle complet | tests purs + `renderToStaticMarkup` ; navigateur au flag ON |
+| **2 (C02, faite)** | Bibliothèque de blocs refondue : `builderLibrary.ts` (modèle pur) + `BlockLibrary`/`BlockLibraryCard` + harness Playwright public. Recherche normalisée/multi-mots, catégories, favoris/récents réutilisés, recommandations déterministes, premium (affichage), a11y (boutons frères). Voir `BUILDER-BLOCK-LIBRARY-REDESIGN.md` | nav, glossaire | **navigateur RÉEL via harness** (sans Supabase) ✅ |
 | **3** | Réglages de bloc sectionnés (Contenu…Avancé) + mode simple/expert + toolbar contextuelle | sections, mode, actions | navigateur |
 | **4** | Canvas : zoom, cadre appareil, `+` entre blocs, repères page longue | layout | navigateur |
 | **5** | Mobile : bottom-sheets pour réglages, clavier, safe-area, paysage | mobileTabs, layout | navigateur mobile |

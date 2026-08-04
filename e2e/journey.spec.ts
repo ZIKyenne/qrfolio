@@ -1,16 +1,25 @@
 import { test, expect } from "@playwright/test"
+import { loginOrSkip, HAS_ACCOUNT } from "./helpers/auth"
+import { collect, problems } from "./helpers/collect"
 
-// Parcours authentifié complet : connexion → dashboard → création → Builder → ajout bloc →
-// sauvegarde → publication → page publique → retour. NÉCESSITE un compte de TEST Supabase
-// (E2E_TEST_EMAIL / E2E_TEST_PASSWORD) — absent dans cet environnement ⇒ ignoré avec raison.
-// Le squelette est prêt : renseigner .env.e2e pour l'activer (voir docs/PLAYWRIGHT-QA-GUIDE.md).
-const HAS_ACCOUNT = !!process.env.E2E_TEST_EMAIL && !!process.env.E2E_TEST_PASSWORD
+// Parcours authentifié (compte de TEST). Étend au fil des increments : socle = connexion →
+// dashboard → ouverture du Builder (sélecteurs code-vérifiés). L'ajout de bloc / sauvegarde /
+// publication / vérification publique se branche ensuite (nécessite un run avec Supabase joignable).
+test.describe("parcours authentifié", () => {
+  test.skip(!HAS_ACCOUNT, "Requiert E2E_TEST_EMAIL/E2E_TEST_PASSWORD dans .env.e2e.")
 
-test("parcours création → Builder → sauvegarde → publication → page publique", async ({ page }) => {
-  test.skip(!HAS_ACCOUNT, "Requiert un compte de test Supabase (E2E_TEST_EMAIL/E2E_TEST_PASSWORD). Non disponible dans cet environnement.")
-  // Squelette (à compléter une fois le compte de test fourni) :
-  // await login(page)
-  // await page.goto("/dashboard"); await page.getByRole("button", { name: /créer/i }).click()
-  // ... ajout d'un bloc, saisie, attente "Enregistré", publication, ouverture page publique, assertions.
-  expect(HAS_ACCOUNT).toBe(true)
+  test("connexion → dashboard → ouverture du Builder", async ({ page }, testInfo) => {
+    const c = collect(page)
+    await loginOrSkip(page)
+    // Dashboard authentifié : CTA de création visible (pas de redirection login).
+    await expect(page.getByRole("link", { name: /nouvelle page/i }).first()).toBeVisible({ timeout: 15_000 })
+    await testInfo.attach("dashboard", { body: await page.screenshot(), contentType: "image/png" })
+
+    // Ouverture du Builder (page vierge).
+    await page.goto("/dashboard/builder/new", { waitUntil: "domcontentloaded" })
+    await expect(page.getByRole("button", { name: /publier/i }).first()).toBeVisible({ timeout: 30_000 })
+    await testInfo.attach("builder", { body: await page.screenshot(), contentType: "image/png" })
+
+    expect(problems(c), "erreurs navigateur:\n" + problems(c).join("\n")).toEqual([])
+  })
 })

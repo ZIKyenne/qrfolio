@@ -132,3 +132,53 @@ La soumission réelle (contact/quote) n'a pas pu être testée en navigateur (co
 **Fournir un compte de test Supabase** (`.env.e2e`) pour activer les parcours authentifiés
 (journey + forms + builder mobile) déjà squelettés — c'est le seul déblocage manquant pour une QA
 navigateur complète et pour B09.14.
+
+---
+
+# B11.1 — QA navigateur AUTHENTIFIÉE (mise à jour)
+
+## Compte de test & chargement d'environnement
+- `.env.e2e` (ignoré par Git) contient `E2E_TEST_EMAIL` et `E2E_TEST_PASSWORD` — **présence
+  confirmée, valeurs jamais affichées**. Chargé sans dépendance par `playwright.config.ts`.
+- Helper de connexion réel `e2e/helpers/auth.ts` : `/auth/login` → `#email`/`#password` →
+  bouton « Se connecter » (server action `signIn`) → attente `/dashboard`.
+
+## Parcours authentifiés implémentés (actifs, gatés par le compte)
+- `journey.spec.ts` : **connexion → dashboard (CTA « Nouvelle page » visible) → ouverture du
+  Builder** (`/dashboard/builder/new`, bouton « Publier » présent) + captures. Sélecteurs
+  vérifiés dans le code (LoginForm, DashboardClient, BuilderV4).
+- `builder-mobile.spec.ts` : connexion sur le projet **mobile** → Builder → **aucun overflow
+  horizontal** (`scrollWidth - clientWidth ≤ 1`) + capture.
+- `forms.spec.ts` : `contact_form` sur une page publiée de test (`E2E_CONTACT_PAGE_URL`) — rendu,
+  validation email, bouton désactivé tant que requis manquants ; soumission réelle seulement si
+  `E2E_ALLOW_LEAD_SUBMIT=1` (compte de test, données factices) pour éviter tout lead/email non voulu.
+
+## Résultat RÉEL de l'exécution (dans ce sandbox)
+
+```
+6 passed · 6 skipped · 0 failed
+```
+
+- **Tests publics (6) : passés** (smoke + harness 51 blocs, desktop + mobile) — inchangé.
+- **Tests authentifiés (6) : IGNORÉS** — et c'est un **blocage d'environnement, pas un bug ni un
+  problème de compte** :
+  - la tentative de connexion réelle a été exécutée (page login remplie + soumise) ;
+  - le server action `signIn` a échoué avec `fetch failed` → redirection `/auth/login?error=fetch` ;
+  - diagnostic : l'hôte du projet **Supabase est injoignable depuis ce sandbox** (`ENOTFOUND` —
+    DNS de `*.supabase.co` non résolu), alors que l'HTTPS générique fonctionne (`example.com` 200) ;
+  - conséquence : login/création/sauvegarde/publication/soumission (tous adossés à Supabase) ne
+    peuvent PAS s'exécuter ici → les specs **skippent avec raison explicite** (`loginOrSkip`), sans
+    faux succès ni faux échec.
+
+## Portée / honnêteté
+Les parcours authentifiés sont **implémentés et prêts** ; ils s'exécuteront tels quels sur **toute
+machine où le projet Supabase est joignable** (la machine de l'utilisateur, ou une CI avec accès
+Supabase). Ils **n'ont pas pu être observés en succès dans ce sandbox** (réseau/DNS restreint vers
+Supabase) — aucune capture de succès authentifié n'est donc produite ici, et rien n'est déclaré
+validé à tort. Le déblocage restant est purement **environnemental** (accès réseau à Supabase).
+
+## Décision (mise à jour)
+- **Renderer** : poursuivre prudemment (inchangé — rendu des 51 blocs prouvé en navigateur).
+- **QA authentifiée** : infrastructure **complète et exécutable** ; lancer `pnpm test:e2e` **sur un
+  environnement où Supabase est joignable** pour obtenir les preuves des parcours Builder/publication.
+- **B09.14** : reste conditionné à une exécution authentifiée réussie (page + soumission de formulaire).

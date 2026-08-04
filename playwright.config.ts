@@ -1,4 +1,16 @@
 import { defineConfig } from "@playwright/test"
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
+
+// Charge .env.e2e (ignoré par Git) SANS dépendance : uniquement pour les parcours authentifiés
+// (E2E_TEST_EMAIL / E2E_TEST_PASSWORD). N'écrase pas une variable déjà définie. Aucune valeur loggée.
+try {
+  const raw = readFileSync(resolve(__dirname, ".env.e2e"), "utf8")
+  for (const line of raw.split(/\r?\n/)) {
+    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/)
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim()
+  }
+} catch { /* .env.e2e absent : seuls les tests publics s'exécutent */ }
 
 // QA navigateur QRowg (B11). Chromium bundled (headless shell). Serveur Next dev auto-démarré
 // (réutilisé s'il tourne déjà). Artefacts (rapport/traces/captures) hors Git (voir .gitignore).

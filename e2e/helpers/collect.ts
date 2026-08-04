@@ -13,6 +13,9 @@ const CONSOLE_ALLOW: RegExp[] = [
   // response/requestfailed (filtrés par hôte). Les iframes tierces (Spotify/YouTube/Maps) échouent
   // légitimement en environnement réseau restreint (§20) — on ne les traite pas comme un bug produit.
   /Failed to load resource/i,
+  // Émis par le CONTENU des iframes tierces (Spotify/YouTube) qui demandent une permission non
+  // accordée par notre attribut `allow` (compute-pressure, etc.) — comportement voulu, pas un bug.
+  /Permissions policy violation/i,
 ]
 const SAME_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i
 const THIRD_PARTY = [

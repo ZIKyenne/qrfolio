@@ -8,6 +8,7 @@ schema.sql
 *.tsbuildinfo
 
 # Playwright / QA navigateur (B11)
+playwright/.auth/
 playwright-report/
 test-results/
 .auth/

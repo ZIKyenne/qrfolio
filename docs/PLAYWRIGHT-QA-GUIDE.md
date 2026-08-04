@@ -20,6 +20,13 @@ pnpm exec playwright install chromium
 - Copier `.env.e2e.example` → `.env.e2e` (ignoré par Git) pour les parcours **authentifiés** :
   - `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` : compte de **test** Supabase dédié (jamais un compte de prod).
   - `E2E_PORT` : port du serveur (défaut 3100).
+  - `E2E_CONTACT_PAGE_URL` : URL d'une page **publiée de test** contenant un bloc `contact_form`
+    (active le test de formulaire). `E2E_ALLOW_LEAD_SUBMIT=1` autorise la soumission réelle
+    (crée un lead + emails — compte de test uniquement) ; sinon seuls rendu + validation sont testés.
+  - `.env.e2e` est chargé automatiquement par `playwright.config.ts` (sans dépendance).
+- **Prérequis réseau** : le serveur dev doit pouvoir **joindre le projet Supabase** (auth + données).
+  Si l'hôte Supabase n'est pas résolvable (réseau/DNS restreint), les parcours authentifiés
+  s'ignorent proprement (raison explicite) au lieu d'échouer.
 - Sans ces variables, seuls les tests **publics** s'exécutent (smoke + harness) ; les parcours
   authentifiés sont **ignorés avec une raison explicite** (aucun faux succès).
 

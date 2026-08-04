@@ -37,6 +37,12 @@ import { PublicPromoBanner } from "./blocks/promo_banner/PublicPromoBanner"
 import { PublicGiftCard } from "./blocks/gift_card/PublicGiftCard"
 import { PublicEventInfo } from "./blocks/event_info/PublicEventInfo"
 import { PublicEventTicketing } from "./blocks/event_ticketing/PublicEventTicketing"
+import { PublicImage } from "./blocks/image/PublicImage"
+import { PublicPortfolioWork } from "./blocks/portfolio_work/PublicPortfolioWork"
+import { PublicFavoriteLinks } from "./blocks/favorite_links/PublicFavoriteLinks"
+import { PublicConcerts } from "./blocks/concerts/PublicConcerts"
+import { PublicMerch } from "./blocks/merch/PublicMerch"
+import { PublicAppDownload } from "./blocks/app_download/PublicAppDownload"
 
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
@@ -72,6 +78,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   gift_card: PublicGiftCard,
   event_info: PublicEventInfo,
   event_ticketing: PublicEventTicketing,
+  image: PublicImage,
+  portfolio_work: PublicPortfolioWork,
+  favorite_links: PublicFavoriteLinks,
+  concerts: PublicConcerts,
+  merch: PublicMerch,
+  app_download: PublicAppDownload,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

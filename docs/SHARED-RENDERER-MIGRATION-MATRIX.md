@@ -22,7 +22,7 @@
 | promo_banner | commerce | commerce-carte | STANDARD | 2 | - | 4 | shared (vague 5) |
 | menu_section | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 5) |
 | services_list | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 5) |
-| image | media | carte | STANDARD | 2 | - | 4 | legacy |
+| image | media | carte | STANDARD | 2 | - | 4 | shared (vague 6) |
 | gallery | media | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
 | video | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | heading | info | texte | FAIBLE | 3 | - | 1 | shared (activé) |
@@ -46,7 +46,7 @@
 | offer_comparison | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | packs | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | before_after | commerce | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
-| portfolio_work | commerce | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
+| portfolio_work | commerce | média-liste | ÉLEVÉ | 2 | - | 6 | shared (vague 6) |
 | google_reviews_block | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | business_stats | commerce | commerce-carte | STANDARD | 2 | - | 4 | shared (vague 4) |
 | partners | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -83,11 +83,11 @@
 | discography | music | répéteur | STANDARD | 2 | - | 3 | legacy |
 | album_block | music | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | playlist_block | music | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
-| concerts | music | répéteur | STANDARD | 2 | - | 3 | legacy |
+| concerts | music | répéteur | STANDARD | 2 | - | 3 | shared (vague 6) |
 | ticketing | music | musique | ÉLEVÉ | 1 | - | 6 | legacy |
 | presave | music | musique | ÉLEVÉ | 1 | - | 6 | legacy |
 | booking_request | music | form | ÉLEVÉ | 1 | - | 7 | legacy |
-| merch | music | répéteur | STANDARD | 2 | - | 3 | legacy |
+| merch | music | répéteur | STANDARD | 2 | - | 3 | shared (vague 6) |
 | google_maps_embed | business | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | quote_form | business | form | ÉLEVÉ | 1 | - | 7 | legacy |
 | quick_contact | business | carte | STANDARD | 2 | - | 4 | legacy |
@@ -123,7 +123,7 @@
 | discord_server | social | social | STANDARD | 2 | - | 3 | legacy |
 | telegram_channel | social | social | STANDARD | 2 | - | 3 | legacy |
 | podcast_links | social | répéteur | STANDARD | 2 | - | 3 | legacy |
-| favorite_links | social | répéteur | STANDARD | 2 | - | 3 | legacy |
+| favorite_links | social | répéteur | STANDARD | 2 | - | 3 | shared (vague 6) |
 | call_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | directions_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | sticky_bar | actions | cta | STANDARD | 3 | - | 2 | legacy |
@@ -137,7 +137,7 @@
 | free_gift | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | donation | actions | form | ÉLEVÉ | 1 | - | 7 | shared (vague 2) |
 | multi_cta | actions | cta | STANDARD | 3 | - | 2 | legacy |
-| app_download | actions | cta | STANDARD | 3 | - | 2 | legacy |
+| app_download | actions | cta | STANDARD | 3 | - | 2 | shared (vague 6) |
 | promo_code | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | limited_offer | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | booking_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
@@ -157,9 +157,10 @@
 - **142 blocs** — Risque : 15 FAIBLE · 87 STANDARD · 40 ÉLEVÉ.
 - **Niveau de partage cible** : 1 bloc N0 (QR) · 29 N1 · 79 N2 · 33 N3.
 - **Vagues** : 1(15) · 2(21) · 3(46) · 4(16) · 5(7) · 6(28) · 7(8) · 8(1).
-- **Statut réel actuel** : **33/142 `shared` activés** (3 pilotes + vagues 1-5), 109 `legacy`.
+- **Statut réel actuel** : **39/142 `shared` activés** (3 pilotes + vagues 1-6), 103 `legacy`.
   Vague 4 (B09.7) : testimonials, business_stats, brands, lineup, reassurance, timeline.
   Vague 5 (B09.8) : menu_section, services_list, promo_banner, gift_card, event_info, event_ticketing.
+  Vague 6 (B09.9) : image, portfolio_work, favorite_links, concerts, merch, app_download.
 
 ## Divergences connues (ne migrent pas avant correction)
 

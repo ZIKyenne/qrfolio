@@ -37,6 +37,12 @@ import { EditorPromoBanner } from "./blocks/promo_banner/EditorPromoBanner"
 import { EditorGiftCard } from "./blocks/gift_card/EditorGiftCard"
 import { EditorEventInfo } from "./blocks/event_info/EditorEventInfo"
 import { EditorEventTicketing } from "./blocks/event_ticketing/EditorEventTicketing"
+import { EditorImage } from "./blocks/image/EditorImage"
+import { EditorPortfolioWork } from "./blocks/portfolio_work/EditorPortfolioWork"
+import { EditorFavoriteLinks } from "./blocks/favorite_links/EditorFavoriteLinks"
+import { EditorConcerts } from "./blocks/concerts/EditorConcerts"
+import { EditorMerch } from "./blocks/merch/EditorMerch"
+import { EditorAppDownload } from "./blocks/app_download/EditorAppDownload"
 
 const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   heading: EditorHeading,
@@ -72,6 +78,12 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   gift_card: EditorGiftCard,
   event_info: EditorEventInfo,
   event_ticketing: EditorEventTicketing,
+  image: EditorImage,
+  portfolio_work: EditorPortfolioWork,
+  favorite_links: EditorFavoriteLinks,
+  concerts: EditorConcerts,
+  merch: EditorMerch,
+  app_download: EditorAppDownload,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

@@ -22,6 +22,8 @@
   import { BuilderStatus } from "./BuilderStatus"
   import { BlockLibrary } from "./BlockLibrary"
   import { BlockSettingsPanel } from "./BlockSettingsPanel"
+  import { CanvasToolbar } from "./CanvasToolbar"
+  import { deviceFrameWidth, deviceLabel, canvasChrome, fitZoom, stepZoom, toggleOrientation, type CanvasDevice, type CanvasOrientation, type CanvasMode } from "./builderCanvas"
   import { BUILDER_REDESIGN } from "./builderFlags"
   import { useIsMobile } from "@/lib/useIsMobile"
   import { useToast } from "@/components/Toast"
@@ -431,6 +433,12 @@
     // On bascule en mode « un panneau à la fois » piloté par une barre d'onglets en bas.
     const isMobile = useIsMobile(1024)
     const [mobileTab, setMobileTab] = useState<"blocks"|"canvas"|"panel">("canvas")
+    // C04 — canvas responsive (actif seulement avec BUILDER_REDESIGN). Défauts = neutres (fluid/100 %)
+    // → identique à l'existant tant que l'utilisateur ne change rien.
+    const [canvasDevice, setCanvasDevice] = useState<CanvasDevice>("fluid")
+    const [canvasOrientation, setCanvasOrientation] = useState<CanvasOrientation>("portrait")
+    const [canvasZoom, setCanvasZoom] = useState(1)
+    const [canvasMode, setCanvasMode] = useState<CanvasMode>("edit")
     const [blockMenu, setBlockMenu] = useState<string | null>(null) // #10 : actions secondaires d'un bloc en bottom sheet
     const [scoreOpen, setScoreOpen] = useState(false) // #16 : score de profil replie en pastille par defaut
     const [blockSearchFocus, setBlockSearchFocus] = useState(false) // #13 : recherche de bloc focus -> on masque la barre du bas pour degager les resultats
@@ -1783,7 +1791,37 @@
           {/* CANVAS */}
           <div style={{ flex: 1, overflowY: "auto", padding: preview && isMobile ? "0 0 96px" : isMobile ? "12px" : "20px", background: "#0A0A0A", display: isMobile && mobileTab !== "canvas" ? "none" : undefined }}
             onClick={e => { if (e.target === e.currentTarget) { setSelectedId(null); setMultiSelection([]) } }}>
-            <div style={{ maxWidth: 640, margin: "0 auto" }}>
+            {/* C04 — Toolbar canvas responsive (flag ON, desktop). Flag OFF = rien (canvas inchangé). */}
+            {BUILDER_REDESIGN && !isMobile && !preview && canvasMode === "edit" && (() => {
+              const chrome = canvasChrome(canvasDevice, false, "edit")
+              return (
+                <div style={{ position: "sticky", top: 0, zIndex: 25, marginBottom: 12, borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <CanvasToolbar
+                    device={canvasDevice} orientation={canvasOrientation} zoom={canvasZoom} mode={canvasMode}
+                    label={deviceLabel(canvasDevice, canvasOrientation, 900)} showOrientation={chrome.showOrientation} showZoom={chrome.showZoom}
+                    onDevice={d => { setCanvasDevice(d); setCanvasZoom(1); setCanvasOrientation("portrait") }}
+                    onToggleOrientation={() => setCanvasOrientation(toggleOrientation)}
+                    onZoomIn={() => setCanvasZoom(z => stepZoom(z, 1))}
+                    onZoomOut={() => setCanvasZoom(z => stepZoom(z, -1))}
+                    onFit={() => setCanvasZoom(fitZoom(canvasDevice, canvasOrientation, 900))}
+                    onReset={() => setCanvasZoom(1)}
+                    onCenter={() => { try { document.querySelector('[data-block-id]')?.scrollIntoView({ behavior: "smooth", block: "start" }) } catch {} }}
+                    onToggleMode={() => setCanvasMode("preview")}
+                    onFullscreen={toggleFocus}
+                  />
+                </div>
+              )
+            })()}
+            {BUILDER_REDESIGN && !isMobile && canvasMode === "preview" && (
+              <div style={{ position: "sticky", top: 0, zIndex: 25, marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "7px 12px", background: "rgba(12,12,12,0.92)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10 }}>
+                <span style={{ fontSize: 11, color: G, fontWeight: 700 }}>Aperçu</span>
+                <div style={{ flex: 1 }} />
+                <button onClick={() => setCanvasMode("edit")} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#F5F0E8", fontSize: 12, cursor: "pointer" }}>Éditer</button>
+              </div>
+            )}
+            <div style={BUILDER_REDESIGN && !isMobile
+              ? { width: canvasDevice === "fluid" ? "100%" : deviceFrameWidth(canvasDevice, canvasOrientation, 900), maxWidth: canvasDevice === "fluid" ? 640 : "100%", margin: "0 auto", transform: canvasZoom !== 1 ? `scale(${canvasZoom})` : undefined, transformOrigin: "top center", borderRadius: canvasDevice !== "fluid" ? (canvasDevice === "mobile" ? 26 : 14) : 0, border: canvasDevice !== "fluid" ? "1px solid rgba(255,255,255,0.12)" : "none", boxShadow: canvasDevice !== "fluid" ? "0 10px 40px rgba(0,0,0,0.45)" : "none", overflow: canvasDevice !== "fluid" ? "hidden" : "visible", transition: "width 0.2s ease" }
+              : { maxWidth: 640, margin: "0 auto" }}>
               {/* ── Toolbar flottante multi-sélection (≥2 blocs) ─────────────── */}
               {multiSelection.length >= 2 && (
                 <div style={{
@@ -1980,7 +2018,7 @@
                     )}
 
                     <div style={{ overflow: "hidden", minHeight: 36, position: "relative", zIndex: 2, ...blockDecoration(block.content, theme).style }}>
-                      <PreviewBoundary><MemoBlockPreview block={block} theme={theme} dayMode={dayMode} editable={!preview} onEditField={onEditField} /></PreviewBoundary>
+                      <PreviewBoundary><MemoBlockPreview block={block} theme={theme} dayMode={dayMode} editable={!preview && !(BUILDER_REDESIGN && canvasMode === "preview")} onEditField={onEditField} /></PreviewBoundary>
                     </div>
                   </div>
                 )

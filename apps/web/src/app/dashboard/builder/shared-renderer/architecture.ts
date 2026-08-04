@@ -92,6 +92,8 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   "image", "portfolio_work", "favorite_links", "concerts", "merch", "app_download",
   // Vague 7 — blocs média interactifs à risque modéré (B09.10)
   "video_local", "audio_player", "pdf_viewer", "spotify_embed", "spotify_player", "before_after",
+  // Vague 8 — blocs précédemment bloqués, sécurisés par B09.11 (B09.12)
+  "video", "google_maps_embed", "album_block", "discography", "podcast_links", "product_catalog",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

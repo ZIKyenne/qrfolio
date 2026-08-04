@@ -24,7 +24,7 @@
 | services_list | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 5) |
 | image | media | carte | STANDARD | 2 | - | 4 | shared (vague 6) |
 | gallery | media | média-liste | ÉLEVÉ | 2 | - | 6 | legacy |
-| video | media | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
+| video | media | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 8) |
 | heading | info | texte | FAIBLE | 3 | - | 1 | shared (activé) |
 | rich_text | info | texte | FAIBLE | 3 | - | 1 | legacy |
 | faq | info | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -41,7 +41,7 @@
 | event_info | event | event-carte | STANDARD | 2 | - | 5 | shared (vague 5) |
 | divider | layout | layout-atome | FAIBLE | 3 | - | 1 | shared (vague 1) |
 | spacer | layout | layout-atome | FAIBLE | 3 | - | 1 | shared (vague 1) |
-| product_catalog | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
+| product_catalog | commerce | répéteur | STANDARD | 2 | - | 3 | shared (vague 8) |
 | featured_product | commerce | commerce-carte | STANDARD | 2 | - | 4 | legacy |
 | offer_comparison | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
 | packs | commerce | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -80,15 +80,15 @@
 | tickets_left | event | event-carte | STANDARD | 2 | - | 5 | legacy |
 | spotify_embed | music | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 7) |
 | latest_release | music | musique | ÉLEVÉ | 1 | - | 6 | legacy |
-| discography | music | répéteur | STANDARD | 2 | - | 3 | legacy |
-| album_block | music | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
+| discography | music | répéteur | STANDARD | 2 | - | 3 | shared (vague 8) |
+| album_block | music | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 8) |
 | playlist_block | music | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | concerts | music | répéteur | STANDARD | 2 | - | 3 | shared (vague 6) |
 | ticketing | music | musique | ÉLEVÉ | 1 | - | 6 | legacy |
 | presave | music | musique | ÉLEVÉ | 1 | - | 6 | legacy |
 | booking_request | music | form | ÉLEVÉ | 1 | - | 7 | legacy |
 | merch | music | répéteur | STANDARD | 2 | - | 3 | shared (vague 6) |
-| google_maps_embed | business | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
+| google_maps_embed | business | embed/média | ÉLEVÉ | 1 | - | 6 | shared (vague 8) |
 | quote_form | business | form | ÉLEVÉ | 1 | - | 7 | legacy |
 | quick_contact | business | carte | STANDARD | 2 | - | 4 | legacy |
 | multi_contact | business | répéteur | STANDARD | 2 | - | 3 | legacy |
@@ -122,7 +122,7 @@
 | twitch_live | social | embed/média | ÉLEVÉ | 1 | - | 6 | legacy |
 | discord_server | social | social | STANDARD | 2 | - | 3 | legacy |
 | telegram_channel | social | social | STANDARD | 2 | - | 3 | legacy |
-| podcast_links | social | répéteur | STANDARD | 2 | - | 3 | legacy |
+| podcast_links | social | répéteur | STANDARD | 2 | - | 3 | shared (vague 8) |
 | favorite_links | social | répéteur | STANDARD | 2 | - | 3 | shared (vague 6) |
 | call_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
 | directions_button | actions | cta | STANDARD | 3 | - | 2 | legacy |
@@ -162,6 +162,12 @@
   Vague 5 (B09.8) : menu_section, services_list, promo_banner, gift_card, event_info, event_ticketing.
   Vague 6 (B09.9) : image, portfolio_work, favorite_links, concerts, merch, app_download.
   Vague 7 (B09.10) : video_local, audio_player, pdf_viewer, spotify_embed, spotify_player, before_after.
+
+- **Vague 8 (B09.12)** : video, google_maps_embed, album_block, discography, podcast_links,
+  product_catalog → **51 shared / 91 legacy**. Embeds allowlistés (SafeEmbedModel) + contrat
+  `SharedImageModel` (`<img>` éditeur / `SmartImage` public). Restent legacy : `latest_release`,
+  `playlist_block`, `presave` (divergence cta_label éditeur-only, §7, non résolue), `embed_block`
+  (iframe arbitraire), `media_before_after` (slider). Voir `SHARED-RENDERER-WAVE-8-UNBLOCKED-BLOCKS.md`.
 
 - **B09.11 (correction de divergences, AUCUNE migration)** : 45 shared / 97 legacy inchangés.
   Fondations sécurisées → blocs **prêts à migrer** (B09.12) : `video`, `google_maps_embed`

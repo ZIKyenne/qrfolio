@@ -169,17 +169,18 @@ describe("B09.11 D — beforeAfterModel (10 cas)", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 // Métadonnées — AUCUN bloc activé par cette mission
 // ══════════════════════════════════════════════════════════════════════════════
-describe("B09.11 — aucune migration de bloc", () => {
-  it("toujours exactement 45 blocs shared actifs", () => {
-    expect(SHARED_RENDERER_BLOCKS.size).toBe(45)
+describe("B09.11 — fondations (les corrections restent valides après B09.12)", () => {
+  it("blocs migrés en B09.12 désormais actifs (video/maps/album/discography/podcast/catalog)", () => {
+    for (const t of ["video", "google_maps_embed", "album_block", "discography", "podcast_links", "product_catalog"]) {
+      expect(SHARED_RENDERER_BLOCKS.has(t)).toBe(true)
+    }
   })
-  it("les blocs corrigés/caractérisés restent LEGACY (non activés)", () => {
-    for (const t of ["video", "google_maps_embed", "embed_block", "album_block", "media_before_after",
-      "latest_release", "discography", "playlist_block", "presave", "podcast_links", "product_catalog"]) {
+  it("blocs encore bloqués restent LEGACY", () => {
+    for (const t of ["embed_block", "media_before_after", "latest_release", "playlist_block", "presave"]) {
       expect(SHARED_RENDERER_BLOCKS.has(t)).toBe(false)
     }
   })
-  it("before_after (déjà shared en vague 7) reste actif", () => {
+  it("before_after (shared v7) reste actif", () => {
     expect(SHARED_RENDERER_BLOCKS.has("before_after")).toBe(true)
   })
 })

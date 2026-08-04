@@ -49,6 +49,12 @@ import { PublicPdfViewer } from "./blocks/pdf_viewer/PublicPdfViewer"
 import { PublicSpotifyEmbed } from "./blocks/spotify_embed/PublicSpotifyEmbed"
 import { PublicSpotifyPlayer } from "./blocks/spotify_player/PublicSpotifyPlayer"
 import { PublicBeforeAfter } from "./blocks/before_after/PublicBeforeAfter"
+import { PublicVideo } from "./blocks/video/PublicVideo"
+import { PublicGoogleMapsEmbed } from "./blocks/google_maps_embed/PublicGoogleMapsEmbed"
+import { PublicAlbumBlock } from "./blocks/album_block/PublicAlbumBlock"
+import { PublicDiscography } from "./blocks/discography/PublicDiscography"
+import { PublicPodcastLinks } from "./blocks/podcast_links/PublicPodcastLinks"
+import { PublicProductCatalog } from "./blocks/product_catalog/PublicProductCatalog"
 
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
@@ -96,6 +102,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   spotify_embed: PublicSpotifyEmbed,
   spotify_player: PublicSpotifyPlayer,
   before_after: PublicBeforeAfter,
+  video: PublicVideo,
+  google_maps_embed: PublicGoogleMapsEmbed,
+  album_block: PublicAlbumBlock,
+  discography: PublicDiscography,
+  podcast_links: PublicPodcastLinks,
+  product_catalog: PublicProductCatalog,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

@@ -6,13 +6,14 @@
 // de page et un indicateur de position. NE duplique PAS builderPreview : rend `children` (l'aperçu).
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { BUILDER_UI } from "./builderUi"
 import {
   DEVICE_LABEL, deviceFrameWidth, deviceLabel, canvasChrome, fitZoom, stepZoom, toggleOrientation,
   clampZoom, resolveCanvasShortcut, pagePositionLabel,
   type CanvasDevice, type CanvasOrientation, type CanvasMode,
 } from "./builderCanvas"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 export interface ResponsiveCanvasProps {
   children: ReactNode

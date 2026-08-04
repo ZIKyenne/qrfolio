@@ -6,13 +6,14 @@
 // dupliquée (§24). Rendu derrière le flag BUILDER_REDESIGN ou dans le harness. Desktop + mobile.
 
 import { useMemo, useRef, useState, useCallback, useEffect } from "react"
+import { BUILDER_UI } from "./builderUi"
 import {
   buildLibraryItems, searchLibrary, libraryCategories, nearbyCategories, premiumInfo,
   isDuplicateAdd, pushRecentType, type BlockLibraryItem, type RecoContext, recommendedForContext,
 } from "./builderLibrary"
 import { BlockLibraryCard } from "./BlockLibraryCard"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 type Tab = "recommended" | "recent" | "favorites" | "all" | string
 

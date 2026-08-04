@@ -73,3 +73,11 @@ override navigateur). Voir `BUILDER-REDESIGN-INTEGRATION-QA.md`.
 
 **Canary** : flag OFF par défaut, activable par ENV (staging) ou override navigateur (dev/QA).
 Pas d'activation production par défaut tant que la QA authentifiée réelle n'est pas faite.
+
+## Mise à jour C07 (harmonisation visuelle)
+
+Le style est désormais centralisé (`builderUi.ts`) et des snapshots visuels de référence existent
+(`e2e/builder-visual.spec.ts`, gatés `VISUAL=1`). **Prêt pour staging** (flag OFF par défaut). Lors de
+l'activation staging, dérouler en plus la QA visuelle : `VISUAL=1 pnpm test:e2e e2e/builder-visual.spec.ts`
+après avoir régénéré les références sur l'environnement cible. La décision d'activation par défaut
+reste inchangée (QA authentifiée réelle requise).

@@ -7,6 +7,7 @@
 // arrière. Rendu derrière BUILDER_REDESIGN ou dans le harness. Ne duplique aucune logique métier.
 
 import { useEffect, useMemo, useState, useCallback, type ReactNode } from "react"
+import { BUILDER_UI } from "./builderUi"
 import {
   MOBILE_BOTTOM_NAV, openSheet, CLOSED_SHEET, setSnap, sheetForKeyboard, bottomNavVisible,
   safeAreaTargets, resolveBackAction, mobileChrome, afterAdd, editTabIntent, publishTabBadge,
@@ -22,7 +23,7 @@ import { BlockSettingsPanel } from "./BlockSettingsPanel"
 import { BLOCK_DEFS, type Block } from "./types"
 import type { BlockActionId } from "./builderUx"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 export interface MobileBuilderShellProps {
   pageName: string

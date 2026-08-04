@@ -4,8 +4,9 @@
 // (jamais décrit uniquement par un placeholder). Aucune dépendance Supabase.
 
 import type { BlockField } from "./types"
+import { BUILDER_UI } from "./builderUi"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 export interface SettingsFieldRendererProps {
   blockId: string

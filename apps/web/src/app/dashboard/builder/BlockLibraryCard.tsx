@@ -4,8 +4,9 @@
 // tactiles ≥ 44 px sur mobile. Tokenisé (pas de hover requis pour agir).
 
 import type { BlockLibraryItem } from "./builderLibrary"
+import { BUILDER_UI } from "./builderUi"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 export interface BlockLibraryCardProps {
   item: BlockLibraryItem

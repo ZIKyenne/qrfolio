@@ -5,8 +5,9 @@
 
 import { blockContextActions, type BlockActionId } from "./builderUx"
 import type { Block } from "./types"
+import { BUILDER_UI } from "./builderUi"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 const ICON: Record<BlockActionId, string> = {
   moveUp: "↑", moveDown: "↓", duplicate: "⧉", toggleVisible: "👁", toggleLock: "🔒",

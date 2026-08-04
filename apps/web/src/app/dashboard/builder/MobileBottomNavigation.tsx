@@ -3,8 +3,9 @@
 // A11y : role=tablist, aria-selected, cibles ≥ 44 px.
 
 import { MOBILE_BOTTOM_NAV, type MobileBuilderTab } from "./builderMobile"
+import { BUILDER_UI } from "./builderUi"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 export interface MobileBottomNavigationProps {
   active: MobileBuilderTab | null

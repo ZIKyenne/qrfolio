@@ -8,6 +8,7 @@
 
 import { useMemo, useState, useCallback, useEffect, type ReactNode } from "react"
 import { BLOCK_DEFS, type Block } from "./types"
+import { BUILDER_UI } from "./builderUi"
 import {
   resolveSettingsMode, SETTINGS_MODE_KEY, blockSettingsSections, resolveActiveSection,
   contentFieldsFor, isPilotBlock, blockStateBadges, isBlockEmpty, type BlockSettingsMode,
@@ -16,7 +17,7 @@ import { LIBRARY_LABEL_OVERRIDES } from "./builderLibrary"
 import { SettingsFieldRenderer } from "./SettingsFieldRenderer"
 import { BlockContextToolbar } from "./BlockContextToolbar"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 const TONE: Record<string, string> = { neutral: MUTED, warning: "var(--warning)", accent: "var(--accent)", success: "var(--success)" }
 
 export interface BlockSettingsPanelProps {

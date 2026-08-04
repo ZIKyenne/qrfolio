@@ -2,8 +2,9 @@
 // statut de sauvegarde (réutilise BuilderStatus), undo/redo, menu secondaire. Safe area haute, ≥ 44 px.
 
 import { BuilderStatus } from "./BuilderStatus"
+import { BUILDER_UI } from "./builderUi"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 export interface MobileBuilderHeaderProps {
   pageName: string

@@ -4,8 +4,9 @@
 
 import type { CanvasDevice, CanvasOrientation, CanvasMode } from "./builderCanvas"
 import { DEVICE_LABEL, zoomPercent } from "./builderCanvas"
+import { BUILDER_UI } from "./builderUi"
 
-const MUTED = "#8A8478"
+const MUTED = BUILDER_UI.text.muted
 
 export interface CanvasToolbarProps {
   device: CanvasDevice

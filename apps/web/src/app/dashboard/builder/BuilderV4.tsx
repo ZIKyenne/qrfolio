@@ -23,6 +23,7 @@
   import { BlockLibrary } from "./BlockLibrary"
   import { BlockSettingsPanel } from "./BlockSettingsPanel"
   import { CanvasToolbar } from "./CanvasToolbar"
+  import { MobileBuilderShell } from "./MobileBuilderShell"
   import { deviceFrameWidth, deviceLabel, canvasChrome, fitZoom, stepZoom, toggleOrientation, type CanvasDevice, type CanvasOrientation, type CanvasMode } from "./builderCanvas"
   import { BUILDER_REDESIGN } from "./builderFlags"
   import { useIsMobile } from "@/lib/useIsMobile"
@@ -1097,7 +1098,37 @@
     }
 
     return (
-      <div className="builder-root" style={{ height: "100dvh", background: "#080808", display: "flex", flexDirection: "column", fontFamily: "DM Sans, sans-serif", color: "#F5F0E8", overflow: "hidden" }}>
+      <div className="builder-root" style={{ height: "100dvh", background: "#080808", display: "flex", flexDirection: "column", fontFamily: "DM Sans, sans-serif", color: "#F5F0E8", overflow: "hidden", position: "relative" }}>
+
+        {/* C05 — Shell mobile dédié (flag ON + viewport mobile). Recouvre le Builder desktop-compressé.
+            Flag OFF ou desktop = interface historique strictement inchangée (zéro régression). */}
+        {BUILDER_REDESIGN && isMobile && !preview && (
+          <MobileBuilderShell
+            pageName={pageName} saving={saving} saved={saved} saveError={saveError} saveErrorMsg={saveErrorMsg} hasUnsaved={hasUnsaved}
+            canUndo={undoRedo.canUndo()} canRedo={undoRedo.canRedo()}
+            onUndo={() => { const p = undoRedo.undo(); if (p) applySnapshot(p) }}
+            onRedo={() => { const n = undoRedo.redo(); if (n) applySnapshot(n) }}
+            onSave={saveNow} onRetry={() => saveCtrlRef.current?.retry()}
+            onBack={() => { try { window.location.assign("/dashboard") } catch { /* noop */ } }}
+            blocks={blocks} selectedId={selectedId} onSelect={setSelectedId}
+            favorites={favorites} recents={recentBlocks} onToggleFavorite={toggleFav}
+            onAddBlock={(t) => addBlock(t)}
+            onChange={(id, k, v) => updateBlock(id, k, v)}
+            onDuplicate={(id) => duplicateBlock(id)} onDelete={(id) => deleteBlock(id)}
+            onToggleVisible={(id) => toggleVisible(id)} onToggleLock={(id) => toggleLock(id)} onToggleDraft={(id) => toggleDraft(id)}
+            onMove={(id, dir) => setBlocks(prev => { const i = prev.findIndex(b => b.id === id); return i < 0 ? prev : reorderArray(prev, i, dir === -1 ? i - 1 : i + 2) })}
+            onReset={(id) => resetBlock(id)}
+            pageStatus={pageStatus} publishing={publishing} publishError={publishError} onPublish={() => { void handlePublish() }}
+            publicUrl={pageSlug ? `/${pageSlug}` : undefined}
+            renderCanvas={() => blocks.map(b => (
+              <div key={b.id} data-block-id={b.id} onClick={() => setSelectedId(b.id)} style={{ cursor: "pointer", boxShadow: selectedId === b.id ? `inset 0 0 0 2px ${G}` : "none", opacity: b.visible ? (b.draft ? 0.6 : 1) : 0.35 }}>
+                <PreviewBoundary><MemoBlockPreview block={b} theme={theme} dayMode={dayMode} /></PreviewBoundary>
+              </div>
+            ))}
+            renderLegacyContent={(b) => <EditPanel key={b.id + "-mc"} block={b} onChange={(k, v) => updateBlock(b.id, k, v)} only="content" />}
+            renderLegacyDesign={(b) => <EditPanel key={b.id + "-ml"} block={b} onChange={(k, v) => updateBlock(b.id, k, v)} only="layout" />}
+          />
+        )}
 
         {/* TOPBAR (masquee en mode Apercu plein ecran sur mobile) */}
         <div style={{ height: 50, background: "#0D0D0D", borderBottom: "1px solid rgba(201,168,76,0.12)", display: (preview && isMobile) ? "none" : "flex", alignItems: "center", padding: isMobile ? "0 9px" : "0 14px", gap: isMobile ? 6 : 10, flexShrink: 0, zIndex: 20 }}>

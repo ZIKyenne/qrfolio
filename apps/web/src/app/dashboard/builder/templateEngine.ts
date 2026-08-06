@@ -6,6 +6,7 @@
 
 import { BLOCK_DEFS, type PageTheme } from "./types"
 import { PAGE_TEMPLATES, AMBIANCE_THEMES, type PageTemplate } from "./page-templates"
+import { EXTRA_STRUCTURES } from "./templateStructures.extra"
 
 // ── Types du moteur ───────────────────────────────────────────────────────────
 export interface TemplateBlock { type: string; content: Record<string, any> }
@@ -73,7 +74,13 @@ export const TEMPLATE_LAYOUT_LIST: TemplateLayout[] = Object.values(TEMPLATE_LAY
 export function structureFromTemplate(t: PageTemplate): TemplateStructure {
   return { key: t.key, group: t.group, label: t.label, emoji: t.emoji, desc: t.desc, blocks: t.blocks }
 }
-export const TEMPLATE_STRUCTURES: TemplateStructure[] = PAGE_TEMPLATES.map(structureFromTemplate)
+// Structures = celles dérivées des templates existants (rétrocompat) + les NOUVELLES verticales
+// métier ajoutées en données (T5). La galerie legacy reste sur PAGE_TEMPLATES ; ces structures
+// alimentent le moteur/composeur (TemplateComposer) sans toucher au flux galerie.
+export const TEMPLATE_STRUCTURES: TemplateStructure[] = [
+  ...PAGE_TEMPLATES.map(structureFromTemplate),
+  ...EXTRA_STRUCTURES,
+]
 
 // ── Composition (pure, déterministe) ───────────────────────────────────────────
 // Combine structure × style × layout → template prêt à appliquer. Ne mute jamais les entrées

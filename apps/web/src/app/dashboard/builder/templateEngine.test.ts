@@ -5,6 +5,7 @@ import {
   type TemplateLayout,
 } from "./templateEngine"
 import { PAGE_TEMPLATES, AMBIANCE_THEMES, AMBIANCE_KEYS } from "./page-templates"
+import { EXTRA_STRUCTURES } from "./templateStructures.extra"
 import { BLOCK_DEFS } from "./types"
 
 describe("registres du moteur", () => {
@@ -17,13 +18,17 @@ describe("registres du moteur", () => {
       expect(s.theme).toBe(AMBIANCE_THEMES[s.key])
     }
   })
-  it("TEMPLATE_STRUCTURES = une structure par template existant (sans thème)", () => {
-    expect(TEMPLATE_STRUCTURES.length).toBe(PAGE_TEMPLATES.length)
+  it("TEMPLATE_STRUCTURES = templates existants + verticales ajoutées (sans thème)", () => {
+    expect(TEMPLATE_STRUCTURES.length).toBeGreaterThanOrEqual(PAGE_TEMPLATES.length)
     for (const s of TEMPLATE_STRUCTURES) {
       expect(s).not.toHaveProperty("theme")
       expect(Array.isArray(s.blocks)).toBe(true)
       expect(s.blocks.length).toBeGreaterThan(0)
     }
+  })
+  it("clés de structure uniques (aucune collision)", () => {
+    const keys = TEMPLATE_STRUCTURES.map(s => s.key)
+    expect(new Set(keys).size).toBe(keys.length)
   })
 })
 
@@ -126,6 +131,35 @@ describe("layouts T2 (densité, clés universelles réelles)", () => {
     const had = "__space" in s.blocks[0].content
     composeTemplate(s, TEMPLATE_STYLES.gold, TEMPLATE_LAYOUTS.compact)
     expect("__space" in s.blocks[0].content).toBe(had)
+  })
+})
+
+describe("verticales métier ajoutées (T5)", () => {
+  it("EXTRA_STRUCTURES intégrées au registre + types de blocs valides", () => {
+    for (const s of EXTRA_STRUCTURES) {
+      expect(TEMPLATE_STRUCTURES.find(x => x.key === s.key), `${s.key} absente du registre`).toBeTruthy()
+      expect(unknownBlockTypes(s), `${s.key}: types inconnus`).toEqual([])
+      expect(s.group && s.label && s.emoji && s.desc).toBeTruthy()
+    }
+  })
+  it("anti-fake : tout avis d'exemple est marqué « (exemple) »", () => {
+    for (const s of EXTRA_STRUCTURES) {
+      for (const b of s.blocks) {
+        if (b.type === "testimonials") {
+          for (const k of ["text1", "text2", "text3"]) {
+            const v = (b.content as any)[k]
+            if (v) expect(String(v).includes("(exemple)"), `${s.key}.${k}`).toBe(true)
+          }
+        }
+      }
+    }
+  })
+  it("une nouvelle verticale se compose avec n'importe quel style", () => {
+    const plombier = TEMPLATE_STRUCTURES.find(s => s.key === "artisan_plombier")!
+    const c = composeTemplate(plombier, TEMPLATE_STYLES.slate, TEMPLATE_LAYOUTS.compact)
+    expect(c.theme).toBe(AMBIANCE_THEMES.slate)
+    expect(c.blocks.every(b => !!BLOCK_DEFS[b.type])).toBe(true)
+    expect(c.blocks.every(b => b.content.__space === "Compact")).toBe(true)
   })
 })
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import {
   TEMPLATE_STYLES, TEMPLATE_STYLE_LIST, TEMPLATE_STRUCTURES, DEFAULT_LAYOUT, TEMPLATE_LAYOUTS,
-  composeTemplate, composeByKeys, structureFromTemplate, unknownBlockTypes,
+  TEMPLATE_LAYOUT_LIST, composeTemplate, composeByKeys, structureFromTemplate, unknownBlockTypes,
   type TemplateLayout,
 } from "./templateEngine"
 import { PAGE_TEMPLATES, AMBIANCE_THEMES, AMBIANCE_KEYS } from "./page-templates"
@@ -97,6 +97,35 @@ describe("axe layout (T1 : identité + transform pur)", () => {
     const composed = composeTemplate(s, TEMPLATE_STYLES.gold, reverse)
     expect(composed.blocks[0].type).toBe(s.blocks[s.blocks.length - 1].type)
     expect(composed.key).toBe(`${s.key}__gold__reverse`)
+  })
+})
+
+describe("layouts T2 (densité, clés universelles réelles)", () => {
+  it("3 layouts : default, compact, airy", () => {
+    expect(Object.keys(TEMPLATE_LAYOUTS).sort()).toEqual(["airy", "compact", "default"])
+    expect(TEMPLATE_LAYOUT_LIST.length).toBe(3)
+  })
+  it("compact injecte __space=Compact sur tous les blocs", () => {
+    const c = composeTemplate(TEMPLATE_STRUCTURES[0], TEMPLATE_STYLES.gold, TEMPLATE_LAYOUTS.compact)
+    expect(c.blocks.every(b => b.content.__space === "Compact")).toBe(true)
+    expect(c.layoutKey).toBe("compact")
+  })
+  it("airy injecte __space=Aéré", () => {
+    const c = composeTemplate(TEMPLATE_STRUCTURES[0], TEMPLATE_STYLES.gold, TEMPLATE_LAYOUTS.airy)
+    expect(c.blocks.every(b => b.content.__space === "Aéré")).toBe(true)
+  })
+  it("__space utilise des valeurs réelles (BLOCK_SPACE_OPTIONS)", () => {
+    const valid = ["Défaut", "Compact", "Aéré"]
+    for (const lk of ["compact", "airy"]) {
+      const c = composeTemplate(TEMPLATE_STRUCTURES[0], TEMPLATE_STYLES.gold, TEMPLATE_LAYOUTS[lk])
+      expect(c.blocks.every(b => valid.includes(b.content.__space))).toBe(true)
+    }
+  })
+  it("le layout ne mute pas la structure d'origine", () => {
+    const s = TEMPLATE_STRUCTURES[0]
+    const had = "__space" in s.blocks[0].content
+    composeTemplate(s, TEMPLATE_STYLES.gold, TEMPLATE_LAYOUTS.compact)
+    expect("__space" in s.blocks[0].content).toBe(had)
   })
 })
 

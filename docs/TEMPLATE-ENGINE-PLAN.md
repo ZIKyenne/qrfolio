@@ -83,8 +83,8 @@ applyPageTemplate()  (existant, Builder)  →  /api/templates/use (existant)
 
 | Vague | Contenu | Livrable vérifiable |
 | --- | --- | --- |
-| **T1 — Moteur pur** | `templateEngine` (`TemplateStructure/Style/Layout` + `composeTemplate`) + tests + migration des 20 templates existants en `structure+style` (rétrocompat galerie inchangée) + acter DB legacy | tests unitaires + `PAGE_TEMPLATES` dérivé identique |
-| **T2 — Axe layout + preview** | 2-3 `TemplateLayouts` + harness de preview `structure×style×layout` + captures | harness Playwright + captures avant/après |
+| **T1 — Moteur pur** ✅ FAIT (`220cb809`) | `templateEngine.ts` (`TemplateStructure/Style/Layout` + `composeTemplate`) + 12 tests (round-trip rétrocompat + combos croisés) + DB legacy actée | tests verts, `page-templates.ts` inchangé |
+| **T2 — Axe layout + preview** ✅ FAIT | 3 layouts (`default`/`compact`/`airy`, densité via `__space` réel) + **harness `/e2e-harness/template-preview`** (rendu RÉEL des blocs, structure×style×layout) + spec + captures **vérifiées visuellement** (Restaurant × gold/slate/compact = pages premium complètes, 0 erreur) | +5 tests, e2e 4 tests, captures lues par l'agent |
 | **T3 — Sélecteur galerie** | choisir style/layout dans la galerie & `TemplatePreviewModal` (derrière flag si besoin) | e2e galerie |
 | **T4 — Images premium** | placeholders élégants + petit set bundlé licence-safe + intégration picker | captures |
 | **T5 — Verticales (data)** | ajouter des métiers = **données** `TemplateStructure` par lots (Business/Restauration/…) ; QA par lot | par lot, captures |

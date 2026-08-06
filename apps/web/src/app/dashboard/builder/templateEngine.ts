@@ -55,9 +55,19 @@ export const TEMPLATE_STYLES: Record<string, TemplateStyle> = Object.fromEntries
 )
 export const TEMPLATE_STYLE_LIST: TemplateStyle[] = Object.values(TEMPLATE_STYLES)
 
-// Layout par défaut : identité (T1). L'axe layout est développé en T2.
+// ── Axe LAYOUT (T2) ─────────────────────────────────────────────────────────
+// Modifieurs PURS de disposition. Ils n'écrivent que des clés universelles RÉELLES honorées par le
+// renderer (`__space` ∈ BLOCK_SPACE_OPTIONS = "Défaut"/"Compact"/"Aéré"). Aucune donnée métier touchée.
+function setDensity(space: string): (bs: TemplateBlock[]) => TemplateBlock[] {
+  return bs => bs.map(b => ({ type: b.type, content: { ...b.content, __space: space } }))
+}
 export const DEFAULT_LAYOUT: TemplateLayout = { key: "default", label: "Standard" }
-export const TEMPLATE_LAYOUTS: Record<string, TemplateLayout> = { default: DEFAULT_LAYOUT }
+export const COMPACT_LAYOUT: TemplateLayout = { key: "compact", label: "Compact", transformBlocks: setDensity("Compact") }
+export const AIRY_LAYOUT: TemplateLayout = { key: "airy", label: "Aéré", transformBlocks: setDensity("Aéré") }
+export const TEMPLATE_LAYOUTS: Record<string, TemplateLayout> = {
+  default: DEFAULT_LAYOUT, compact: COMPACT_LAYOUT, airy: AIRY_LAYOUT,
+}
+export const TEMPLATE_LAYOUT_LIST: TemplateLayout[] = Object.values(TEMPLATE_LAYOUTS)
 
 // Structures dérivées des templates existants (réutilisables avec n'importe quel style).
 export function structureFromTemplate(t: PageTemplate): TemplateStructure {

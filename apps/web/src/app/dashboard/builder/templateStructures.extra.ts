@@ -267,4 +267,152 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
       { type: "social_links", content: { instagram: "https://instagram.com", youtube: "https://youtube.com" } },
     ],
   },
+
+  // ── Santé (compléments) ─────────────────────────────────────────────────────
+  {
+    key: "sante_psychologue", group: "Santé", label: "Psychologue", emoji: "🧠",
+    desc: "Approche, motifs, prise de rendez-vous (cabinet & visio).",
+    blocks: [
+      { type: "profile", content: { name: "Claire Moreau", tagline: "Psychologue clinicienne · Cabinet & visio", badge: "Sur rendez-vous" } },
+      { type: "bio", content: { text: "J'accompagne adultes et adolescents avec bienveillance et sans jugement : anxiété, confiance en soi, périodes de transition. Un espace confidentiel pour avancer à votre rythme.", align: "center" } },
+      { type: "services_list", content: { title: "Motifs de consultation", s1_icon: "💭", s1_name: "Anxiété & stress", s1_desc: "Gestion des émotions", s2_icon: "🌱", s2_name: "Confiance en soi", s2_desc: "Estime et affirmation", s3_icon: "🔄", s3_name: "Transitions de vie", s3_desc: "Deuil, rupture, réorientation" } },
+      { type: "faq", content: { title: "Questions fréquentes", q1: "Consultez-vous en visio ?", a1: "Oui, en cabinet ou en visioconférence sécurisée.", q2: "Combien de temps dure une séance ?", a2: "Environ 50 minutes.", q3: "Les séances sont-elles remboursées ?", a3: "Selon votre mutuelle et certains dispositifs, renseignez-vous." } },
+      { type: "calendly", content: { label: "Prendre rendez-vous", url: "https://doctolib.fr", description: "Cabinet ou visio · 50 min" } },
+      { type: "google_maps", content: { label: "Cabinet de psychologie", address: "23 rue Nationale, 59000 Lille", transport: "Métro Rihour" } },
+    ],
+  },
+  {
+    key: "sante_nutritionniste", group: "Santé", label: "Diététicien-nutritionniste", emoji: "🥗",
+    desc: "Accompagnement, forfaits, prise de rendez-vous.",
+    blocks: [
+      { type: "profile", content: { name: "Léa Dubois", tagline: "Diététicienne-nutritionniste · Paris & visio", badge: "Bilan offert" } },
+      { type: "bio", content: { text: "Rééquilibrage alimentaire durable, sans frustration ni régime restrictif. Un suivi personnalisé adapté à votre mode de vie et vos objectifs.", align: "center" } },
+      { type: "services_list", content: { title: "Accompagnements", s1_icon: "⚖️", s1_name: "Perte de poids", s1_desc: "Approche progressive et durable", s2_icon: "🏃", s2_name: "Nutrition sportive", s2_desc: "Performance et récupération", s3_icon: "🌿", s3_name: "Troubles digestifs", s3_desc: "Confort et équilibre" } },
+      { type: "pricing", content: { title: "Forfaits", title1: "Bilan", price1: "60 €", desc1: "1h · plan personnalisé", title2: "Suivi mensuel", price2: "150 €", desc2: "3 séances / mois", title3: "Programme 3 mois", price3: "390 €", desc3: "Suivi complet", cta_label: "Réserver mon bilan", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Julie P.", "-6 kg sans frustration, j'ai enfin compris comment m'alimenter.", "Marc T.", "Suivi au top, conseils concrets et bienveillants.") },
+      { type: "calendly", content: { label: "Prendre rendez-vous", url: "https://calendly.com", description: "Cabinet ou visio" } },
+      { type: "social_links", content: { instagram: "https://instagram.com" } },
+    ],
+  },
+  {
+    key: "sante_veterinaire", group: "Santé", label: "Vétérinaire", emoji: "🐾",
+    desc: "Soins, horaires, urgences, localisation.",
+    blocks: [
+      { type: "profile", content: { name: "Clinique VetCare", tagline: "Vétérinaires · Chiens, chats & NAC", badge: "Urgences 7j/7" } },
+      { type: "services_list", content: { title: "Nos soins", s1_icon: "💉", s1_name: "Consultation & vaccins", s1_desc: "Prévention et suivi", s2_icon: "🦴", s2_name: "Chirurgie", s2_desc: "Stérilisation, interventions", s3_icon: "🚨", s3_name: "Urgences", s3_desc: "Prise en charge rapide" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "8h30 - 19h", saturday: "9h - 18h", sunday: "Urgences uniquement", note: "Ligne d'urgence 24h/24" } },
+      { type: "testimonials", content: exampleReviews("Sandra R.", "Équipe rassurante, mon chien a été très bien pris en charge.", "Julien M.", "Réactifs en urgence un dimanche, un grand merci.") },
+      { type: "cta_button", content: { label: "Prendre rendez-vous", url: "#", style: "gold", icon: "🐕", full_width: "yes" } },
+      { type: "google_maps", content: { label: "Clinique VetCare", address: "9 avenue des Fleurs, 31000 Toulouse", transport: "Métro Jean Jaurès" } },
+      { type: "social_links", content: { facebook: "https://facebook.com", website: "https://monsite.com" } },
+    ],
+  },
+
+  // ── Beauté (compléments) ─────────────────────────────────────────────────────
+  {
+    key: "beaute_ongles", group: "Beauté & bien-être", label: "Prothésiste ongulaire", emoji: "💅",
+    desc: "Prestations, réalisations, réservation.",
+    blocks: [
+      { type: "profile", content: { name: "Nail Bar Studio", tagline: "Prothésiste ongulaire · Nail art", badge: "Sur rendez-vous" } },
+      { type: "services_list", content: { title: "Prestations", s1_icon: "💅", s1_name: "Pose gel / semi", s1_desc: "Couleur, French, babyboomer", s2_icon: "🎨", s2_name: "Nail art", s2_desc: "Décors sur-mesure", s3_icon: "✨", s3_name: "Remplissage & dépose", s3_desc: "Entretien soigné" } },
+      { type: "gallery", content: { title: "Réalisations", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre réalisation") } },
+      { type: "calendly", content: { label: "Réserver un créneau", url: "https://calendly.com", description: "Réservation en ligne" } },
+      { type: "testimonials", content: exampleReviews("Emma L.", "Pose impeccable qui tient 3 semaines, nail art superbe.", "Sarah K.", "Salon propre, accueil adorable, résultat top.") },
+      { type: "social_links", content: { instagram: "https://instagram.com", tiktok: "https://tiktok.com" } },
+    ],
+  },
+  {
+    key: "beaute_tatoueur", group: "Beauté & bien-être", label: "Tatoueur", emoji: "🖋️",
+    desc: "Style, flashs, prise de rendez-vous.",
+    blocks: [
+      { type: "profile", content: { name: "Encre & Style", tagline: "Studio de tatouage · Sur rendez-vous", badge: "Devis gratuit" } },
+      { type: "bio", content: { text: "Tatouages fine line, blackwork et projets sur-mesure dans un studio hygiénique et bienveillant. Chaque pièce est unique.", align: "center" } },
+      { type: "gallery", content: { title: "Portfolio", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre projet") } },
+      { type: "services_list", content: { title: "Styles", s1_icon: "✒️", s1_name: "Fine line", s1_desc: "Traits fins et délicats", s2_icon: "⬛", s2_name: "Blackwork", s2_desc: "Aplats et contrastes", s3_icon: "🎨", s3_name: "Sur-mesure", s3_desc: "Projet personnalisé" } },
+      { type: "testimonials", content: exampleReviews("Théo M.", "Travail d'une précision folle, studio ultra clean.", "Camille B.", "À l'écoute de mon projet, résultat au-delà de mes attentes.") },
+      { type: "cta_button", content: { label: "Demander un devis", url: "#", style: "gold", icon: "🖋️", full_width: "yes" } },
+      { type: "social_links", content: { instagram: "https://instagram.com" } },
+    ],
+  },
+  {
+    key: "beaute_spa_massage", group: "Beauté & bien-être", label: "Spa & massage", emoji: "🧖",
+    desc: "Soins, forfaits, réservation, ambiance zen.",
+    blocks: [
+      { type: "profile", content: { name: "Sérénité Spa", tagline: "Spa · Massages & soins du corps", badge: "Offre découverte" } },
+      { type: "promo_banner", content: { emoji: "🌸", text: "Rituel découverte -20%", subtext: "Valable sur votre première visite", cta_label: "En profiter", cta_url: "#" } },
+      { type: "services_list", content: { title: "Nos soins", s1_icon: "💆", s1_name: "Massage relaxant", s1_desc: "60 min · détente profonde", s2_icon: "🔥", s2_name: "Soin aux pierres chaudes", s2_desc: "Chaleur et lâcher-prise", s3_icon: "🛁", s3_name: "Rituel corps", s3_desc: "Gommage + enveloppement" } },
+      { type: "pricing", content: { title: "Forfaits", title1: "Massage 30 min", price1: "45 €", desc1: "Express détente", title2: "Rituel 1h", price2: "85 €", desc2: "Le plus demandé", title3: "Parenthèse 2h", price3: "150 €", desc3: "Soin complet", cta_label: "Réserver", cta_url: "#" } },
+      { type: "calendly", content: { label: "Réserver un soin", url: "https://calendly.com", description: "7j/7 sur réservation" } },
+      { type: "testimonials", content: exampleReviews("Nadia B.", "Parenthèse hors du temps, personnel aux petits soins.", "Hélène R.", "Massage divin, ambiance apaisante, je reviendrai.") },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+
+  // ── Commerce (compléments) ───────────────────────────────────────────────────
+  {
+    key: "commerce_bijouterie", group: "Commerce", label: "Bijouterie", emoji: "💍",
+    desc: "Collections, créations, click & collect.",
+    blocks: [
+      { type: "profile", content: { name: "Atelier Or & Éclat", tagline: "Bijouterie créateur · Or & pierres fines", badge: "Sur-mesure" } },
+      { type: "bio", content: { text: "Bijoux créés à la main dans notre atelier : alliances, créations sur-mesure et réparations. L'élégance d'une pièce unique.", align: "center" } },
+      { type: "gallery", content: { title: "Collections", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre bijou") } },
+      { type: "product", content: { name: "Bague solitaire or 18k", price: "890 €", description: "Diamant 0,3 ct, or blanc. Certificat inclus.", cta_label: "Découvrir", cta_url: "#" } },
+      { type: "cta_button", content: { label: "Prendre rendez-vous en boutique", url: "#", style: "gold", icon: "💎", full_width: "yes" } },
+      { type: "google_maps", content: { label: "Atelier Or & Éclat", address: "7 rue de la Monnaie, 59000 Lille", transport: "Grand Place" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", pinterest: "https://pinterest.com" } },
+    ],
+  },
+  {
+    key: "commerce_cave", group: "Commerce", label: "Cave à vin", emoji: "🍷",
+    desc: "Sélection, dégustations, conseils, horaires.",
+    blocks: [
+      { type: "profile", content: { name: "La Cave du Coin", tagline: "Caviste indépendant · Vins & spiritueux", badge: "Dégustations" } },
+      { type: "bio", content: { text: "Une sélection de vignerons passionnés, des conseils sans chichis et des dégustations chaque samedi. Trouvez la bouteille parfaite.", align: "center" } },
+      { type: "services_list", content: { title: "À la cave", s1_icon: "🍇", s1_name: "Sélection vignerons", s1_desc: "Nature, bio, coups de cœur", s2_icon: "🥂", s2_name: "Dégustations", s2_desc: "Chaque samedi 17h-20h", s3_icon: "🎁", s3_name: "Coffrets cadeaux", s3_desc: "Sur-mesure, tous budgets" } },
+      { type: "promo_banner", content: { emoji: "🍾", text: "Foire aux vins : -15% dès 6 bouteilles", subtext: "Jusqu'à la fin du mois", cta_label: "Voir la sélection", cta_url: "#" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "10h - 13h / 15h - 20h", saturday: "10h - 20h", sunday: "10h - 13h", note: "Fermé le lundi matin" } },
+      { type: "google_maps", content: { label: "La Cave du Coin", address: "14 rue du Marché, 21000 Dijon", transport: "Centre-ville" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+  {
+    key: "commerce_animalerie", group: "Commerce", label: "Toiletteur / Animalerie", emoji: "🐩",
+    desc: "Prestations, produits, réservation toilettage.",
+    blocks: [
+      { type: "profile", content: { name: "Pattes & Compagnie", tagline: "Toilettage & animalerie · Chiens et chats", badge: "Sur rendez-vous" } },
+      { type: "services_list", content: { title: "Toilettage", s1_icon: "🛁", s1_name: "Bain & séchage", s1_desc: "Shampoing adapté au pelage", s2_icon: "✂️", s2_name: "Coupe & tonte", s2_desc: "Selon la race", s3_icon: "🐾", s3_name: "Soins", s3_desc: "Griffes, oreilles, dents" } },
+      { type: "gallery", content: { title: "Avant / après", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre animal") } },
+      { type: "calendly", content: { label: "Réserver un toilettage", url: "https://calendly.com", description: "Réservation en ligne" } },
+      { type: "testimonials", content: exampleReviews("Marie C.", "Mon caniche est magnifique, équipe douce et patiente.", "Paul D.", "Accueil top, prix justes, mon chat était zen.") },
+      { type: "google_maps", content: { label: "Pattes & Compagnie", address: "3 rue des Lilas, 44000 Nantes", transport: "" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+
+  // ── Business / Services ──────────────────────────────────────────────────────
+  {
+    key: "business_avocat", group: "Freelance & Entreprise", label: "Avocat / Cabinet juridique", emoji: "⚖️",
+    desc: "Domaines d'expertise, honoraires, prise de contact.",
+    blocks: [
+      { type: "profile", content: { name: "Maître Hélène Girard", tagline: "Avocate · Droit du travail & des affaires", badge: "1er rendez-vous d'écoute" } },
+      { type: "bio", content: { text: "J'accompagne particuliers et entreprises avec rigueur et clarté. Conseil, négociation et défense de vos intérêts, dans la confidentialité.", align: "left" } },
+      { type: "services_list", content: { title: "Domaines d'intervention", s1_icon: "💼", s1_name: "Droit du travail", s1_desc: "Licenciement, rupture, litiges", s2_icon: "🏢", s2_name: "Droit des affaires", s2_desc: "Contrats, sociétés", s3_icon: "🤝", s3_name: "Médiation", s3_desc: "Résolution amiable" } },
+      { type: "faq", content: { title: "Questions fréquentes", q1: "Comment se déroule un premier rendez-vous ?", a1: "Un échange d'écoute pour évaluer votre situation et les options.", q2: "Quels sont vos honoraires ?", a2: "Au temps passé ou au forfait, communiqués en toute transparence.", q3: "Intervenez-vous en urgence ?", a3: "Oui, selon les disponibilités, contactez le cabinet." } },
+      { type: "contact_form", content: { title: "Demande de rendez-vous", button_label: "Envoyer", show_phone: "yes" } },
+      { type: "google_maps", content: { label: "Cabinet", address: "12 boulevard Haussmann, 75009 Paris", transport: "Métro Chaussée d'Antin" } },
+    ],
+  },
+  {
+    key: "business_autoecole", group: "Freelance & Entreprise", label: "Auto-école", emoji: "🚗",
+    desc: "Formules, taux de réussite (à compléter), inscription.",
+    blocks: [
+      { type: "profile", content: { name: "Auto-École Horizon", tagline: "Permis B, conduite accompagnée & code", badge: "Inscriptions ouvertes" } },
+      { type: "services_list", content: { title: "Nos formules", s1_icon: "📘", s1_name: "Code de la route", s1_desc: "En salle et en ligne", s2_icon: "🚙", s2_name: "Permis B", s2_desc: "Forfait 20h ou à la carte", s3_icon: "👥", s3_name: "Conduite accompagnée", s3_desc: "Dès 15 ans (AAC)" } },
+      { type: "pricing", content: { title: "Forfaits", title1: "Code seul", price1: "290 €", desc1: "Illimité 6 mois", title2: "Permis B 20h", price2: "1 190 €", desc2: "Code + 20h conduite", title3: "Heure suppl.", price3: "45 €", desc3: "À l'unité", cta_label: "S'inscrire", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Lina G.", "Permis du premier coup, moniteurs pédagogues et patients.", "Enzo R.", "Bonne ambiance, planning flexible, je recommande.") },
+      { type: "opening_hours", content: { title: "Horaires du secrétariat", mon_fri: "9h - 12h / 14h - 19h", saturday: "9h - 12h", sunday: "Fermé", note: "" } },
+      { type: "google_maps", content: { label: "Auto-École Horizon", address: "5 place de la Gare, 35000 Rennes", transport: "Gare SNCF" } },
+      { type: "cta_button", content: { label: "Je m'inscris", url: "#", style: "gold", icon: "🚗", full_width: "yes" } },
+    ],
+  },
 ]

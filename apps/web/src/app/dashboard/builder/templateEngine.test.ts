@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   TEMPLATE_STYLES, TEMPLATE_STYLE_LIST, TEMPLATE_STRUCTURES, DEFAULT_LAYOUT, TEMPLATE_LAYOUTS,
   TEMPLATE_LAYOUT_LIST, composeTemplate, composeByKeys, structureFromTemplate, unknownBlockTypes,
+  nativeStyleKeyFor, isGalleryRestylable, galleryRestyle,
   type TemplateLayout,
 } from "./templateEngine"
 import { PAGE_TEMPLATES, AMBIANCE_THEMES, AMBIANCE_KEYS } from "./page-templates"
@@ -174,5 +175,41 @@ describe("composeByKeys", () => {
     expect(composeByKeys("inconnu", "gold")).toBeNull()
     expect(composeByKeys(TEMPLATE_STRUCTURES[0].key, "inconnu")).toBeNull()
     expect(composeByKeys(TEMPLATE_STRUCTURES[0].key, "gold", "inconnu")).toBeNull()
+  })
+})
+
+describe("pont galerie (T3.b)", () => {
+  it("nativeStyleKeyFor : chaque PageTemplate a un style natif valide qui reproduit son thème", () => {
+    for (const t of PAGE_TEMPLATES) {
+      const k = nativeStyleKeyFor(t.key)
+      expect(k, `${t.key}: pas de style natif`).toBeTruthy()
+      expect(TEMPLATE_STYLES[k!].theme).toBe(t.theme) // identité de référence = même thème exact
+    }
+  })
+  it("nativeStyleKeyFor : null pour une clé absente des PageTemplates", () => {
+    expect(nativeStyleKeyFor("___inexistant___")).toBeNull()
+  })
+  it("isGalleryRestylable : vrai pour une structure connue, faux sinon", () => {
+    expect(isGalleryRestylable(PAGE_TEMPLATES[0].key)).toBe(true)
+    expect(isGalleryRestylable("___inexistant___")).toBe(false)
+  })
+  it("galleryRestyle avec le style NATIF reproduit thème + blocs d'origine (zéro régression)", () => {
+    for (const t of PAGE_TEMPLATES) {
+      const nk = nativeStyleKeyFor(t.key)!
+      const r = galleryRestyle(t.key, nk)
+      expect(r, `${t.key}: restyle natif null`).not.toBeNull()
+      expect(r!.theme, `${t.key}: thème natif`).toBe(t.theme)
+      expect(r!.blocks, `${t.key}: blocs natifs`).toEqual(t.blocks)
+    }
+  })
+  it("galleryRestyle applique un AUTRE style : thème changé, types de blocs conservés", () => {
+    const t = PAGE_TEMPLATES[0]
+    const r = galleryRestyle(t.key, "slate", "compact")!
+    expect(r.theme).toBe(AMBIANCE_THEMES.slate)
+    expect(r.blocks.map(b => b.type)).toEqual(t.blocks.map(b => b.type))
+    expect(r.blocks.every(b => b.content.__space === "Compact")).toBe(true)
+  })
+  it("galleryRestyle : null pour un template curé non-structure (⇒ garder le legacy)", () => {
+    expect(galleryRestyle("___modele_cure_inline___", "gold")).toBeNull()
   })
 })

@@ -10,6 +10,8 @@ import TemplatePreviewModal from "./TemplatePreviewModal"
 import Particles from "@/components/Particles"
 import { useIsMobile } from "@/lib/useIsMobile"
 import { PAGE_TEMPLATES } from "../builder/page-templates"
+import { useBuilderRedesign } from "../builder/builderFlags"
+import { TEMPLATE_STYLE_LIST, TEMPLATE_LAYOUT_LIST, nativeStyleKeyFor, isGalleryRestylable, galleryRestyle } from "../builder/templateEngine"
 import { useToast } from "@/components/Toast"
 
 // Source unique partagée avec le builder : les modèles de page complets (métier + sous-variantes)
@@ -129,6 +131,16 @@ export default function TemplatesPage() {
   const toast = useToast()
   const [namingFor,    setNamingFor]    = useState<string | null>(null)
   const router = useRouter()
+
+  // T3.b — sélection de style/disposition dans la modale de nommage (moteur de templates), gardée
+  // par le flag redesign (OFF en prod → galerie strictement inchangée). Ne s'applique qu'aux
+  // templates partagés (structures connues) ; les 14 modèles curés conservent leur thème legacy.
+  const redesign = useBuilderRedesign()
+  const [styleKey, setStyleKey] = useState<string | null>(null)
+  const [layoutKey, setLayoutKey] = useState("default")
+  useEffect(() => {
+    if (namingFor) { setStyleKey(nativeStyleKeyFor(namingFor)); setLayoutKey("default") }
+  }, [namingFor])
 
   const [usedTemplateIds, setUsedTemplateIds] = useState<string[]>([])
 
@@ -579,14 +591,39 @@ export default function TemplatesPage() {
       {namingFor && (() => {
         const tpl = TEMPLATES.find((t: any) => t.id === namingFor)
         if (!tpl) return null
+        // Restylable = template partagé (structure connue du moteur) ET flag redesign actif.
+        const restylable = redesign && isGalleryRestylable(namingFor)
+        const effStyle = styleKey || nativeStyleKeyFor(namingFor) || undefined
+        const restyleProps = restylable ? {
+          styleOptions: TEMPLATE_STYLE_LIST.map(s => ({ key: s.key, label: s.label, color: s.theme.primary })),
+          styleKey: effStyle,
+          onStyleChange: setStyleKey,
+          layoutOptions: TEMPLATE_LAYOUT_LIST.map(l => ({ key: l.key, label: l.label })),
+          layoutKey,
+          onLayoutChange: setLayoutKey,
+        } : {}
+        const blockCount = (() => {
+          if (restylable && effStyle) {
+            const r = galleryRestyle(namingFor, effStyle, layoutKey)
+            if (r) return r.blocks.length
+          }
+          return (TEMPLATE_BLOCKS[namingFor] || []).length
+        })()
         return (
           <NamingModal
             template={tpl}
-            blockCount={(TEMPLATE_BLOCKS[namingFor] || []).length}
+            blockCount={blockCount}
+            {...restyleProps}
             onClose={() => setNamingFor(null)}
             onCreate={async (name, slug, description) => {
-              const theme = TEMPLATE_THEMES[namingFor] || TEMPLATE_THEMES["freelance"]
-              const blocks = TEMPLATE_BLOCKS[namingFor] || []
+              let theme: any = TEMPLATE_THEMES[namingFor] || TEMPLATE_THEMES["freelance"]
+              let blocks: any = TEMPLATE_BLOCKS[namingFor] || []
+              // T3.b : si le template est restylable et un style est choisi, on recompose via le
+              // moteur (thème + blocs). Sinon, on garde exactement le legacy (zéro régression).
+              if (restylable && effStyle) {
+                const r = galleryRestyle(namingFor, effStyle, layoutKey)
+                if (r) { theme = r.theme; blocks = r.blocks }
+              }
               const res = await fetch("/api/templates/use", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -615,11 +652,20 @@ export default function TemplatesPage() {
     </div>
   )
 }// ── Composant Modal de nommage ──────────────────────────────────────────────
-function NamingModal({ template, blockCount, onClose, onCreate }: {
+export function NamingModal({ template, blockCount, onClose, onCreate,
+  styleOptions, styleKey, onStyleChange, layoutOptions, layoutKey, onLayoutChange }: {
   template: any
   blockCount: number
   onClose: () => void
   onCreate: (name: string, slug: string, description: string) => Promise<{ ok?: boolean; error?: string }>
+  // T3.b (optionnels) : sélecteur de style/disposition alimenté par le moteur de templates.
+  // Absents → aucun rendu supplémentaire (comportement historique strictement inchangé).
+  styleOptions?: { key: string; label: string; color: string }[]
+  styleKey?: string
+  onStyleChange?: (k: string) => void
+  layoutOptions?: { key: string; label: string }[]
+  layoutKey?: string
+  onLayoutChange?: (k: string) => void
 }) {
   const G = "var(--accent)"
   const MUTED = "#A8A190"
@@ -690,6 +736,45 @@ function NamingModal({ template, blockCount, onClose, onCreate }: {
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", padding: 4 }}><X size={18} /></button>
         </div>
+
+        {/* Style visuel (T3.b — moteur de templates) : un même métier, décliné en plusieurs ambiances. */}
+        {styleOptions && styleOptions.length > 0 && (
+          <div style={{ marginBottom: 16 }} data-testid="naming-style">
+            <label style={{ color: MUTED, fontSize: 11, display: "block", marginBottom: 7, fontWeight: 600 }}>Style visuel</label>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {styleOptions.map(s => {
+                const active = s.key === styleKey
+                return (
+                  <button key={s.key} data-testid={"style-" + s.key} data-active={active ? "1" : "0"} type="button"
+                    onClick={() => onStyleChange?.(s.key)}
+                    style={{ display: "flex", alignItems: "center", gap: 6, background: active ? "color-mix(in srgb, var(--accent) 14%, transparent)" : "rgba(255,255,255,0.03)", border: active ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "5px 9px", color: active ? "#F5F0E8" : MUTED, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    <span style={{ width: 12, height: 12, borderRadius: "50%", background: s.color, border: "1px solid rgba(255,255,255,0.2)", flexShrink: 0 }} />
+                    {s.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Disposition (T3.b) : densité des blocs (Standard / Compact / Aéré). */}
+        {layoutOptions && layoutOptions.length > 0 && (
+          <div style={{ marginBottom: 18 }} data-testid="naming-layout">
+            <label style={{ color: MUTED, fontSize: 11, display: "block", marginBottom: 7, fontWeight: 600 }}>Disposition</label>
+            <div style={{ display: "flex", gap: 6 }}>
+              {layoutOptions.map(l => {
+                const active = l.key === layoutKey
+                return (
+                  <button key={l.key} data-testid={"layout-" + l.key} data-active={active ? "1" : "0"} type="button"
+                    onClick={() => onLayoutChange?.(l.key)}
+                    style={{ flex: 1, background: active ? "color-mix(in srgb, var(--accent) 14%, transparent)" : "rgba(255,255,255,0.03)", border: active ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px", color: active ? "#F5F0E8" : MUTED, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    {l.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Nom */}
         <div style={{ marginBottom: 14 }}>

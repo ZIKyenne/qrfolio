@@ -86,6 +86,7 @@ applyPageTemplate()  (existant, Builder)  →  /api/templates/use (existant)
 | **T1 — Moteur pur** ✅ FAIT (`220cb809`) | `templateEngine.ts` (`TemplateStructure/Style/Layout` + `composeTemplate`) + 12 tests (round-trip rétrocompat + combos croisés) + DB legacy actée | tests verts, `page-templates.ts` inchangé |
 | **T2 — Axe layout + preview** ✅ FAIT | 3 layouts (`default`/`compact`/`airy`, densité via `__space` réel) + **harness `/e2e-harness/template-preview`** (rendu RÉEL des blocs, structure×style×layout) + spec + captures **vérifiées visuellement** (Restaurant × gold/slate/compact = pages premium complètes, 0 erreur) | +5 tests, e2e 4 tests, captures lues par l'agent |
 | **T3 — Composeur réutilisable** ✅ FAIT (composant) | `components/templates/TemplateComposer.tsx` : composant PRODUIT réutilisable (picker structure×style×layout + aperçu LIVE réel + `onCreate(composed)`). Vérifié via harness (5 e2e) + captures. **Le branchement live dans la galerie reste un pas BINÔME** (voir ci-dessous) | composant + e2e verts |
+| **T3.b — Pont galerie (flag)** ✅ FAIT | Moteur : `galleryRestyle`/`isGalleryRestylable`/`nativeStyleKeyFor` (le style natif d'un template partagé par identité de référence ; **null** pour les 14 curés → legacy conservé). `NamingModal` étendue avec un **sélecteur Style visuel (14 ambiances, pastilles) + Disposition (Standard/Compact/Aéré)**, **gardé par le flag `BUILDER_REDESIGN`** (OFF en prod → galerie strictement inchangée) et limité aux 20 templates partagés (structures connues). Vérifié : harness `/e2e-harness/naming-style` (4 e2e) + **captures lues** (Velvet Rouge → Ardoise Pro → neon/aéré : recompose thème+blocs, 0 erreur). **La création réelle (POST authentifié) reste à valider en binôme** avec le flag ON | +6 tests moteur, 4 e2e, captures |
 | **T4 — Images premium** ✅ PLACEHOLDERS (moitié faisable par l'agent) | `templatePlaceholders.ts` : data-URIs SVG **générés** (dégradés sobres + icône + libellé), licence-libres, self-contained, rendus par tout `<img>` (éditeur + public) **sans toucher le renderer**. `placeholderGallery(n)` alimente les blocs `gallery`/`image`/`cover`. Câblé (photographe → portfolio, fleuriste → galerie). L'utilisateur remplace via « Ma bibliothèque ». **Le petit set de VRAIES photos licence-safe reste à fournir par le projet** (l'agent ne source pas d'images) | +5 tests + **capture vérifiée** (photographe : portfolio de 6 tuiles premium, 0 erreur) |
 | **T5 — Verticales (data)** ✅ 4 lots | `templateStructures.extra.ts` : **40 nouvelles verticales en DONNÉES** (registre **20 → 60 structures**, ≈ 60 × 14 styles × 3 layouts = **2520 combinaisons**) — Artisan/BTP (plombier, électricien, serrurier, paysagiste, menuisier, peintre, pisciniste), Beauté (barbier, institut, ongles, tatoueur, spa), Santé (dentiste, ostéo, psy, nutritionniste, vétérinaire), Commerce (fleuriste, bijouterie, cave, animalerie), Restauration (pizzeria, coffee, boulangerie, cocktail, sushi, traiteur), Immobilier (chasseur, gîte, architecte, décorateur), Créatif (photographe, DJ, développeur), Événementiel (wedding), Coaching, Freelance (avocat, auto-école, nettoyage, déménagement). Galeries via placeholders (T4). Avis « (exemple) » (anti-fake, garde-fou). **Ajouter un métier = ajouter un objet** | tests garde-fous (clés uniques, types valides, anti-fake) + **captures vérifiées** (plombier, barbier, pizzeria, wedding, photographe, tatoueur, développeur = pages premium, 0 erreur) |
 | **T6 — (option) IA variantes** | génération de variantes derrière `ANTHROPIC_API_KEY` + garde-fous anti-fake | 503 clair si clé absente |
@@ -101,10 +102,15 @@ Audit réel de la galerie (`dashboard/templates/page.tsx` + `TemplatePreviewModa
 - **divergence de contenu** : `page.tsx` contient un `TEMPLATE_BLOCKS` **inline** qui redéfinit certaines clés (ex. `"restaurant"`, `"createur"`) avec un contenu ≠ `page-templates.ts` (`"resto_bistrot"`…). Les clés galerie ne mappent donc pas toutes 1:1 sur `TEMPLATE_STRUCTURES`.
 
 → Conclusion (cohérente avec la note mémoire « ne pas refactorer la galerie à l'aveugle ») : **ne pas
-blind-wirer** l'engine dans la galerie solo. Le composant `TemplateComposer` est prêt à y être monté ;
-le branchement se fait en **binôme** (tu vérifies le rendu authentifié) et implique d'abord de
-**réconcilier les clés galerie sur les structures du moteur** (petit chantier de consolidation, T3.b).
-Chemin d'intégration minimal : mapper `templateId` → `structureKey`, monter `<TemplateComposer onCreate={c => POST /api/templates/use {theme: c.theme, blocks: c.blocks, …}} />`, le reste du flux inchangé.
+blind-wirer** l'engine dans la galerie solo. **T3.b (fait)** applique cette prudence : la réconciliation
+des clés est résolue proprement par le moteur (`galleryRestyle` renvoie **null** pour les 14 modèles
+curés inline ⇒ leur thème/blocs legacy sont conservés à l'identique ; seuls les 20 templates partagés,
+dont les clés SONT des structures, deviennent restylables). Le sélecteur Style/Disposition est câblé
+dans la vraie `NamingModal` **derrière le flag `BUILDER_REDESIGN` (OFF en prod)** : galerie strictement
+inchangée tant que le flag est OFF, et le chemin ON est vérifié visuellement via le harness
+`/e2e-harness/naming-style` (la `NamingModal` réelle y est montée). **Reste binôme** : basculer le flag
+ON en préprod et valider la **création authentifiée** (POST `/api/templates/use`) de bout en bout — c'est
+le seul maillon que l'agent ne peut pas exécuter (Supabase injoignable depuis le sandbox).
 
 ## I. Risques
 

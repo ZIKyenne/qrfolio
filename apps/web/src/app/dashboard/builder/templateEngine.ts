@@ -118,6 +118,35 @@ export function composeByKeys(structureKey: string, styleKey: string, layoutKey 
   return composeTemplate(structure, style, layout)
 }
 
+// ── Pont galerie (T3.b) : restyler un template de la galerie via le moteur ──────
+// La galerie (`dashboard/templates`) liste DEUX familles : (1) 14 modèles curés historiques (clés
+// inline `freelance`/`restaurant`/… ABSENTES de TEMPLATE_STRUCTURES) et (2) les 20 PageTemplates
+// partagés (clés = structures du moteur). Seuls (2) sont restylables par le moteur ; pour (1) les
+// helpers renvoient null/false → l'appelant conserve le thème+blocs legacy (zéro régression).
+
+// Clé de style « natif » d'un template partagé (le thème avec lequel il a été livré), par identité de
+// référence : `PAGE_TEMPLATE.theme` pointe sur un `AMBIANCE_THEMES` = `TEMPLATE_STYLES[k].theme`.
+export function nativeStyleKeyFor(structureKey: string): string | null {
+  const t = PAGE_TEMPLATES.find(p => p.key === structureKey)
+  if (!t) return null
+  const found = TEMPLATE_STYLE_LIST.find(s => s.theme === t.theme)
+  return found ? found.key : null
+}
+
+// Un template de galerie est-il restylable par le moteur (⇒ c'est une structure connue) ?
+export function isGalleryRestylable(templateId: string): boolean {
+  return TEMPLATE_STRUCTURES.some(s => s.key === templateId)
+}
+
+// Restyle un template de galerie : renvoie {theme, blocks} pour le style/layout demandés, ou null si
+// `templateId` n'est pas une structure connue (⇒ l'appelant garde le legacy). Ne mute rien.
+export function galleryRestyle(
+  templateId: string, styleKey: string, layoutKey = "default",
+): { theme: PageTheme; blocks: TemplateBlock[] } | null {
+  const composed = composeByKeys(templateId, styleKey, layoutKey)
+  return composed ? { theme: composed.theme, blocks: composed.blocks } : null
+}
+
 // ── Validation (garde-fou : n'utiliser que des types de blocs réels) ────────────
 export function unknownBlockTypes(structure: TemplateStructure): string[] {
   return structure.blocks.filter(b => !BLOCK_DEFS[b.type]).map(b => b.type)

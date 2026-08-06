@@ -5,6 +5,7 @@
 // destinés à être personnalisés. Aucune donnée/Supabase. Ajouter une verticale = ajouter un objet ici.
 
 import type { TemplateStructure } from "./templateEngine"
+import { placeholderGallery } from "./templatePlaceholders"
 
 // Avis d'exemple explicitement marqués (à personnaliser par l'utilisateur).
 const exampleReviews = (n1: string, t1: string, n2: string, t2: string) => ({
@@ -119,6 +120,7 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
       { type: "promo_banner", content: { emoji: "🌷", text: "Bouquet du moment à -15%", subtext: "Fleurs de saison, cueillies chaque matin", cta_label: "Commander", cta_url: "#" } },
       { type: "product", content: { name: "Bouquet signature", price: "35 €", old_price: "42 €", description: "Composition de saison montée à la main, papier kraft et ruban.", cta_label: "Commander", cta_url: "#" } },
       { type: "product", content: { name: "Abonnement fleurs", price: "29 €/mois", description: "Un bouquet frais livré ou à retirer chaque semaine.", cta_label: "S'abonner", cta_url: "#" } },
+      { type: "gallery", content: { title: "Nos créations", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre création") } },
       { type: "opening_hours", content: { title: "Horaires", mon_fri: "9h - 19h30", saturday: "9h - 20h", sunday: "9h - 13h", note: "Livraison locale disponible" } },
       { type: "google_maps", content: { label: "Pétale & Sens", address: "5 place du Marché, 33000 Bordeaux", transport: "Tram ligne B · arrêt Marché" } },
       { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
@@ -201,6 +203,7 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
     blocks: [
       { type: "profile", content: { name: "Studio Lumen", tagline: "Photographe mariage & portrait", badge: "Sur réservation" } },
       { type: "bio", content: { text: "Je capture vos moments avec sensibilité et lumière naturelle. Mariages, couples, portraits et séances entreprise.", align: "center" } },
+      { type: "gallery", content: { title: "Portfolio", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre photo") } },
       { type: "services_list", content: { title: "Prestations", s1_icon: "💍", s1_name: "Mariage", s1_desc: "Reportage complet, album", s2_icon: "👤", s2_name: "Portrait & couple", s2_desc: "Séance en extérieur ou studio", s3_icon: "🏢", s3_name: "Entreprise", s3_desc: "Portraits pro, événements" } },
       { type: "pricing", content: { title: "Forfaits", title1: "Séance portrait", price1: "180 €", desc1: "1h · 20 photos retouchées", title2: "Couple / famille", price2: "250 €", desc2: "1h30 · 40 photos", title3: "Mariage", price3: "dès 1 400 €", desc3: "Journée complète", cta_label: "Demander un devis", cta_url: "#" } },
       { type: "testimonials", content: exampleReviews("Chloé & Antoine", "Des photos de mariage à couper le souffle, merci !", "Marine D.", "Séance portrait naturelle, résultat sublime.") },

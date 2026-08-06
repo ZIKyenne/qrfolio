@@ -415,4 +415,144 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
       { type: "cta_button", content: { label: "Je m'inscris", url: "#", style: "gold", icon: "🚗", full_width: "yes" } },
     ],
   },
+
+  // ── Restauration (compléments) ──────────────────────────────────────────────
+  {
+    key: "resto_cocktail", group: "Restauration", label: "Bar à cocktails", emoji: "🍸",
+    desc: "Carte, ambiance, réservation, happy hour.",
+    blocks: [
+      { type: "profile", content: { name: "Le Comptoir Noir", tagline: "Bar à cocktails · Mixologie & ambiance", badge: "Happy hour 18h-20h" } },
+      { type: "menu_section", content: { category: "Nos signatures", item1_name: "Smoky Old Fashioned", item1_price: "13 €", item1_desc: "Bourbon, sirop d'érable, fumé", item2_name: "Jardin Secret", item2_price: "12 €", item2_desc: "Gin, concombre, basilic", item3_name: "Sunset Spritz", item3_price: "11 €", item3_desc: "Aperol maison, agrumes" } },
+      { type: "promo_banner", content: { emoji: "🍹", text: "Happy hour tous les soirs 18h-20h", subtext: "Cocktails signatures à -30%", cta_label: "Réserver", cta_url: "#" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "18h - 2h", saturday: "18h - 2h", sunday: "Fermé", note: "Réservation conseillée le week-end" } },
+      { type: "google_maps", content: { label: "Le Comptoir Noir", address: "8 rue de la Soif, 44000 Nantes", transport: "Centre-ville" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+  {
+    key: "resto_sushi", group: "Restauration", label: "Restaurant japonais", emoji: "🍣",
+    desc: "Carte, commande, livraison, horaires.",
+    blocks: [
+      { type: "profile", content: { name: "Sakura", tagline: "Restaurant japonais · Sushi & ramen", badge: "Livraison & à emporter" } },
+      { type: "cta_button", content: { label: "Commander en ligne", url: "#", style: "gold", icon: "🥢", full_width: "yes" } },
+      { type: "menu_section", content: { category: "Nos incontournables", item1_name: "Assortiment 18 pièces", item1_price: "22 €", item1_desc: "Sushi, maki, california", item2_name: "Ramen tonkotsu", item2_price: "15 €", item2_desc: "Bouillon 12h, porc, œuf mollet", item3_name: "Chirashi saumon", item3_price: "17 €", item3_desc: "Riz vinaigré, saumon frais" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "11h30 - 14h / 18h30 - 22h30", saturday: "18h30 - 23h", sunday: "18h30 - 22h", note: "" } },
+      { type: "google_maps", content: { label: "Sakura", address: "21 rue des Érables, 67000 Strasbourg", transport: "Tram Homme de Fer" } },
+      { type: "social_links", content: { instagram: "https://instagram.com" } },
+    ],
+  },
+  {
+    key: "resto_traiteur", group: "Restauration", label: "Traiteur événementiel", emoji: "🍽️",
+    desc: "Prestations, formules, devis événement.",
+    blocks: [
+      { type: "profile", content: { name: "Saveurs & Réceptions", tagline: "Traiteur · Mariages, entreprises, privé", badge: "Devis gratuit" } },
+      { type: "bio", content: { text: "Une cuisine généreuse et raffinée pour vos événements : cocktails dînatoires, buffets et repas assis, avec service sur mesure.", align: "center" } },
+      { type: "services_list", content: { title: "Nos prestations", s1_icon: "🥂", s1_name: "Cocktail dînatoire", s1_desc: "Pièces salées & sucrées", s2_icon: "🍴", s2_name: "Repas assis", s2_desc: "Menus 3 à 5 services", s3_icon: "🎪", s3_name: "Service & matériel", s3_desc: "Personnel, vaisselle, mobilier" } },
+      { type: "pricing", content: { title: "Formules (par personne)", title1: "Cocktail", price1: "dès 22 €", desc1: "10 pièces", title2: "Buffet", price2: "dès 32 €", desc2: "Entrée, plat, dessert", title3: "Repas assis", price3: "dès 48 €", desc3: "Service inclus", cta_label: "Demander un devis", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Comité d'entreprise", "Cocktail parfait pour nos 120 invités, tout était délicieux.", "Élise & Marc", "Repas de mariage sublime, service impeccable.") },
+      { type: "contact_form", content: { title: "Votre événement", button_label: "Demander un devis", show_phone: "yes" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+
+  // ── Artisan & BTP (compléments) ─────────────────────────────────────────────
+  {
+    key: "artisan_menuisier", group: "Artisan & BTP", label: "Menuisier", emoji: "🪵",
+    desc: "Sur-mesure, réalisations, devis.",
+    blocks: [
+      { type: "profile", content: { name: "Atelier du Bois", tagline: "Menuisier ébéniste · Sur-mesure", badge: "Devis gratuit" } },
+      { type: "cta_button", content: { label: "Demander un devis", url: "#", style: "gold", icon: "🪚", full_width: "yes" } },
+      { type: "services_list", content: { title: "Nos réalisations", s1_icon: "🚪", s1_name: "Portes & fenêtres", s1_desc: "Bois massif, isolation", s2_icon: "🪑", s2_name: "Meubles sur-mesure", s2_desc: "Dressing, bibliothèque, cuisine", s3_icon: "🪜", s3_name: "Escaliers & parquets", s3_desc: "Pose et rénovation" } },
+      { type: "gallery", content: { title: "Nos ouvrages", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre projet") } },
+      { type: "testimonials", content: exampleReviews("M. Bernard", "Dressing sur-mesure magnifique, finitions parfaites.", "Famille Petit", "Escalier bois superbe, artisan à l'écoute.") },
+      { type: "contact_form", content: { title: "Votre projet bois", button_label: "Envoyer", show_phone: "yes" } },
+    ],
+  },
+  {
+    key: "artisan_peintre", group: "Artisan & BTP", label: "Peintre en bâtiment", emoji: "🎨",
+    desc: "Intérieur/extérieur, devis, zone d'intervention.",
+    blocks: [
+      { type: "profile", content: { name: "Couleurs & Finitions", tagline: "Peintre en bâtiment · Intérieur & extérieur", badge: "Devis gratuit" } },
+      { type: "cta_button", content: { label: "Obtenir un devis", url: "#", style: "gold", icon: "🖌️", full_width: "yes" } },
+      { type: "services_list", content: { title: "Nos prestations", s1_icon: "🏠", s1_name: "Peinture intérieure", s1_desc: "Murs, plafonds, boiseries", s2_icon: "🌦️", s2_name: "Façades", s2_desc: "Ravalement, protection", s3_icon: "🧱", s3_name: "Revêtements", s3_desc: "Enduits, papiers peints" } },
+      { type: "gallery", content: { title: "Chantiers réalisés", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre chantier") } },
+      { type: "opening_hours", content: { title: "Disponibilités", mon_fri: "8h - 18h", saturday: "Sur devis", sunday: "Fermé", note: "Devis sous 48h" } },
+      { type: "social_links", content: { facebook: "https://facebook.com", website: "https://monsite.com" } },
+    ],
+  },
+  {
+    key: "artisan_pisciniste", group: "Artisan & BTP", label: "Pisciniste", emoji: "🏊",
+    desc: "Construction, entretien, rénovation, devis.",
+    blocks: [
+      { type: "profile", content: { name: "Bleu Lagon Piscines", tagline: "Pisciniste · Construction & entretien", badge: "Devis gratuit" } },
+      { type: "services_list", content: { title: "Nos services", s1_icon: "🏗️", s1_name: "Construction", s1_desc: "Béton, coque, sur-mesure", s2_icon: "🧴", s2_name: "Entretien", s2_desc: "Contrat annuel, hivernage", s3_icon: "🔧", s3_name: "Rénovation", s3_desc: "Liner, margelles, local technique" } },
+      { type: "gallery", content: { title: "Nos réalisations", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre piscine") } },
+      { type: "testimonials", content: exampleReviews("M. et Mme Faure", "Piscine de rêve livrée dans les délais, équipe pro.", "Copropriété Le Parc", "Entretien impeccable toute la saison.") },
+      { type: "cta_button", content: { label: "Demander un devis", url: "#", style: "gold", icon: "💧", full_width: "yes" } },
+      { type: "contact_form", content: { title: "Votre projet piscine", button_label: "Envoyer", show_phone: "yes" } },
+    ],
+  },
+  {
+    key: "business_nettoyage", group: "Freelance & Entreprise", label: "Société de nettoyage", emoji: "🧽",
+    desc: "Prestations pro & particuliers, devis.",
+    blocks: [
+      { type: "profile", content: { name: "NetPro Services", tagline: "Nettoyage professionnel · Bureaux & particuliers", badge: "Devis sous 24h" } },
+      { type: "cta_button", content: { label: "Demander un devis", url: "#", style: "gold", icon: "✨", full_width: "yes" } },
+      { type: "services_list", content: { title: "Nos prestations", s1_icon: "🏢", s1_name: "Bureaux & commerces", s1_desc: "Entretien régulier ou ponctuel", s2_icon: "🏠", s2_name: "Fin de chantier", s2_desc: "Remise en état complète", s3_icon: "🪟", s3_name: "Vitrerie", s3_desc: "Vitres, façades, hauteurs" } },
+      { type: "testimonials", content: exampleReviews("Cabinet Lemaire", "Bureaux impeccables chaque matin, équipe sérieuse.", "Résidence Les Cèdres", "Parties communes nickel, très réactifs.") },
+      { type: "contact_form", content: { title: "Votre besoin", button_label: "Demander un devis", show_phone: "yes" } },
+      { type: "social_links", content: { website: "https://monsite.com" } },
+    ],
+  },
+  {
+    key: "business_demenagement", group: "Freelance & Entreprise", label: "Déménageur", emoji: "📦",
+    desc: "Formules, devis gratuit, zone d'intervention.",
+    blocks: [
+      { type: "profile", content: { name: "Cap Déménagement", tagline: "Déménageurs · Particuliers & entreprises", badge: "Devis gratuit" } },
+      { type: "cta_button", content: { label: "Estimer mon déménagement", url: "#", style: "gold", icon: "🚚", full_width: "yes" } },
+      { type: "services_list", content: { title: "Nos formules", s1_icon: "📦", s1_name: "Économique", s1_desc: "Vous emballez, on transporte", s2_icon: "🧰", s2_name: "Standard", s2_desc: "Emballage fragile inclus", s3_icon: "⭐", s3_name: "Clé en main", s3_desc: "Tout géré de A à Z" } },
+      { type: "pricing", content: { title: "À partir de", title1: "Studio", price1: "290 €", desc1: "Jusqu'à 20 m²", title2: "T3", price2: "590 €", desc2: "Jusqu'à 70 m²", title3: "Maison", price3: "Sur devis", desc3: "Grand volume", cta_label: "Obtenir un devis", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Sophie & Karim", "Déménagement rapide et soigné, rien de cassé.", "Julien P.", "Équipe efficace et sympa, prix conforme au devis.") },
+      { type: "contact_form", content: { title: "Votre déménagement", button_label: "Demander un devis", show_phone: "yes" } },
+    ],
+  },
+
+  // ── Immobilier & Créatif (compléments) ──────────────────────────────────────
+  {
+    key: "immo_architecte", group: "Immobilier", label: "Architecte", emoji: "📐",
+    desc: "Projets, approche, portfolio, contact.",
+    blocks: [
+      { type: "profile", content: { name: "Atelier Ligne & Forme", tagline: "Architecte DPLG · Neuf & rénovation", badge: "Sur rendez-vous" } },
+      { type: "bio", content: { text: "Nous concevons des lieux qui vous ressemblent : maisons, extensions et rénovations, de l'esquisse au suivi de chantier.", align: "center" } },
+      { type: "gallery", content: { title: "Réalisations", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre projet") } },
+      { type: "services_list", content: { title: "Nos missions", s1_icon: "✏️", s1_name: "Conception", s1_desc: "Esquisse, plans, permis", s2_icon: "🏗️", s2_name: "Suivi de chantier", s2_desc: "Coordination des travaux", s3_icon: "🌿", s3_name: "Rénovation durable", s3_desc: "Énergie et matériaux" } },
+      { type: "testimonials", content: exampleReviews("Famille Renaud", "Extension parfaitement intégrée, écoute remarquable.", "M. Aubry", "Rénovation réussie, budget maîtrisé.") },
+      { type: "contact_form", content: { title: "Parlons de votre projet", button_label: "Envoyer", show_phone: "yes" } },
+    ],
+  },
+  {
+    key: "immo_decorateur", group: "Immobilier", label: "Décorateur d'intérieur", emoji: "🛋️",
+    desc: "Prestations, forfaits, portfolio, contact.",
+    blocks: [
+      { type: "profile", content: { name: "Studio Intérieurs", tagline: "Décoratrice d'intérieur · Home staging", badge: "1er échange offert" } },
+      { type: "bio", content: { text: "Je révèle le potentiel de vos espaces : agencement, couleurs et mobilier pour un intérieur qui vous ressemble et met en valeur votre bien.", align: "center" } },
+      { type: "gallery", content: { title: "Avant / après", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre intérieur") } },
+      { type: "pricing", content: { title: "Forfaits", title1: "Consultation", price1: "150 €", desc1: "2h à domicile", title2: "Planche déco", price2: "490 €", desc2: "Une pièce", title3: "Projet complet", price3: "Sur devis", desc3: "Agencement + suivi", cta_label: "Prendre rendez-vous", cta_url: "#" } },
+      { type: "calendly", content: { label: "Réserver un échange", url: "https://calendly.com", description: "30 min · offert" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", pinterest: "https://pinterest.com" } },
+    ],
+  },
+  {
+    key: "crea_developpeur", group: "Créatif & Média", label: "Développeur freelance", emoji: "💻",
+    desc: "Stack, services, tarifs, prise de contact.",
+    blocks: [
+      { type: "profile", content: { name: "Alex Martin", tagline: "Développeur web freelance · React & Node", badge: "Disponible pour missions" } },
+      { type: "bio", content: { text: "Je conçois des applications web performantes et sur-mesure. De l'idée au déploiement, un interlocuteur unique et un code propre.", align: "left" } },
+      { type: "skills", content: { title: "Stack", tags: "React, Next.js, Node.js, TypeScript, PostgreSQL, Docker, AWS" } },
+      { type: "services_list", content: { title: "Mes services", s1_icon: "🖥️", s1_name: "Développement web", s1_desc: "Sites, apps, SaaS", s2_icon: "🔌", s2_name: "API & intégrations", s2_desc: "Stripe, Supabase, tierces", s3_icon: "⚙️", s3_name: "Conseil technique", s3_desc: "Audit, architecture" } },
+      { type: "pricing", content: { title: "Tarifs", title1: "TJM", price1: "500 €", desc1: "Journée", title2: "Site vitrine", price2: "dès 2 500 €", desc2: "Forfait", title3: "Retainer", price3: "1 800 €/mois", desc3: "20h/mois", cta_label: "Demander un devis", cta_url: "#" } },
+      { type: "calendly", content: { label: "Réserver un appel", url: "https://calendly.com", description: "30 min · découverte projet" } },
+      { type: "social_links", content: { github: "https://github.com", linkedin: "https://linkedin.com", website: "https://monsite.com" } },
+    ],
+  },
 ]

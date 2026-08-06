@@ -555,4 +555,159 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
       { type: "social_links", content: { github: "https://github.com", linkedin: "https://linkedin.com", website: "https://monsite.com" } },
     ],
   },
+
+  // ── T5 lot 5 : nouvelles verticales ─────────────────────────────────────────
+  // Restauration
+  {
+    key: "resto_creperie", group: "Restauration", label: "Crêperie", emoji: "🥞",
+    desc: "Galettes, crêpes, cidre + carte et horaires.",
+    blocks: [
+      { type: "profile", content: { name: "La Belle Bigoudène", tagline: "Crêperie artisanale · Galettes de blé noir", badge: "Fait maison" } },
+      { type: "menu_section", content: { category: "Galettes", item1_name: "La Complète", item1_price: "9,50 €", item1_desc: "Jambon, œuf, emmental", item2_name: "La Forestière", item2_price: "11 €", item2_desc: "Champignons, crème, persillade", item3_name: "La Chèvre-miel", item3_price: "10,50 €", item3_desc: "Chèvre, miel, noix" } },
+      { type: "menu_section", content: { category: "Crêpes sucrées", item1_name: "Beurre-sucre", item1_price: "4,50 €", item1_desc: "Le grand classique", item2_name: "Caramel beurre salé", item2_price: "6,50 €", item2_desc: "Maison, chantilly", item3_name: "Pommes flambées", item3_price: "7,50 €", item3_desc: "Calvados, glace vanille" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "12h-14h30 / 19h-22h", saturday: "12h-22h30", sunday: "12h-15h", note: "Réservation conseillée le week-end" } },
+      { type: "testimonials", content: exampleReviews("Gwenaëlle L.", "Galettes croustillantes et cidre parfait, un vrai coin de Bretagne.", "Hugo T.", "La caramel beurre salé est incroyable, accueil chaleureux.") },
+      { type: "google_maps", content: { label: "La Belle Bigoudène", address: "5 rue de la Marine, 29000 Quimper", transport: "Centre-ville, parking à proximité" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+  {
+    key: "resto_glacier", group: "Restauration", label: "Glacier artisanal", emoji: "🍦",
+    desc: "Glaces & sorbets maison, parfums de saison, galerie.",
+    blocks: [
+      { type: "profile", content: { name: "Gelato Vero", tagline: "Glacier artisanal · Parfums de saison", badge: "Fabrication maison" } },
+      { type: "gallery", content: { title: "Nos parfums", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre parfum") } },
+      { type: "menu_section", content: { category: "À la carte", item1_name: "Boule (1)", item1_price: "2,80 €", item1_desc: "Cornet ou pot", item2_name: "Duo (2 boules)", item2_price: "4,80 €", item2_desc: "Deux parfums au choix", item3_name: "Coupe gourmande", item3_price: "8,50 €", item3_desc: "3 boules, chantilly, topping" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "12h - 22h", saturday: "11h - 23h", sunday: "11h - 22h", note: "Ouvert tous les jours en été" } },
+      { type: "testimonials", content: exampleReviews("Léa M.", "Sorbets ultra fruités, on sent le vrai fruit. Un régal.", "Antoine V.", "Pistache et stracciatella au top, adresse à retenir.") },
+      { type: "google_maps", content: { label: "Gelato Vero", address: "18 promenade des Anglais, 06000 Nice", transport: "Bord de mer" } },
+      { type: "social_links", content: { instagram: "https://instagram.com" } },
+    ],
+  },
+
+  // Santé
+  {
+    key: "sante_sagefemme", group: "Santé", label: "Sage-femme", emoji: "🤱",
+    desc: "Suivi grossesse, préparation, rééducation + prise de RDV.",
+    blocks: [
+      { type: "profile", content: { name: "Claire Fontaine", tagline: "Sage-femme libérale · Suivi & accompagnement", badge: "Conventionnée" } },
+      { type: "bio", content: { text: "J'accompagne les femmes à chaque étape : suivi de grossesse, préparation à la naissance, rééducation périnéale et suivi gynécologique de prévention.", align: "left" } },
+      { type: "services_list", content: { title: "Mes consultations", s1_icon: "🤰", s1_name: "Suivi de grossesse", s1_desc: "Consultations et monitoring", s2_icon: "🧘", s2_name: "Préparation à la naissance", s2_desc: "Séances individuelles ou en groupe", s3_icon: "💗", s3_name: "Rééducation périnéale", s3_desc: "Après l'accouchement" } },
+      { type: "faq", content: { title: "Questions fréquentes", q1: "Les consultations sont-elles remboursées ?", a1: "Oui, prises en charge par l'Assurance Maladie selon les cas.", q2: "Intervenez-vous à domicile ?", a2: "Oui, pour le suivi post-natal dans un rayon défini.", q3: "Comment prendre rendez-vous ?", a3: "En ligne ou par téléphone au cabinet." } },
+      { type: "calendly", content: { label: "Prendre rendez-vous", url: "https://doctolib.fr", description: "Cabinet ou visite à domicile" } },
+      { type: "google_maps", content: { label: "Cabinet", address: "12 rue des Lilas, 44000 Nantes", transport: "Tram ligne 1 · arrêt Commerce" } },
+      { type: "social_links", content: { website: "https://monsite.com", phone: "tel:+33200000000" } },
+    ],
+  },
+  {
+    key: "sante_kine", group: "Santé", label: "Kinésithérapeute", emoji: "💪",
+    desc: "Rééducation, sport, thérapie manuelle + horaires et RDV.",
+    blocks: [
+      { type: "profile", content: { name: "Cabinet KinéForm", tagline: "Masseur-kinésithérapeute · Rééducation & sport", badge: "Nouveaux patients acceptés" } },
+      { type: "services_list", content: { title: "Prises en charge", s1_icon: "🦴", s1_name: "Rééducation", s1_desc: "Post-opératoire, traumatologie", s2_icon: "🏃", s2_name: "Kiné du sport", s2_desc: "Récupération, prévention des blessures", s3_icon: "🖐️", s3_name: "Thérapie manuelle", s3_desc: "Douleurs dorsales et cervicales" } },
+      { type: "opening_hours", content: { title: "Horaires du cabinet", mon_fri: "8h - 19h", saturday: "9h - 13h", sunday: "Fermé", note: "Sur rendez-vous uniquement" } },
+      { type: "testimonials", content: exampleReviews("Sébastien R.", "Rééducation du genou parfaitement suivie, retour au sport réussi.", "Amélie D.", "Praticien à l'écoute, exercices clairs et efficaces.") },
+      { type: "calendly", content: { label: "Prendre rendez-vous", url: "https://doctolib.fr", description: "Réservation en ligne 24h/24" } },
+      { type: "google_maps", content: { label: "Cabinet KinéForm", address: "8 avenue du Sport, 33000 Bordeaux", transport: "Tram B · arrêt Victoire" } },
+      { type: "social_links", content: { website: "https://monsite.com" } },
+    ],
+  },
+
+  // Beauté
+  {
+    key: "beaute_maquilleuse", group: "Beauté & bien-être", label: "Maquilleuse pro", emoji: "💄",
+    desc: "Mariage, shooting, événement + portfolio et réservation.",
+    blocks: [
+      { type: "profile", content: { name: "Studio Éclat", tagline: "Maquilleuse professionnelle · Mariage & shooting", badge: "Déplacements possibles" } },
+      { type: "gallery", content: { title: "Portfolio", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre maquillage") } },
+      { type: "services_list", content: { title: "Prestations", s1_icon: "👰", s1_name: "Maquillage mariée", s1_desc: "Essai + jour J", s2_icon: "📸", s2_name: "Shooting & mode", s2_desc: "Éditorial, book, défilé", s3_icon: "🎉", s3_name: "Événement & soirée", s3_desc: "Maquillage à domicile" } },
+      { type: "pricing", content: { title: "Tarifs", title1: "Essai", price1: "60 €", desc1: "1h en studio", title2: "Jour J mariée", price2: "180 €", desc2: "Essai inclus", title3: "Shooting", price3: "sur devis", desc3: "Selon durée", cta_label: "Demander un devis", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Marion B.", "Maquillage tenue toute la journée de mon mariage, sublime et naturel.", "Inès K.", "À l'écoute et talentueuse, résultat parfait pour mon book.") },
+      { type: "calendly", content: { label: "Réserver un essai", url: "https://calendly.com", description: "Studio ou à domicile" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", tiktok: "https://tiktok.com" } },
+    ],
+  },
+
+  // Business & services
+  {
+    key: "business_comptable", group: "Business & services", label: "Expert-comptable", emoji: "📊",
+    desc: "Compta, fiscalité, création d'entreprise + prise de contact.",
+    blocks: [
+      { type: "profile", content: { name: "Cabinet Rigueur & Conseil", tagline: "Expert-comptable · TPE, PME, indépendants", badge: "Premier rendez-vous offert" } },
+      { type: "bio", content: { text: "Nous accompagnons les entrepreneurs dans la gestion comptable, fiscale et sociale de leur activité, avec un conseil clair et proactif.", align: "left" } },
+      { type: "services_list", content: { title: "Nos missions", s1_icon: "🧮", s1_name: "Comptabilité", s1_desc: "Tenue, bilan, liasse fiscale", s2_icon: "📄", s2_name: "Fiscalité & social", s2_desc: "Déclarations, paie, optimisation", s3_icon: "🚀", s3_name: "Création d'entreprise", s3_desc: "Statuts, business plan, prévisionnel" } },
+      { type: "pricing", content: { title: "Formules", title1: "Micro", price1: "dès 49 €/mois", desc1: "Auto-entrepreneur", title2: "TPE", price2: "dès 129 €/mois", desc2: "Compta complète", title3: "PME", price3: "sur devis", desc3: "Accompagnement dédié", cta_label: "Demander un devis", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Nicolas F.", "Accompagnement précieux à la création de ma société, réactif et pédagogue.", "Sandra P.", "Cabinet sérieux, conseils fiscaux qui m'ont fait économiser.") },
+      { type: "contact_form", content: { title: "Parlons de votre activité", button_label: "Être recontacté", show_phone: "yes" } },
+      { type: "social_links", content: { linkedin: "https://linkedin.com", website: "https://monsite.com" } },
+    ],
+  },
+  {
+    key: "business_couvreur", group: "Artisan & BTP", label: "Couvreur", emoji: "🏠",
+    desc: "Toiture, zinguerie, démoussage + réalisations et devis.",
+    blocks: [
+      { type: "profile", content: { name: "Toit Serein", tagline: "Couvreur-zingueur · Neuf & rénovation", badge: "Devis gratuit" } },
+      { type: "cta_button", content: { label: "Demander un devis toiture", url: "#", style: "gold", icon: "🏠", full_width: "yes" } },
+      { type: "services_list", content: { title: "Nos prestations", s1_icon: "🧱", s1_name: "Réfection de toiture", s1_desc: "Tuiles, ardoises, bac acier", s2_icon: "🌧️", s2_name: "Zinguerie & gouttières", s2_desc: "Étanchéité, évacuation des eaux", s3_icon: "🧽", s3_name: "Démoussage & entretien", s3_desc: "Nettoyage, traitement hydrofuge" } },
+      { type: "gallery", content: { title: "Nos réalisations", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre toiture") } },
+      { type: "testimonials", content: exampleReviews("Philippe M.", "Toiture refaite proprement, chantier tenu dans les délais.", "Christine A.", "Devis clair, travail soigné, je recommande.") },
+      { type: "contact_form", content: { title: "Votre projet de toiture", button_label: "Demander un devis", show_phone: "yes" } },
+      { type: "social_links", content: { facebook: "https://facebook.com", website: "https://monsite.com" } },
+    ],
+  },
+  {
+    key: "business_macon", group: "Artisan & BTP", label: "Maçon", emoji: "🧱",
+    desc: "Gros œuvre, extension, terrasse + chantiers et devis.",
+    blocks: [
+      { type: "profile", content: { name: "BâtiSolide", tagline: "Maçonnerie générale · Gros œuvre & rénovation", badge: "Artisan qualifié" } },
+      { type: "cta_button", content: { label: "Obtenir un devis", url: "#", style: "gold", icon: "🧱", full_width: "yes" } },
+      { type: "services_list", content: { title: "Nos travaux", s1_icon: "🏗️", s1_name: "Gros œuvre", s1_desc: "Fondations, murs, dalles", s2_icon: "➕", s2_name: "Extension & surélévation", s2_desc: "Agrandir votre habitation", s3_icon: "🌿", s3_name: "Terrasse & aménagement", s3_desc: "Béton, dallage, clôtures" } },
+      { type: "gallery", content: { title: "Chantiers réalisés", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre chantier") } },
+      { type: "testimonials", content: exampleReviews("Laurent B.", "Extension réalisée dans les règles, finitions impeccables.", "Fatima Z.", "Équipe sérieuse et ponctuelle, budget respecté.") },
+      { type: "contact_form", content: { title: "Décrivez votre projet", button_label: "Demander un devis", show_phone: "yes" } },
+      { type: "social_links", content: { facebook: "https://facebook.com", website: "https://monsite.com" } },
+    ],
+  },
+
+  // Créatif
+  {
+    key: "crea_motion", group: "Créatif", label: "Motion designer", emoji: "🎬",
+    desc: "Animation, habillage, vidéo + showreel et tarifs.",
+    blocks: [
+      { type: "profile", content: { name: "Léo Motion", tagline: "Motion designer · Animation & habillage vidéo", badge: "Disponible en freelance" } },
+      { type: "bio", content: { text: "Je donne vie à vos idées : génériques, motion design, habillage de chaîne, publicité animée. Un rendu soigné, du concept à l'export.", align: "center" } },
+      { type: "gallery", content: { title: "Showreel & projets", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre projet") } },
+      { type: "skills", content: { title: "Outils", tags: "After Effects, Premiere Pro, Cinema 4D, Illustrator, Blender" } },
+      { type: "pricing", content: { title: "Tarifs", title1: "Logo animé", price1: "dès 250 €", desc1: "Sting court", title2: "Vidéo motion", price2: "dès 900 €", desc2: "30-60 s", title3: "Habillage complet", price3: "sur devis", desc3: "Chaîne / marque", cta_label: "Demander un devis", cta_url: "#" } },
+      { type: "calendly", content: { label: "Réserver un appel", url: "https://calendly.com", description: "20 min · brief projet" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", youtube: "https://youtube.com", website: "https://monsite.com" } },
+    ],
+  },
+  {
+    key: "crea_podcast", group: "Créatif", label: "Podcasteur", emoji: "🎙️",
+    desc: "Épisodes, plateformes d'écoute, communauté + soutien.",
+    blocks: [
+      { type: "profile", content: { name: "Les Voix du Jeudi", tagline: "Podcast · Conversations & idées", badge: "Nouvel épisode chaque jeudi" } },
+      { type: "bio", content: { text: "Chaque semaine, une rencontre et une conversation sincère. Disponible sur toutes les plateformes d'écoute.", align: "center" } },
+      { type: "spotify_player", content: { title: "Écouter le dernier épisode", url: "https://open.spotify.com" } },
+      { type: "music_links", content: { artist_name: "Les Voix du Jeudi", spotify: "https://open.spotify.com", apple_music: "https://music.apple.com", deezer: "https://deezer.com", youtube_music: "https://music.youtube.com" } },
+      { type: "cta_button", content: { label: "Soutenir le podcast", url: "#", style: "gold", icon: "💛", full_width: "yes" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", youtube: "https://youtube.com", twitter: "https://twitter.com" } },
+    ],
+  },
+
+  // Événementiel
+  {
+    key: "event_dj_mariage", group: "Événementiel", label: "DJ mariage", emoji: "🎧",
+    desc: "Animation, sono, playlist sur mesure + réservation de date.",
+    blocks: [
+      { type: "profile", content: { name: "DJ Horizon", tagline: "DJ mariage & événements · Sono et lumière", badge: "Dates ouvertes cette saison" } },
+      { type: "bio", content: { text: "Je crée l'ambiance de votre soirée, du vin d'honneur au bout de la nuit. Playlist personnalisée, matériel professionnel et animation sur mesure.", align: "center" } },
+      { type: "services_list", content: { title: "Formules", s1_icon: "🎶", s1_name: "Mariage", s1_desc: "Cérémonie, cocktail, soirée", s2_icon: "🔊", s2_name: "Sono & lumière", s2_desc: "Matériel pro fourni et installé", s3_icon: "🎤", s3_name: "Animation", s3_desc: "Micro, jeux, coordination" } },
+      { type: "event_info", content: { name: "Réservez votre date", date: "Saison en cours", time: "Soirée", location: "Votre lieu de réception", price: "Formules dès 690 €", cta_label: "Vérifier ma date", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Julie & Marc", "Piste de danse pleine toute la nuit, playlist parfaite. Merci !", "Emma & Sofiane", "Professionnel et à l'écoute, il a lu la salle à la perfection.") },
+      { type: "calendly", content: { label: "Vérifier ma date", url: "https://calendly.com", description: "Réponse rapide · devis gratuit" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com", youtube: "https://youtube.com" } },
+    ],
+  },
 ]

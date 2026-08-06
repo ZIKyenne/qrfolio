@@ -85,13 +85,26 @@ applyPageTemplate()  (existant, Builder)  →  /api/templates/use (existant)
 | --- | --- | --- |
 | **T1 — Moteur pur** ✅ FAIT (`220cb809`) | `templateEngine.ts` (`TemplateStructure/Style/Layout` + `composeTemplate`) + 12 tests (round-trip rétrocompat + combos croisés) + DB legacy actée | tests verts, `page-templates.ts` inchangé |
 | **T2 — Axe layout + preview** ✅ FAIT | 3 layouts (`default`/`compact`/`airy`, densité via `__space` réel) + **harness `/e2e-harness/template-preview`** (rendu RÉEL des blocs, structure×style×layout) + spec + captures **vérifiées visuellement** (Restaurant × gold/slate/compact = pages premium complètes, 0 erreur) | +5 tests, e2e 4 tests, captures lues par l'agent |
-| **T3 — Sélecteur galerie** | choisir style/layout dans la galerie & `TemplatePreviewModal` (derrière flag si besoin) | e2e galerie |
+| **T3 — Composeur réutilisable** ✅ FAIT (composant) | `components/templates/TemplateComposer.tsx` : composant PRODUIT réutilisable (picker structure×style×layout + aperçu LIVE réel + `onCreate(composed)`). Vérifié via harness (5 e2e) + captures. **Le branchement live dans la galerie reste un pas BINÔME** (voir ci-dessous) | composant + e2e verts |
 | **T4 — Images premium** | placeholders élégants + petit set bundlé licence-safe + intégration picker | captures |
 | **T5 — Verticales (data)** | ajouter des métiers = **données** `TemplateStructure` par lots (Business/Restauration/…) ; QA par lot | par lot, captures |
 | **T6 — (option) IA variantes** | génération de variantes derrière `ANTHROPIC_API_KEY` + garde-fous anti-fake | 503 clair si clé absente |
 
 Estimation honnête : T1 ≈ 1 mission ; T2/T3 ≈ 1 chacune ; T5 = récurrent par lots de métiers (le gros du
 volume, mais en **données**, pas en code) ; T4 dépend du sourcing d'images ; T6 optionnel.
+
+## T3 — Branchement galerie : constat & voie binôme
+
+Audit réel de la galerie (`dashboard/templates/page.tsx` + `TemplatePreviewModal.tsx`, **2843 lignes**) :
+- flux **authentifié** (Supabase) → `POST /api/templates/use` `{templateId, templateName, slug, theme, blocks}` — **non rendu par l'agent** (Supabase injoignable) ;
+- la modale a son **propre** renderer d'aperçu (≠ `builderPreview`) ;
+- **divergence de contenu** : `page.tsx` contient un `TEMPLATE_BLOCKS` **inline** qui redéfinit certaines clés (ex. `"restaurant"`, `"createur"`) avec un contenu ≠ `page-templates.ts` (`"resto_bistrot"`…). Les clés galerie ne mappent donc pas toutes 1:1 sur `TEMPLATE_STRUCTURES`.
+
+→ Conclusion (cohérente avec la note mémoire « ne pas refactorer la galerie à l'aveugle ») : **ne pas
+blind-wirer** l'engine dans la galerie solo. Le composant `TemplateComposer` est prêt à y être monté ;
+le branchement se fait en **binôme** (tu vérifies le rendu authentifié) et implique d'abord de
+**réconcilier les clés galerie sur les structures du moteur** (petit chantier de consolidation, T3.b).
+Chemin d'intégration minimal : mapper `templateId` → `structureKey`, monter `<TemplateComposer onCreate={c => POST /api/templates/use {theme: c.theme, blocks: c.blocks, …}} />`, le reste du flux inchangé.
 
 ## I. Risques
 

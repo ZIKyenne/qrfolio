@@ -19,13 +19,13 @@ test.describe("preview templates composés (moteur)", () => {
 
   test("rendu d'un template composé complet, sans erreur fatale", async ({ page }, testInfo) => {
     await page.goto(URL, { waitUntil: "networkidle" })
-    await expect(page.getByTestId("preview-page")).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByTestId("composer-preview")).toBeVisible({ timeout: 30_000 })
     // page complète = plusieurs blocs réels rendus
     expect(await page.locator("[data-block-type]").count()).toBeGreaterThanOrEqual(5)
     expect(await page.locator("[data-block-error]").count(), "aucun bloc en erreur").toBe(0)
     const c = collect(page)
     await page.reload({ waitUntil: "networkidle" })
-    await expect(page.getByTestId("preview-page")).toBeVisible()
+    await expect(page.getByTestId("composer-preview")).toBeVisible()
     await testInfo.attach("resto-gold", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" })
     // Erreurs FATALES uniquement (les iframes tierces type Google Maps émettent des console.error filtrés).
     expect(c.pageErrors, "erreurs fatales:\n" + c.pageErrors.join("\n")).toEqual([])
@@ -34,32 +34,42 @@ test.describe("preview templates composés (moteur)", () => {
 
   test("l'axe STYLE change réellement le rendu", async ({ page }, testInfo) => {
     await page.goto(URL, { waitUntil: "domcontentloaded" })
-    await expect(page.getByTestId("preview-page")).toBeVisible()
+    await expect(page.getByTestId("composer-preview")).toBeVisible()
     await page.getByTestId("sel-style").selectOption("slate")
-    await expect(page.getByTestId("preview-page")).toHaveAttribute("data-style", "slate")
-    await expect(page.getByTestId("preview-controls")).toHaveAttribute("data-key", /__slate/)
+    await expect(page.getByTestId("composer-preview")).toHaveAttribute("data-style", "slate")
+    await expect(page.getByTestId("composer-controls")).toHaveAttribute("data-key", /__slate/)
     await expect(page.locator("[data-block-error]")).toHaveCount(0)
     await testInfo.attach("resto-slate", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" })
   })
 
   test("l'axe LAYOUT change la densité (compact)", async ({ page }, testInfo) => {
     await page.goto(URL, { waitUntil: "domcontentloaded" })
-    await expect(page.getByTestId("preview-page")).toBeVisible()
+    await expect(page.getByTestId("composer-preview")).toBeVisible()
     await page.getByTestId("sel-layout").selectOption("compact")
-    await expect(page.getByTestId("preview-page")).toHaveAttribute("data-layout", "compact")
-    await expect(page.getByTestId("preview-controls")).toHaveAttribute("data-key", /__compact/)
+    await expect(page.getByTestId("composer-preview")).toHaveAttribute("data-layout", "compact")
+    await expect(page.getByTestId("composer-controls")).toHaveAttribute("data-key", /__compact/)
     await testInfo.attach("resto-compact", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" })
+  })
+
+  test("« Créer cette page » émet le template composé (onCreate)", async ({ page }) => {
+    await page.goto(URL, { waitUntil: "domcontentloaded" })
+    await expect(page.getByTestId("composer-preview")).toBeVisible()
+    await page.getByTestId("sel-style").selectOption("neon")
+    await page.getByTestId("composer-create").click()
+    await expect(page.getByTestId("create-recorder")).toHaveAttribute("data-created-key", /__neon/)
+    // le nombre de blocs composés est transmis
+    await expect(page.getByTestId("create-recorder")).not.toHaveAttribute("data-created-blocks", "")
   })
 
   test("changer de structure (métier) recompose sans erreur", async ({ page }) => {
     await page.goto(URL, { waitUntil: "domcontentloaded" })
-    await expect(page.getByTestId("preview-page")).toBeVisible()
+    await expect(page.getByTestId("composer-preview")).toBeVisible()
     const options = await page.getByTestId("sel-structure").locator("option").evaluateAll(els => els.map(e => (e as HTMLOptionElement).value))
     expect(options.length).toBeGreaterThanOrEqual(10)
     // teste 3 structures variées
     for (const v of [options[0], options[Math.floor(options.length / 2)], options[options.length - 1]]) {
       await page.getByTestId("sel-structure").selectOption(v)
-      await expect(page.getByTestId("preview-page")).toBeVisible()
+      await expect(page.getByTestId("composer-preview")).toBeVisible()
       expect(await page.locator("[data-block-error]").count(), `structure ${v}`).toBe(0)
       expect(await page.locator("[data-block-type]").count()).toBeGreaterThan(0)
     }

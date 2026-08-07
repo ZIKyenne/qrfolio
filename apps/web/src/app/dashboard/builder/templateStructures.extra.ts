@@ -630,7 +630,7 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
 
   // Business & services
   {
-    key: "business_comptable", group: "Business & services", label: "Expert-comptable", emoji: "📊",
+    key: "business_comptable", group: "Freelance & Entreprise", label: "Expert-comptable", emoji: "📊",
     desc: "Compta, fiscalité, création d'entreprise + prise de contact.",
     blocks: [
       { type: "profile", content: { name: "Cabinet Rigueur & Conseil", tagline: "Expert-comptable · TPE, PME, indépendants", badge: "Premier rendez-vous offert" } },
@@ -671,7 +671,7 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
 
   // Créatif
   {
-    key: "crea_motion", group: "Créatif", label: "Motion designer", emoji: "🎬",
+    key: "crea_motion", group: "Créatif & Média", label: "Motion designer", emoji: "🎬",
     desc: "Animation, habillage, vidéo + showreel et tarifs.",
     blocks: [
       { type: "profile", content: { name: "Léo Motion", tagline: "Motion designer · Animation & habillage vidéo", badge: "Disponible en freelance" } },
@@ -684,7 +684,7 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
     ],
   },
   {
-    key: "crea_podcast", group: "Créatif", label: "Podcasteur", emoji: "🎙️",
+    key: "crea_podcast", group: "Créatif & Média", label: "Podcasteur", emoji: "🎙️",
     desc: "Épisodes, plateformes d'écoute, communauté + soutien.",
     blocks: [
       { type: "profile", content: { name: "Les Voix du Jeudi", tagline: "Podcast · Conversations & idées", badge: "Nouvel épisode chaque jeudi" } },
@@ -708,6 +708,159 @@ export const EXTRA_STRUCTURES: TemplateStructure[] = [
       { type: "testimonials", content: exampleReviews("Julie & Marc", "Piste de danse pleine toute la nuit, playlist parfaite. Merci !", "Emma & Sofiane", "Professionnel et à l'écoute, il a lu la salle à la perfection.") },
       { type: "calendly", content: { label: "Vérifier ma date", url: "https://calendly.com", description: "Réponse rapide · devis gratuit" } },
       { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com", youtube: "https://youtube.com" } },
+    ],
+  },
+
+  // ── T5 lot 6 : nouvelles verticales ─────────────────────────────────────────
+  // Restauration
+  {
+    key: "resto_foodtruck", group: "Restauration", label: "Food truck", emoji: "🚚",
+    desc: "Emplacements du jour, carte, où nous trouver.",
+    blocks: [
+      { type: "profile", content: { name: "Le Camion Doré", tagline: "Food truck · Burgers maison & frites fraîches", badge: "Où on est aujourd'hui ?" } },
+      { type: "cta_button", content: { label: "Voir l'emplacement du jour", url: "#", style: "gold", icon: "📍", full_width: "yes" } },
+      { type: "menu_section", content: { category: "Nos burgers", item1_name: "Le Classique", item1_price: "9 €", item1_desc: "Bœuf, cheddar, oignons confits", item2_name: "Le Fondant", item2_price: "11 €", item2_desc: "Bœuf, raclette, champignons", item3_name: "Le Végé", item3_price: "9,50 €", item3_desc: "Galette maison, avocat, tomate" } },
+      { type: "opening_hours", content: { title: "Nos tournées", mon_fri: "11h30-14h · Zone bureaux", saturday: "18h-22h · Marché nocturne", sunday: "Repos", note: "Emplacement du jour sur Instagram" } },
+      { type: "testimonials", content: exampleReviews("Rémi C.", "Meilleur burger du quartier, viande cuite parfaitement.", "Alicia N.", "Frites fraîches et accueil top, on revient chaque semaine.") },
+      { type: "google_maps", content: { label: "Emplacement du midi", address: "Place de la Gare, 35000 Rennes", transport: "Change selon les jours — voir Instagram" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+  {
+    key: "resto_salondethe", group: "Restauration", label: "Salon de thé", emoji: "🫖",
+    desc: "Thés, pâtisseries maison, brunch + ambiance et horaires.",
+    blocks: [
+      { type: "profile", content: { name: "Maison Camélia", tagline: "Salon de thé · Pâtisseries maison", badge: "Brunch le week-end" } },
+      { type: "gallery", content: { title: "Nos douceurs", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre pâtisserie") } },
+      { type: "menu_section", content: { category: "La carte", item1_name: "Théière (2 tasses)", item1_price: "6,50 €", item1_desc: "Sélection de grands crus", item2_name: "Pâtisserie du jour", item2_price: "5,50 €", item2_desc: "Faite maison chaque matin", item3_name: "Brunch complet", item3_price: "24 €", item3_desc: "Salé, sucré, boisson chaude" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "10h - 19h", saturday: "9h30 - 19h30", sunday: "10h - 18h", note: "Brunch samedi & dimanche jusqu'à 14h" } },
+      { type: "testimonials", content: exampleReviews("Hélène V.", "Cadre cosy, pâtisseries délicieuses et grand choix de thés.", "Paul M.", "Le brunch du dimanche est un vrai régal, service adorable.") },
+      { type: "google_maps", content: { label: "Maison Camélia", address: "14 rue des Fleurs, 67000 Strasbourg", transport: "Centre-ville" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+
+  // Santé
+  {
+    key: "sante_chiro", group: "Santé", label: "Chiropracteur", emoji: "🦴",
+    desc: "Dos, articulations, posture + prise de RDV et FAQ.",
+    blocks: [
+      { type: "profile", content: { name: "Cabinet Axis", tagline: "Chiropracteur · Dos, articulations, posture", badge: "Nouveaux patients acceptés" } },
+      { type: "bio", content: { text: "J'accompagne mes patients dans le soulagement des douleurs de dos, de nuque et des articulations, par des ajustements adaptés et un suivi personnalisé.", align: "left" } },
+      { type: "services_list", content: { title: "Motifs de consultation", s1_icon: "🩻", s1_name: "Douleurs de dos", s1_desc: "Lombalgies, sciatiques", s2_icon: "💆", s2_name: "Cervicales & maux de tête", s2_desc: "Tensions, migraines", s3_icon: "🧍", s3_name: "Posture & prévention", s3_desc: "Bilan et conseils" } },
+      { type: "faq", content: { title: "Questions fréquentes", q1: "Faut-il une ordonnance ?", a1: "Non, la consultation est en accès direct.", q2: "Combien de séances sont nécessaires ?", a2: "Cela dépend de votre situation, évaluée dès la première visite.", q3: "Est-ce remboursé ?", a3: "Selon votre mutuelle, un forfait est souvent prévu." } },
+      { type: "calendly", content: { label: "Prendre rendez-vous", url: "https://doctolib.fr", description: "Réservation en ligne 24h/24" } },
+      { type: "google_maps", content: { label: "Cabinet Axis", address: "9 rue de la Santé, 59000 Lille", transport: "Métro République" } },
+      { type: "social_links", content: { website: "https://monsite.com" } },
+    ],
+  },
+  {
+    key: "sante_orthophoniste", group: "Santé", label: "Orthophoniste", emoji: "🗣️",
+    desc: "Langage, articulation, apprentissages + RDV et infos.",
+    blocks: [
+      { type: "profile", content: { name: "Cabinet Parole & Sens", tagline: "Orthophoniste · Enfants & adultes", badge: "Sur prescription médicale" } },
+      { type: "services_list", content: { title: "Prises en charge", s1_icon: "🔤", s1_name: "Langage & articulation", s1_desc: "Retards, troubles de la parole", s2_icon: "📚", s2_name: "Troubles des apprentissages", s2_desc: "Dyslexie, dysorthographie", s3_icon: "🧠", s3_name: "Rééducation adulte", s3_desc: "Post-AVC, déglutition" } },
+      { type: "faq", content: { title: "Questions fréquentes", q1: "Faut-il une prescription ?", a1: "Oui, une ordonnance médicale est nécessaire.", q2: "À partir de quel âge ?", a2: "Dès les premiers signes, un bilan peut être proposé.", q3: "Les séances sont-elles remboursées ?", a3: "Oui, prises en charge par l'Assurance Maladie sur prescription." } },
+      { type: "calendly", content: { label: "Demander un bilan", url: "https://doctolib.fr", description: "Cabinet · sur rendez-vous" } },
+      { type: "google_maps", content: { label: "Cabinet Parole & Sens", address: "3 place de l'École, 31000 Toulouse", transport: "Métro Capitole" } },
+      { type: "social_links", content: { website: "https://monsite.com" } },
+    ],
+  },
+
+  // Beauté
+  {
+    key: "beaute_esthetique", group: "Beauté & bien-être", label: "Esthéticienne", emoji: "💆‍♀️",
+    desc: "Soins visage & corps, épilation + réservation en ligne.",
+    blocks: [
+      { type: "profile", content: { name: "Institut Roséa", tagline: "Esthéticienne · Soins visage & corps", badge: "Sur rendez-vous" } },
+      { type: "services_list", content: { title: "Nos soins", s1_icon: "✨", s1_name: "Soin du visage", s1_desc: "Éclat, hydratation, anti-âge", s2_icon: "🕯️", s2_name: "Massage & modelage", s2_desc: "Détente et bien-être", s3_icon: "🌿", s3_name: "Épilation", s3_desc: "Cire tiède, zones au choix" } },
+      { type: "gallery", content: { title: "L'institut", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre soin") } },
+      { type: "pricing", content: { title: "Tarifs", title1: "Soin visage", price1: "dès 55 €", desc1: "1h", title2: "Massage", price2: "dès 60 €", desc2: "1h", title3: "Forfait découverte", price3: "95 €", desc3: "Visage + corps", cta_label: "Réserver", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Sabrina T.", "Soin visage divin, peau repulpée et lumineuse, je recommande.", "Lucie F.", "Institut apaisant, esthéticienne aux mains d'or.") },
+      { type: "calendly", content: { label: "Réserver un soin", url: "https://calendly.com", description: "Réservation en ligne 7j/7" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+
+  // Commerce
+  {
+    key: "commerce_opticien", group: "Commerce", label: "Opticien", emoji: "👓",
+    desc: "Lunettes, examen de vue, marques + horaires et magasin.",
+    blocks: [
+      { type: "profile", content: { name: "Optique Clairvue", tagline: "Opticien · Lunettes, solaires, lentilles", badge: "Examen de vue sur place" } },
+      { type: "services_list", content: { title: "En magasin", s1_icon: "👁️", s1_name: "Examen de vue", s1_desc: "Bilan visuel gratuit", s2_icon: "🕶️", s2_name: "Lunettes & solaires", s2_desc: "Grandes marques et créateurs", s3_icon: "💧", s3_name: "Lentilles de contact", s3_desc: "Essai et adaptation" } },
+      { type: "gallery", content: { title: "Nos montures", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre monture") } },
+      { type: "promo_banner", content: { emoji: "👓", text: "2ème paire offerte", subtext: "Sur une sélection de montures", cta_label: "En profiter", cta_url: "#" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "9h30 - 19h", saturday: "9h30 - 18h", sunday: "Fermé", note: "Tiers payant mutuelles accepté" } },
+      { type: "google_maps", content: { label: "Optique Clairvue", address: "27 rue du Commerce, 44000 Nantes", transport: "Tram · arrêt Commerce" } },
+      { type: "social_links", content: { facebook: "https://facebook.com", website: "https://monsite.com" } },
+    ],
+  },
+  {
+    key: "commerce_primeur", group: "Commerce", label: "Primeur / épicerie", emoji: "🥕",
+    desc: "Fruits & légumes de saison, produits locaux + horaires.",
+    blocks: [
+      { type: "profile", content: { name: "Au Panier Frais", tagline: "Primeur · Fruits, légumes & produits locaux", badge: "Arrivage quotidien" } },
+      { type: "gallery", content: { title: "L'étal du jour", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre produit") } },
+      { type: "services_list", content: { title: "Nos rayons", s1_icon: "🍎", s1_name: "Fruits & légumes", s1_desc: "De saison, circuit court", s2_icon: "🧀", s2_name: "Épicerie fine", s2_desc: "Producteurs locaux", s3_icon: "🧺", s3_name: "Paniers & commandes", s3_desc: "À composer, retrait en boutique" } },
+      { type: "opening_hours", content: { title: "Horaires", mon_fri: "8h - 13h / 15h - 19h30", saturday: "8h - 19h30", sunday: "8h - 13h", note: "Marché le mercredi matin" } },
+      { type: "testimonials", content: exampleReviews("Monique D.", "Des produits d'une fraîcheur incomparable, accueil chaleureux.", "Karim B.", "Enfin de vrais fruits qui ont du goût, et le sourire en plus.") },
+      { type: "google_maps", content: { label: "Au Panier Frais", address: "6 rue du Marché, 34000 Montpellier", transport: "Centre historique" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", facebook: "https://facebook.com" } },
+    ],
+  },
+
+  // Créatif & Média
+  {
+    key: "crea_illustrateur", group: "Créatif & Média", label: "Illustrateur", emoji: "🎨",
+    desc: "Illustration, character design, commandes + portfolio.",
+    blocks: [
+      { type: "profile", content: { name: "Studio Encre", tagline: "Illustrateur freelance · Édition, presse, marques", badge: "Commandes ouvertes" } },
+      { type: "bio", content: { text: "J'illustre vos univers : couvertures, character design, affiches et identités. Un style qui raconte votre histoire.", align: "center" } },
+      { type: "gallery", content: { title: "Portfolio", columns: "3", columns_mobile: "2", ...placeholderGallery(6, "Votre illustration") } },
+      { type: "skills", content: { title: "Techniques", tags: "Procreate, Photoshop, Illustrator, aquarelle, encre, character design" } },
+      { type: "pricing", content: { title: "Tarifs indicatifs", title1: "Illustration simple", price1: "dès 150 €", desc1: "Usage web", title2: "Character design", price2: "dès 350 €", desc2: "Fiche complète", title3: "Licence & édition", price3: "sur devis", desc3: "Selon usage", cta_label: "Demander un devis", cta_url: "#" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", behance: "https://behance.net", website: "https://monsite.com" } },
+    ],
+  },
+  {
+    key: "crea_streamer", group: "Créatif & Média", label: "Streamer / Gaming", emoji: "🎮",
+    desc: "Chaînes, planning de live, communauté + soutien.",
+    blocks: [
+      { type: "profile", content: { name: "NovaPlays", tagline: "Streamer · Gaming & variété", badge: "En live ce soir" } },
+      { type: "bio", content: { text: "Lives gaming, chill et interactions avec la communauté. Rejoins-nous en direct et sur les réseaux !", align: "center" } },
+      { type: "social_links", content: { twitch: "https://twitch.tv", youtube: "https://youtube.com", tiktok: "https://tiktok.com", twitter: "https://twitter.com", discord: "https://discord.gg" } },
+      { type: "visit_counter", content: { label: "membres de la commu" } },
+      { type: "cta_button", content: { label: "Rejoindre le Discord", url: "https://discord.gg", style: "neon", icon: "💬", full_width: "yes" } },
+      { type: "cta_button", content: { label: "Soutenir la chaîne", url: "#", style: "gold", icon: "⭐", full_width: "yes" } },
+    ],
+  },
+
+  // Coaching & Formation
+  {
+    key: "coach_yoga", group: "Coaching & Formation", label: "Prof de yoga", emoji: "🧘‍♀️",
+    desc: "Cours collectifs & privés, planning + réservation.",
+    blocks: [
+      { type: "profile", content: { name: "Studio Prana", tagline: "Professeure de yoga · Vinyasa, Hatha, Yin", badge: "Cours d'essai offert" } },
+      { type: "bio", content: { text: "Je vous accompagne vers plus de souplesse, de force et de sérénité, à travers une pratique adaptée à votre niveau.", align: "center" } },
+      { type: "services_list", content: { title: "Les cours", s1_icon: "🌅", s1_name: "Cours collectifs", s1_desc: "Studio ou plein air", s2_icon: "🧎", s2_name: "Cours privés", s2_desc: "À domicile ou en visio", s3_icon: "🌸", s3_name: "Ateliers & retraites", s3_desc: "Week-ends thématiques" } },
+      { type: "pricing", content: { title: "Tarifs", title1: "Cours à l'unité", price1: "18 €", desc1: "Collectif", title2: "Carte 10 cours", price2: "150 €", desc2: "Économisez 30 €", title3: "Cours privé", price3: "55 €", desc3: "1h personnalisée", cta_label: "Réserver", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Émilie R.", "Cours d'une grande douceur, je repars apaisée à chaque fois.", "Thomas L.", "Pédagogie claire, progrès réels sur ma souplesse et mon stress.") },
+      { type: "calendly", content: { label: "Réserver un cours d'essai", url: "https://calendly.com", description: "Gratuit · sans engagement" } },
+      { type: "social_links", content: { instagram: "https://instagram.com", youtube: "https://youtube.com" } },
+    ],
+  },
+  {
+    key: "coach_musique", group: "Coaching & Formation", label: "Prof de musique", emoji: "🎸",
+    desc: "Cours d'instrument, tous niveaux, en présentiel ou visio.",
+    blocks: [
+      { type: "profile", content: { name: "Atelier Mélodie", tagline: "Professeur de musique · Guitare, piano, chant", badge: "Premier cours offert" } },
+      { type: "bio", content: { text: "Cours de musique personnalisés pour tous les âges et tous les niveaux, en présentiel ou en visioconférence. Apprendre en s'amusant.", align: "center" } },
+      { type: "services_list", content: { title: "Les cours", s1_icon: "🎸", s1_name: "Guitare", s1_desc: "Acoustique, électrique", s2_icon: "🎹", s2_name: "Piano", s2_desc: "Classique, moderne", s3_icon: "🎤", s3_name: "Chant & solfège", s3_desc: "Technique vocale, théorie" } },
+      { type: "pricing", content: { title: "Tarifs", title1: "Cours individuel", price1: "30 €", desc1: "1h", title2: "Forfait 10 cours", price2: "270 €", desc2: "Économisez 30 €", title3: "Cours en visio", price3: "25 €", desc3: "1h à distance", cta_label: "S'inscrire", cta_url: "#" } },
+      { type: "testimonials", content: exampleReviews("Nolan P.", "Mon fils progresse vite et adore ses cours de guitare.", "Sophie M.", "Prof patient et passionné, méthode qui donne envie de jouer.") },
+      { type: "calendly", content: { label: "Réserver un cours d'essai", url: "https://calendly.com", description: "Présentiel ou visio" } },
+      { type: "social_links", content: { youtube: "https://youtube.com", instagram: "https://instagram.com" } },
     ],
   },
 ]

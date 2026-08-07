@@ -10,8 +10,7 @@ import TemplatePreviewModal from "./TemplatePreviewModal"
 import Particles from "@/components/Particles"
 import { useIsMobile } from "@/lib/useIsMobile"
 import { PAGE_TEMPLATES } from "../builder/page-templates"
-import { useBuilderRedesign } from "../builder/builderFlags"
-import { TEMPLATE_STYLE_LIST, TEMPLATE_LAYOUT_LIST, nativeStyleKeyFor, isGalleryRestylable, galleryRestyle } from "../builder/templateEngine"
+import { TEMPLATE_LAYOUT_LIST, galleryStyleChoices, nativeGalleryStyleKey, galleryComposeBlocks } from "../builder/templateEngine"
 import { useToast } from "@/components/Toast"
 
 // Source unique partagée avec le builder : les modèles de page complets (métier + sous-variantes)
@@ -132,14 +131,15 @@ export default function TemplatesPage() {
   const [namingFor,    setNamingFor]    = useState<string | null>(null)
   const router = useRouter()
 
-  // T3.b — sélection de style/disposition dans la modale de nommage (moteur de templates), gardée
-  // par le flag redesign (OFF en prod → galerie strictement inchangée). Ne s'applique qu'aux
-  // templates partagés (structures connues) ; les 14 modèles curés conservent leur thème legacy.
-  const redesign = useBuilderRedesign()
+  // T3.b — sélection de style/disposition dans la modale de nommage (moteur de templates). Couvre
+  // TOUTES les cartes : le choix par défaut reproduit le look d'origine à l'identique (l'option
+  // « original » pour les modèles signature, le preset natif pour les modèles partagés) ⇒ zéro
+  // régression tant que l'utilisateur n'y touche pas. Le style ne fait que changer thème + densité.
   const [styleKey, setStyleKey] = useState<string | null>(null)
   const [layoutKey, setLayoutKey] = useState("default")
   useEffect(() => {
-    if (namingFor) { setStyleKey(nativeStyleKeyFor(namingFor)); setLayoutKey("default") }
+    if (namingFor) { setStyleKey(nativeGalleryStyleKey(TEMPLATE_THEMES[namingFor])); setLayoutKey("default") }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [namingFor])
 
   const [usedTemplateIds, setUsedTemplateIds] = useState<string[]>([])
@@ -591,39 +591,26 @@ export default function TemplatesPage() {
       {namingFor && (() => {
         const tpl = TEMPLATES.find((t: any) => t.id === namingFor)
         if (!tpl) return null
-        // Restylable = template partagé (structure connue du moteur) ET flag redesign actif.
-        const restylable = redesign && isGalleryRestylable(namingFor)
-        const effStyle = styleKey || nativeStyleKeyFor(namingFor) || undefined
-        const restyleProps = restylable ? {
-          styleOptions: TEMPLATE_STYLE_LIST.map(s => ({ key: s.key, label: s.label, color: s.theme.primary })),
-          styleKey: effStyle,
-          onStyleChange: setStyleKey,
-          layoutOptions: TEMPLATE_LAYOUT_LIST.map(l => ({ key: l.key, label: l.label })),
-          layoutKey,
-          onLayoutChange: setLayoutKey,
-        } : {}
-        const blockCount = (() => {
-          if (restylable && effStyle) {
-            const r = galleryRestyle(namingFor, effStyle, layoutKey)
-            if (r) return r.blocks.length
-          }
-          return (TEMPLATE_BLOCKS[namingFor] || []).length
-        })()
+        // T3.b (34 cartes) : le thème d'origine de CETTE carte + ses blocs. Le moteur applique le
+        // style/densité choisis. Par défaut = style natif ⇒ résultat identique au legacy.
+        const currentTheme = TEMPLATE_THEMES[namingFor] || TEMPLATE_THEMES["freelance"]
+        const currentBlocks = TEMPLATE_BLOCKS[namingFor] || []
+        const effStyle = styleKey || nativeGalleryStyleKey(currentTheme)
+        const composed = galleryComposeBlocks(currentBlocks, currentTheme, effStyle, layoutKey)
         return (
           <NamingModal
             template={tpl}
-            blockCount={blockCount}
-            {...restyleProps}
+            blockCount={composed.blocks.length}
+            styleOptions={galleryStyleChoices(currentTheme)}
+            styleKey={effStyle}
+            onStyleChange={setStyleKey}
+            layoutOptions={TEMPLATE_LAYOUT_LIST.map(l => ({ key: l.key, label: l.label }))}
+            layoutKey={layoutKey}
+            onLayoutChange={setLayoutKey}
             onClose={() => setNamingFor(null)}
             onCreate={async (name, slug, description) => {
-              let theme: any = TEMPLATE_THEMES[namingFor] || TEMPLATE_THEMES["freelance"]
-              let blocks: any = TEMPLATE_BLOCKS[namingFor] || []
-              // T3.b : si le template est restylable et un style est choisi, on recompose via le
-              // moteur (thème + blocs). Sinon, on garde exactement le legacy (zéro régression).
-              if (restylable && effStyle) {
-                const r = galleryRestyle(namingFor, effStyle, layoutKey)
-                if (r) { theme = r.theme; blocks = r.blocks }
-              }
+              // Recompose thème + blocs selon le style/disposition choisis (par défaut = look d'origine).
+              const { theme, blocks } = galleryComposeBlocks(currentBlocks, currentTheme, effStyle, layoutKey)
               const res = await fetch("/api/templates/use", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

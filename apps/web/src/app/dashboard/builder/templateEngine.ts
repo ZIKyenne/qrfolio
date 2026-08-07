@@ -147,6 +147,52 @@ export function galleryRestyle(
   return composed ? { theme: composed.theme, blocks: composed.blocks } : null
 }
 
+// ── Restyle UNIVERSEL (T3.b étendu) : marche pour N'IMPORTE quel template de galerie ─────────────
+// La galerie possède déjà les blocs de CHAQUE carte (partagée ou « signature » historique). Le moteur
+// n'a alors qu'à appliquer un thème (style) + une densité (layout) sur ces blocs. Les templates
+// « signature » ont un thème bespoke (hors presets d'ambiance) : on l'expose comme option « original »
+// (clé NATIVE_STYLE_KEY) pour le reproduire à l'identique. Ainsi TOUTES les cartes deviennent
+// restylables, et le choix par défaut = look d'origine exact ⇒ zéro régression si l'utilisateur n'y
+// touche pas. Pur, ne mute rien.
+export const NATIVE_STYLE_KEY = "__native"
+
+// Le thème courant correspond-il à un preset d'ambiance (par identité de référence) ?
+function ambianceKeyOfTheme(currentTheme: PageTheme | undefined): string | null {
+  const found = currentTheme ? TEMPLATE_STYLE_LIST.find(s => s.theme === currentTheme) : undefined
+  return found ? found.key : null
+}
+
+// Clé de style à présélectionner pour reproduire le look actuel : le preset d'ambiance si le thème en
+// est un (cas partagé), sinon la clé « original » (cas signature bespoke).
+export function nativeGalleryStyleKey(currentTheme: PageTheme | undefined): string {
+  return ambianceKeyOfTheme(currentTheme) ?? NATIVE_STYLE_KEY
+}
+
+// Options du sélecteur de style pour une carte de galerie : les 14 ambiances, précédées de l'option
+// « original » UNIQUEMENT si le thème courant est bespoke (sinon il est déjà dans la liste).
+export function galleryStyleChoices(
+  currentTheme: PageTheme | undefined,
+): { key: string; label: string; color: string }[] {
+  const ambiances = TEMPLATE_STYLE_LIST.map(s => ({ key: s.key, label: s.label, color: s.theme.primary }))
+  if (ambianceKeyOfTheme(currentTheme)) return ambiances // partagé : natif déjà présent
+  const label = currentTheme?.name ? `${currentTheme.name} (original)` : "Original"
+  return [{ key: NATIVE_STYLE_KEY, label, color: currentTheme?.primary ?? "var(--accent)" }, ...ambiances]
+}
+
+// Applique style + layout sur des blocs quelconques (structure ad-hoc). `NATIVE_STYLE_KEY` conserve le
+// thème bespoke `currentTheme`. Renvoie toujours {theme, blocks} (jamais null : layout inconnu ⇒ défaut).
+export function galleryComposeBlocks(
+  blocks: TemplateBlock[], currentTheme: PageTheme, styleKey: string, layoutKey = "default",
+): { theme: PageTheme; blocks: TemplateBlock[] } {
+  const layout = TEMPLATE_LAYOUTS[layoutKey] ?? DEFAULT_LAYOUT
+  const base = blocks.map(b => ({ type: b.type, content: { ...b.content } }))
+  const outBlocks = layout.transformBlocks ? layout.transformBlocks(base) : base
+  const theme = styleKey === NATIVE_STYLE_KEY
+    ? currentTheme
+    : (TEMPLATE_STYLES[styleKey]?.theme ?? currentTheme)
+  return { theme, blocks: outBlocks }
+}
+
 // ── Validation (garde-fou : n'utiliser que des types de blocs réels) ────────────
 export function unknownBlockTypes(structure: TemplateStructure): string[] {
   return structure.blocks.filter(b => !BLOCK_DEFS[b.type]).map(b => b.type)

@@ -24,6 +24,9 @@ test.describe("modale de nommage — sélecteur de style (moteur)", () => {
     // au moins plusieurs styles proposés + les 3 dispositions
     expect(await page.locator("[data-testid^='style-']").count()).toBeGreaterThanOrEqual(10)
     expect(await page.locator("[data-testid^='layout-']").count()).toBe(3)
+    // cas signature : l'option « original » (__native) est présente et active par défaut
+    await expect(page.getByTestId("style-__native")).toBeVisible()
+    await expect(page.getByTestId("style-__native")).toHaveAttribute("data-active", "1")
     const c = collect(page)
     await testInfo.attach("naming-style", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" })
     expect(c.pageErrors, "erreurs fatales:\n" + c.pageErrors.join("\n")).toEqual([])

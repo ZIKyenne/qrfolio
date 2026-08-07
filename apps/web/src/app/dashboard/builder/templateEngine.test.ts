@@ -3,6 +3,7 @@ import {
   TEMPLATE_STYLES, TEMPLATE_STYLE_LIST, TEMPLATE_STRUCTURES, DEFAULT_LAYOUT, TEMPLATE_LAYOUTS,
   TEMPLATE_LAYOUT_LIST, composeTemplate, composeByKeys, structureFromTemplate, unknownBlockTypes,
   nativeStyleKeyFor, isGalleryRestylable, galleryRestyle,
+  NATIVE_STYLE_KEY, nativeGalleryStyleKey, galleryStyleChoices, galleryComposeBlocks,
   type TemplateLayout,
 } from "./templateEngine"
 import { PAGE_TEMPLATES, AMBIANCE_THEMES, AMBIANCE_KEYS } from "./page-templates"
@@ -211,5 +212,50 @@ describe("pont galerie (T3.b)", () => {
   })
   it("galleryRestyle : null pour un template curé non-structure (⇒ garder le legacy)", () => {
     expect(galleryRestyle("___modele_cure_inline___", "gold")).toBeNull()
+  })
+})
+
+describe("restyle universel de galerie (T3.b étendu — 34 cartes)", () => {
+  // Thème bespoke (hors presets d'ambiance), comme les 14 templates « signature » de la galerie.
+  const BESPOKE = { name: "Neon Creator", bg: "#030303", surface: "#0A0A0A", primary: "#FF0080", accent: "#00FFFF", text: "#F8F0FF", muted: "#808080", fontDisplay: "Space Grotesk", fontBody: "Space Grotesk", bgMode: "solid" } as any
+  const CURATED_BLOCKS = [
+    { type: "profile", content: { name: "Alex" } },
+    { type: "bio", content: { text: "hello" } },
+  ]
+
+  it("thème PARTAGÉ (preset) : natif = la clé d'ambiance, pas d'option « original »", () => {
+    const shared = AMBIANCE_THEMES.gold
+    expect(nativeGalleryStyleKey(shared)).toBe("gold")
+    const choices = galleryStyleChoices(shared)
+    expect(choices.some(c => c.key === NATIVE_STYLE_KEY)).toBe(false)
+    expect(choices.length).toBe(TEMPLATE_STYLE_LIST.length)
+  })
+  it("thème BESPOKE (signature) : natif = __native + option « original » en tête", () => {
+    expect(nativeGalleryStyleKey(BESPOKE)).toBe(NATIVE_STYLE_KEY)
+    const choices = galleryStyleChoices(BESPOKE)
+    expect(choices[0].key).toBe(NATIVE_STYLE_KEY)
+    expect(choices[0].label).toContain("original")
+    expect(choices.length).toBe(TEMPLATE_STYLE_LIST.length + 1)
+  })
+  it("galleryComposeBlocks + __native = thème bespoke conservé, blocs identiques (zéro régression)", () => {
+    const r = galleryComposeBlocks(CURATED_BLOCKS, BESPOKE, NATIVE_STYLE_KEY, "default")
+    expect(r.theme).toBe(BESPOKE)
+    expect(r.blocks).toEqual(CURATED_BLOCKS)
+  })
+  it("galleryComposeBlocks + un style d'ambiance = thème appliqué, types de blocs conservés", () => {
+    const r = galleryComposeBlocks(CURATED_BLOCKS, BESPOKE, "slate", "compact")
+    expect(r.theme).toBe(AMBIANCE_THEMES.slate)
+    expect(r.blocks.map(b => b.type)).toEqual(CURATED_BLOCKS.map(b => b.type))
+    expect(r.blocks.every(b => b.content.__space === "Compact")).toBe(true)
+  })
+  it("galleryComposeBlocks ne mute pas les blocs d'entrée", () => {
+    const before = JSON.stringify(CURATED_BLOCKS)
+    const r = galleryComposeBlocks(CURATED_BLOCKS, BESPOKE, "neon", "airy")
+    r.blocks[0].content.__x = "muté"
+    expect(JSON.stringify(CURATED_BLOCKS)).toBe(before)
+  })
+  it("style inconnu ⇒ repli sur le thème courant (jamais de crash)", () => {
+    const r = galleryComposeBlocks(CURATED_BLOCKS, BESPOKE, "___inconnu___")
+    expect(r.theme).toBe(BESPOKE)
   })
 })

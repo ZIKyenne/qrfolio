@@ -139,7 +139,7 @@ function BeforeAfterPublic({ before, after, beforeLabel, afterLabel }: { before:
       onPointerDown={e => { dragging.current = true; e.currentTarget.setPointerCapture(e.pointerId); move(e.clientX) }}
       onPointerMove={e => { if (dragging.current) move(e.clientX) }}
       onPointerUp={() => dragging.current = false} onPointerCancel={() => dragging.current = false}
-      style={{ position: "relative", height: 260, borderRadius: 12, overflow: "hidden", touchAction: "none", userSelect: "none", cursor: "ew-resize" }}>
+      style={{ position: "relative", height: 260, borderRadius: 12, overflow: "hidden", touchAction: "pan-y", userSelect: "none", cursor: "ew-resize" }}>
       <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={before} alt="Avant" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={after} alt="Après" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", clipPath: `inset(0 ${100 - pos}% 0 0)` }} />
       {/* Ligne + poignée */}
@@ -2982,7 +2982,7 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
   })()
 
   return (
-    <div style={{ minHeight: "100vh", background: theme.bgGradient || theme.bg, fontFamily: theme.fontBody }}>
+    <div className="qf-public" style={{ minHeight: "100vh", background: theme.bgGradient || theme.bg, fontFamily: theme.fontBody, overflowX: "clip", maxWidth: "100vw" }}>
       {showIntro && !coverGone && (
         <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 2147482999, background: theme.bgGradient || theme.bg, display: "grid", placeItems: "center" }}>
           <div style={{ width: 108, height: 108, borderRadius: 30, overflow: "hidden", background: introAccent, display: "grid", placeItems: "center", color: introOn, fontSize: 40, fontWeight: 600 }}>
@@ -3009,6 +3009,11 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
         @keyframes fadeInDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
         @keyframes profilePulse { 0%,100% { box-shadow: 0 0 0 0 ${theme.primary}30; } 50% { box-shadow: 0 0 0 12px ${theme.primary}00; } }
         * { -webkit-tap-highlight-color: transparent; }
+        /* iOS zoome (et « bloque » le scroll) au focus d'un champ dont la police < 16px.
+           On garantit 16px min sur mobile pour tous les champs de la page publique. */
+        @media (max-width: 640px) {
+          .qf-public input, .qf-public textarea, .qf-public select { font-size: 16px !important; }
+        }
         a:active { opacity: 0.75; }
         a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, [role="slider"]:focus-visible { outline: 2px solid ${theme.primary}; outline-offset: 2px; border-radius: 4px; }
         @media (max-width: 640px) {
@@ -3059,7 +3064,7 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
       `}</style>
 
       {/* Container — fond complet selon bgMode (mesh/radial/pattern/image/gradient/solid) pour matcher l'éditeur */}
-      <div style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", ...themeBackgroundStyle(theme as any), boxShadow: "0 0 80px rgba(0,0,0,0.6)", position: "relative" }}>
+      <div style={{ maxWidth: "min(480px, 100%)", margin: "0 auto", minHeight: "100vh", ...themeBackgroundStyle(theme as any), boxShadow: "0 0 80px rgba(0,0,0,0.6)", position: "relative", overflowX: "clip", boxSizing: "border-box", overflowWrap: "anywhere", wordBreak: "break-word" }}>
 
         {/* Blocks with staggered animation */}
         {blocks.map((block, idx) => {

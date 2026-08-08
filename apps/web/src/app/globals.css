@@ -350,10 +350,10 @@ button:not(:disabled):active { transform: scale(.97); }
   .cmp-table { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
   .cmp-row { min-width: 580px; }
 }
-/* Empêche les débordements horizontaux globaux sur mobile */
-@media (max-width: 600px) {
-  html, body { overflow-x: hidden; }
-}
+/* Empêche les débordements horizontaux globaux (toutes tailles) : un enfant plus large que l'écran
+   fait « zoomer pour cadrer » les navigateurs mobiles et bloque le scroll (page figée en haut, il faut
+   dézoomer). On garantit qu'aucun débordement horizontal n'élargit le viewport. */
+html, body { overflow-x: hidden; }
 
 /* ── Mobile-first landing : padding horizontal des sections resserré ─────────
    Les sections desktop ont 48px de marge latérale -> trop sur petit écran.

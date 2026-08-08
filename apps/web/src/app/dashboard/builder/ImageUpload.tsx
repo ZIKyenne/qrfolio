@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react"
 import { Upload, X, Image as ImageIcon, FolderOpen, Trash2, Plus, Search, Star } from "lucide-react"
 import { useImageUpload } from "./useImageUpload"
 import { useConfirm } from "@/components/ui/Confirm"
+import ImageCropModal from "./ImageCropModal"
 
 type Props = {
   value: string
@@ -24,6 +25,9 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
   const [libBusy, setLibBusy] = useState(false)
   const [pickerOpen, setPickerOpen] = useState(false) // #05 : bottom sheet de choix de source
   const [libQuery, setLibQuery] = useState("") // #07 : recherche dans la bibliotheque
+  // Recadrage avant upload : toute image sélectionnée passe par la modale de recadrage (pan/zoom/ratio).
+  const [cropFile, setCropFile] = useState<File | null>(null)
+  const [cropDest, setCropDest] = useState<"block" | "lib">("block")
   // #07 : favoris (persistes par URL). Les images favorites remontent en tete.
   // Defaut vide (= SSR) puis lecture apres montage -> pas de mismatch d'hydratation (cf review #2).
   const [favs, setFavs] = useState<Set<string>>(new Set())
@@ -37,13 +41,11 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
   async function refreshLibrary() { setLibAssets(await listAssets()) }
 
   // Upload depuis la modale : ajoute à la bibliothèque puis rafraîchit (l'utilisateur clique pour choisir).
-  async function handleLibFile(file: File) {
+  function handleLibFile(file: File) {
+    setError("")
     if (!file.type.startsWith("image/")) { setError("Fichier invalide — image uniquement"); return }
     if (file.size > 5 * 1024 * 1024) { setError("Fichier trop lourd — max 5MB"); return }
-    setLibBusy(true)
-    const url = await uploadImage(file, "blocks")
-    if (url) await refreshLibrary()
-    setLibBusy(false)
+    setCropDest("lib"); setCropFile(file) // recadrage puis ajout à la bibliothèque
   }
   async function removeAsset(a: { name: string; url: string }) {
     if (!(await confirm({ title: "Supprimer cette image ?", message: "Si elle est utilisée sur une page publiée, elle n'y apparaîtra plus.", confirmLabel: "Supprimer", danger: true }))) return
@@ -53,13 +55,31 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
     setLibBusy(false)
   }
 
-  async function handleFile(file: File) {
+  function handleFile(file: File) {
     setError("")
     if (!file.type.startsWith("image/")) { setError("Fichier invalide — image uniquement"); return }
     if (file.size > 5 * 1024 * 1024) { setError("Fichier trop lourd — max 5MB"); return }
-    const url = await uploadImage(file, "blocks")
-    if (url) onChange(url)
-    else setError("Erreur upload — réessaie")
+    setCropDest("block"); setCropFile(file) // recadrage puis upload + sélection
+  }
+
+  // Recadrage confirmé → upload du blob recadré (JPEG/PNG), plus léger que l'original.
+  async function onCropConfirm(blob: Blob) {
+    const src = cropFile
+    setCropFile(null)
+    if (!src) return
+    const type = blob.type || src.type
+    const ext = type === "image/png" ? ".png" : ".jpg"
+    const named = new File([blob], (src.name.replace(/\.[^.]+$/, "") || "image") + ext, { type })
+    if (cropDest === "lib") {
+      setLibBusy(true)
+      const url = await uploadImage(named, "blocks")
+      if (url) await refreshLibrary()
+      setLibBusy(false)
+    } else {
+      const url = await uploadImage(named, "blocks")
+      if (url) onChange(url)
+      else setError("Erreur upload — réessaie")
+    }
   }
 
   function onDrop(e: React.DragEvent) {
@@ -214,6 +234,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
           </div>
         </div>
       )}
+      {cropFile && <ImageCropModal file={cropFile} onCancel={() => setCropFile(null)} onConfirm={onCropConfirm} />}
       <style>{``}</style>
     </div>
   )

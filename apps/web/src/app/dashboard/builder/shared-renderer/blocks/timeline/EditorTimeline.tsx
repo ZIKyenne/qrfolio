@@ -26,6 +26,7 @@ export function EditorTimeline({ content, ctx }: EditorAdapterProps) {
               </div>
               <InlineEditable as="p" editable={canEdit} value={e.title} onCommit={edit(`e${e.i}_title`)} style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px" }} />
               {e.desc && <InlineEditable as="p" editable={canEdit} value={e.desc} multiline onCommit={edit(`e${e.i}_desc`)} style={{ color: muted, fontSize: 10.5, margin: 0 }} />}
+              {e.link && <span style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 5, color: primary, fontSize: 10, fontWeight: 700 }}>{e.link.label} ↗</span>}
             </div>
           ))}
         </div>
@@ -38,6 +39,7 @@ export function EditorTimeline({ content, ctx }: EditorAdapterProps) {
               <InlineEditable as="p" editable={canEdit} value={e.date} onCommit={edit(`e${e.i}_date`)} style={{ color: primary, fontSize: 11, fontWeight: 700, margin: "0 0 2px" }} />
               <p style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px", display: "flex", alignItems: "center", gap: 5 }}>{e.icon && <span style={{ fontSize: 13 }}>{e.icon}</span>}<InlineEditable as="span" editable={canEdit} value={e.title} onCommit={edit(`e${e.i}_title`)} /></p>
               {e.desc && <InlineEditable as="p" editable={canEdit} value={e.desc} multiline onCommit={edit(`e${e.i}_desc`)} style={{ color: muted, fontSize: 11, margin: 0 }} />}
+              {e.link && <span style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 5, color: primary, fontSize: 10.5, fontWeight: 700 }}>{e.link.label} ↗</span>}
             </div>
           ))}
         </div>

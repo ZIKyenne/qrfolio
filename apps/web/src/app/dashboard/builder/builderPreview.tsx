@@ -113,16 +113,20 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
     if (SharedEditor) return <SharedEditor content={c} ctx={{ theme, primary, text, muted, accent, surfaceStyle: s, canEdit, edit }} />
 
     switch (block.type) {
-      case "profile": return (
+      case "profile": {
+        const pName = (c.name || "").trim()
+        const showAvatar = c.hide_avatar !== "Masquer" && !!(c.avatar || pName)
+        return (
         <div style={{ textAlign: "center", padding: "20px 16px", ...s }}>
-          {c.avatar
+          {showAvatar && (c.avatar
             ? <img src={c.avatar} alt="" style={{ width: 72, height: 72, ...avatarShapeStyle(c.avatar_shape), ...avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, primary), objectFit: "cover", margin: "0 auto 10px", display: "block" }} />
-            : <div style={{ width: 72, height: 72, ...avatarShapeStyle(c.avatar_shape), ...avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, primary), ...avatarBgStyle(c.avatar_bg, primary, accent), margin: "0 auto 10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 700, color: "#080808" }}>{(c.name||"?")[0].toUpperCase()}</div>}
-          <InlineEditable as="p" editable={canEdit} value={c.name} placeholder="Mon Nom" onCommit={edit("name")} style={{ color: text, fontSize: 18, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }} />
+            : <div style={{ width: 72, height: 72, ...avatarShapeStyle(c.avatar_shape), ...avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, primary), ...avatarBgStyle(c.avatar_bg, primary, accent), margin: "0 auto 10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 700, color: "#080808" }}>{(pName || "?")[0].toUpperCase()}</div>)}
+          <InlineEditable as="p" editable={canEdit} value={c.name} placeholder="Votre nom (masqué si vide)" onCommit={edit("name")} style={{ color: text, fontSize: 18, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }} />
           <InlineEditable as="p" editable={canEdit} value={c.tagline} placeholder="Votre accroche" onCommit={edit("tagline")} style={{ color: muted, fontSize: 13, margin: c.badge ? "0 0 7px" : "0" }} />
           {c.badge && <span style={{ display: "inline-flex", flexWrap: "wrap", gap: 5, justifyContent: "center" }}>{c.badge.split(/[,\n]/).map((b: string) => b.trim()).filter(Boolean).slice(0, 5).map((b: string, i: number) => { const bs = profileBadgeStyle(b, primary); return (<span key={i} style={{ background: bs.bg, border: `1px solid ${bs.border}`, borderRadius: 20, padding: "3px 10px", fontSize: 11, color: bs.color, fontWeight: 600 }}>{bs.icon ? bs.icon + " " : ""}{b}</span>) })}</span>}
         </div>
       )
+      }
       case "bio": return (
         <div style={{ padding: "12px 16px", textAlign: (c.align as any)||"left", ...s }}>
           <InlineEditable as="p" editable={canEdit} value={c.text} placeholder="Votre texte de présentation…" multiline onCommit={edit("text")} style={{ color: text, fontSize: 13, lineHeight: 1.7, margin: 0 }} />
@@ -1584,7 +1588,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
       )
 
       case "timeline": {
-        const events = Array.from({length:50},(_,k)=>k+1).map(i => ({ i, date: c[`e${i}_date`], title: c[`e${i}_title`], desc: c[`e${i}_desc`], icon: (c[`e${i}_icon`]||"").trim() })).filter(e => e.title || e.date)
+        const events = Array.from({length:50},(_,k)=>k+1).map(i => ({ i, date: c[`e${i}_date`], title: c[`e${i}_title`], desc: c[`e${i}_desc`], icon: (c[`e${i}_icon`]||"").trim(), linkUrl: (c[`e${i}_link_url`]||"").trim(), linkLabel: (c[`e${i}_link_label`]||"").trim() })).filter(e => e.title || e.date)
         const horizontal = c.layout === "Horizontale"
         const list = events
         if (list.length === 0) return (
@@ -1606,6 +1610,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                     </div>
                     <InlineEditable as="p" editable={canEdit} value={e.title} onCommit={edit(`e${e.i}_title`)} style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px" }} />
                     {e.desc && <InlineEditable as="p" editable={canEdit} value={e.desc} multiline onCommit={edit(`e${e.i}_desc`)} style={{ color: muted, fontSize: 10.5, margin: 0 }} />}
+                    {e.linkUrl && <span style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 5, color: primary, fontSize: 10, fontWeight: 700 }}>{e.linkLabel || "En savoir plus"} ↗</span>}
                   </div>
                 ))}
               </div>
@@ -1618,6 +1623,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                     <InlineEditable as="p" editable={canEdit} value={e.date} onCommit={edit(`e${e.i}_date`)} style={{ color: primary, fontSize: 11, fontWeight: 700, margin: "0 0 2px" }} />
                     <p style={{ color: text, fontSize: 12, fontWeight: 600, margin: "0 0 2px", display: "flex", alignItems: "center", gap: 5 }}>{e.icon && <span style={{ fontSize: 13 }}>{e.icon}</span>}<InlineEditable as="span" editable={canEdit} value={e.title} onCommit={edit(`e${e.i}_title`)} /></p>
                     {e.desc && <InlineEditable as="p" editable={canEdit} value={e.desc} multiline onCommit={edit(`e${e.i}_desc`)} style={{ color: muted, fontSize: 11, margin: 0 }} />}
+                    {e.linkUrl && <span style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 5, color: primary, fontSize: 10.5, fontWeight: 700 }}>{e.linkLabel || "En savoir plus"} ↗</span>}
                   </div>
                 ))}
               </div>

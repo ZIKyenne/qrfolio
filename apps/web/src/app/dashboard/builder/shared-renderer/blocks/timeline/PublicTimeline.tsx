@@ -5,7 +5,18 @@ import type { PublicAdapterProps } from "../../renderTypes"
 export function PublicTimeline({ content, ctx }: PublicAdapterProps) {
   const { title, horizontal, items } = timelineViewModel(content)
   if (items.length === 0) return null
-  const { G, TEXT, MUTED, FONT_B } = ctx
+  const { G, TEXT, MUTED, FONT_B, trackClick } = ctx
+  const linkStyle: React.CSSProperties = {
+    display: "inline-flex", alignItems: "center", gap: 4, marginTop: 7, color: G, fontSize: 12,
+    fontWeight: 700, fontFamily: FONT_B, textDecoration: "none",
+    borderBottom: `1px solid ${G}55`, paddingBottom: 1,
+  }
+  const EventLink = ({ link }: { link: NonNullable<typeof items[number]["link"]> }) => (
+    <a href={link.href} target="_blank" rel="noopener noreferrer"
+      onClick={() => trackClick(link.trackTarget)} style={linkStyle}>
+      {link.label} <span aria-hidden>↗</span>
+    </a>
+  )
   return (
     <div style={{ padding: "10px 24px 14px" }}>
       {title && <p style={{ color: MUTED, fontSize: 11, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 16px", fontFamily: FONT_B }}>{title}</p>}
@@ -19,6 +30,7 @@ export function PublicTimeline({ content, ctx }: PublicAdapterProps) {
               </div>
               <p style={{ color: TEXT, fontSize: 13.5, fontWeight: 600, margin: "0 0 3px", fontFamily: FONT_B }}>{e.title}</p>
               {e.desc && <p style={{ color: MUTED, fontSize: 11.5, margin: 0, lineHeight: 1.5 }}>{e.desc}</p>}
+              {e.link && <EventLink link={e.link} />}
             </div>
           ))}
         </div>
@@ -31,6 +43,7 @@ export function PublicTimeline({ content, ctx }: PublicAdapterProps) {
               <p style={{ color: G, fontSize: 12, fontWeight: 700, margin: "0 0 2px" }}>{e.date}</p>
               <p style={{ color: TEXT, fontSize: 14, fontWeight: 600, margin: "0 0 2px", fontFamily: FONT_B, display: "flex", alignItems: "center", gap: 6 }}>{e.icon && <span aria-hidden style={{ fontSize: 15 }}>{e.icon}</span>}{e.title}</p>
               {e.desc && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{e.desc}</p>}
+              {e.link && <EventLink link={e.link} />}
             </div>
           ))}
         </div>

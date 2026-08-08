@@ -11,7 +11,7 @@ export const FILL: Record<string, Record<string, any>> = {
   brands: { title: "Ils nous font confiance", brand1_icon: "🍎", brand1_name: "Apple", brand2_icon: "🎧", brand2_name: "Spotify" },
   lineup: { title: "Line-up", a1_name: "DJ Snake", a1_stage: "Mainstage", a1_time: "22:00", a1_headliner: "yes", a2_name: "Petit Biscuit", a2_time: "20:00" },
   reassurance: { g1_icon: "🚚", g1_label: "Livraison rapide", g1_desc: "Sous 48h", g2_icon: "🔒", g2_label: "Paiement sûr" },
-  timeline: { title: "Parcours", e1_date: "2020", e1_title: "Création", e1_desc: "Lancement", e2_date: "2023", e2_title: "Croissance" },
+  timeline: { title: "Parcours", e1_date: "2020", e1_title: "Création", e1_desc: "Lancement", e1_link_url: "https://instagram.com/evenement", e1_link_label: "Voir l'événement", e2_date: "2023", e2_title: "Croissance" },
   menu_section: { category: "Entrées", item1_name: "Salade César", item1_price: "9€", item1_desc: "Poulet, parmesan", item2_name: "Soupe", item2_price: "6€" },
   services_list: { title: "Nos services", s1_icon: "✂️", s1_name: "Coupe", s1_desc: "30 min", s2_icon: "🎨", s2_name: "Couleur" },
   promo_banner: { emoji: "🔥", text: "Soldes -50%", subtext: "Jusqu'à dimanche", cta_label: "En profiter", cta_url: "https://exemple.com" },

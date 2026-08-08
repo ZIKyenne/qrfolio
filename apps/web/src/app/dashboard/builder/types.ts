@@ -3382,11 +3382,12 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   profile: {
     label: "Profil", description: "Photo, nom, accroche et badge",
     icon: "👤", color: "#C9A84C", category: "identity",
-    defaultContent: { name: "Mon Nom", tagline: "Mon activite", badge: "" },
+    defaultContent: { name: "", tagline: "", badge: "" },
     fields: [
-      { key: "name", label: "Nom complet", type: "text", placeholder: "Jean Dupont" },
+      { key: "name", label: "Nom complet", type: "text", placeholder: "Jean Dupont", hint: "Laissé vide, il est masqué sur la page (jamais de faux nom affiché)." },
       { key: "tagline", label: "Accroche", type: "text", placeholder: "Developpeur, artiste, coach...", maxRecommended: 80, suggestions: ["Photographe à Reims", "Coach sportif indépendant", "Consultant freelance", "Créateur de contenu", "Agent immobilier", "Restaurant & bar à cocktails"] },
       { key: "avatar", label: "Photo de profil", type: "image" },
+      { key: "hide_avatar", label: "Afficher la photo", type: "select", options: ["Afficher", "Masquer"], hint: "« Masquer » = aucune photo ni initiale sur la page (utile si vous n'avez pas de visuel)." },
       { key: "avatar_shape", label: "Forme de l'avatar", type: "select", options: ["cercle", "arrondi", "squircle", "hexagone", "carré", "diamant"] },
       { key: "avatar_border", label: "Contour de l'avatar", type: "select", options: ["simple", "aucun", "or", "neon", "lumineux"] },
       { key: "avatar_bg", label: "Fond de l'avatar (sans photo)", type: "select", options: ["dégradé", "uni", "halo", "mesh"] },

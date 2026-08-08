@@ -61,6 +61,15 @@ describe("wave4 — modèles répétiteurs métier", () => {
   it("timeline : icône trim (espaces → vide)", () => {
     expect(timelineViewModel({ e1_title: "X", e1_icon: "  " }).items[0].icon).toBe("")
   })
+  it("timeline : lien externe optionnel par événement (durci, libellé par défaut)", () => {
+    const vm = timelineViewModel({ e1_title: "Sortie", e1_link_url: "instagram.com/evt", e1_link_label: "Détails", e2_title: "Sans lien" })
+    expect(vm.items[0].link).toEqual({ href: "https://instagram.com/evt", label: "Détails", trackTarget: "instagram.com/evt" })
+    expect(vm.items[1].link).toBeNull() // pas d'URL → pas de lien
+    // URL sans libellé → libellé par défaut
+    expect(timelineViewModel({ e1_title: "X", e1_link_url: "https://x.com" }).items[0].link?.label).toBe("En savoir plus")
+    // libellé sans URL → pas de lien (le lien seul ne suffit pas)
+    expect(timelineViewModel({ e1_title: "X", e1_link_label: "orphelin" }).items[0].link).toBeNull()
+  })
   it("business_stats/reassurance/brands : filtres métier respectifs", () => {
     expect(businessStatsViewModel({ stat1_icon: "🚀" }).items).toEqual([]) // pas de value → ignoré
     expect(reassuranceViewModel({ g1_icon: "✅" }).items).toEqual([]) // pas de label → ignoré

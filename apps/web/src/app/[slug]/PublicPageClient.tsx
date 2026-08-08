@@ -670,11 +670,18 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
   if (SharedPublic) return <SharedPublic content={c} ctx={{ theme, G, TEXT, MUTED, FONT_D, FONT_B, pageId, blockId: block.id, trackClick: (t: string) => trackLinkClick(pageId, block.id, t) }} />
 
   switch (block.type) {
-    case "profile": return (
+    case "profile": {
+      // Anti-fake : aucun contenu inventé. Un champ vide est MASQUÉ (jamais de « Mon Nom » ni d'avatar
+      // fictif). L'avatar s'affiche s'il y a une photo OU un nom (initiale) et si non explicitement masqué.
+      const pName = (c.name || "").trim()
+      const pTagline = (c.tagline || "").trim()
+      const showAvatar = c.hide_avatar !== "Masquer" && !!(c.avatar || pName)
+      if (!showAvatar && !pName && !pTagline && !(c.badge || "").trim()) return null // rien à montrer → pas de bloc vide
+      return (
       <div style={{ textAlign: "center", padding: "32px 20px 20px" }}>
-        <ProfileAvatar src={c.avatar} name={c.name} fontD={FONT_D} shapeStyle={avatarShapeStyle(c.avatar_shape)} decoStyle={avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, G)} bgStyle={avatarBgStyle(c.avatar_bg, G, theme.accent || "var(--success)")} />
-        <h1 style={{ color: TEXT, fontSize: 26, fontWeight: 700, margin: "0 0 5px", fontFamily: FONT_D }}>{c.name || "Mon Nom"}</h1>
-        <p style={{ color: MUTED, fontSize: 14, margin: c.badge ? "0 0 10px" : "0", fontFamily: FONT_B }}>{c.tagline}</p>
+        {showAvatar && <ProfileAvatar src={c.avatar} name={pName} fontD={FONT_D} shapeStyle={avatarShapeStyle(c.avatar_shape)} decoStyle={avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, G)} bgStyle={avatarBgStyle(c.avatar_bg, G, theme.accent || "var(--success)")} />}
+        {pName && <h1 style={{ color: TEXT, fontSize: 26, fontWeight: 700, margin: "0 0 5px", fontFamily: FONT_D }}>{pName}</h1>}
+        {pTagline && <p style={{ color: MUTED, fontSize: 14, margin: c.badge ? "0 0 10px" : "0", fontFamily: FONT_B }}>{pTagline}</p>}
         {c.badge && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
             {c.badge.split(/[,\n]/).map((b: string) => b.trim()).filter(Boolean).slice(0, 5).map((b: string, i: number) => { const bs = profileBadgeStyle(b, G); return (
@@ -683,7 +690,8 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
           </div>
         )}
       </div>
-    )
+      )
+    }
 
     case "bio": return (
       <div style={{ padding: "6px 24px 16px", textAlign: (c.align as any) || "left" }}>

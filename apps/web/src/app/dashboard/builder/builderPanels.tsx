@@ -428,7 +428,7 @@ import FileUpload from "./FileUpload"
     if (block.type === "timeline") {
       return <RepeaterEditor block={block} onChange={onChange} prefix="e" noun="Événement" addLabel="Ajouter un événement"
         topFields={[{ key: "title", label: "Titre de la section", placeholder: "Mon parcours" }, { key: "layout", label: "Disposition", options: ["Verticale", "Horizontale"] }]}
-        fields={[{ suffix: "icon", placeholder: "Emoji (optionnel)" }, { suffix: "date", placeholder: "Date (ex : 2024)" }, { suffix: "title", placeholder: "Titre" }, { suffix: "desc", placeholder: "Description (optionnel)" }]} />
+        fields={[{ suffix: "icon", placeholder: "Emoji (optionnel)" }, { suffix: "date", placeholder: "Date (ex : 2024)" }, { suffix: "title", placeholder: "Titre" }, { suffix: "desc", placeholder: "Description (optionnel)" }, { suffix: "link_url", placeholder: "Lien externe (optionnel, https://…)" }, { suffix: "link_label", placeholder: "Texte du lien (ex : Voir l'événement)" }]} />
     }
 
     if (block.type === "documents") {

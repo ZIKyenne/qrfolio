@@ -10,6 +10,63 @@ import PageIntro from "@/components/pageIntro/PageIntro"
 import BannerStudio from "./BannerStudio"
 import ImageUpload from "./ImageUpload"
 import FileUpload from "./FileUpload"
+import { parseMenuPaste } from "./menuImport"
+
+  // Import d'un menu depuis un tableur (copier-coller). Écrit item{i}_name/price/desc et nettoie les
+  // items au-delà. Rendu au-dessus du répéteur de plats. Le parseur est pur + testé (menuImport.ts).
+  function MenuImport({ block, onChange }: { block: Block; onChange: (key: string, val: string) => void }) {
+    const [open, setOpen] = useState(false)
+    const [text, setText] = useState("")
+    const [msg, setMsg] = useState("")
+    const MAX = 50
+    const doImport = () => {
+      const items = parseMenuPaste(text, MAX)
+      if (items.length === 0) { setMsg("Aucune ligne détectée. Collez un plat par ligne (Nom, Prix, Description).") ; return }
+      items.forEach((it, k) => {
+        const i = k + 1
+        onChange(`item${i}_name`, it.name)
+        onChange(`item${i}_price`, it.price)
+        onChange(`item${i}_desc`, it.desc)
+      })
+      // Nettoie les plats existants au-delà de l'import (évite les résidus).
+      for (let i = items.length + 1; i <= MAX; i++) {
+        if (block.content[`item${i}_name`] || block.content[`item${i}_price`] || block.content[`item${i}_desc`]) {
+          onChange(`item${i}_name`, ""); onChange(`item${i}_price`, ""); onChange(`item${i}_desc`, "")
+        }
+      }
+      const cat = items.find(it => it.category)?.category
+      if (cat && !block.content.category) onChange("category", cat)
+      setMsg(`${items.length} plat${items.length > 1 ? "s" : ""} importé${items.length > 1 ? "s" : ""} ✓`)
+      setText("")
+    }
+    const inputStyle: React.CSSProperties = { width: "100%", background: "#0A0A0A", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8, padding: "9px 11px", color: "#F5F0E8", fontSize: 12, outline: "none", boxSizing: "border-box", fontFamily: "DM Sans, sans-serif" }
+    return (
+      <div style={{ border: "1px solid rgba(201,168,76,0.25)", borderRadius: 12, background: "rgba(201,168,76,0.04)", overflow: "hidden" }}>
+        <button type="button" onClick={() => setOpen(o => !o)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "11px 12px", background: "transparent", border: "none", color: G, fontSize: 12.5, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
+          <span style={{ fontSize: 15 }}>📋</span> Importer depuis un tableur
+          <ChevronDown size={16} style={{ marginLeft: "auto", transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
+        </button>
+        {open && (
+          <div style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+            <p style={{ color: MUTED, fontSize: 11, margin: 0, lineHeight: 1.5 }}>
+              Copiez vos plats depuis Excel, Google Sheets ou Numbers et collez-les ci-dessous. Une ligne
+              par plat, colonnes dans l'ordre : <b>Nom</b>, <b>Prix</b>, <b>Description</b>. Idéal pour les gros menus.
+            </p>
+            <textarea value={text} onChange={e => { setText(e.target.value); setMsg("") }} rows={6}
+              placeholder={"Margherita\t11€\tTomate, mozzarella\nRegina\t13€\tJambon, champignons"}
+              style={{ ...inputStyle, fontFamily: "monospace", whiteSpace: "pre", resize: "vertical" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button type="button" onClick={doImport} disabled={!text.trim()}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 9, border: "none", background: text.trim() ? "linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 75%,#000))" : "rgba(201,168,76,0.2)", color: text.trim() ? "#080808" : MUTED, fontSize: 12.5, fontWeight: 700, cursor: text.trim() ? "pointer" : "not-allowed" }}>
+                <Plus size={15} /> Importer les plats
+              </button>
+              {msg && <span style={{ color: msg.includes("✓") ? "var(--success)" : "var(--warning)", fontSize: 11.5, fontWeight: 600 }}>{msg}</span>}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   function GalleryImagesEditor({ block, onChange }: { block: Block; onChange: (key: string, val: string) => void }) {
     const M = "#A8A190", TXT = "#F5F0E8", GG = "var(--accent, #C9A84C)"
@@ -294,9 +351,14 @@ import FileUpload from "./FileUpload"
     }
 
     if (block.type === "menu_section") {
-      return <RepeaterEditor block={block} onChange={onChange} prefix="item" noun="Plat" addLabel="Ajouter un plat"
-        topFields={[{ key: "category", label: "Nom de la section", placeholder: "Entrées, Plats, Desserts…" }]}
-        fields={[{ suffix: "name", placeholder: "Nom du plat" }, { suffix: "price", placeholder: "12€" }, { suffix: "desc", placeholder: "Description (optionnel)" }]} />
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <MenuImport block={block} onChange={onChange} />
+          <RepeaterEditor block={block} onChange={onChange} prefix="item" noun="Plat" addLabel="Ajouter un plat"
+            topFields={[{ key: "category", label: "Nom de la section", placeholder: "Entrées, Plats, Desserts…" }, { key: "menu_display", label: "Affichage", options: ["Liste", "Grande carte dépliable"] }]}
+            fields={[{ suffix: "name", placeholder: "Nom du plat" }, { suffix: "price", placeholder: "12€" }, { suffix: "desc", placeholder: "Description (optionnel)" }]} />
+        </div>
+      )
     }
 
     if (block.type === "product_catalog") {

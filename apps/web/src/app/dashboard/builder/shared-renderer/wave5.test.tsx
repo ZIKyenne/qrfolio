@@ -35,6 +35,11 @@ describe("wave5 — modèles commerce/événement", () => {
     expect(giftCardViewModel({}).visible).toBe(false)         // (title||amount1)
     expect(eventTicketingViewModel({}).visible).toBe(false)   // (event_name||url)
   })
+  it("menu : affichage dépliable détecté (défaut = liste)", () => {
+    expect(menuSectionViewModel({ item1_name: "x" }).collapsible).toBe(false)
+    expect(menuSectionViewModel({ item1_name: "x", menu_display: "Liste" }).collapsible).toBe(false)
+    expect(menuSectionViewModel({ item1_name: "x", menu_display: "Grande carte dépliable" }).collapsible).toBe(true)
+  })
   it("gate rempli → visible", () => {
     expect(servicesListViewModel({ s1_name: "Wifi" }).visible).toBe(true)
     expect(giftCardViewModel({ amount1: "50€" }).visible).toBe(true)

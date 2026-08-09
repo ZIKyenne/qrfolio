@@ -11,9 +11,15 @@ const HEADER_WORDS = ["nom", "name", "plat", "produit", "item", "prix", "price",
 function detectDelimiter(lines: string[]): string {
   const joined = lines.join("\n")
   if (joined.includes("\t")) return "\t"          // copie directe d'un tableur
+  if (joined.includes("|")) return "|"            // tableau markdown (fréquent avec ChatGPT)
   if (joined.includes(";")) return ";"            // CSV FR (Excel FR exporte en ;)
   if (joined.includes(",")) return ","
   return "\t"                                      // une seule colonne : peu importe
+}
+
+// Ligne de séparation d'un tableau markdown (ex : | --- | :---: |) → à ignorer.
+function isMarkdownSeparator(cells: string[]): boolean {
+  return cells.length > 0 && cells.every(c => /^:?-{2,}:?$/.test(c.trim()))
 }
 
 // Une ligne ressemble-t-elle à des en-têtes ? (aucun prix numérique + mots d'en-tête connus)
@@ -38,7 +44,14 @@ export function parseMenuPaste(text: string, max = 50): ParsedMenuItem[] {
   const lines = text.split(/\r?\n/).filter(l => l.trim() !== "")
   if (lines.length === 0) return []
   const delim = detectDelimiter(lines)
-  const rows = lines.map(l => l.split(delim).map(c => c.trim()))
+  let rows = lines.map(l => l.split(delim).map(c => c.trim()))
+  if (delim === "|") {
+    // Tableau markdown : retire les cellules de bord vides (| au début/fin), ignore les séparateurs.
+    rows = rows
+      .map(cells => { const cc = [...cells]; if (cc[0] === "") cc.shift(); if (cc[cc.length - 1] === "") cc.pop(); return cc })
+      .filter(cells => cells.length > 0 && !isMarkdownSeparator(cells))
+  }
+  if (rows.length === 0) return []
 
   // Saute l'en-tête éventuel (uniquement s'il y a plus d'une ligne).
   let start = 0

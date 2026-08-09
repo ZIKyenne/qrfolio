@@ -38,6 +38,18 @@ describe("parseMenuPaste — import tableur du menu", () => {
     const many = Array.from({ length: 60 }, (_, i) => `Plat ${i}\t${i}€`).join("\n")
     expect(parseMenuPaste(many, 50)).toHaveLength(50)
   })
+  it("tableau markdown de ChatGPT (pipes + ligne de séparation + en-tête)", () => {
+    const md = [
+      "| Nom | Prix | Description |",
+      "| --- | --- | --- |",
+      "| Margherita | 11€ | Tomate, mozzarella |",
+      "| Regina | 13€ | Jambon, champignons |",
+    ].join("\n")
+    expect(parseMenuPaste(md)).toEqual([
+      { name: "Margherita", price: "11€", desc: "Tomate, mozzarella", category: "" },
+      { name: "Regina", price: "13€", desc: "Jambon, champignons", category: "" },
+    ])
+  })
   it("entrée vide / non-string → []", () => {
     expect(parseMenuPaste("")).toEqual([])
     expect(parseMenuPaste(undefined as any)).toEqual([])

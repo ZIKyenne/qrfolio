@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react"
+import { Check, ChevronDown, ChevronUp, Plus, Trash2, Copy, Sparkles, X } from "lucide-react"
 import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, type Block, type BlockContent, type PageTheme } from "./types"
 import { G, MUTED } from "./builderConstants"
 import { useToast } from "@/components/Toast"
@@ -12,12 +12,34 @@ import ImageUpload from "./ImageUpload"
 import FileUpload from "./FileUpload"
 import { parseMenuPaste } from "./menuImport"
 
+  // Prompt « parfait » à donner à une IA (ChatGPT) : l'utilisateur colle ce prompt + une photo de sa
+  // carte, l'IA renvoie des lignes que notre parseur importe directement. Format aligné sur menuImport.ts.
+  const MENU_AI_PROMPT = `Tu es un assistant qui transcrit un menu à partir d'une photo.
+Je vais t'envoyer une ou plusieurs photos de ma carte (restaurant, bar, café).
+
+Transcris CHAQUE plat ou boisson en UNE ligne, avec 3 colonnes séparées par un point-virgule « ; » :
+Nom;Prix;Description
+
+Règles STRICTES :
+- Une seule ligne par article, rien d'autre.
+- N'invente RIEN : recopie fidèlement les noms, prix et descriptions visibles. Si une info manque, laisse la colonne vide mais garde les « ; ».
+- Garde les prix tels quels (ex : 12€, 6,50€).
+- Pas d'en-tête, pas de titres de catégories, pas de puces, pas de numéros, aucun texte avant ou après.
+- Réponds UNIQUEMENT avec les lignes, dans un bloc de code.
+
+Exemple de sortie attendue :
+Margherita;11€;Tomate, mozzarella, basilic
+Tiramisu;6,50€;Fait maison`
+
   // Import d'un menu depuis un tableur (copier-coller). Écrit item{i}_name/price/desc et nettoie les
   // items au-delà. Rendu au-dessus du répéteur de plats. Le parseur est pur + testé (menuImport.ts).
   function MenuImport({ block, onChange }: { block: Block; onChange: (key: string, val: string) => void }) {
     const [open, setOpen] = useState(false)
     const [text, setText] = useState("")
     const [msg, setMsg] = useState("")
+    const [helpOpen, setHelpOpen] = useState(false)
+    const [copied, setCopied] = useState(false)
+    const copyPrompt = async () => { try { await navigator.clipboard.writeText(MENU_AI_PROMPT); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* noop */ } }
     const MAX = 50
     const doImport = () => {
       const items = parseMenuPaste(text, MAX)
@@ -52,6 +74,10 @@ import { parseMenuPaste } from "./menuImport"
               Copiez vos plats depuis Excel, Google Sheets ou Numbers et collez-les ci-dessous. Une ligne
               par plat, colonnes dans l'ordre : <b>Nom</b>, <b>Prix</b>, <b>Description</b>. Idéal pour les gros menus.
             </p>
+            <button type="button" onClick={() => setHelpOpen(true)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, alignSelf: "flex-start", padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.08)", color: G, fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+              <Sparkles size={13} /> Pas de tableur ? Photographiez votre carte (IA)
+            </button>
             <textarea value={text} onChange={e => { setText(e.target.value); setMsg("") }} rows={6}
               placeholder={"Margherita\t11€\tTomate, mozzarella\nRegina\t13€\tJambon, champignons"}
               style={{ ...inputStyle, fontFamily: "monospace", whiteSpace: "pre", resize: "vertical" }} />
@@ -61,6 +87,39 @@ import { parseMenuPaste } from "./menuImport"
                 <Plus size={15} /> Importer les plats
               </button>
               {msg && <span style={{ color: msg.includes("✓") ? "var(--success)" : "var(--warning)", fontSize: 11.5, fontWeight: 600 }}>{msg}</span>}
+            </div>
+          </div>
+        )}
+        {helpOpen && (
+          <div onClick={() => setHelpOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 520, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, maxHeight: "88vh", overflowY: "auto", background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 18, padding: 18, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <span style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(201,168,76,0.14)", border: "1px solid rgba(201,168,76,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: G }}><Sparkles size={16} /></span>
+                <p style={{ flex: 1, color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Remplir le menu avec une photo (IA)</p>
+                <button onClick={() => setHelpOpen(false)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 28, height: 28 }}><X size={14} /></button>
+              </div>
+              <ol style={{ color: "#F5F0E8", fontSize: 12.5, lineHeight: 1.6, margin: "0 0 12px", paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
+                <li>Copiez le prompt ci-dessous.</li>
+                <li>Ouvrez ChatGPT, collez le prompt et <b>ajoutez une photo</b> de votre carte.</li>
+                <li>Copiez la réponse de ChatGPT.</li>
+                <li>Collez-la dans « Importer depuis un tableur » puis cliquez <b>Importer les plats</b>.</li>
+              </ol>
+              <div style={{ position: "relative", background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+                <pre style={{ color: "#D8D2C4", fontSize: 11, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap", fontFamily: "monospace", maxHeight: 220, overflowY: "auto" }}>{MENU_AI_PROMPT}</pre>
+              </div>
+              <div style={{ display: "flex", gap: 9 }}>
+                <button type="button" onClick={copyPrompt}
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "none", background: copied ? "rgba(57,255,143,0.15)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 75%,#000))", color: copied ? "var(--success)" : "#080808", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                  {copied ? <><Check size={15} /> Copié !</> : <><Copy size={15} /> Copier le prompt</>}
+                </button>
+                <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#F5F0E8", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+                  Ouvrir ChatGPT ↗
+                </a>
+              </div>
+              <p style={{ color: MUTED, fontSize: 10.5, margin: "11px 0 0", lineHeight: 1.5 }}>
+                Astuce : pour un menu à plusieurs catégories (Entrées, Plats, Desserts…), demandez une liste par catégorie et importez-les dans des blocs Menu séparés.
+              </p>
             </div>
           </div>
         )}

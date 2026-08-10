@@ -3546,7 +3546,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     label: "Grande carte (onglets)", description: "Gros menu multi-sections en onglets",
     icon: "🍽️", color: "#EF4444", category: "commerce",
     defaultContent: {
-      title: "", text_size: "Normal", row_density: "Normal",
+      title: "Notre carte", menu_collapsible: "Oui", text_size: "Normal", row_density: "Normal",
       sec1_title: "Cocktails", sec1_items: "Mojito;10€;Havana, menthe, citron vert\nPina Colada;10€;Ananas, coco",
       sec2_title: "Soft", sec2_items: "Coca;4€;\nPerrier;3€;",
     },

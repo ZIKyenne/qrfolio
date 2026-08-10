@@ -1,0 +1,50 @@
+"use client"
+// Liste de produits d'un menu, en 1 ou 2 colonnes. Présentationnel pur (public ET aperçu éditeur),
+// paramétré par les couleurs/typo, la densité (rowPad) et l'échelle de police (fs). Réutilisé par
+// menu_section et menu_tabs pour éviter la duplication.
+import type { CSSProperties } from "react"
+
+export type MenuListItem = { name: string; price?: string; desc?: string }
+
+export function MenuItemList({ items, columns = 1, rowPad = 11, fs = (n: number) => n, text, muted, primary, fontB, fontD }: {
+  items: MenuListItem[]
+  columns?: number
+  rowPad?: number
+  fs?: (n: number) => number
+  text: string; muted: string; primary: string; fontB?: string; fontD?: string
+}) {
+  if (items.length === 0) return null
+
+  if (columns === 2) {
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 16, rowGap: Math.max(4, rowPad) }}>
+        {items.map((it, i) => (
+          <div key={i} style={{ minWidth: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 6 }}>
+              <span style={{ color: text, fontSize: fs(13.5), fontWeight: 600, fontFamily: fontB, minWidth: 0, overflowWrap: "anywhere" }}>{it.name}</span>
+              {it.price && <span style={{ color: primary, fontSize: fs(13.5), fontWeight: 700, flexShrink: 0, fontFamily: fontD }}>{it.price}</span>}
+            </div>
+            {it.desc && <p style={{ color: muted, fontSize: fs(11.5), margin: "1px 0 0", fontFamily: fontB, lineHeight: 1.4, overflowWrap: "anywhere" }}>{it.desc}</p>}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {items.map((it, i) => {
+        const row: CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, padding: `${rowPad}px 0`, borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }
+        return (
+          <div key={i} style={row}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ color: text, fontSize: fs(14), fontWeight: 600, margin: "0 0 2px", fontFamily: fontB, overflowWrap: "anywhere" }}>{it.name}</p>
+              {it.desc && <p style={{ color: muted, fontSize: fs(12), margin: 0, fontFamily: fontB, lineHeight: 1.45, overflowWrap: "anywhere" }}>{it.desc}</p>}
+            </div>
+            {it.price && <span style={{ color: primary, fontSize: fs(14), fontWeight: 700, flexShrink: 0, fontFamily: fontD }}>{it.price}</span>}
+          </div>
+        )
+      })}
+    </div>
+  )
+}

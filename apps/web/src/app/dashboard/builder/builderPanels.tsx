@@ -427,7 +427,7 @@ Tiramisu;6,50€;Fait maison`
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <MenuImport block={block} onChange={onChange} />
           <RepeaterEditor block={block} onChange={onChange} prefix="item" noun="Plat" addLabel="Ajouter un plat"
-            topFields={[{ key: "category", label: "Nom de la section", placeholder: "Entrées, Plats, Desserts…" }, { key: "menu_display", label: "Affichage", options: ["Liste", "Grande carte dépliable"] }]}
+            topFields={[{ key: "category", label: "Nom de la section", placeholder: "Entrées, Plats, Desserts…" }, { key: "menu_display", label: "Affichage", options: ["Liste", "Grande carte dépliable"] }, { key: "item_columns", label: "Colonnes", options: ["1 colonne", "2 colonnes"] }]}
             fields={[{ suffix: "name", placeholder: "Nom du plat" }, { suffix: "price", placeholder: "12€" }, { suffix: "desc", placeholder: "Description (optionnel)" }]} />
         </div>
       )
@@ -448,6 +448,7 @@ Tiramisu;6,50€;Fait maison`
               { key: "title", label: "Titre général (optionnel)", placeholder: "Notre carte" },
               { key: "text_size", label: "Taille du texte", options: ["Compact", "Normal", "Grand"] },
               { key: "row_density", label: "Densité", options: ["Serré", "Normal", "Aéré"] },
+              { key: "item_columns", label: "Colonnes", options: ["1 colonne", "2 colonnes"] },
             ]}
             fields={[
               { suffix: "title", placeholder: "Nom de la section (ex : Cocktails)" },

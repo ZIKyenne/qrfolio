@@ -12,6 +12,7 @@ export type MenuTabsViewModel = {
   sections: MenuTabSection[]
   textScale: number   // multiplicateur de taille de police
   rowPad: number      // padding vertical d'une ligne (densité), en px
+  columns: number     // 1 ou 2 produits par ligne
 }
 
 const TEXT_SCALE: Record<string, number> = { Compact: 0.86, Normal: 1, Grand: 1.16 }
@@ -33,5 +34,6 @@ export function menuTabsViewModel(content: Record<string, any> | null | undefine
     sections,
     textScale: TEXT_SCALE[c.text_size] ?? 1,
     rowPad: ROW_PAD[c.row_density] ?? ROW_PAD.Normal,
+    columns: c.item_columns === "2 colonnes" ? 2 : 1,
   }
 }

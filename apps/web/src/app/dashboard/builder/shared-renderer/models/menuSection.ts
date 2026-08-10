@@ -3,7 +3,7 @@
 import { extractIndexed } from "./repeaterExtract"
 
 export type MenuItem = { name: string; price?: string; desc?: string }
-export type MenuSectionViewModel = { visible: boolean; category?: string; items: MenuItem[]; collapsible: boolean }
+export type MenuSectionViewModel = { visible: boolean; category?: string; items: MenuItem[]; collapsible: boolean; columns: number }
 
 export function menuSectionViewModel(content: Record<string, any> | null | undefined): MenuSectionViewModel {
   const c = content || {}
@@ -11,5 +11,6 @@ export function menuSectionViewModel(content: Record<string, any> | null | undef
   // Affichage « Grande carte dépliable » : section dans une carte, en-tête cliquable qui déplie/replie
   // les plats (idéal pour les gros menus). Sinon liste simple (historique).
   const collapsible = c.menu_display === "Grande carte dépliable"
-  return { visible: true, category: typeof c.category === "string" && c.category ? c.category : undefined, items, collapsible }
+  const columns = c.item_columns === "2 colonnes" ? 2 : 1 // 2 produits par ligne (listes courtes)
+  return { visible: true, category: typeof c.category === "string" && c.category ? c.category : undefined, items, collapsible, columns }
 }

@@ -1,11 +1,12 @@
 "use client"
 import { menuTabsViewModel } from "../../models/menuTabs"
 import { BlockEmptyState } from "../../primitives/BlockEmptyState"
+import { MenuItemList } from "../../primitives/MenuItemList"
 import type { EditorAdapterProps } from "../../renderTypes"
 
 // Aperçu canvas : barre d'onglets + produits de la 1re section (le vrai contenu s'édite dans le panneau).
 export function EditorMenuTabs({ content, ctx }: EditorAdapterProps) {
-  const { title, sections, textScale, rowPad } = menuTabsViewModel(content)
+  const { title, sections, textScale, rowPad, columns } = menuTabsViewModel(content)
   const { text, muted, primary, surfaceStyle } = ctx
   const fs = (n: number) => Math.round(n * textScale * 10) / 10
   if (sections.length === 0) return (
@@ -24,15 +25,9 @@ export function EditorMenuTabs({ content, ctx }: EditorAdapterProps) {
           </span>
         ))}
       </div>
-      <div>
-        {cur.items.slice(0, 6).map((it, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: `${Math.max(4, rowPad - 3)}px 0`, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-            <div style={{ flex: 1 }}><p style={{ color: text, fontSize: fs(13), fontWeight: 600, margin: "0 0 1px" }}>{it.name}</p>{it.desc && <p style={{ color: muted, fontSize: fs(10.5), margin: 0 }}>{it.desc}</p>}</div>
-            {it.price && <span style={{ color: primary, fontSize: fs(13), fontWeight: 700, flexShrink: 0 }}>{it.price}</span>}
-          </div>
-        ))}
-        {cur.items.length === 0 && <p style={{ color: muted, fontSize: 11, margin: "6px 0" }}>Collez les produits de cette section dans le panneau.</p>}
-      </div>
+      {cur.items.length === 0
+        ? <p style={{ color: muted, fontSize: 11, margin: "6px 0" }}>Collez les produits de cette section dans le panneau.</p>
+        : <MenuItemList items={cur.items.slice(0, 8)} columns={columns} rowPad={Math.max(4, rowPad - 3)} fs={fs} text={text} muted={muted} primary={primary} />}
     </div>
   )
 }

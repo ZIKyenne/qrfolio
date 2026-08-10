@@ -3549,6 +3549,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "title", label: "Titre (optionnel)", type: "text", placeholder: "Notre carte" },
       { key: "text_size", label: "Taille du texte", type: "select", options: ["Compact", "Normal", "Grand"] },
       { key: "row_density", label: "Densité", type: "select", options: ["Serré", "Normal", "Aéré"] },
+      { key: "item_columns", label: "Colonnes", type: "select", options: ["1 colonne", "2 colonnes"] },
       { key: "sec1_title", label: "Section 1 — Nom", type: "text", placeholder: "Cocktails" },
       { key: "sec1_items", label: "Section 1 — Produits", type: "textarea", placeholder: "Un produit par ligne : Nom;Prix;Description" },
     ],

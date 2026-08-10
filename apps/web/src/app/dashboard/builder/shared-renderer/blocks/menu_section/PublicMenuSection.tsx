@@ -1,28 +1,17 @@
 "use client"
 import { useState } from "react"
 import { menuSectionViewModel } from "../../models/menuSection"
+import { MenuItemList } from "../../primitives/MenuItemList"
 import type { PublicAdapterProps } from "../../renderTypes"
 
 // Liste simple (legacy) OU grande carte dépliable (menu_display) : en-tête cliquable qui replie/déplie
-// les plats — pratique pour les gros menus. Conteneur toujours rendu (même vide) en mode liste.
+// les plats — pratique pour les gros menus. 1 ou 2 colonnes internes. Conteneur toujours rendu en liste.
 export function PublicMenuSection({ content, ctx }: PublicAdapterProps) {
-  const { category, items, collapsible } = menuSectionViewModel(content)
+  const { category, items, collapsible, columns } = menuSectionViewModel(content)
   const { G, TEXT, MUTED, FONT_D, FONT_B } = ctx
   const [open, setOpen] = useState(true)
 
-  const rows = (
-    <div>
-      {items.map((it, i) => (
-        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, padding: "11px 0", borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-          <div style={{ flex: 1 }}>
-            <p style={{ color: TEXT, fontSize: 14, fontWeight: 600, margin: "0 0 2px", fontFamily: FONT_B }}>{it.name}</p>
-            {it.desc && <p style={{ color: MUTED, fontSize: 12, margin: 0, fontFamily: FONT_B }}>{it.desc}</p>}
-          </div>
-          <span style={{ color: G, fontSize: 14, fontWeight: 700, flexShrink: 0, fontFamily: FONT_D }}>{it.price}</span>
-        </div>
-      ))}
-    </div>
-  )
+  const rows = <MenuItemList items={items} columns={columns} text={TEXT} muted={MUTED} primary={G} fontB={FONT_B} fontD={FONT_D} />
 
   if (collapsible) {
     return (

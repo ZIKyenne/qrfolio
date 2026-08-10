@@ -31,4 +31,8 @@ describe("menuTabsViewModel — grande carte à onglets", () => {
     expect(menuTabsViewModel({ sec1_title: "x", row_density: "Serré" }).rowPad).toBe(6)
     expect(menuTabsViewModel({ sec1_title: "x", row_density: "Aéré" }).rowPad).toBe(16)
   })
+  it("colonnes internes (1 par défaut, 2 si demandé)", () => {
+    expect(menuTabsViewModel({ sec1_title: "x" }).columns).toBe(1)
+    expect(menuTabsViewModel({ sec1_title: "x", item_columns: "2 colonnes" }).columns).toBe(2)
+  })
 })

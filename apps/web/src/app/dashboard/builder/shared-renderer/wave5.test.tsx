@@ -40,6 +40,10 @@ describe("wave5 — modèles commerce/événement", () => {
     expect(menuSectionViewModel({ item1_name: "x", menu_display: "Liste" }).collapsible).toBe(false)
     expect(menuSectionViewModel({ item1_name: "x", menu_display: "Grande carte dépliable" }).collapsible).toBe(true)
   })
+  it("menu : colonnes internes (1 par défaut, 2 si demandé)", () => {
+    expect(menuSectionViewModel({ item1_name: "x" }).columns).toBe(1)
+    expect(menuSectionViewModel({ item1_name: "x", item_columns: "2 colonnes" }).columns).toBe(2)
+  })
   it("gate rempli → visible", () => {
     expect(servicesListViewModel({ s1_name: "Wifi" }).visible).toBe(true)
     expect(giftCardViewModel({ amount1: "50€" }).visible).toBe(true)

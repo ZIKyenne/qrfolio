@@ -1,12 +1,13 @@
 "use client"
 import { useState } from "react"
 import { menuTabsViewModel } from "../../models/menuTabs"
+import { MenuItemList } from "../../primitives/MenuItemList"
 import type { PublicAdapterProps } from "../../renderTypes"
 
 // Grande carte à onglets : barre d'onglets (sections) + produits de l'onglet actif. Compact pour les
-// gros menus. Taille de texte + densité pilotées par le modèle.
+// gros menus. Taille de texte + densité + colonnes pilotées par le modèle.
 export function PublicMenuTabs({ content, ctx }: PublicAdapterProps) {
-  const { title, sections, textScale, rowPad } = menuTabsViewModel(content)
+  const { title, sections, textScale, rowPad, columns } = menuTabsViewModel(content)
   const { G, TEXT, MUTED, FONT_D, FONT_B } = ctx
   const [active, setActive] = useState(0)
   if (sections.length === 0) return null
@@ -32,19 +33,9 @@ export function PublicMenuTabs({ content, ctx }: PublicAdapterProps) {
       </div>
 
       {/* Produits de la section active */}
-      <div>
-        {cur.items.length === 0
-          ? <p style={{ color: MUTED, fontSize: fs(12.5), margin: "8px 0", fontFamily: FONT_B }}>Aucun produit dans cette section.</p>
-          : cur.items.map((it, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, padding: `${rowPad}px 0`, borderBottom: i < cur.items.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ color: TEXT, fontSize: fs(14), fontWeight: 600, margin: "0 0 2px", fontFamily: FONT_B }}>{it.name}</p>
-                {it.desc && <p style={{ color: MUTED, fontSize: fs(12), margin: 0, fontFamily: FONT_B, lineHeight: 1.45 }}>{it.desc}</p>}
-              </div>
-              {it.price && <span style={{ color: G, fontSize: fs(14), fontWeight: 700, flexShrink: 0, fontFamily: FONT_D }}>{it.price}</span>}
-            </div>
-          ))}
-      </div>
+      {cur.items.length === 0
+        ? <p style={{ color: MUTED, fontSize: fs(12.5), margin: "8px 0", fontFamily: FONT_B }}>Aucun produit dans cette section.</p>
+        : <MenuItemList items={cur.items} columns={columns} rowPad={rowPad} fs={fs} text={TEXT} muted={MUTED} primary={G} fontB={FONT_B} fontD={FONT_D} />}
     </div>
   )
 }

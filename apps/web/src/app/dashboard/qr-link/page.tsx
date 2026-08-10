@@ -166,6 +166,46 @@ export default function QrLinkPage() {
     } catch {}
   }
 
+  // ── Lien DYNAMIQUE : le QR encode qrowg.com/q/<code>, destination modifiable, essai 7 j par lien.
+  async function createDynamic() {
+    if (qrType !== "link" || !url.trim() || saveBusy) return
+    setSaveBusy(true); setSaveMsg(null)
+    try {
+      const res = await fetch("/api/qr-instant", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "link", dynamic: true, dest: url, label: previewLabel || null, style: { fg, bg, ecc: effectiveEcc, styleKey } }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setSaveMsg({ text: "Lien dynamique créé ✓ (essai 7 jours)", ok: true }) }
+      else setSaveMsg({ text: d.error || "Création impossible", ok: false })
+    } catch { setSaveMsg({ text: "Erreur réseau", ok: false }) }
+    finally { setSaveBusy(false); setTimeout(() => setSaveMsg(null), 4000) }
+  }
+  async function editDest(s: any) {
+    const next = typeof window !== "undefined" ? window.prompt("Nouvelle destination du lien :", s.dest_url || "") : null
+    if (next === null) return
+    try {
+      const res = await fetch("/api/qr-instant", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: s.id, dest: next }) })
+      const d = await res.json().catch(() => ({}))
+      if (res.ok && d.item) setSaved(prev => prev.map(x => x.id === s.id ? d.item : x))
+      else alert(d.error || "Modification impossible")
+    } catch {}
+  }
+  // Statut lisible d'un lien dynamique (essai 7 j par lien).
+  function dynStatus(s: any): { label: string; color: string; expired: boolean } {
+    if (s.status === "expired") return { label: "Expiré", color: "#FF6B6B", expired: true }
+    if (s.status === "paused") return { label: "En pause", color: "#FBBF24", expired: false }
+    if (s.expires_at) {
+      const ms = new Date(s.expires_at).getTime() - Date.now()
+      if (ms <= 0) return { label: "Expiré", color: "#FF6B6B", expired: true }
+      const days = Math.ceil(ms / 86400000)
+      return { label: `Essai · expire dans ${days} j`, color: "#FBBF24", expired: false }
+    }
+    return { label: "Actif", color: "var(--success)", expired: false }
+  }
+  const dynamicLinks = saved.filter(s => s.dynamic)
+  const staticQrs = saved.filter(s => !s.dynamic)
+
   const secTitle: React.CSSProperties = { color: MUTED, fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 7, marginBottom: 11, textTransform: "uppercase", letterSpacing: 1.4 }
   const accentBar = <span style={{ width: 3, height: 13, borderRadius: 2, background: G, flexShrink: 0 }} />
   const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: 18 }
@@ -381,11 +421,50 @@ export default function QrLinkPage() {
       </Button>
       {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "9px 0 0" }}>{saveMsg.text}</p>}
 
-      {saved.length > 0 && (
+      {/* Lien DYNAMIQUE (modifiable après impression + essai 7 jours) — type Lien uniquement */}
+      {qrType === "link" && (
+        <div style={{ ...card, marginTop: 12, borderColor: "rgba(201,168,76,0.28)", background: "rgba(201,168,76,0.05)" }}>
+          <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>⚡ Lien dynamique</p>
+          <p style={{ color: MUTED, fontSize: 12, margin: "0 0 11px", lineHeight: 1.5 }}>
+            Le QR pointe vers une adresse <strong style={{ color: MUTED }}>modifiable à tout moment</strong> (sans réimprimer). Essai gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong> par lien.
+          </p>
+          <Button onClick={createDynamic} disabled={!url.trim() || saveBusy} style={{ width: "100%" }}>
+            {saveBusy ? "Création…" : "Créer un lien dynamique (essai 7 j)"}
+          </Button>
+        </div>
+      )}
+
+      {/* Mes liens dynamiques */}
+      {dynamicLinks.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <p style={secTitle}>{accentBar} Mes liens dynamiques</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+            {dynamicLinks.map(s => { const st = dynStatus(s); return (
+              <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: "10px 12px" }}>
+                <div style={{ background: "#fff", borderRadius: 8, padding: 4, lineHeight: 0, flexShrink: 0 }}>
+                  <QRCanvas value={s.payload || "https://qrowg.com"} size={46} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || s.dest_url}</p>
+                  <p style={{ color: MUTED, fontSize: 11, margin: "0 0 3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>→ {s.dest_url}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: st.color, fontSize: 10.5, fontWeight: 700 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: st.color }} />{st.label}</span>
+                    <span style={{ color: "#6E685E", fontSize: 10.5 }}>· {s.total_scans ?? 0} scan{(s.total_scans ?? 0) > 1 ? "s" : ""}</span>
+                  </div>
+                </div>
+                <button onClick={() => editDest(s)} title="Modifier la destination" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "7px 10px", flexShrink: 0 }}>Modifier</button>
+                <button onClick={() => deleteInstant(s.id)} aria-label="Supprimer" style={{ background: "rgba(239,68,68,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trash2 size={14} /></button>
+              </div>
+            ) })}
+          </div>
+        </div>
+      )}
+
+      {staticQrs.length > 0 && (
         <div style={{ marginTop: 24 }}>
           <p style={secTitle}>{accentBar} Mes QR enregistrés</p>
           <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
-            {saved.map(s => (
+            {staticQrs.map(s => (
               <div key={s.id} style={{ position: "relative", flexShrink: 0, width: 98, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: 9 }}>
                 <div style={{ background: s.style?.bg || "#fff", borderRadius: 8, padding: 5, lineHeight: 0 }}>
                   <QRCanvas value={s.payload || "https://qrowg.com"} size={58} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
@@ -417,7 +496,7 @@ export default function QrLinkPage() {
       )}
 
       <p style={{ color: "#6E685E", fontSize: 11.5, margin: "18px 0 0", lineHeight: 1.55, textAlign: "center" }}>
-        Ces QR encodent directement le contenu. Pour un lien <strong style={{ color: MUTED }}>modifiable après impression</strong>, créez plutôt un <Link href="/dashboard/qr-codes" style={{ color: G, fontWeight: 600 }}>QR code dynamique</Link>.
+        Un QR <strong style={{ color: MUTED }}>enregistré</strong> encode directement son contenu. Un <strong style={{ color: MUTED }}>lien dynamique</strong> (type Lien) est modifiable après impression et bénéficie d'un essai 7 jours par lien.
       </p>
     </div>
   )

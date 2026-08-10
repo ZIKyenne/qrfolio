@@ -91,7 +91,35 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       .maybeSingle()
 
     if (qrErr) console.error("[qr-redirect] erreur lookup", code, qrErr.message)
-    if (!qr) return redirectNoStore(new URL("/?qr=notfound", appUrl))
+
+    // ── Lien instantané DYNAMIQUE (table `instant_qrs`) : résolu ici via l'admin client (hors RLS).
+    // Même logique de statut/expiration que les qr_codes (essai 7 j par lien → status "expired").
+    if (!qr) {
+      const htmlNoStore = (html: string, status: number) => new NextResponse(html, {
+        status, headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store, must-revalidate" },
+      })
+      const { data: inst } = await supabase
+        .from("instant_qrs").select("id, dynamic, dest_url, status, expires_at, total_scans")
+        .eq("short_code", code).maybeSingle()
+      if (inst && inst.dynamic) {
+        const st = inst.status ?? "active"
+        if (inst.expires_at && new Date(inst.expires_at) < new Date() && st === "active") {
+          supabase.from("instant_qrs").update({ status: "expired" }).eq("id", inst.id).then(() => {}, () => {})
+          return htmlNoStore(expiredHtml(appUrl), 410)
+        }
+        if (st === "paused") return htmlNoStore(pausedHtml("", appUrl), 503)
+        if (st === "expired") return htmlNoStore(expiredHtml(appUrl), 410)
+        const dest = inst.dest_url && /^https?:\/\//i.test(inst.dest_url) ? inst.dest_url : null
+        if (dest) {
+          // Scan best-effort (anti-abus + incrément non bloquant).
+          rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
+            if (allow) supabase.from("instant_qrs").update({ total_scans: (inst.total_scans ?? 0) + 1, last_scan_at: new Date().toISOString() }).eq("id", inst.id).then(() => {}, () => {})
+          })
+          return redirectNoStore(dest)
+        }
+      }
+      return redirectNoStore(new URL("/?qr=notfound", appUrl))
+    }
 
     const qrStatus = qr.status ?? "active"
 

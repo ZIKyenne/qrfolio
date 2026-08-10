@@ -37,7 +37,7 @@ export function menuTabsViewModel(content: Record<string, any> | null | undefine
     textScale: TEXT_SCALE[c.text_size] ?? 1,
     rowPad: ROW_PAD[c.row_density] ?? ROW_PAD.Normal,
     columns: c.item_columns === "2 colonnes" ? 2 : 1,
-    collapsible: c.menu_collapsible === "Oui",
+    collapsible: c.menu_collapsible !== "Non", // repliable par DÉFAUT (le titre = bouton) ; « Non » pour tout déplier
     totalItems: sections.reduce((n, s) => n + s.items.length, 0),
   }
 }

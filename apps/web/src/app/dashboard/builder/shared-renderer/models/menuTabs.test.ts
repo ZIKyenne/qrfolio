@@ -35,10 +35,11 @@ describe("menuTabsViewModel — grande carte à onglets", () => {
     expect(menuTabsViewModel({ sec1_title: "x" }).columns).toBe(1)
     expect(menuTabsViewModel({ sec1_title: "x", item_columns: "2 colonnes" }).columns).toBe(2)
   })
-  it("repliable + total de produits", () => {
-    const vm = menuTabsViewModel({ sec1_title: "A", sec1_items: "x;1€\ny;2€", sec2_title: "B", sec2_items: "z;3€", menu_collapsible: "Oui" })
-    expect(vm.collapsible).toBe(true)
+  it("repliable par défaut (titre = bouton) ; « Non » pour tout déplier + total produits", () => {
+    const vm = menuTabsViewModel({ sec1_title: "A", sec1_items: "x;1€\ny;2€", sec2_title: "B", sec2_items: "z;3€" })
+    expect(vm.collapsible).toBe(true)   // défaut = repliable (clé absente)
     expect(vm.totalItems).toBe(3)
-    expect(menuTabsViewModel({ sec1_title: "A" }).collapsible).toBe(false) // défaut non
+    expect(menuTabsViewModel({ sec1_title: "A", menu_collapsible: "Non" }).collapsible).toBe(false) // opt-out explicite
+    expect(menuTabsViewModel({ sec1_title: "A", menu_collapsible: "Oui" }).collapsible).toBe(true)
   })
 })

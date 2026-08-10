@@ -3546,13 +3546,13 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     label: "Grande carte (onglets)", description: "Gros menu multi-sections en onglets",
     icon: "🍽️", color: "#EF4444", category: "commerce",
     defaultContent: {
-      title: "Notre carte", menu_collapsible: "Oui", text_size: "Normal", row_density: "Normal",
+      title: "Notre carte", text_size: "Normal", row_density: "Normal",
       sec1_title: "Cocktails", sec1_items: "Mojito;10€;Havana, menthe, citron vert\nPina Colada;10€;Ananas, coco",
       sec2_title: "Soft", sec2_items: "Coca;4€;\nPerrier;3€;",
     },
     fields: [
       { key: "title", label: "Titre (optionnel)", type: "text", placeholder: "Notre carte" },
-      { key: "menu_collapsible", label: "Repliable (fermé par défaut)", type: "select", options: ["Non", "Oui"] },
+      { key: "menu_collapsible", label: "Repliable (titre = bouton, fermé par défaut)", type: "select", options: ["Oui", "Non"] },
       { key: "text_size", label: "Taille du texte", type: "select", options: ["Compact", "Normal", "Grand"] },
       { key: "row_density", label: "Densité", type: "select", options: ["Serré", "Normal", "Aéré"] },
       { key: "item_columns", label: "Colonnes", type: "select", options: ["1 colonne", "2 colonnes"] },

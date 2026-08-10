@@ -446,7 +446,7 @@ Tiramisu;6,50€;Fait maison`
           <RepeaterEditor block={block} onChange={onChange} prefix="sec" noun="Section" addLabel="Ajouter une section"
             topFields={[
               { key: "title", label: "Titre général (sert d'en-tête si repliable)", placeholder: "Boissons, Nourriture…" },
-              { key: "menu_collapsible", label: "Repliable (fermé par défaut)", options: ["Non", "Oui"] },
+              { key: "menu_collapsible", label: "Repliable (titre = bouton, fermé par défaut)", options: ["Oui", "Non"] },
               { key: "text_size", label: "Taille du texte", options: ["Compact", "Normal", "Grand"] },
               { key: "row_density", label: "Densité", options: ["Serré", "Normal", "Aéré"] },
               { key: "item_columns", label: "Colonnes", options: ["1 colonne", "2 colonnes"] },

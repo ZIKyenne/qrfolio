@@ -434,6 +434,7 @@
     // Responsive : sous 1024px, les 3 colonnes (palette | page | réglages) ne tiennent plus côte à côte.
     // On bascule en mode « un panneau à la fois » piloté par une barre d'onglets en bas.
     const isMobile = useIsMobile(1024)
+    const focusNarrow = useIsMobile(1500) // < 1500 : en Focus, on masque la colonne Aperçu (le canvas fait office d'aperçu) → 2 colonnes
     const [mobileTab, setMobileTab] = useState<"blocks"|"canvas"|"panel">("canvas")
     // C04 — canvas responsive (actif seulement avec BUILDER_REDESIGN). Défauts = neutres (fluid/100 %)
     // → identique à l'existant tant que l'utilisateur ne change rien.
@@ -2135,7 +2136,7 @@
               </div>
             </div>
           )}
-          <div style={{ width: isMobile ? "100%" : (rightCollapsed ? 48 : (focusMode ? Math.max(rightResize.width, 400) : rightResize.width)), background: "#161616", borderLeft: "none", display: isMobile && mobileTab !== "panel" ? "none" : "flex", flexDirection: "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: rightCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
+          <div style={{ width: isMobile ? "100%" : (rightCollapsed ? 48 : (focusMode ? (focusNarrow ? 640 : 900) : rightResize.width)), background: "#161616", borderLeft: "none", display: isMobile && mobileTab !== "panel" ? "none" : "flex", flexDirection: (focusMode && !isMobile) ? "row" : "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: rightCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
             <div style={{ display: focusMode ? "none" : "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
               {rightCollapsed
                 ? /* Mode réduit: onglets verticaux */
@@ -2161,8 +2162,8 @@
               }
             </div>
 
-            {!rightCollapsed && (focusMode || rightTab==="preview") && (
-              <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 10px", borderBottom: focusMode ? "1px solid rgba(255,255,255,0.07)" : undefined }}>
+            {!rightCollapsed && ((focusMode && !focusNarrow) || (!focusMode && rightTab==="preview")) && (
+              <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: "auto", padding: "14px 10px", borderRight: focusMode ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
                 {focusSectionHeader("Aperçu")}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -2258,7 +2259,7 @@
             )}
 
             {!rightCollapsed && (focusMode || rightTab==="edit") && (
-              <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 14, position: "relative", borderBottom: focusMode ? "1px solid rgba(255,255,255,0.07)" : undefined }}>
+              <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: "auto", padding: 14, position: "relative", borderRight: focusMode ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
                 {focusSectionHeader("Éditeur")}
                 {/* C03 — Réglages refondus (flag ON) : coquille Simple/Avancé + injection du panneau
                     legacy (EditPanel) pour le design/disposition et les blocs non pilotes. Flag OFF =
@@ -2517,7 +2518,7 @@
             )}
 
             {!rightCollapsed && (focusMode || rightTab==="theme") && (
-              <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 14 }}>
+              <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: "auto", padding: 14 }}>
                 {focusSectionHeader("Thème")}
                 <ThemePanel theme={theme} onThemeChange={commitTheme} userPlan={userPlan}
                   previewName={(blocks.find(b => b.type === "profile")?.content as any)?.name || pageName}

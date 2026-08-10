@@ -2136,7 +2136,7 @@
               </div>
             </div>
           )}
-          <div style={{ width: isMobile ? "100%" : (rightCollapsed ? 48 : (focusMode ? (focusNarrow ? 640 : 900) : rightResize.width)), background: "#161616", borderLeft: "none", display: isMobile && mobileTab !== "panel" ? "none" : "flex", flexDirection: (focusMode && !isMobile) ? "row" : "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: rightCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
+          <div style={{ width: isMobile ? "100%" : (rightCollapsed ? 48 : (focusMode ? (focusNarrow ? 620 : 740) : rightResize.width)), background: "#161616", borderLeft: "none", display: isMobile && mobileTab !== "panel" ? "none" : "flex", flexDirection: (focusMode && !isMobile) ? "row" : "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: rightCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
             <div style={{ display: focusMode ? "none" : "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
               {rightCollapsed
                 ? /* Mode réduit: onglets verticaux */
@@ -2162,9 +2162,8 @@
               }
             </div>
 
-            {!rightCollapsed && ((focusMode && !focusNarrow) || (!focusMode && rightTab==="preview")) && (
-              <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: "auto", padding: "14px 10px", borderRight: focusMode ? "1px solid rgba(255,255,255,0.08)" : undefined }}>
-                {focusSectionHeader("Aperçu")}
+            {!rightCollapsed && !focusMode && rightTab==="preview" && (
+              <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: "auto", padding: "14px 10px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <span style={{ fontSize: 12, color: "#F5F0E8", fontWeight: 600 }}>Aperçu live</span>

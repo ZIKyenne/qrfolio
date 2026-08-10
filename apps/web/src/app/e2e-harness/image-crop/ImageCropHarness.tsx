@@ -29,6 +29,9 @@ export function ImageCropHarness() {
     setFile(null)
   }
 
+  // ?aspect=wide|square|… pour vérifier la présélection de ratio selon le contexte.
+  const initialAspect = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("aspect") || undefined : undefined
+
   return (
     <div data-testid="image-crop-harness" style={{ minHeight: "100vh", background: "#050505" }}>
       <div data-testid="crop-result"
@@ -36,7 +39,7 @@ export function ImageCropHarness() {
         style={{ position: "fixed", top: 0, left: 0, padding: 8, color: "#888", fontSize: 12, zIndex: 1 }}>
         {result ? `recadré: ${result.w}×${result.h} · ${result.kb} Ko` : "en attente"}
       </div>
-      {file && <ImageCropModal file={file} onCancel={() => setFile(null)} onConfirm={onConfirm} />}
+      {file && <ImageCropModal file={file} initialAspect={initialAspect} onCancel={() => setFile(null)} onConfirm={onConfirm} />}
     </div>
   )
 }

@@ -10,14 +10,15 @@ import { coverBaseScale, clampOffset, computeCropRect, displaySize, outputSize, 
 const G = "#C9A84C", MUTED = "#A8A190"
 const FRAME_MAX = 280 // plus grand côté du cadre à l'écran
 
-export default function ImageCropModal({ file, onCancel, onConfirm }: {
+export default function ImageCropModal({ file, onCancel, onConfirm, initialAspect }: {
   file: File
   onCancel: () => void
   onConfirm: (blob: Blob) => void
+  initialAspect?: string   // ratio présélectionné selon le contexte (bannière → wide, avatar → square)
 }) {
   const [url, setUrl] = useState("")
   const [natural, setNatural] = useState({ w: 0, h: 0 })
-  const [aspectKey, setAspectKey] = useState("free")
+  const [aspectKey, setAspectKey] = useState(initialAspect && CROP_ASPECTS.some(a => a.key === initialAspect) ? initialAspect : "free")
   const [zoom, setZoom] = useState(1)
   const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 })
   const [busy, setBusy] = useState(false)

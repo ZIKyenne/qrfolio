@@ -27,4 +27,11 @@ test.describe("recadrage d'image (upload)", () => {
     const h = await res.getAttribute("data-h")
     expect(w).toBe(h) // ratio 1:1 → sortie carrée
   })
+
+  test("ratio présélectionné selon le contexte (bannière → 3:1)", async ({ page }) => {
+    await page.goto(URL + "?aspect=wide", { waitUntil: "networkidle" })
+    await expect(page.getByTestId("crop-frame")).toBeVisible({ timeout: 30_000 })
+    // le bouton « Bannière 3:1 » (aspect-wide) est actif d'entrée
+    await expect(page.getByTestId("aspect-wide")).toHaveCSS("border-color", /201|C9A84C|rgb\(201/)
+  })
 })

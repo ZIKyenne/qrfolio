@@ -799,7 +799,7 @@ Tiramisu;6,50€;Fait maison`
                   <input type="text" value={block.content[field.key]||""} onChange={e => onChange(field.key, e.target.value)} placeholder={field.placeholder} style={{ ...inputStyle, flex: 1 }} onFocus={e => e.target.style.borderColor = "rgba(201,168,76,0.5)"} onBlur={e => e.target.style.borderColor = "rgba(201,168,76,0.2)"} />
                 </div>
               : field.type === "image"
-              ? <ImageUpload value={block.content[field.key]||""} onChange={url => onChange(field.key, url)} hint={field.hint} />
+              ? <ImageUpload value={block.content[field.key]||""} onChange={url => onChange(field.key, url)} hint={field.hint} cropAspect={(field as any).cropAspect} />
               : field.type === "file"
               ? <FileUpload value={block.content[field.key]||""} onChange={url => onChange(field.key, url)} hint={field.hint} />
               : field.type === "datetime"

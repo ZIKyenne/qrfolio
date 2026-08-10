@@ -11,9 +11,10 @@ type Props = {
   onChange: (url: string) => void
   label?: string
   hint?: string
+  cropAspect?: string   // ratio présélectionné dans le recadrage (ex : "wide" bannière, "square" avatar)
 }
 
-export default function ImageUpload({ value, onChange, label, hint }: Props) {
+export default function ImageUpload({ value, onChange, label, hint, cropAspect }: Props) {
   const { uploadImage, uploading, listAssets, deleteAsset } = useImageUpload()
   const confirm = useConfirm()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -234,7 +235,7 @@ export default function ImageUpload({ value, onChange, label, hint }: Props) {
           </div>
         </div>
       )}
-      {cropFile && <ImageCropModal file={cropFile} onCancel={() => setCropFile(null)} onConfirm={onCropConfirm} />}
+      {cropFile && <ImageCropModal file={cropFile} initialAspect={cropAspect} onCancel={() => setCropFile(null)} onConfirm={onCropConfirm} />}
       <style>{``}</style>
     </div>
   )

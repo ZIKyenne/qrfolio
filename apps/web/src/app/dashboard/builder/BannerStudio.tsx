@@ -301,7 +301,7 @@ export default function BannerStudio({ content, onChange }: { content: Record<st
         <Segmented value={type} onChange={v => set("banner_type", v)} options={[{ key: "image", label: "Image" }, { key: "gradient", label: "Dégradé" }, { key: "color", label: "Couleur" }]} />
         {type === "image" && (
           <>
-            <ImageUpload value={c.src || ""} onChange={url => set("src", url)} hint="Glissez-déposez, collez ou importez une URL" />
+            <ImageUpload value={c.src || ""} onChange={url => set("src", url)} cropAspect="wide" hint="Glissez-déposez, collez ou importez une URL" />
             {c.src && (
               <button onClick={() => setCrop(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 9, padding: "10px", color: G, fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "background .15s" }}
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(201,168,76,0.18)"} onMouseLeave={e => e.currentTarget.style.background = "rgba(201,168,76,0.1)"}>

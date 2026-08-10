@@ -27,6 +27,7 @@ export default function AssetsPage() {
   const [query, setQuery] = useState("")
   const [dragOver, setDragOver] = useState(false)
   const [menuAsset, setMenuAsset] = useState<Asset | null>(null) // vignette -> menu "..." (bottom sheet)
+  const [selected, setSelected] = useState<Set<string>>(new Set()) // sélection multiple (par nom) pour tri/suppression en lot
 
   // Fonction simple (pas de useCallback) : listAssets a une identité instable, la mémoïser
   // ferait boucler l'effet. On charge au montage + après chaque upload/suppression.
@@ -39,6 +40,21 @@ export default function AssetsPage() {
 
   const q = query.trim().toLowerCase()
   const assets = (tab === "image" ? images : files)?.filter(a => !q || pretty(a.name).toLowerCase().includes(q)) ?? null
+
+  // ── Sélection multiple ────────────────────────────────────────────────────
+  const selCount = selected.size
+  const isSel = (a: Asset) => selected.has(a.name)
+  const toggleSel = (a: Asset) => setSelected(prev => { const n = new Set(prev); n.has(a.name) ? n.delete(a.name) : n.add(a.name); return n })
+  const clearSel = () => setSelected(new Set())
+  const selectAllVisible = () => setSelected(new Set((assets || []).map(a => a.name)))
+  const allSelected = !!assets && assets.length > 0 && assets.every(isSel)
+  async function bulkDelete() {
+    if (selCount === 0) return
+    if (!(await confirm({ title: `Supprimer ${selCount} média${selCount > 1 ? "s" : ""} ?`, message: "Cette action est définitive. Si ces médias sont utilisés sur des pages publiées, ils n'y apparaîtront plus.", confirmLabel: `Supprimer (${selCount})`, danger: true }))) return
+    setBusy(true)
+    for (const name of Array.from(selected)) { await deleteAsset(name) }
+    clearSel(); await load(); setBusy(false)
+  }
 
   async function onUploadFiles(list: File[]) {
     if (!list.length) return
@@ -90,7 +106,7 @@ export default function AssetsPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 4, width: "fit-content" }}>
           {([["image", "Images", images?.length], ["file", "Fichiers", files?.length]] as const).map(([k, l, n]) => (
-            <button key={k} onClick={() => setTab(k)}
+            <button key={k} onClick={() => { setTab(k); clearSel() }}
               style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === k ? G : "transparent", color: tab === k ? "#080808" : MUTED, fontSize: 13, fontWeight: tab === k ? 700 : 500 }}>
               {k === "image" ? <Images size={14} /> : <FileText size={14} />}{l}{typeof n === "number" ? ` · ${n}` : ""}
             </button>
@@ -99,6 +115,19 @@ export default function AssetsPage() {
         <input value={query} onChange={e => setQuery(e.target.value)} type="search" placeholder="Rechercher un média…"
           style={{ flex: 1, minWidth: 180, boxSizing: "border-box", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "9px 13px", color: "#F5F0E8", fontSize: 13, outline: "none" }} />
       </div>
+
+      {/* Barre d'actions groupées (sélection multiple) */}
+      {selCount > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14, padding: "10px 14px", background: "rgba(201,168,76,0.08)", border: `1px solid ${G}40`, borderRadius: 12, position: "sticky", top: 8, zIndex: 15, backdropFilter: "blur(6px)" }}>
+          <span style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{selCount} sélectionné{selCount > 1 ? "s" : ""}</span>
+          <button onClick={allSelected ? clearSel : selectAllVisible} style={selBtn}>{allSelected ? "Tout désélectionner" : "Tout sélectionner"}</button>
+          <button onClick={clearSel} style={selBtn}>Annuler</button>
+          <button onClick={bulkDelete} disabled={busy}
+            style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,107,107,0.14)", border: "1px solid rgba(255,107,107,0.4)", color: "var(--danger)", borderRadius: 9, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
+            <Trash2 size={15} /> Supprimer ({selCount})
+          </button>
+        </div>
+      )}
 
       {assets === null ? (
         <p style={{ color: MUTED, fontSize: 13, textAlign: "center", padding: "50px 0" }}>Chargement…</p>
@@ -111,10 +140,16 @@ export default function AssetsPage() {
       ) : tab === "image" ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12 }}>
           {assets.map(a => (
-            <div key={a.url} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "#0A0A0A", aspectRatio: "1" }}>
+            <div key={a.url} onClick={() => toggleSel(a)} title="Cliquez pour sélectionner"
+              style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: isSel(a) ? `2px solid ${G}` : "1px solid rgba(255,255,255,0.08)", background: "#0A0A0A", aspectRatio: "1", cursor: "pointer" }}>
               <img src={a.url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              {/* Une seule action visible : le menu "..." (miniature epuree, #09) */}
-              <button onClick={() => setMenuAsset(a)} aria-label="Actions du média"
+              {isSel(a) && <div style={{ position: "absolute", inset: 0, background: `${G}26`, pointerEvents: "none" }} />}
+              {/* Case de sélection (clic sur la vignette = sélectionner) */}
+              <div aria-hidden style={{ position: "absolute", top: 6, left: 6, width: 24, height: 24, borderRadius: "50%", background: isSel(a) ? G : "rgba(8,8,8,0.55)", backdropFilter: "blur(6px)", border: `1.5px solid ${isSel(a) ? G : "rgba(255,255,255,0.55)"}`, display: "flex", alignItems: "center", justifyContent: "center", color: "#080808" }}>
+                {isSel(a) && <Check size={15} />}
+              </div>
+              {/* Actions (…) — n'affecte pas la sélection */}
+              <button onClick={e => { e.stopPropagation(); setMenuAsset(a) }} aria-label="Actions du média"
                 style={{ position: "absolute", top: 6, right: 6, width: 34, height: 34, borderRadius: 9, background: "rgba(8,8,8,0.6)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", cursor: "pointer" }}>
                 <MoreHorizontal size={17} />
               </button>
@@ -124,10 +159,14 @@ export default function AssetsPage() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {assets.map(a => (
-            <div key={a.url} style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 11, padding: "11px 14px" }}>
+            <div key={a.url} onClick={() => toggleSel(a)} title="Cliquez pour sélectionner"
+              style={{ display: "flex", alignItems: "center", gap: 11, background: isSel(a) ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.02)", border: `1px solid ${isSel(a) ? G + "66" : "rgba(255,255,255,0.07)"}`, borderRadius: 11, padding: "11px 14px", cursor: "pointer" }}>
+              <div aria-hidden style={{ width: 22, height: 22, flexShrink: 0, borderRadius: "50%", background: isSel(a) ? G : "transparent", border: `1.5px solid ${isSel(a) ? G : "rgba(255,255,255,0.35)"}`, display: "flex", alignItems: "center", justifyContent: "center", color: "#080808" }}>
+                {isSel(a) && <Check size={14} />}
+              </div>
               <FileText size={17} color={G} style={{ flexShrink: 0 }} />
               <span style={{ flex: 1, color: "#F5F0E8", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pretty(a.name)}</span>
-              <button onClick={() => setMenuAsset(a)} aria-label="Actions du fichier" style={{ ...rowBtn, width: 38, height: 38 }}><MoreHorizontal size={16} /></button>
+              <button onClick={e => { e.stopPropagation(); setMenuAsset(a) }} aria-label="Actions du fichier" style={{ ...rowBtn, width: 38, height: 38 }}><MoreHorizontal size={16} /></button>
             </div>
           ))}
         </div>
@@ -157,3 +196,4 @@ export default function AssetsPage() {
 }
 
 const rowBtn: any = { width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: MUTED, flexShrink: 0, textDecoration: "none" }
+const selBtn: any = { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#F5F0E8", borderRadius: 8, padding: "7px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }

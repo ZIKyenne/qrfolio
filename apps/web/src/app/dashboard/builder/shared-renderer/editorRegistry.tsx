@@ -32,6 +32,7 @@ import { EditorLineup } from "./blocks/lineup/EditorLineup"
 import { EditorReassurance } from "./blocks/reassurance/EditorReassurance"
 import { EditorTimeline } from "./blocks/timeline/EditorTimeline"
 import { EditorMenuSection } from "./blocks/menu_section/EditorMenuSection"
+import { EditorMenuTabs } from "./blocks/menu_tabs/EditorMenuTabs"
 import { EditorServicesList } from "./blocks/services_list/EditorServicesList"
 import { EditorPromoBanner } from "./blocks/promo_banner/EditorPromoBanner"
 import { EditorGiftCard } from "./blocks/gift_card/EditorGiftCard"
@@ -85,6 +86,7 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   reassurance: EditorReassurance,
   timeline: EditorTimeline,
   menu_section: EditorMenuSection,
+  menu_tabs: EditorMenuTabs,
   services_list: EditorServicesList,
   promo_banner: EditorPromoBanner,
   gift_card: EditorGiftCard,

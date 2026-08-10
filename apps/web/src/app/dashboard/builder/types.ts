@@ -3536,6 +3536,22 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "item3_desc", label: "Plat 3 — Description", type: "text", placeholder: "Avocat, citron" },
     ],
   },
+  menu_tabs: {
+    label: "Grande carte (onglets)", description: "Gros menu multi-sections en onglets",
+    icon: "🍽️", color: "#EF4444", category: "commerce",
+    defaultContent: {
+      title: "", text_size: "Normal", row_density: "Normal",
+      sec1_title: "Cocktails", sec1_items: "Mojito;10€;Havana, menthe, citron vert\nPina Colada;10€;Ananas, coco",
+      sec2_title: "Soft", sec2_items: "Coca;4€;\nPerrier;3€;",
+    },
+    fields: [
+      { key: "title", label: "Titre (optionnel)", type: "text", placeholder: "Notre carte" },
+      { key: "text_size", label: "Taille du texte", type: "select", options: ["Compact", "Normal", "Grand"] },
+      { key: "row_density", label: "Densité", type: "select", options: ["Serré", "Normal", "Aéré"] },
+      { key: "sec1_title", label: "Section 1 — Nom", type: "text", placeholder: "Cocktails" },
+      { key: "sec1_items", label: "Section 1 — Produits", type: "textarea", placeholder: "Un produit par ligne : Nom;Prix;Description" },
+    ],
+  },
   services_list: {
     label: "Liste de services", description: "3 services avec icones",
     icon: "⚙️", color: "#7B61FF", category: "commerce",

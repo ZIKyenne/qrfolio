@@ -31,15 +31,62 @@ Exemple de sortie attendue :
 Margherita;11€;Tomate, mozzarella, basilic
 Tiramisu;6,50€;Fait maison`
 
+  // Bouton d'aide + pop-up « remplir le menu avec une photo (IA) ». Réutilisable (menu simple ET
+  // grande carte à onglets) : l'utilisateur copie le prompt, l'envoie à ChatGPT avec une photo, puis
+  // colle la réponse dans le champ d'import.
+  function MenuAiHelp() {
+    const [helpOpen, setHelpOpen] = useState(false)
+    const [copied, setCopied] = useState(false)
+    const copyPrompt = async () => { try { await navigator.clipboard.writeText(MENU_AI_PROMPT); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* noop */ } }
+    return (
+      <>
+        <button type="button" onClick={() => setHelpOpen(true)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, alignSelf: "flex-start", padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.08)", color: G, fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+          <Sparkles size={13} /> Pas de tableur ? Photographiez votre carte (IA)
+        </button>
+        {helpOpen && (
+          <div onClick={() => setHelpOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 520, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, maxHeight: "88vh", overflowY: "auto", background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 18, padding: 18, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <span style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(201,168,76,0.14)", border: "1px solid rgba(201,168,76,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: G }}><Sparkles size={16} /></span>
+                <p style={{ flex: 1, color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Remplir le menu avec une photo (IA)</p>
+                <button onClick={() => setHelpOpen(false)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 28, height: 28 }}><X size={14} /></button>
+              </div>
+              <ol style={{ color: "#F5F0E8", fontSize: 12.5, lineHeight: 1.6, margin: "0 0 12px", paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
+                <li>Copiez le prompt ci-dessous.</li>
+                <li>Ouvrez ChatGPT, collez le prompt et <b>ajoutez une photo</b> de votre carte.</li>
+                <li>Copiez la réponse de ChatGPT.</li>
+                <li>Collez-la dans le champ d'import de la section, puis validez.</li>
+              </ol>
+              <div style={{ position: "relative", background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+                <pre style={{ color: "#D8D2C4", fontSize: 11, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap", fontFamily: "monospace", maxHeight: 220, overflowY: "auto" }}>{MENU_AI_PROMPT}</pre>
+              </div>
+              <div style={{ display: "flex", gap: 9 }}>
+                <button type="button" onClick={copyPrompt}
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "none", background: copied ? "rgba(57,255,143,0.15)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 75%,#000))", color: copied ? "var(--success)" : "#080808", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                  {copied ? <><Check size={15} /> Copié !</> : <><Copy size={15} /> Copier le prompt</>}
+                </button>
+                <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#F5F0E8", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+                  Ouvrir ChatGPT ↗
+                </a>
+              </div>
+              <p style={{ color: MUTED, fontSize: 10.5, margin: "11px 0 0", lineHeight: 1.5 }}>
+                Astuce : pour un menu à plusieurs catégories, demandez une liste par catégorie et collez chacune dans sa section.
+              </p>
+            </div>
+          </div>
+        )}
+      </>
+    )
+  }
+
   // Import d'un menu depuis un tableur (copier-coller). Écrit item{i}_name/price/desc et nettoie les
   // items au-delà. Rendu au-dessus du répéteur de plats. Le parseur est pur + testé (menuImport.ts).
   function MenuImport({ block, onChange }: { block: Block; onChange: (key: string, val: string) => void }) {
     const [open, setOpen] = useState(false)
     const [text, setText] = useState("")
     const [msg, setMsg] = useState("")
-    const [helpOpen, setHelpOpen] = useState(false)
-    const [copied, setCopied] = useState(false)
-    const copyPrompt = async () => { try { await navigator.clipboard.writeText(MENU_AI_PROMPT); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* noop */ } }
     const MAX = 50
     const doImport = () => {
       const items = parseMenuPaste(text, MAX)
@@ -74,10 +121,7 @@ Tiramisu;6,50€;Fait maison`
               Copiez vos plats depuis Excel, Google Sheets ou Numbers et collez-les ci-dessous. Une ligne
               par plat, colonnes dans l'ordre : <b>Nom</b>, <b>Prix</b>, <b>Description</b>. Idéal pour les gros menus.
             </p>
-            <button type="button" onClick={() => setHelpOpen(true)}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, alignSelf: "flex-start", padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.08)", color: G, fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
-              <Sparkles size={13} /> Pas de tableur ? Photographiez votre carte (IA)
-            </button>
+            <MenuAiHelp />
             <textarea value={text} onChange={e => { setText(e.target.value); setMsg("") }} rows={6}
               placeholder={"Margherita\t11€\tTomate, mozzarella\nRegina\t13€\tJambon, champignons"}
               style={{ ...inputStyle, fontFamily: "monospace", whiteSpace: "pre", resize: "vertical" }} />
@@ -87,39 +131,6 @@ Tiramisu;6,50€;Fait maison`
                 <Plus size={15} /> Importer les plats
               </button>
               {msg && <span style={{ color: msg.includes("✓") ? "var(--success)" : "var(--warning)", fontSize: 11.5, fontWeight: 600 }}>{msg}</span>}
-            </div>
-          </div>
-        )}
-        {helpOpen && (
-          <div onClick={() => setHelpOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 520, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-            <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, maxHeight: "88vh", overflowY: "auto", background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 18, padding: 18, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <span style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(201,168,76,0.14)", border: "1px solid rgba(201,168,76,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: G }}><Sparkles size={16} /></span>
-                <p style={{ flex: 1, color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Remplir le menu avec une photo (IA)</p>
-                <button onClick={() => setHelpOpen(false)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 28, height: 28 }}><X size={14} /></button>
-              </div>
-              <ol style={{ color: "#F5F0E8", fontSize: 12.5, lineHeight: 1.6, margin: "0 0 12px", paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
-                <li>Copiez le prompt ci-dessous.</li>
-                <li>Ouvrez ChatGPT, collez le prompt et <b>ajoutez une photo</b> de votre carte.</li>
-                <li>Copiez la réponse de ChatGPT.</li>
-                <li>Collez-la dans « Importer depuis un tableur » puis cliquez <b>Importer les plats</b>.</li>
-              </ol>
-              <div style={{ position: "relative", background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-                <pre style={{ color: "#D8D2C4", fontSize: 11, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap", fontFamily: "monospace", maxHeight: 220, overflowY: "auto" }}>{MENU_AI_PROMPT}</pre>
-              </div>
-              <div style={{ display: "flex", gap: 9 }}>
-                <button type="button" onClick={copyPrompt}
-                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "none", background: copied ? "rgba(57,255,143,0.15)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 75%,#000))", color: copied ? "var(--success)" : "#080808", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                  {copied ? <><Check size={15} /> Copié !</> : <><Copy size={15} /> Copier le prompt</>}
-                </button>
-                <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer"
-                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#F5F0E8", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-                  Ouvrir ChatGPT ↗
-                </a>
-              </div>
-              <p style={{ color: MUTED, fontSize: 10.5, margin: "11px 0 0", lineHeight: 1.5 }}>
-                Astuce : pour un menu à plusieurs catégories (Entrées, Plats, Desserts…), demandez une liste par catégorie et importez-les dans des blocs Menu séparés.
-              </p>
             </div>
           </div>
         )}
@@ -313,7 +324,7 @@ Tiramisu;6,50€;Fait maison`
   function RepeaterEditor({ block, onChange, prefix, noun, fields, addLabel, topFields = [], bottomFields = [] }: {
     block: Block; onChange: (key: string, val: string) => void
     prefix: string; noun: string; addLabel: string
-    fields: { suffix: string; kind?: "text" | "url" | "image" | "file"; placeholder?: string; options?: string[] }[]
+    fields: { suffix: string; kind?: "text" | "url" | "image" | "file" | "textarea"; placeholder?: string; options?: string[] }[]
     topFields?: { key: string; label: string; placeholder?: string; options?: string[] }[]
     bottomFields?: { key: string; label: string; placeholder?: string; options?: string[] }[]
   }) {
@@ -363,6 +374,8 @@ Tiramisu;6,50€;Fait maison`
                   ? <ImageUpload key={f.suffix} value={it[f.suffix]} onChange={url => onChange(key(i, f.suffix), url)} />
                   : f.kind === "file"
                   ? <FileUpload key={f.suffix} value={it[f.suffix]} onChange={url => onChange(key(i, f.suffix), url)} />
+                  : f.kind === "textarea"
+                  ? <textarea key={f.suffix} value={it[f.suffix]} onChange={e => onChange(key(i, f.suffix), e.target.value)} placeholder={f.placeholder} rows={5} style={{ ...inputStyle, fontFamily: "monospace", whiteSpace: "pre", resize: "vertical" }} />
                   : f.options
                   ? <div key={f.suffix}>{f.placeholder && <label style={{ color: MUTED, fontSize: 10, display: "block", marginBottom: 4, fontWeight: 500 }}>{f.placeholder}</label>}<Segmented value={it[f.suffix]} options={f.options} onChange={v => onChange(key(i, f.suffix), v)} /></div>
                   : <input key={f.suffix} type={f.kind === "url" ? "url" : "text"} value={it[f.suffix]} onChange={e => onChange(key(i, f.suffix), e.target.value)} placeholder={f.placeholder} style={inputStyle} onFocus={foc(true)} onBlur={foc(false)} />
@@ -416,6 +429,30 @@ Tiramisu;6,50€;Fait maison`
           <RepeaterEditor block={block} onChange={onChange} prefix="item" noun="Plat" addLabel="Ajouter un plat"
             topFields={[{ key: "category", label: "Nom de la section", placeholder: "Entrées, Plats, Desserts…" }, { key: "menu_display", label: "Affichage", options: ["Liste", "Grande carte dépliable"] }]}
             fields={[{ suffix: "name", placeholder: "Nom du plat" }, { suffix: "price", placeholder: "12€" }, { suffix: "desc", placeholder: "Description (optionnel)" }]} />
+        </div>
+      )
+    }
+
+    if (block.type === "menu_tabs") {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ border: "1px solid rgba(201,168,76,0.25)", borderRadius: 12, background: "rgba(201,168,76,0.04)", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+            <p style={{ color: MUTED, fontSize: 11, margin: 0, lineHeight: 1.5 }}>
+              Une <b>section = un onglet</b>. Collez les produits d'une section (depuis un tableur ou ChatGPT),
+              un par ligne : <b>Nom;Prix;Description</b>. Idéal pour les gros menus (150+ produits).
+            </p>
+            <MenuAiHelp />
+          </div>
+          <RepeaterEditor block={block} onChange={onChange} prefix="sec" noun="Section" addLabel="Ajouter une section"
+            topFields={[
+              { key: "title", label: "Titre général (optionnel)", placeholder: "Notre carte" },
+              { key: "text_size", label: "Taille du texte", options: ["Compact", "Normal", "Grand"] },
+              { key: "row_density", label: "Densité", options: ["Serré", "Normal", "Aéré"] },
+            ]}
+            fields={[
+              { suffix: "title", placeholder: "Nom de la section (ex : Cocktails)" },
+              { suffix: "items", kind: "textarea", placeholder: "Un produit par ligne :\nMojito;10€;Havana, menthe, citron\nPina Colada;10€;Ananas, coco" },
+            ]} />
         </div>
       )
     }

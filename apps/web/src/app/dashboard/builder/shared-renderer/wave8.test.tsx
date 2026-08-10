@@ -134,7 +134,7 @@ describe("wave8 — contrat image + CTA + parité", () => {
 
 describe("wave8 — méta : 51 blocs shared, aucun bloc exclu activé", () => {
   it("exactement 51 blocs shared actifs", () => {
-    expect(SHARED_RENDERER_BLOCKS.size).toBe(51)
+    expect(SHARED_RENDERER_BLOCKS.size).toBe(52)
   })
   it("les 6 nouveaux sont actifs", () => {
     for (const t of ["video", "google_maps_embed", "album_block", "discography", "podcast_links", "product_catalog"]) {

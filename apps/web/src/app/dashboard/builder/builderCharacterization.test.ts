@@ -7,6 +7,7 @@ import { pricingCtaModel } from "./pricingCta"
 import { contactFormFields } from "@/lib/leadForms"
 import { BLOCK_FIXTURES } from "./blockFixtures"
 import { KNOWN_PUBLIC_NULL_BLOCKS, CRITICAL_CONTRACTS } from "./blockContracts"
+import { SHARED_RENDERER_BLOCKS } from "./shared-renderer/architecture"
 
 // Filet de sécurité AVANT l'unification des renderers. Tests de caractérisation :
 // on fige le comportement OBSERVABLE actuel (pas l'implémentation).
@@ -43,12 +44,12 @@ describe("inventaire des blocs", () => {
 
 // ── Parité de PRÉSENCE (case présent des deux côtés) ────────────────────────
 describe("parité de présence éditeur/public", () => {
-  it("chaque bloc a un case public", () => {
-    const missing = TYPES.filter(t => !publicCases.has(t))
+  it("chaque bloc a un case public (inline ou shared-renderer)", () => {
+    const missing = TYPES.filter(t => !publicCases.has(t) && !SHARED_RENDERER_BLOCKS.has(t))
     expect(missing, `sans rendu public: ${missing.join(", ")}`).toEqual([])
   })
-  it("chaque bloc a un case éditeur", () => {
-    const missing = TYPES.filter(t => !editorCases.has(t))
+  it("chaque bloc a un case éditeur (inline ou shared-renderer)", () => {
+    const missing = TYPES.filter(t => !editorCases.has(t) && !SHARED_RENDERER_BLOCKS.has(t))
     expect(missing, `sans rendu éditeur: ${missing.join(", ")}`).toEqual([])
   })
 })
@@ -150,8 +151,8 @@ describe("limites de répéteurs (parité éditeur/public)", () => {
 // ── Synthèse de couverture (rapport lisible, assertions honnêtes) ────────────
 describe("synthèse de couverture", () => {
   it("rapport", () => {
-    const withPublic = TYPES.filter(t => publicCases.has(t)).length
-    const withEditor = TYPES.filter(t => editorCases.has(t)).length
+    const withPublic = TYPES.filter(t => publicCases.has(t) || SHARED_RENDERER_BLOCKS.has(t)).length
+    const withEditor = TYPES.filter(t => editorCases.has(t) || SHARED_RENDERER_BLOCKS.has(t)).length
     const divergences = KNOWN_PUBLIC_NULL_BLOCKS.length
     const contracts = CRITICAL_CONTRACTS.length
     // eslint-disable-next-line no-console

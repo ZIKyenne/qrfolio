@@ -32,6 +32,7 @@ import { PublicLineup } from "./blocks/lineup/PublicLineup"
 import { PublicReassurance } from "./blocks/reassurance/PublicReassurance"
 import { PublicTimeline } from "./blocks/timeline/PublicTimeline"
 import { PublicMenuSection } from "./blocks/menu_section/PublicMenuSection"
+import { PublicMenuTabs } from "./blocks/menu_tabs/PublicMenuTabs"
 import { PublicServicesList } from "./blocks/services_list/PublicServicesList"
 import { PublicPromoBanner } from "./blocks/promo_banner/PublicPromoBanner"
 import { PublicGiftCard } from "./blocks/gift_card/PublicGiftCard"
@@ -85,6 +86,7 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   reassurance: PublicReassurance,
   timeline: PublicTimeline,
   menu_section: PublicMenuSection,
+  menu_tabs: PublicMenuTabs,
   services_list: PublicServicesList,
   promo_banner: PublicPromoBanner,
   gift_card: PublicGiftCard,

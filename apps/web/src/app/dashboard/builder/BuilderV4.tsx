@@ -147,7 +147,7 @@
           .then(({ data: p }) => setUserPlan((p as any)?.plan ?? null))
       })
     }, [])
-    const [rightTab, setRightTab] = useState<"preview"|"edit"|"theme">("preview")
+    const [rightTab, setRightTab] = useState<"preview"|"edit"|"theme">("edit")
     const [editTab, setEditTab] = useState<"contenu"|"style"|"layout"|"avance">("contenu")
     // Mode Simple (defaut) = un seul contexte "Contenu" (audit #10/#14 "montrer moins"). Expert = 4 onglets.
     // Defaut false = ce que rend le SSR ; on lit localStorage APRES montage (pas de mismatch d'hydratation),
@@ -314,7 +314,7 @@
         if (ctrl && (e.key === "p" || e.key === "P") && !isEditing(e)) {
           e.preventDefault()
           setRightCollapsed(false)
-          setRightTab("preview")
+          setRightTab("edit")
           return
         }
         // Ctrl+D — Dupliquer la sélection
@@ -796,7 +796,7 @@
       setBlocksRaw(next)
       setTheme(nextTheme)
       undoRedo.push({ blocks: next, theme: nextTheme, name: nameRef.current })
-      setSelectedId(null); setRightTab("preview"); setShowTemplates(false)
+      setSelectedId(null); setRightTab("edit"); setShowTemplates(false)
       if (isMobile) setMobileTab("canvas")   // mobile : on montre la page fraîchement générée
     }
 
@@ -847,7 +847,7 @@
     function deleteBlock(id: string) {
       if (blocks.find(b => b.id === id)?.locked) return
       setBlocks(p => p.filter(b => b.id !== id))
-      if (selectedId === id) { setSelectedId(null); setRightTab("preview") }
+      if (selectedId === id) { setSelectedId(null); setRightTab("edit") }
     }
 
     function resetBlock(id: string) {
@@ -2141,20 +2141,20 @@
               {rightCollapsed
                 ? /* Mode réduit: onglets verticaux */
                   <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: 0 }}>
-                    {(["preview","edit","theme"] as const).map(tab => (
+                    {(["edit","theme"] as const).map(tab => (
                       <button key={tab} onClick={() => { setRightTab(tab); setRightCollapsed(false) }}
                         style={{ padding: "14px 4px", background: "transparent", border: "none", borderLeft: `2px solid ${rightTab===tab ? G : "transparent"}`, color: rightTab===tab ? G : MUTED, fontSize: 9, fontWeight: rightTab===tab ? 700 : 400, cursor: "pointer", writingMode: "vertical-rl" as const, textOrientation: "mixed" as const, letterSpacing: 1 }}>
-                        {tab==="preview" ? "▶" : tab==="edit" ? "✏" : "🎨"}
+                        {tab==="edit" ? "✏" : "🎨"}
                       </button>
                     ))}
                     <button onClick={toggleRight} style={{ padding: "12px 4px", background: "none", border: "none", color: MUTED, cursor: "pointer", fontSize: 14, marginTop: "auto" }}>›</button>
                   </div>
                 : /* Mode normal: onglets horizontaux */
                   <>
-                    {(["preview","edit","theme"] as const).map(tab => (
+                    {(["edit","theme"] as const).map(tab => (
                       <button key={tab} onClick={() => setRightTab(tab)}
                         style={{ flex: 1, padding: "11px 4px", background: "transparent", border: "none", borderBottom: `2px solid ${rightTab===tab ? G : "transparent"}`, color: rightTab===tab ? G : MUTED, fontSize: 12, fontWeight: rightTab===tab ? 700 : 400, cursor: "pointer", transition: "all 0.15s" }}>
-                        {tab==="preview" ? "Aperçu" : tab==="edit" ? "Éditer" : "Thème"}
+                        {tab==="edit" ? "Éditer" : "Thème"}
                       </button>
                     ))}
                     <button onClick={toggleRight} title="Réduire" style={{ padding: "11px 8px", background: "none", border: "none", color: MUTED, cursor: "pointer", fontSize: 12 }}>‹</button>
@@ -2162,100 +2162,6 @@
               }
             </div>
 
-            {!rightCollapsed && !focusMode && rightTab==="preview" && (
-              <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: "auto", padding: "14px 10px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ fontSize: 12, color: "#F5F0E8", fontWeight: 600 }}>Aperçu live</span>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", animation: "mo-pulse 2s infinite" }} />
-                  </div>
-                  {pageSlug && <a href={`/${pageSlug}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: "5px 10px", color: G, textDecoration: "none", fontSize: 10, fontWeight: 700 }}><ExternalLink size={10} /> Voir en direct</a>}
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <div style={{ position: "relative", width: isMobile ? 302 : 220 }}>
-                    <div style={{ width: isMobile ? 302 : 220, background: "linear-gradient(145deg,#2A2A2A,#1A1A1A)", borderRadius: isMobile ? 40 : 34, padding: "10px 8px", boxShadow: "0 0 0 1px #3A3A3A, 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)", position: "relative" }}>
-                      <div style={{ position: "absolute", left: -3, top: 68, width: 3, height: 24, background: "#2A2A2A", borderRadius: "2px 0 0 2px" }} />
-                      <div style={{ position: "absolute", left: -3, top: 100, width: 3, height: 38, background: "#2A2A2A", borderRadius: "2px 0 0 2px" }} />
-                      <div style={{ position: "absolute", left: -3, top: 146, width: 3, height: 38, background: "#2A2A2A", borderRadius: "2px 0 0 2px" }} />
-                      <div style={{ position: "absolute", right: -3, top: 96, width: 3, height: 58, background: "#2A2A2A", borderRadius: "0 2px 2px 0" }} />
-
-                      <div style={{ borderRadius: 26, overflow: "hidden", ...bgStyle(), position: "relative" }}>
-                        {/* Overlays sync canvas */}
-                        {(theme as any).effect_noise && <div style={{ position:"absolute",inset:0,zIndex:2,pointerEvents:"none",opacity:(theme as any).noise_opacity?((theme as any).noise_opacity/100):0.06,mixBlendMode:"overlay" as const,backgroundImage:NOISE_SVG_URL,backgroundRepeat:"repeat",backgroundSize:"128px 128px",borderRadius:26 }} />}
-                        {(theme as any).effect_glow && <div style={{ position:"absolute",inset:0,zIndex:2,pointerEvents:"none",background:`radial-gradient(ellipse at 50% 0%, ${(theme as any).glow_color||"#C9A84C"}${Math.round(((theme as any).glow_intensity||40)/100*180).toString(16).padStart(2,"0")}, transparent ${(theme as any).glow_size||300}px)`,borderRadius:26 }} />}
-                        {(theme as any).effect_overlay && <div style={{ position:"absolute",inset:0,zIndex:2,pointerEvents:"none",background:(theme as any).overlay_color||"#000000",opacity:((theme as any).overlay_opacity||30)/100,borderRadius:26 }} />}
-                        {(theme as any).effect_vignette && <div style={{ position:"absolute",inset:0,zIndex:2,pointerEvents:"none",background:`radial-gradient(ellipse at 50% 50%, transparent ${Math.max(10,100-((theme as any).vignette_intensity||40))}%, rgba(0,0,0,${((theme as any).vignette_intensity||40)/100}) 100%)`,borderRadius:26 }} />}
-                        <div style={{ background: dayMode ? "#FAFAFA" : (theme.bgGradient||theme.bg), padding: "9px 0 3px", display: "flex", justifyContent: "center", position: "relative" }}>
-                          <div style={{ width: 78, height: 20, background: "#000", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#111", border: "1px solid #222" }} />
-                            <div style={{ width: 36, height: 7, borderRadius: 3.5, background: "#111" }} />
-                          </div>
-                          <div style={{ position: "absolute", right: 12, top: 5, display: "flex", gap: 3, alignItems: "center" }}>
-                            <span style={{ color: dayMode ? "#333" : "#F5F0E8", fontSize: 6, fontWeight: 600, opacity: 0.6 }}>9:41</span>
-                            <div style={{ width: 10, height: 5, border: `1px solid ${dayMode?"#333":"#F5F0E8"}`, borderRadius: 1.5, opacity: 0.5 }}><div style={{ width: "75%", height: "100%", background: "var(--success)", borderRadius: 1 }} /></div>
-                          </div>
-                        </div>
-
-                        <div style={{ maxHeight: isMobile ? 560 : 420, overflowY: "auto", ...bgStyle() }} className="iphone-scroll">
-                          {blocks.filter(b => b.visible).length===0
-                            ? <div style={{ padding: "40px 14px", textAlign: "center", ...bgStyle() }}><p style={{ fontSize: 24, margin: "0 0 6px" }}>✦</p><p style={{ color: MUTED, fontSize: 10 }}>Ta page apparaîtra ici</p></div>
-                            : blocks.filter(b => b.visible && !b.draft).map(b => (
-                              <div key={b.id} onClick={() => { setSelectedId(b.id); setRightTab("edit") }} style={{ cursor: "pointer", ...blockDecoration(b.content, theme).style }}
-                                onMouseEnter={e => e.currentTarget.style.opacity="0.85"}
-                                onMouseLeave={e => e.currentTarget.style.opacity="1"}>
-                                <PreviewBoundary><MemoBlockPreview block={b} theme={theme} dayMode={dayMode} /></PreviewBoundary>
-                              </div>
-                            ))}
-                          <div style={{ padding: "8px", textAlign: "center", ...bgStyle() }}>
-                            <p style={{ color: MUTED, fontSize: 7, margin: 0, opacity: 0.4 }}>Créé avec QRowg</p>
-                          </div>
-                        </div>
-
-                        <div style={{ ...bgStyle(), padding: "5px 0 7px", display: "flex", justifyContent: "center" }}>
-                          <div style={{ width: 72, height: 3.5, background: dayMode ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)", borderRadius: 2 }} />
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 34, background: "linear-gradient(135deg,rgba(255,255,255,0.04) 0%,transparent 40%)", pointerEvents: "none" }} />
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 22, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                    <p style={{ color: MUTED, fontSize: 10, margin: 0, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600 }}>QR Code</p>
-                    {qrTarget
-                      ? <div style={{ background: "#FFFFFF", border: "3px solid rgba(201,168,76,0.3)", borderRadius: 14, padding: 9, boxShadow: "0 8px 30px rgba(0,0,0,0.5)" }}>
-                          <QRCanvas value={qrTarget} size={130} />
-                        </div>
-                      : <div style={{ background: "#FFFFFF", border: "3px solid rgba(201,168,76,0.2)", borderRadius: 14, width: 130, height: 130, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 30px rgba(0,0,0,0.4)" }}>
-                          <QrCode size={48} color="#C9A84C" />
-                        </div>}
-                    <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "3px 10px" }}>
-                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: pageStatus==="published" ? "var(--success)" : MUTED, boxShadow: pageStatus==="published" ? "0 0 5px var(--success)70" : "none" }} />
-                      <span style={{ color: MUTED, fontSize: 9, fontFamily: "monospace" }}>{qrShortCode ? `/q/${qrShortCode}` : "en attente"}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, width: "100%" }}>
-                    <div style={{ background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.18)", borderRadius: 11, padding: "12px 10px", textAlign: "center" }}>
-                      <p style={{ color: G, fontSize: 24, fontWeight: 700, margin: "0 0 2px", fontFamily: "Fraunces, serif", lineHeight: 1 }}>{pageStats.views.toLocaleString("fr-FR")}</p>
-                      <p style={{ color: MUTED, fontSize: 9, margin: 0 }}>👁 Vues</p>
-                    </div>
-                    <div style={{ background: "rgba(57,255,143,0.06)", border: "1px solid rgba(57,255,143,0.18)", borderRadius: 11, padding: "12px 10px", textAlign: "center" }}>
-                      <p style={{ color: "var(--success)", fontSize: 24, fontWeight: 700, margin: "0 0 2px", fontFamily: "Fraunces, serif", lineHeight: 1 }}>{pageStats.scans.toLocaleString("fr-FR")}</p>
-                      <p style={{ color: MUTED, fontSize: 9, margin: 0 }}>📱 Scans</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "7px 14px", background: pageStatus==="published" ? "rgba(57,255,143,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${pageStatus==="published" ? "rgba(57,255,143,0.2)" : "rgba(255,255,255,0.07)"}`, borderRadius: 20 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: pageStatus==="published" ? "var(--success)" : MUTED, boxShadow: pageStatus==="published" ? "0 0 5px var(--success)50" : "none" }} />
-                    <span style={{ color: pageStatus==="published" ? "var(--success)" : MUTED, fontSize: 10, fontWeight: 600 }}>{pageStatus==="published" ? "En ligne" : "Brouillon"}</span>
-                    <span style={{ color: MUTED, fontSize: 9 }}>• {blocks.filter(b=>b.visible).length} bloc{blocks.filter(b=>b.visible).length!==1?"s":""}</span>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {!rightCollapsed && (focusMode || rightTab==="edit") && (
               <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflowY: "auto", padding: 14, position: "relative", borderRight: focusMode ? "1px solid rgba(255,255,255,0.08)" : undefined }}>

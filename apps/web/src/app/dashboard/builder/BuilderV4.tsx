@@ -444,7 +444,6 @@
     // C06 — activation progressive : valeur ENV au 1er rendu (SSR-safe), override canary après montage.
     const BUILDER_REDESIGN = useBuilderRedesign()
     const [blockMenu, setBlockMenu] = useState<string | null>(null) // #10 : actions secondaires d'un bloc en bottom sheet
-    const [scoreOpen, setScoreOpen] = useState(false) // #16 : score de profil replie en pastille par defaut
     const [blockSearchFocus, setBlockSearchFocus] = useState(false) // #13 : recherche de bloc focus -> on masque la barre du bas pour degager les resultats
     const [preview, setPreview] = useState(false) // #02 : mode Apercu plein ecran (masque tout le chrome d'edition)
     const enterPreview = () => { setPreview(true); setMobileTab("canvas"); setSelectedId(null) }
@@ -2163,52 +2162,6 @@
                   </div>
                   {pageSlug && <a href={`/${pageSlug}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: "5px 10px", color: G, textDecoration: "none", fontSize: 10, fontWeight: 700 }}><ExternalLink size={10} /> Voir en direct</a>}
                 </div>
-
-                {/* Score de profil (lecture seule, non-IA) — complétude + suggestions cliquables */}
-                {(() => {
-                  const pb = blocks.find(b => b.type === "profile")
-                  const selPb = () => { if (pb) { setSelectedId(pb.id); setRightTab("edit") } else addBlock("profile") }
-                  const checks: { label: string; ok: boolean; act: () => void }[] = [
-                    { label: "Photo de profil", ok: !!pb?.content.avatar, act: selPb },
-                    { label: "Accroche", ok: !!(pb?.content.tagline || "").trim(), act: selPb },
-                    { label: "Bio", ok: blocks.some(b => (b.type === "bio" || b.type === "about") && (b.content.text || "").trim()), act: () => addBlock("bio") },
-                    { label: "Badge de confiance", ok: !!(pb?.content.badge || "").trim() || blocks.some(b => ["availability", "certifications", "business_stats", "google_reviews_block"].includes(b.type)), act: () => addBlock("availability") },
-                    { label: "Bouton d'action", ok: blocks.some(b => b.type === "cta_button"), act: () => addBlock("cta_button") },
-                    { label: "Réseaux sociaux", ok: blocks.some(b => b.type === "social_links"), act: () => addBlock("social_links") },
-                    { label: "Localisation", ok: blocks.some(b => b.type === "google_maps"), act: () => addBlock("google_maps") },
-                  ]
-                  const score = Math.round((checks.filter(c => c.ok).length / checks.length) * 100)
-                  const col = score >= 80 ? "var(--success)" : score >= 50 ? "#F59E0B" : "var(--danger)"
-                  const missing = checks.filter(c => !c.ok).slice(0, 3)
-                  return (
-                    <div style={{ marginBottom: 14, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                      {/* Pastille compacte (repli par defaut) — ne prend plus l'aperçu en otage (#16) */}
-                      <button type="button" onClick={() => setScoreOpen(o => !o)}
-                        style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: "none", border: "none", cursor: missing.length ? "pointer" : "default", textAlign: "left" as const }}>
-                        <span style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: col + "1e", border: `1.5px solid ${col}66`, display: "flex", alignItems: "center", justifyContent: "center", color: col, fontSize: 11, fontWeight: 800 }}>{score}%</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ color: "#F5F0E8", fontSize: 12.5, fontWeight: 700, margin: 0 }}>Qualité du profil</p>
-                          <p style={{ color: MUTED, fontSize: 10.5, margin: 0 }}>{missing.length ? `${missing.length} amélioration${missing.length > 1 ? "s" : ""} possible${missing.length > 1 ? "s" : ""}` : "Profil complet 🎉"}</p>
-                        </div>
-                        {missing.length > 0 && <ChevronDown size={16} color={MUTED} style={{ transform: scoreOpen ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }} />}
-                      </button>
-                      {scoreOpen && missing.length > 0 && (
-                        <div style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 5 }}>
-                          <div style={{ height: 6, borderRadius: 4, background: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 3 }}>
-                            <div style={{ height: "100%", width: `${Math.max(4, score)}%`, borderRadius: 4, background: col, transition: "width .5s var(--mo-ease-standard)" }} />
-                          </div>
-                          {missing.map(c => (
-                            <button key={c.label} type="button" onClick={c.act}
-                              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, width: "100%", padding: "9px 10px", borderRadius: 8, background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.18)", color: "#E8E2D6", fontSize: 11.5, cursor: "pointer", textAlign: "left" as const }}>
-                              <span>Ajoutez : <strong style={{ color: G }}>{c.label}</strong></span>
-                              <span style={{ color: G, flexShrink: 0, fontSize: 14, lineHeight: 1 }}>+</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })()}
 
                 <div style={{ display: "flex", justifyContent: "center" }}>
                   <div style={{ position: "relative", width: isMobile ? 302 : 220 }}>

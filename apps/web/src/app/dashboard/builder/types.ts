@@ -3552,6 +3552,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     },
     fields: [
       { key: "title", label: "Titre (optionnel)", type: "text", placeholder: "Notre carte" },
+      { key: "menu_collapsible", label: "Repliable (fermé par défaut)", type: "select", options: ["Non", "Oui"] },
       { key: "text_size", label: "Taille du texte", type: "select", options: ["Compact", "Normal", "Grand"] },
       { key: "row_density", label: "Densité", type: "select", options: ["Serré", "Normal", "Aéré"] },
       { key: "item_columns", label: "Colonnes", type: "select", options: ["1 colonne", "2 colonnes"] },

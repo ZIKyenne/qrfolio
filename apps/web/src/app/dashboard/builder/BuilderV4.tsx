@@ -2396,6 +2396,20 @@
                                 <EditPanel key={selectedBlock.id+"-l"} block={selectedBlock} onChange={set} only="layout" />
                                 {sel("__width", "Largeur du bloc", BLOCK_WIDTH_OPTIONS, "Normale")}
                                 {sel("__space", "Espacement vertical", BLOCK_SPACE_OPTIONS, "Défaut")}
+                                {/* Taille du texte — curseur (met à l'échelle le contenu du bloc). 100 % = normal. */}
+                                <div>
+                                  <label style={labelStyle}>Taille du texte</label>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <input type="range" min={80} max={140} step={5}
+                                      value={Number(bc.__text_scale) || 100}
+                                      onChange={e => set("__text_scale", e.target.value === "100" ? "" : e.target.value)}
+                                      aria-label="Taille du texte" style={{ flex: 1, accentColor: G }} />
+                                    <span style={{ minWidth: 42, textAlign: "right", color: "#F5F0E8", fontSize: 12, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{Number(bc.__text_scale) || 100}%</span>
+                                  </div>
+                                  {(Number(bc.__text_scale) || 100) !== 100 && (
+                                    <button onClick={() => set("__text_scale", "")} style={{ marginTop: 5, background: "none", border: "none", color: MUTED, fontSize: 10, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Réinitialiser</button>
+                                  )}
+                                </div>
                               </div>
                             )}
 

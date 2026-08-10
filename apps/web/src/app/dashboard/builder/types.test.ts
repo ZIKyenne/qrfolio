@@ -213,6 +213,13 @@ describe("blockDecoration", () => {
     expect(r.style.maxWidth).toBe(360)
     expect(r.style.marginLeft).toBe("auto")
   })
+  it("taille du texte (curseur) -> zoom ; 100/absent = inerte", () => {
+    expect(blockDecoration({ __text_scale: "120" }, theme).style.zoom).toBeCloseTo(1.2)
+    expect(blockDecoration({ __text_scale: "85" }, theme).style.zoom).toBeCloseTo(0.85)
+    expect(blockDecoration({ __text_scale: "100" }, theme).style.zoom).toBeUndefined()
+    expect(blockDecoration({ __text_scale: "" }, theme).style.zoom).toBeUndefined()
+    expect(blockDecoration({ title: "x" }, theme).style.zoom).toBeUndefined() // absent
+  })
   it("espacement + animation (révélation au scroll, rétrocompat anciennes valeurs)", () => {
     const r = blockDecoration({ __space: "Aéré", __anim: "Zoom" }, theme)
     expect(r.style.marginTop).toBe(22)

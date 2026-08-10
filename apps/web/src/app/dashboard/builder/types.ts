@@ -3276,6 +3276,11 @@ export function blockDecoration(
 
   if (c.__width === "Étroite") { style.maxWidth = 360; style.marginLeft = "auto"; style.marginRight = "auto" }
 
+  // Taille du texte (curseur) : met à l'échelle le contenu du bloc via `zoom` (reflux → jamais de
+  // chevauchement). Valeur en % (80–140) ; 100 (ou absent) = inerte → zéro régression.
+  const tsRaw = parseFloat(c.__text_scale)
+  if (tsRaw && tsRaw !== 100 && tsRaw >= 50 && tsRaw <= 200) style.zoom = tsRaw / 100
+
   // Animation d'apparition = révélation au scroll (classe .qf-reveal + variante). Voir le CSS public.
   // Rétrocompat : anciennes valeurs "Glissé"/"Zoom" mappées vers les nouvelles variantes.
   const animMap: Record<string, string> = {

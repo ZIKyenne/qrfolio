@@ -191,7 +191,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <QrCode size={14} color="#080808" />
             </div>
             {!collapsed && (
-              <span style={{ color: G, fontFamily: "Fraunces, serif", fontSize: 18, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden" }}>
+              <span style={{ color: G, fontFamily: "Fraunces, serif", fontSize: 18, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textTransform: "uppercase" }}>
                 QRowg
               </span>
             )}

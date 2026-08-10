@@ -66,6 +66,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [unreadLeads, setUnreadLeads] = useState(0) // messages non lus (badge nav)
   const [createOpen, setCreateOpen] = useState(false) // sheet "Créer" (bouton central mobile)
 
+  // Mode Focus du builder : replie la nav (via l'événement `qrowg:builder-focus`) SANS écraser la
+  // préférence utilisateur (garde-fou `focusActive` sur la persistance + restauration à la sortie).
+  const focusActive = useRef(false)
+  const preFocus = useRef<boolean | null>(null)
+  useEffect(() => {
+    const onSig = (e: Event) => {
+      const on = !!(e as CustomEvent).detail
+      focusActive.current = on
+      setCollapsed(prev => {
+        if (on) { if (preFocus.current === null) preFocus.current = prev; return true }
+        const restore = preFocus.current ?? prev; preFocus.current = null; return restore
+      })
+    }
+    window.addEventListener("qrowg:builder-focus", onSig as EventListener)
+    return () => window.removeEventListener("qrowg:builder-focus", onSig as EventListener)
+  }, [])
+
   // Fermer le sheet "Créer" sur Échap (a11y clavier).
   useEffect(() => {
     if (!createOpen) return
@@ -135,7 +152,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [])
 
   useEffect(() => {
-    if (mounted && !isMobile) {
+    // Ne pas persister un repli piloté par le mode Focus (préférence utilisateur préservée).
+    if (mounted && !isMobile && !focusActive.current) {
       localStorage.setItem("qrfolio_sidebar", collapsed ? "collapsed" : "expanded")
     }
   }, [collapsed, mounted, isMobile])

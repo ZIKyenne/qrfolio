@@ -518,13 +518,21 @@
     }, [])
 
     const isCatCollapsed = useCallback((catId: string) => collapsedCats.includes(catId), [collapsedCats])
+    // Mode Focus : on se concentre sur le CANVAS + l'ÉDITEUR. On masque la bibliothèque de blocs et
+    // on replie la nav du dashboard (via événement), mais on GARDE l'éditeur ouvert pour éditer.
     function toggleFocus() {
       setFocusMode(p => {
         const next = !p
-        setSidebarCollapsed(next); setBlocksCollapsed(next); setRightCollapsed(next)
+        setSidebarCollapsed(next); setBlocksCollapsed(next); setRightCollapsed(false)
         return next
       })
     }
+    // Synchronise la nav du dashboard avec le mode Focus (toute transition, quelle que soit la sortie),
+    // + restauration garantie en quittant le builder.
+    useEffect(() => {
+      try { window.dispatchEvent(new CustomEvent("qrowg:builder-focus", { detail: focusMode })) } catch { /* noop */ }
+      return () => { try { window.dispatchEvent(new CustomEvent("qrowg:builder-focus", { detail: false })) } catch { /* noop */ } }
+    }, [focusMode])
 
     useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: "smooth" }) }, [messages])
 
@@ -1380,8 +1388,8 @@
         {/* BODY */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
 
-          {/* SIDEBAR BLOCS */}
-          <div style={{ width: isMobile ? "100%" : (blocksCollapsed ? 64 : blocksResize.width), background: "#0A0A0A", borderRight: "none", display: isMobile && mobileTab !== "blocks" ? "none" : "flex", flexDirection: "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: blocksCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
+          {/* SIDEBAR BLOCS — masquée en mode Focus (concentration canvas + éditeur) */}
+          <div style={{ width: isMobile ? "100%" : (blocksCollapsed ? 64 : blocksResize.width), background: "#0A0A0A", borderRight: "none", display: (focusMode && !isMobile) ? "none" : (isMobile && mobileTab !== "blocks" ? "none" : "flex"), flexDirection: "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: blocksCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
             {/* C02 — Bibliothèque refondue en overlay (flag ON, panneau déplié). Flag OFF ou rail replié :
                 la bibliothèque legacy ci-dessous reste strictement inchangée (zéro régression). */}
             {BUILDER_REDESIGN && !blocksCollapsed && (

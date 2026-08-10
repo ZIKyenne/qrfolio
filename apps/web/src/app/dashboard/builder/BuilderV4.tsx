@@ -534,6 +534,12 @@
       return () => { try { window.dispatchEvent(new CustomEvent("qrowg:builder-focus", { detail: false })) } catch { /* noop */ } }
     }, [focusMode])
 
+    // En mode Focus, les 3 sections (Aperçu/Éditeur/Thème) s'affichent EMPILÉES en même temps ; ce
+    // petit en-tête collant les distingue et reste visible pendant le scroll de chaque section.
+    const focusSectionHeader = (label: string) => focusMode ? (
+      <div style={{ position: "sticky" as const, top: 0, zIndex: 6, padding: "8px 12px", background: "#1B1B1B", borderBottom: `1px solid ${G}40`, color: G, fontSize: 10.5, fontWeight: 800, textTransform: "uppercase" as const, letterSpacing: 1.5, flexShrink: 0 }}>{label}</div>
+    ) : null
+
     useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: "smooth" }) }, [messages])
 
     useEffect(() => {
@@ -2129,8 +2135,8 @@
               </div>
             </div>
           )}
-          <div style={{ width: isMobile ? "100%" : (rightCollapsed ? 48 : rightResize.width), background: "#161616", borderLeft: "none", display: isMobile && mobileTab !== "panel" ? "none" : "flex", flexDirection: "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: rightCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
-            <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+          <div style={{ width: isMobile ? "100%" : (rightCollapsed ? 48 : (focusMode ? Math.max(rightResize.width, 400) : rightResize.width)), background: "#161616", borderLeft: "none", display: isMobile && mobileTab !== "panel" ? "none" : "flex", flexDirection: "column", flexShrink: isMobile ? 1 : 0, overflow: "hidden", transition: rightCollapsed ? "width 0.25s ease" : "none", position: "relative" }}>
+            <div style={{ display: focusMode ? "none" : "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
               {rightCollapsed
                 ? /* Mode réduit: onglets verticaux */
                   <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: 0 }}>
@@ -2155,8 +2161,9 @@
               }
             </div>
 
-            {!rightCollapsed && rightTab==="preview" && (
-              <div style={{ flex: 1, overflowY: "auto", padding: "14px 10px" }}>
+            {!rightCollapsed && (focusMode || rightTab==="preview") && (
+              <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 10px", borderBottom: focusMode ? "1px solid rgba(255,255,255,0.07)" : undefined }}>
+                {focusSectionHeader("Aperçu")}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <span style={{ fontSize: 12, color: "#F5F0E8", fontWeight: 600 }}>Aperçu live</span>
@@ -2250,8 +2257,9 @@
               </div>
             )}
 
-            {!rightCollapsed && rightTab==="edit" && (
-              <div style={{ flex: 1, overflowY: "auto", padding: 14, position: "relative" }}>
+            {!rightCollapsed && (focusMode || rightTab==="edit") && (
+              <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 14, position: "relative", borderBottom: focusMode ? "1px solid rgba(255,255,255,0.07)" : undefined }}>
+                {focusSectionHeader("Éditeur")}
                 {/* C03 — Réglages refondus (flag ON) : coquille Simple/Avancé + injection du panneau
                     legacy (EditPanel) pour le design/disposition et les blocs non pilotes. Flag OFF =
                     éditeur historique ci-dessous strictement inchangé (zéro régression). */}
@@ -2508,8 +2516,9 @@
               </div>
             )}
 
-            {!rightCollapsed && rightTab==="theme" && (
-              <div style={{ flex: 1, overflowY: "auto", padding: 14 }}>
+            {!rightCollapsed && (focusMode || rightTab==="theme") && (
+              <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 14 }}>
+                {focusSectionHeader("Thème")}
                 <ThemePanel theme={theme} onThemeChange={commitTheme} userPlan={userPlan}
                   previewName={(blocks.find(b => b.type === "profile")?.content as any)?.name || pageName}
                   previewAvatar={(blocks.find(b => b.type === "profile")?.content as any)?.avatar || ""} />

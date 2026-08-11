@@ -82,6 +82,8 @@ export default function QrLinkPage() {
   const [saved, setSaved] = useState<any[]>([])
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveMsg, setSaveMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [detail, setDetail] = useState<any | null>(null) // aperçu détaillé d'un QR enregistré (clic)
+  const [detailCopied, setDetailCopied] = useState(false)
 
   const data = useMemo(() => payload({ type: qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em }), [qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em])
   const ready = data.length > 0
@@ -203,6 +205,30 @@ export default function QrLinkPage() {
     }
     return { label: "Actif", color: "var(--success)", expired: false }
   }
+  // Décompte précis avant expiration (aperçu détaillé).
+  function expiryText(s: any): { text: string; color: string; expired: boolean } {
+    if (!s?.dynamic) return { text: "Contenu encodé — n'expire pas", color: MUTED, expired: false }
+    if (s.status === "expired") return { text: "Expiré", color: "#FF6B6B", expired: true }
+    if (s.status === "paused") return { text: "En pause", color: "#FBBF24", expired: false }
+    if (!s.expires_at) return { text: "Permanent (aucune expiration)", color: "var(--success)", expired: false }
+    const ms = new Date(s.expires_at).getTime() - Date.now()
+    if (ms <= 0) return { text: "Expiré", color: "#FF6B6B", expired: true }
+    const d = Math.floor(ms / 86400000), h = Math.floor((ms % 86400000) / 3600000), m = Math.floor((ms % 3600000) / 60000)
+    const left = d > 0 ? `${d} j ${h} h` : h > 0 ? `${h} h ${m} min` : `${m} min`
+    const date = new Date(s.expires_at).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })
+    return { text: `Expire dans ${left} · le ${date}`, color: "#FBBF24", expired: false }
+  }
+  async function copyDetail() {
+    try { await navigator.clipboard.writeText(detail?.payload || ""); setDetailCopied(true); setTimeout(() => setDetailCopied(false), 1600) } catch {}
+  }
+  async function downloadDetail() {
+    if (!detail) return
+    const p = STYLE_PRESETS.find(x => x.k === (detail.style?.styleKey || "carre")) || STYLE_PRESETS[0]
+    const opts: QROptions = { data: detail.payload, fg: detail.style?.fg || "#080808", bg: detail.style?.bg || "#FFFFFF", ecc: (detail.style?.ecc || "M"), style: { dotStyle: p.dotStyle, cornerStyle: p.cornerStyle }, size: 1024 }
+    const blob = await getQRBlob(opts, "png")
+    if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${detail.label || detail.kind || "qr"}.png`; a.click(); URL.revokeObjectURL(a.href) }
+  }
+
   const dynamicLinks = saved.filter(s => s.dynamic)
   const staticQrs = saved.filter(s => !s.dynamic)
 
@@ -440,7 +466,7 @@ export default function QrLinkPage() {
           <p style={secTitle}>{accentBar} Mes liens dynamiques</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
             {dynamicLinks.map(s => { const st = dynStatus(s); return (
-              <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: "10px 12px" }}>
+              <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: "10px 12px", cursor: "pointer" }}>
                 <div style={{ background: "#fff", borderRadius: 8, padding: 4, lineHeight: 0, flexShrink: 0 }}>
                   <QRCanvas value={s.payload || "https://qrowg.com"} size={46} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
                 </div>
@@ -452,8 +478,8 @@ export default function QrLinkPage() {
                     <span style={{ color: "#6E685E", fontSize: 10.5 }}>· {s.total_scans ?? 0} scan{(s.total_scans ?? 0) > 1 ? "s" : ""}</span>
                   </div>
                 </div>
-                <button onClick={() => editDest(s)} title="Modifier la destination" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "7px 10px", flexShrink: 0 }}>Modifier</button>
-                <button onClick={() => deleteInstant(s.id)} aria-label="Supprimer" style={{ background: "rgba(239,68,68,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trash2 size={14} /></button>
+                <button onClick={e => { e.stopPropagation(); editDest(s) }} title="Modifier la destination" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "7px 10px", flexShrink: 0 }}>Modifier</button>
+                <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer" style={{ background: "rgba(239,68,68,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trash2 size={14} /></button>
               </div>
             ) })}
           </div>
@@ -465,13 +491,14 @@ export default function QrLinkPage() {
           <p style={secTitle}>{accentBar} Mes QR enregistrés</p>
           <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
             {staticQrs.map(s => (
-              <div key={s.id} style={{ position: "relative", flexShrink: 0, width: 98, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: 9 }}>
-                <div style={{ background: s.style?.bg || "#fff", borderRadius: 8, padding: 5, lineHeight: 0 }}>
-                  <QRCanvas value={s.payload || "https://qrowg.com"} size={58} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
+              <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail"
+                style={{ position: "relative", flexShrink: 0, width: 124, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
+                <div style={{ background: s.style?.bg || "#fff", borderRadius: 9, padding: 6, lineHeight: 0 }}>
+                  <QRCanvas value={s.payload || "https://qrowg.com"} size={80} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
                 </div>
-                <span style={{ color: MUTED, fontSize: 9.5, maxWidth: 86, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || s.kind}</span>
-                <button onClick={() => deleteInstant(s.id)} aria-label="Supprimer ce QR"
-                  style={{ position: "absolute", top: 4, right: 4, background: "rgba(239,68,68,0.15)", border: "none", borderRadius: 7, width: 22, height: 22, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={12} /></button>
+                <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || s.kind}</span>
+                <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer ce QR"
+                  style={{ position: "absolute", top: 5, right: 5, background: "rgba(239,68,68,0.15)", border: "none", borderRadius: 7, width: 24, height: 24, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={12} /></button>
               </div>
             ))}
           </div>
@@ -498,6 +525,61 @@ export default function QrLinkPage() {
       <p style={{ color: "#6E685E", fontSize: 11.5, margin: "18px 0 0", lineHeight: 1.55, textAlign: "center" }}>
         Un QR <strong style={{ color: MUTED }}>enregistré</strong> encode directement son contenu. Un <strong style={{ color: MUTED }}>lien dynamique</strong> (type Lien) est modifiable après impression et bénéficie d'un essai 7 jours par lien.
       </p>
+
+      {/* Aperçu détaillé d'un QR enregistré (clic) : grand QR + infos + décompte d'expiration */}
+      {detail && (() => { const ex = expiryText(detail); return (
+        <div onClick={() => setDetail(null)} style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, maxHeight: "90vh", overflowY: "auto", background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 20, padding: 20, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <p style={{ flex: 1, color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{detail.label || (detail.dynamic ? "Lien dynamique" : detail.kind)}</p>
+              <button onClick={() => setDetail(null)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30 }}><X size={15} /></button>
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+              <div style={{ background: detail.style?.bg || "#fff", borderRadius: 14, padding: 12, lineHeight: 0 }}>
+                <QRCanvas value={detail.payload || "https://qrowg.com"} size={196} fg={detail.style?.fg || "#080808"} bg={detail.style?.bg || "#FFFFFF"} />
+              </div>
+            </div>
+
+            {/* Expiration (au premier plan) */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 13px", borderRadius: 12, background: `${ex.color}14`, border: `1px solid ${ex.color}44`, marginBottom: 12 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: ex.color, flexShrink: 0 }} />
+              <span style={{ color: ex.color, fontSize: 12.5, fontWeight: 700 }}>{ex.text}</span>
+            </div>
+
+            {detail.dynamic ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div>
+                  <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 4px" }}>Lien court (le QR pointe ici)</p>
+                  <p style={{ color: "#F5F0E8", fontSize: 12.5, margin: 0, wordBreak: "break-all", fontFamily: "monospace" }}>{detail.payload}</p>
+                </div>
+                <div>
+                  <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 4px" }}>Destination (modifiable)</p>
+                  <p style={{ color: "#F5F0E8", fontSize: 12.5, margin: "0 0 6px", wordBreak: "break-all" }}>{detail.dest_url}</p>
+                  <button onClick={() => editDest(detail)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "8px 12px" }}>Modifier la destination</button>
+                </div>
+                <p style={{ color: "#6E685E", fontSize: 11, margin: 0 }}>{detail.total_scans ?? 0} scan{(detail.total_scans ?? 0) > 1 ? "s" : ""}</p>
+              </div>
+            ) : (
+              <div>
+                <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 4px" }}>Contenu encodé</p>
+                <p style={{ color: "#F5F0E8", fontSize: 12.5, margin: 0, wordBreak: "break-all", fontFamily: "monospace" }}>{detail.payload}</p>
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 9, marginTop: 16 }}>
+              <button onClick={copyDetail} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: detailCopied ? "var(--success)" : "#F5F0E8", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                {detailCopied ? <><Check size={15} /> Copié !</> : <><Link2 size={15} /> Copier</>}
+              </button>
+              <button onClick={downloadDetail} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "none", background: G, color: "#080808", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                <Download size={15} /> PNG
+              </button>
+            </div>
+            {detail.dynamic && detail.payload && (
+              <a href={detail.payload} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", color: G, fontSize: 12, fontWeight: 600, textDecoration: "none", marginTop: 11 }}>Ouvrir le lien ↗</a>
+            )}
+          </div>
+        </div>
+      ) })()}
     </div>
   )
 }

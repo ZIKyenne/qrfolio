@@ -442,17 +442,29 @@ export default function QrLinkPage() {
         </Button>
       </div>
 
-      {/* Créer le QR — DYNAMIQUE + expirable pour TOUS les types (essai 7 j par QR). */}
-      <div style={{ ...card, marginTop: 12, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)" }}>
-        <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>⚡ Créer le QR code</p>
-        <p style={{ color: MUTED, fontSize: 12, margin: "0 0 11px", lineHeight: 1.5 }}>
-          QR <strong style={{ color: MUTED }}>dynamique</strong> (modifiable + suivi des scans). Essai gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong>, puis abonnement pour rester actif.
-          {qrType !== "link" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 5 }}>Note : ce QR ouvre une page au scan (Internet requis) — il n'est plus valable hors ligne.</span>}
-        </p>
-        <Button onClick={createDynamic} disabled={!ready || saveBusy} style={{ width: "100%" }}>
-          {saveBusy ? "Création…" : "Créer le QR code (essai 7 j)"}
-        </Button>
-      </div>
+      {/* WiFi / Contact : QR STATIQUE (fonctionne hors ligne, sans expiration). Autres : dynamique. */}
+      {(qrType === "wifi" || qrType === "contact") ? (
+        <div style={{ ...card, marginTop: 12 }}>
+          <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>💾 Enregistrer ce QR</p>
+          <p style={{ color: MUTED, fontSize: 12, margin: "0 0 11px", lineHeight: 1.5 }}>
+            QR <strong style={{ color: MUTED }}>statique</strong> — fonctionne hors ligne, sans expiration ({qrType === "wifi" ? "auto-connexion WiFi" : "ajout du contact"} directement au scan).
+          </p>
+          <Button variant="secondary" onClick={saveInstant} loading={saveBusy} disabled={!ready} leftIcon={<Save size={16} />} style={{ width: "100%" }}>
+            Enregistrer ce QR
+          </Button>
+        </div>
+      ) : (
+        <div style={{ ...card, marginTop: 12, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)" }}>
+          <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>⚡ Créer le QR code</p>
+          <p style={{ color: MUTED, fontSize: 12, margin: "0 0 11px", lineHeight: 1.5 }}>
+            QR <strong style={{ color: MUTED }}>dynamique</strong> (modifiable + suivi des scans). Essai gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong>, puis abonnement pour rester actif.
+            {qrType === "text" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 5 }}>Note : ce QR ouvre une page au scan (Internet requis).</span>}
+          </p>
+          <Button onClick={createDynamic} disabled={!ready || saveBusy} style={{ width: "100%" }}>
+            {saveBusy ? "Création…" : "Créer le QR code (essai 7 j)"}
+          </Button>
+        </div>
+      )}
       {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "9px 0 0" }}>{saveMsg.text}</p>}
 
       {/* Mes liens dynamiques */}

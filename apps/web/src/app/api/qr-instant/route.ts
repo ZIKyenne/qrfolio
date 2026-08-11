@@ -11,6 +11,9 @@ import { qrLimit } from "@/lib/plans"
 import { countInstantQrs } from "@/lib/quota"
 
 const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email"])
+// Types éligibles au DYNAMIQUE (redirigé + expirable). WiFi et Contact restent STATIQUES : ils
+// doivent fonctionner hors ligne (auto-connexion WiFi, ajout de contact) — impossible via redirection.
+const DYNAMIC_KINDS = new Set(["link", "text", "phone", "call", "email"])
 const COLS = "id, kind, label, payload, inputs, style, created_at, dynamic, short_code, dest_url, status, expires_at, total_scans"
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
 const TRIAL_MS = 7 * 24 * 60 * 60 * 1000 // essai gratuit : 7 jours par lien
@@ -58,7 +61,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({} as any))
   const kind = String(body?.kind || "")
   const payload = typeof body?.payload === "string" ? body.payload : ""
-  const wantsDynamic = body?.dynamic === true
+  // WiFi/Contact : toujours statiques, même si `dynamic` est envoyé.
+  const wantsDynamic = body?.dynamic === true && DYNAMIC_KINDS.has(kind)
   if (!KINDS.has(kind)) return NextResponse.json({ error: "Type de QR invalide" }, { status: 400 })
   // Le contenu encodé (payload) n'est requis qu'en STATIQUE : en dynamique le serveur génère
   // payload = /q/<code> et stocke la cible/le contenu dans dest_url.

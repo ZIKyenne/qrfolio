@@ -7,7 +7,7 @@
 //    suivi des scans, essai 7 j) ou STATIQUE (WiFi/Contact → hors ligne, sans expiration).
 import { useMemo, useRef, useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity } from "lucide-react"
+import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity, Pencil } from "lucide-react"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
@@ -267,6 +267,9 @@ export default function QrLinkPage() {
   const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: 18 }
   const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 50, background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, color: "#F5F0E8", fontSize: 16, padding: "0 15px", outline: "none" }
   const dot = (c: string): React.CSSProperties => ({ width: 15, height: 15, borderRadius: 5, background: c, border: "1px solid rgba(255,255,255,0.22)", flexShrink: 0 })
+  // Couleur d'avant-plan sûre pour les MINI-vignettes (toujours sur fond blanc) : si le QR enregistré
+  // est trop clair/peu contrasté (ex. blanc sur fond sombre), on retombe sur du noir pour rester net.
+  const safeFg = (c?: string) => (contrast(c || "#080808", "#FFFFFF") >= 2 ? (c || "#080808") : "#080808")
   const swatch = (c: string, on: boolean, onClick: () => void, aria: string) => (
     <button key={c} onClick={onClick} aria-label={aria}
       style={{ width: 38, height: 38, borderRadius: 11, background: c, border: on ? `2.5px solid ${G}` : "2px solid rgba(255,255,255,0.14)", boxShadow: on ? `0 0 0 3px ${G}22` : "none", cursor: "pointer", flexShrink: 0, transition: "all .15s" }} />
@@ -535,20 +538,22 @@ export default function QrLinkPage() {
             <p style={subLabel}>Liens dynamiques</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: staticQrs.length > 0 ? 18 : 0 }}>
               {dynamicLinks.map(s => { const st = dynStatus(s); return (
-                <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: "10px 12px", cursor: "pointer" }}>
-                  <div style={{ background: "#fff", borderRadius: 8, padding: 4, lineHeight: 0, flexShrink: 0 }}>
-                    <QRCanvas value={s.payload || "https://qrowg.com"} size={46} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
+                <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
+                  <div style={{ background: "#fff", borderRadius: 10, padding: 6, lineHeight: 0, flexShrink: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
+                    <QRCanvas value={s.payload || "https://qrowg.com"} size={54} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || s.dest_url}</p>
-                    <p style={{ color: MUTED, fontSize: 11, margin: "0 0 3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>→ {s.dest_url}</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: st.color, fontSize: 10.5, fontWeight: 700 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: st.color }} />{st.label}</span>
-                      <span style={{ color: "#6E685E", fontSize: 10.5 }}>· {s.total_scans ?? 0} scan{(s.total_scans ?? 0) > 1 ? "s" : ""}</span>
+                    <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || (s.dest_url || "").replace(/^https?:\/\//, "")}</p>
+                    <p style={{ color: MUTED, fontSize: 11, margin: "0 0 5px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>→ {s.dest_url}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: st.color, fontSize: 10.5, fontWeight: 700, background: `${st.color}18`, borderRadius: 999, padding: "3px 8px" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: st.color }} />{st.label}</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#6E685E", fontSize: 10.5, fontWeight: 600 }}><BarChart3 size={11} />{s.total_scans ?? 0} scan{(s.total_scans ?? 0) > 1 ? "s" : ""}</span>
                     </div>
                   </div>
-                  <button onClick={e => { e.stopPropagation(); editDest(s) }} title="Modifier la destination" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "7px 10px", flexShrink: 0 }}>Modifier</button>
-                  <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer" style={{ background: "rgba(239,68,68,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trash2 size={14} /></button>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+                    <button onClick={e => { e.stopPropagation(); editDest(s) }} title="Modifier la destination" aria-label="Modifier la destination" style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.28)", borderRadius: 9, color: G, cursor: "pointer", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center" }}><Pencil size={14} /></button>
+                    <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, width: 34, height: 34, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={14} /></button>
+                  </div>
                 </div>
               ) })}
             </div>
@@ -560,8 +565,8 @@ export default function QrLinkPage() {
               {staticQrs.map(s => (
                 <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail"
                   style={{ position: "relative", flexShrink: 0, width: 124, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
-                  <div style={{ background: s.style?.bg || "#fff", borderRadius: 9, padding: 6, lineHeight: 0 }}>
-                    <QRCanvas value={s.payload || "https://qrowg.com"} size={80} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
+                  <div style={{ background: "#fff", borderRadius: 10, padding: 7, lineHeight: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
+                    <QRCanvas value={s.payload || "https://qrowg.com"} size={82} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
                   <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || s.kind}</span>
                   <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer ce QR"
@@ -581,8 +586,8 @@ export default function QrLinkPage() {
             {history.map((h, i) => (
               <button key={i} title={`Réutiliser : ${histLabel(h)}`} onClick={() => loadEntry(h)}
                 style={{ flexShrink: 0, width: 98, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: 9, cursor: "pointer" }}>
-                <div style={{ background: h.bg, borderRadius: 8, padding: 5, lineHeight: 0 }}>
-                  <QRCanvas value={payload(h) || "https://qrowg.com"} size={58} fg={h.fg} bg={h.bg} />
+                <div style={{ background: "#fff", borderRadius: 9, padding: 6, lineHeight: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>
+                  <QRCanvas value={payload(h) || "https://qrowg.com"} size={58} fg={safeFg(h.fg)} bg="#FFFFFF" />
                 </div>
                 <span style={{ color: MUTED, fontSize: 9.5, maxWidth: 86, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{histLabel(h)}</span>
               </button>

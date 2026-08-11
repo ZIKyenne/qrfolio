@@ -504,7 +504,7 @@ export default function QrLinkPage() {
             {saveBusy ? "Création…" : "Créer le QR dynamique — essai 7 j"}
           </Button>
           <p style={{ color: MUTED, fontSize: 11.5, margin: "9px 2px 0", lineHeight: 1.5 }}>
-            Modifiable après impression + suivi des scans. Gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong>, puis abonnement pour rester actif.
+            Modifiable après impression + suivi des scans. Gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong>, puis <Link href="/dashboard/qr-dynamique" style={{ color: G, fontWeight: 700, textDecoration: "none" }}>un abonnement</Link> pour rester actif.
             {qrType === "text" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 3 }}>Ouvre une page au scan (Internet requis).</span>}
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "15px 0 13px" }}>

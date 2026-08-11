@@ -1149,7 +1149,7 @@ const TEMPLATE_DATA = [
   },
   {
     id: "coach",
-    name: "Coach & Therapeute",
+    name: "Coach & Thérapeute",
     category: "Bien-être",
     blocks: 8,
     isPro: false,
@@ -1166,7 +1166,7 @@ const TEMPLATE_DATA = [
   {
     id: "artist",
     name: "Artiste & Musicien",
-    category: "Creatif",
+    category: "Créatif",
     blocks: 7,
     isPro: true,
     accent: "#A78BFA",
@@ -1793,7 +1793,7 @@ function HowItWorks() {
 function BuilderMockup(){
   const BL=[{icon:"👤",label:"Profil",c:"#C9A84C"},{icon:"🔗",label:"Liens",c:"var(--action)"},
     {icon:"📸",label:"Galerie",c:"#A78BFA"},{icon:"💬",label:"WhatsApp",c:"var(--success)"},
-    {icon:"📅",label:"Reservation",c:"#F97316"},{icon:"💳",label:"Paiement",c:"#F43F5E"}]
+    {icon:"📅",label:"Réservation",c:"#F97316"},{icon:"💳",label:"Paiement",c:"#F43F5E"}]
   const PH=[{h:28,c:"rgba(201,168,76,0.5)",w:"80%"},{h:14,c:"rgba(255,255,255,0.12)",w:"60%"},
     {h:10,c:"rgba(201,168,76,0.25)",w:"40%"},{h:32,c:"rgba(56,189,248,0.25)",w:"90%"},
     {h:12,c:"rgba(255,255,255,0.08)",w:"70%"},{h:28,c:"rgba(57,255,143,0.2)",w:"85%"}]
@@ -1875,7 +1875,7 @@ function BuilderSection(){
           <p style={{color:"#C9A84C",fontSize:11,letterSpacing:3.5,textTransform:"uppercase",fontWeight:600,marginBottom:16}}>Éditeur</p>
           <h2 id="builder-title" style={{fontFamily:"Fraunces, serif",fontSize:"clamp(28px,4vw,52px)",
             color:"#F5F0E8",fontWeight:700,margin:"0 auto 20px",lineHeight:1.1,maxWidth:680,letterSpacing:"-0.02em"}}>
-            Construis une page professionnelle{" "}<span style={{color:"#C9A84C"}}>en quelques minutes.</span>
+            Créez une page professionnelle{" "}<span style={{color:"#C9A84C"}}>en quelques minutes.</span>
           </h2>
           <p style={{color:"rgba(188,182,166,0.85)",fontSize:16,maxWidth:520,margin:"0 auto",lineHeight:1.7}}>
             Ajoutez des blocs, personnalisez votre thème, publiez et partagez votre QR code.
@@ -2609,7 +2609,7 @@ const USE_CASES = [
   {
     id: "creator",
     icon: "🎵",
-    label: "Createur",
+    label: "Créateur",
     title: "Un lien unique pour tous vos contenus.",
     desc: "Centralisez vos réseaux, musiques, vidéos et collaborations sur une page élégante.",
     color: "#A78BFA",
@@ -2643,7 +2643,7 @@ const USE_CASES = [
   {
     id: "event",
     icon: "🎪",
-    label: "Evenement",
+    label: "Événement",
     title: "Tenez vos participants informés en temps réel.",
     desc: "Programme, billets, accès et mises à jour — tout sur une page modifiable même la veille.",
     color: "var(--success)",
@@ -2929,10 +2929,10 @@ function FAQSection() {
         <h2 id="faq-title" style={{ fontFamily:"Fraunces, serif",
           fontSize:"clamp(28px,4vw,52px)", color:"#F5F0E8", fontWeight:700,
           margin:"0 auto 16px", lineHeight:1.1, letterSpacing:"-0.02em" }}>
-          Les questions{" "}<span style={{ color:"#C9A84C" }}>les plus frequentes.</span>
+          Les questions{" "}<span style={{ color:"#C9A84C" }}>les plus fréquentes.</span>
         </h2>
         <p style={{ color:"rgba(188,182,166,0.8)", fontSize:16, lineHeight:1.65, margin:0 }}>
-          Une question sans reponse ? Ecris-nous, on est la.
+          Une question sans réponse ? Écrivez-nous, on est là.
         </p>
       </div>
       <div style={{ maxWidth:720, margin:"0 auto",
@@ -3745,7 +3745,7 @@ export default function HomePage() {
               color:"rgba(188,182,166,0.5)", fontSize:12.5,
               margin:"20px 0 0", letterSpacing:0.3,
             }}>
-              Gratuit · Sans carte bancaire · Annulation a tout moment
+              Gratuit · Sans carte bancaire · Annulation à tout moment
             </p>
           </div>
         </div>

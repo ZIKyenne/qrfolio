@@ -52,7 +52,7 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "free",
     label: "Gratuit",
     color: "#8A8478",
-    description: "Pour decouvrir QRowg",
+    description: "Pour découvrir QRowg",
     priceMonthly: 0,
     priceAnnual: 0,
     badge: null,

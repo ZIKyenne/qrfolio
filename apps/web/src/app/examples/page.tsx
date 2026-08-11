@@ -447,7 +447,7 @@ export default function ExamplesPage() {
             <div style={{ textAlign:"center",padding:"80px 0",color:MUT }}>
               <p style={{ fontSize:40,marginBottom:16 }}>🔍</p>
               <p style={{ fontSize:16,marginBottom:8,color:INK }}>Aucun exemple trouvé</p>
-              <p style={{ fontSize:14 }}>Essaie un autre filtre.</p>
+              <p style={{ fontSize:14 }}>Essayez un autre filtre.</p>
             </div>
           )}
         </div>
@@ -483,9 +483,9 @@ export default function ExamplesPage() {
             </div>
             <div style={{ display:"flex",flexDirection:"column",gap:16 }} className="minutes-steps">
               {[
-                { n:"01", icon:"🎨", title:"Choisis un template", desc:"Restaurant, freelance, artiste — adapté à ton secteur." },
-                { n:"02", icon:"✏️",  title:"Personnalise ta page",  desc:"Ajoute ton contenu, tes liens, tes couleurs. Sans coder." },
-                { n:"03", icon:"📱", title:"Publie et partage",     desc:"Ton QR code est généré. Prêt à imprimer et partager." },
+                { n:"01", icon:"🎨", title:"Choisissez un modèle", desc:"Restaurant, freelance, artiste — adapté à votre secteur." },
+                { n:"02", icon:"✏️",  title:"Personnalisez votre page",  desc:"Ajoutez votre contenu, vos liens, vos couleurs. Sans coder." },
+                { n:"03", icon:"📱", title:"Publiez et partagez",     desc:"Votre QR code est généré. Prêt à imprimer et partager." },
               ].map(step => (
                 <div key={step.n} style={{ display:"flex",gap:16,alignItems:"flex-start" }} className="step-item">
                   <div style={{ width:44,height:44,borderRadius:12,background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.18)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0 }}>{step.icon}</div>

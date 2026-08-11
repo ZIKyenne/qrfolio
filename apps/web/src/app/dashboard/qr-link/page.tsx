@@ -108,7 +108,9 @@ export default function QrLinkPage() {
   const logoInput = useRef<HTMLInputElement>(null)
   // QR instantanés ENREGISTRÉS (persistants, comptent dans le quota du plan limits.qr)
   const [saved, setSaved] = useState<any[]>([])
-  const [dynPlan, setDynPlan] = useState<string>("none") // palier « QR Dynamique » (gating sécurité/stats)
+  // Palier « QR Dynamique » (gating sécurité/stats/masse + bandeau d'upsell). Démarre INCONNU ("")
+  // et non "none" : évite d'afficher le bandeau « Passez au QR Dynamique » aux abonnés avant le fetch.
+  const [dynPlan, setDynPlan] = useState<string>("")
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveMsg, setSaveMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [detail, setDetail] = useState<any | null>(null) // aperçu détaillé d'un QR enregistré (clic)

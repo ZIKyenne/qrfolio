@@ -15,7 +15,8 @@ const nextConfig = {
   // Verification TypeScript active au build : bloque les regressions de types ET les
   // imports casses (qui crashaient au runtime). Le code typecheck a 0 erreur (2026-07-07).
   typescript: { ignoreBuildErrors: false },
-  eslint: { ignoreDuringBuilds: true },
+  // (Clé `eslint` retirée : non supportée par Next 16 — ESLint n'est pas câblé au build.
+  //  La sécurité de type est assurée par `typescript.ignoreBuildErrors: false` ci-dessus.)
   // Optimisation d'images : autorise l'optimisation Next des assets Supabase Storage
   // (prepare la migration <img> -> next/image sur les pages publiques).
   images: {

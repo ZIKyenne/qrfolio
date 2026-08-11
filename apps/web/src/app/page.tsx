@@ -3482,7 +3482,7 @@ export default function HomePage() {
               animation: "mo-fade-up 0.6s ease 0.1s both"
             }}>
               <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: 2, background: "#C9A84C", animation: "glowPulse 2s ease-in-out infinite", willChange: "opacity" }} />
-              La page qui remplace votre carte de visite
+              Reliez le monde physique au digital
             </div>
 
             {/* Titre — hierarchie forte, reveal ligne par ligne (aucun effet flashy).
@@ -3494,16 +3494,16 @@ export default function HomePage() {
               margin: "0 0 26px", letterSpacing: "-0.035em",
             }}>
               <span style={{ display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both" }}>
-                Une page pro.
+                Transformez le physique
               </span>
               <span style={{ display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.30s both" }}>
-                Un QR&nbsp;code dynamique.
+                en expérience digitale.
               </span>
               <span style={{
                 display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.45s both",
                 color: "#C9A84C",
               }}>
-                Zéro réimpression.
+                Mesurez chaque scan.
               </span>
             </h1>
 
@@ -3513,8 +3513,8 @@ export default function HomePage() {
               margin: "0 0 38px", maxWidth: 468, fontWeight: 400,
               animation: "mo-fade-up 0.7s ease 0.6s both"
             }}>
-              Regroupez vos coordonnées, réseaux, menu et portfolio sur <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>une seule page professionnelle</strong>.
-              Modifiez-la quand vous voulez : <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>votre QR&nbsp;code imprimé, lui, ne change jamais</strong>.
+              Créez la page (menu, portfolio, promo…), générez son <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>QR&nbsp;code dynamique</strong>, imprimez-le sur vos supports — puis <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>suivez chaque scan</strong>.
+              Modifiable à tout moment, sans jamais réimprimer.
             </p>
 
             {/* CTAs */}

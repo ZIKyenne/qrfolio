@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { VERTICAL_ORDER } from "./qr-code/verticals"
 
 export default async function sitemap() {
   const supabase = await createServerSupabaseClient()
@@ -17,6 +18,14 @@ export default async function sitemap() {
     { url: `${baseUrl}/privacy`,  lastModified: new Date(), changeFrequency: "yearly",  priority: 0.2 },
   ]
 
+  // Pages SEO « QR code par usage » (hub + une page par usage).
+  const verticalPages = [
+    { url: `${baseUrl}/qr-code`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
+    ...VERTICAL_ORDER.map(slug => ({
+      url: `${baseUrl}/qr-code/${slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8,
+    })),
+  ]
+
   // Pages publiques des utilisateurs
   const { data: pages } = await supabase
     .from("pages")
@@ -32,5 +41,5 @@ export default async function sitemap() {
     priority: 0.8,
   }))
 
-  return [...staticPages, ...userPages]
+  return [...staticPages, ...verticalPages, ...userPages]
 }

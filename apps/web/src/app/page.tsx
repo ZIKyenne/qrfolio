@@ -2310,12 +2310,11 @@ function AnalyticsMockup() {
           <span style={{ color:"rgba(201,168,76,0.5)", fontSize:10, letterSpacing:1.5, marginLeft:4 }}>ANALYTICS</span>
         </div>
         <div style={{
-          background: "rgba(57,255,143,0.1)", border: "1px solid rgba(57,255,143,0.25)",
+          background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.28)",
           borderRadius: 6, padding: "3px 10px",
           display: "flex", alignItems: "center", gap: 5,
-        }}>
-          <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--success)", animation:"livePulse 1.5s ease-in-out infinite" }}/>
-          <span style={{ color:"var(--success)", fontSize:9, fontWeight:700, letterSpacing:1 }}>LIVE</span>
+        }} title="Données de démonstration — pas vos chiffres réels">
+          <span style={{ color:"#C9A84C", fontSize:9, fontWeight:700, letterSpacing:1 }}>EXEMPLE</span>
         </div>
       </div>
 
@@ -3246,12 +3245,12 @@ function ComparisonSection() {
         }
       `}</style>
       <div style={{ maxWidth: 980, margin: "0 auto", textAlign: "center" }}>
-        <Eyebrow>Pourquoi Qrowg</Eyebrow>
+        <Eyebrow>Pourquoi QRowg</Eyebrow>
         <h2 id="cmp-title" style={{ fontFamily: "Fraunces, serif", fontSize: "clamp(28px,4vw,48px)", color: "#F5F0E8", fontWeight: 700, margin: "0 auto 14px", lineHeight: 1.1, maxWidth: 640, letterSpacing: "-0.02em" }}>
           Une carte de visite, mais vivante.
         </h2>
         <p style={{ color: "rgba(226,220,206,0.8)", fontSize: 17, lineHeight: 1.6, margin: "0 auto 40px", maxWidth: 520 }}>
-          Ce que Qrowg fait — et que les autres solutions laissent de côté.
+          Ce que QRowg fait — et que les autres solutions laissent de côté.
         </p>
 
         <div className="cmp-scroll" style={{

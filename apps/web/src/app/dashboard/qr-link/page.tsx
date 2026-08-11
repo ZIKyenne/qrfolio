@@ -7,7 +7,7 @@
 //    suivi des scans, essai 7 j) ou STATIQUE (WiFi/Contact → hors ligne, sans expiration).
 import { useMemo, useRef, useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap } from "lucide-react"
+import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity } from "lucide-react"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
@@ -55,6 +55,24 @@ type QrHistEntry = QrSource & {
   fg: string; bg: string; ecc: "L" | "M" | "Q" | "H"; styleKey: string
 }
 
+// Détecte un écran étroit (pop-up en feuille sur mobile, ancrée à droite sur PC).
+function useIsMobile(bp = 768): boolean {
+  const [m, setM] = useState(false)
+  useEffect(() => {
+    const check = () => setM(window.innerWidth < bp)
+    check(); window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [bp])
+  return m
+}
+
+// Date lisible en français (jour mois · heure).
+function fmtDateTime(iso?: string | null): string {
+  if (!iso) return "—"
+  try { return new Date(iso).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) }
+  catch { return "—" }
+}
+
 // Charge utile encodee dans le QR selon le type.
 function payload(s: QrSource): string {
   if (s.type === "wifi") return buildWifi(s.ssid, s.wifiPass, s.wifiEnc)
@@ -90,6 +108,8 @@ export default function QrLinkPage() {
   const [saveMsg, setSaveMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [detail, setDetail] = useState<any | null>(null) // aperçu détaillé d'un QR enregistré (clic)
   const [detailCopied, setDetailCopied] = useState(false)
+  const [stats, setStats] = useState<any | null>(null) // pop-up statistiques d'un lien dynamique
+  const isMobile = useIsMobile(768)
 
   const data = useMemo(() => payload({ type: qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em }), [qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em])
   const ready = data.length > 0
@@ -602,7 +622,10 @@ export default function QrLinkPage() {
                   <p style={{ color: "#F5F0E8", fontSize: 12.5, margin: "0 0 6px", wordBreak: "break-all" }}>{detail.dest_url}</p>
                   <button onClick={() => editDest(detail)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "8px 12px" }}>Modifier la destination</button>
                 </div>
-                <p style={{ color: "#6E685E", fontSize: 11, margin: 0 }}>{detail.total_scans ?? 0} scan{(detail.total_scans ?? 0) > 1 ? "s" : ""}</p>
+                <button onClick={() => setStats(detail)}
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, alignSelf: "flex-start", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 10, color: G, fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "9px 14px" }}>
+                  <BarChart3 size={15} /> Statistiques
+                </button>
               </div>
             ) : (
               <div>
@@ -625,6 +648,74 @@ export default function QrLinkPage() {
           </div>
         </div>
       ) })()}
+
+      {/* Pop-up statistiques d'un lien dynamique — ancrée à droite sur PC, feuille par-dessus sur mobile.
+          Données 100% réelles (aucun graphe fictif) : total, dernier scan, moyenne/jour, création, statut. */}
+      {stats && (() => {
+        const total = stats.total_scans ?? 0
+        const created = stats.created_at ? new Date(stats.created_at) : null
+        const daysActive = created ? Math.max(1, Math.round((Date.now() - created.getTime()) / 86400000)) : 1
+        const perDay = total / daysActive
+        const st = dynStatus(stats)
+        const ex = expiryText(stats)
+        const rows: { icon: any; label: string; value: string; color?: string }[] = [
+          { icon: Clock, label: "Dernier scan", value: stats.last_scan_at ? fmtDateTime(stats.last_scan_at) : "Aucun scan pour l'instant" },
+          { icon: TrendingUp, label: "Moyenne par jour", value: `${perDay.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} / jour · sur ${daysActive} j` },
+          { icon: Calendar, label: "Créé le", value: fmtDateTime(stats.created_at) },
+          { icon: Activity, label: "Statut", value: st.label, color: st.color },
+        ]
+        const panel: React.CSSProperties = {
+          background: "#141210", border: "1px solid rgba(201,168,76,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
+          zIndex: 401, overflowY: "auto", position: "fixed",
+          ...(isMobile
+            ? { left: 0, right: 0, bottom: 0, width: "100%", maxHeight: "85dvh", borderRadius: "22px 22px 0 0", padding: 20, paddingBottom: "calc(20px + env(safe-area-inset-bottom))", animation: "mo-slide-up .22s ease" }
+            : { top: "50%", right: 24, transform: "translateY(-50%)", width: 380, maxHeight: "88vh", borderRadius: 20, padding: 22 }),
+        }
+        return (
+          <div onClick={() => setStats(null)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)" }}>
+            {isMobile && <div style={{ position: "absolute", bottom: "calc(85dvh - 4px)", left: "50%", transform: "translateX(-50%)", width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.25)" }} />}
+            <div onClick={e => e.stopPropagation()} style={panel}>
+              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}>
+                <BarChart3 size={18} color={G} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 800, margin: 0 }}>Statistiques</p>
+                  <p style={{ color: MUTED, fontSize: 11.5, margin: "1px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{stats.label || stats.dest_url || "Lien dynamique"}</p>
+                </div>
+                <button onClick={() => setStats(null)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30, flexShrink: 0 }}><X size={15} /></button>
+              </div>
+
+              {/* Total (chiffre héro) */}
+              <div style={{ textAlign: "center", padding: "18px 12px", borderRadius: 16, background: "radial-gradient(120% 100% at 50% 0%, rgba(201,168,76,0.14), transparent 65%), rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.16)", marginBottom: 14 }}>
+                <p style={{ color: G, fontSize: 44, fontWeight: 800, margin: 0, lineHeight: 1, letterSpacing: -1 }}>{total.toLocaleString("fr-FR")}</p>
+                <p style={{ color: MUTED, fontSize: 12, fontWeight: 600, margin: "7px 0 0", textTransform: "uppercase", letterSpacing: 1.2 }}>scan{total > 1 ? "s" : ""} au total</p>
+              </div>
+
+              {/* Expiration (essai) */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 12, background: `${ex.color}14`, border: `1px solid ${ex.color}44`, marginBottom: 14 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: ex.color, flexShrink: 0 }} />
+                <span style={{ color: ex.color, fontSize: 12, fontWeight: 700 }}>{ex.text}</span>
+              </div>
+
+              {/* Détail */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {rows.map((r, i) => { const Icon = r.icon; return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, padding: "11px 2px", borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.06)" }}>
+                    <Icon size={16} color={MUTED} style={{ flexShrink: 0 }} />
+                    <span style={{ flex: 1, color: MUTED, fontSize: 12.5 }}>{r.label}</span>
+                    <span style={{ color: r.color || "#F5F0E8", fontSize: 12.5, fontWeight: 700, textAlign: "right" }}>{r.value}</span>
+                  </div>
+                ) })}
+              </div>
+
+              <div style={{ marginTop: 14, padding: "11px 13px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <p style={{ color: "#6E685E", fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 3px" }}>Lien suivi</p>
+                <p style={{ color: "#F5F0E8", fontSize: 12, margin: 0, wordBreak: "break-all", fontFamily: "monospace" }}>{stats.payload}</p>
+              </div>
+              <p style={{ color: "#6E685E", fontSize: 10.5, margin: "10px 2px 0", lineHeight: 1.5, textAlign: "center" }}>Mis à jour à chaque scan. Suivi détaillé (par jour, appareil, pays) à venir.</p>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

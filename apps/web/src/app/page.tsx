@@ -1710,10 +1710,14 @@ function Navbar() {
 }
 
 // ── How it works ──────────────────────────────────────────────────────────────
+// La boucle QRowg : le système, du support physique à la mesure, en 6 temps.
 const HOW_STEPS = [
-  {icon:"🎨",title:"Choisissez un modèle",     desc:"Un modèle adapté à votre métier, prêt à personnaliser."},
-  {icon:"✏️", title:"Personnalisez votre page", desc:"Vos infos, liens, photos et votre QR code — sans coder."},
-  {icon:"🚀",title:"Partagez et suivez",       desc:"Un seul QR à diffuser partout, chaque scan mesuré en temps réel."},
+  {icon:"✏️", title:"Créer",       desc:"Composez votre page : menu, portfolio, promo, contact…"},
+  {icon:"🔗", title:"Connecter",   desc:"Générez le QR code dynamique relié à cette page."},
+  {icon:"🎨", title:"Personnaliser",desc:"Couleurs, logo, style — le QR et la page à votre image."},
+  {icon:"🖨️", title:"Imprimer",    desc:"Affiche, sticker, carte, chevalet, flyer — prêt à imprimer."},
+  {icon:"🎯", title:"Convertir",   desc:"Réservation, WhatsApp, appel, achat, avis Google."},
+  {icon:"📊", title:"Mesurer",     desc:"Suivez chaque scan et optimisez ce qui marche."},
 ] as const
 function HowItWorks() {
   const {ref,visible}=useInView(0.08)
@@ -1725,7 +1729,7 @@ function HowItWorks() {
         .hstep{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;}
         .hbadge{transition:transform 0.3s var(--mo-ease-spring),box-shadow 0.3s ease,border-color 0.3s ease;}
         .hstep:hover .hbadge{transform:translateY(-6px) scale(1.05);border-color:rgba(201,168,76,0.6)!important;box-shadow:0 16px 38px rgba(201,168,76,0.3),0 0 0 7px rgba(8,8,8,0.92)!important;}
-        .hline{position:absolute;top:31px;left:calc(16.66% + 36px);right:calc(16.66% + 36px);height:2px;
+        .hline{display:none;position:absolute;top:31px;left:calc(16.66% + 36px);right:calc(16.66% + 36px);height:2px;
           background:linear-gradient(90deg,transparent,rgba(201,168,76,0.55) 6%,rgba(201,168,76,0.55) 94%,transparent);
           box-shadow:0 0 14px rgba(201,168,76,0.3);pointer-events:none;}
         .hline-v{display:none;}
@@ -1743,10 +1747,10 @@ function HowItWorks() {
       <div style={{maxWidth:1140,margin:"0 auto 72px",textAlign:"center",
         opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(24px)",
         transition:"opacity 0.6s ease,transform 0.6s ease"}}>
-        <Eyebrow>Comment ça marche</Eyebrow>
+        <Eyebrow>Le système QRowg</Eyebrow>
         <h2 id="how-title" style={{fontFamily:"Fraunces, serif",fontSize:"clamp(28px,4vw,52px)",
-          color:"#F5F0E8",fontWeight:700,margin:"0 auto",lineHeight:1.12,maxWidth:560,letterSpacing:"-0.02em"}}>
-          De zéro à scannable{" "}<span style={{color:"#C9A84C"}}>en 5 minutes</span>
+          color:"#F5F0E8",fontWeight:700,margin:"0 auto",lineHeight:1.12,maxWidth:640,letterSpacing:"-0.02em"}}>
+          Du support physique{" "}<span style={{color:"#C9A84C"}}>à la mesure</span>
         </h2>
       </div>
       <div style={{maxWidth:1140,margin:"0 auto",position:"relative"}}>
@@ -1782,7 +1786,7 @@ function HowItWorks() {
           padding:"12px 28px",borderRadius:10,transition:"all 0.2s ease"}}
           onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.background="rgba(201,168,76,0.08)";el.style.borderColor="rgba(201,168,76,0.55)"}}
           onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.background="transparent";el.style.borderColor="rgba(201,168,76,0.3)"}}>
-          Choisir mon modèle <span style={{fontSize:16}}>→</span>
+          Créer ma page gratuitement <span style={{fontSize:16}}>→</span>
         </a>
       </div>
     </section>
@@ -3096,7 +3100,7 @@ function StoryFlow() {
       `}</style>
       <div id="story" style={{ maxWidth: 1140, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 56, opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)", transition: "opacity 0.6s ease, transform 0.6s ease" }}>
-          <Eyebrow>Le parcours</Eyebrow>
+          <Eyebrow>Voyez-le en action</Eyebrow>
           <h2 id="story-title" style={{ fontFamily: "Fraunces, serif", fontSize: "clamp(28px,4vw,52px)", color: "#F5F0E8", fontWeight: 700, margin: "0 auto", lineHeight: 1.1, maxWidth: 580, letterSpacing: "-0.02em" }}>
             De l'idée au{" "}<span style={{ color: "#C9A84C" }}>premier client.</span>
           </h2>

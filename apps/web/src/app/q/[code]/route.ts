@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { resolveOverrideDest, detectDevice, escapeHtml, type OverrideDest } from "./qrResolve"
 import { rateLimit, ipOf } from "@/lib/rateLimit"
+import { parseDevice } from "@/lib/scanStats"
 
 // Redirection NON mise en cache : un QR est DYNAMIQUE (le proprietaire peut changer sa
 // destination apres impression) -> chaque scan doit re-resoudre cote serveur. Sans no-store,
@@ -132,7 +133,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         status, headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store, must-revalidate" },
       })
       const { data: inst } = await supabase
-        .from("instant_qrs").select("id, kind, dynamic, dest_url, status, expires_at, total_scans")
+        .from("instant_qrs").select("id, user_id, kind, dynamic, dest_url, status, expires_at, total_scans")
         .eq("short_code", code).maybeSingle()
       if (inst && inst.dynamic) {
         const st = inst.status ?? "active"
@@ -145,7 +146,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
 
         // Scan best-effort (anti-abus + incrément non bloquant) — pour TOUS les types.
         rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
-          if (allow) supabase.from("instant_qrs").update({ total_scans: (inst.total_scans ?? 0) + 1, last_scan_at: new Date().toISOString() }).eq("id", inst.id).then(() => {}, () => {})
+          if (!allow) return
+          const nowIso = new Date().toISOString()
+          supabase.from("instant_qrs").update({ total_scans: (inst.total_scans ?? 0) + 1, last_scan_at: nowIso }).eq("id", inst.id).then(() => {}, () => {})
+          // Événement détaillé (stats Pro+) — best-effort, ne bloque jamais la redirection.
+          supabase.from("instant_scan_events").insert({
+            instant_qr_id: inst.id,
+            user_id: inst.user_id,
+            scanned_at: nowIso,
+            device: parseDevice(req.headers.get("user-agent")),
+            country: req.headers.get("x-vercel-ip-country") || null,
+            referrer: (req.headers.get("referer") || "").slice(0, 300) || null,
+          }).then(() => {}, () => {})
         })
 
         // Résolution selon le type. Redirigeables : lien (http), appel (tel:), email (mailto:).

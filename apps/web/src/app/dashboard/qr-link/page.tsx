@@ -9,6 +9,7 @@ import { useMemo, useRef, useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity, Pencil } from "lucide-react"
 import Particles from "@/components/Particles"
+import { countryFlag, DEVICE_LABEL } from "@/lib/scanStats"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
@@ -110,7 +111,18 @@ export default function QrLinkPage() {
   const [detail, setDetail] = useState<any | null>(null) // aperçu détaillé d'un QR enregistré (clic)
   const [detailCopied, setDetailCopied] = useState(false)
   const [stats, setStats] = useState<any | null>(null) // pop-up statistiques d'un lien dynamique
+  const [statsData, setStatsData] = useState<any | null>(null) // stats détaillées (Pro+) chargées
+  const [statsLoading, setStatsLoading] = useState(false)
   const isMobile = useIsMobile(768)
+
+  // Charge les stats détaillées (par jour/appareil/pays) à l'ouverture de la pop-up.
+  useEffect(() => {
+    if (!stats?.id) { setStatsData(null); return }
+    setStatsLoading(true); setStatsData(null)
+    fetch(`/api/qr-instant/stats?id=${stats.id}`).then(r => r.json())
+      .then(d => setStatsData(d)).catch(() => setStatsData(null))
+      .finally(() => setStatsLoading(false))
+  }, [stats])
 
   const data = useMemo(() => payload({ type: qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em }), [qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em])
   const ready = data.length > 0
@@ -714,11 +726,82 @@ export default function QrLinkPage() {
                 ) })}
               </div>
 
-              <div style={{ marginTop: 14, padding: "11px 13px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              {/* Stats détaillées (Pro+) : graphe par jour, appareils, pays — données réelles. */}
+              {statsLoading && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", margin: "16px 0 0" }}>Chargement des statistiques…</p>}
+
+              {statsData?.detailed && (() => {
+                const days = (statsData.byDay || []).slice(-14)
+                const maxDay = Math.max(1, ...days.map((d: any) => d.count))
+                const totalWindow = (statsData.byDevice || []).reduce((n: number, d: any) => n + d.count, 0)
+                return (
+                  <div style={{ marginTop: 18 }}>
+                    <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 9px", display: "flex", justifyContent: "space-between" }}>
+                      <span>Scans · 14 derniers jours</span>
+                      {statsData.peakDay && <span style={{ color: "#6E685E", textTransform: "none", letterSpacing: 0 }}>pic : {statsData.peakDay.count}</span>}
+                    </p>
+                    {/* Histogramme par jour */}
+                    <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 56, marginBottom: 4 }}>
+                      {days.map((d: any, i: number) => (
+                        <div key={i} title={`${d.date} · ${d.count} scan${d.count > 1 ? "s" : ""}`}
+                          style={{ flex: 1, minWidth: 0, height: `${Math.max(3, (d.count / maxDay) * 100)}%`, borderRadius: 3,
+                            background: d.count > 0 ? "linear-gradient(180deg, #E6C766, #C9A84C)" : "rgba(255,255,255,0.06)" }} />
+                      ))}
+                    </div>
+                    {totalWindow === 0 && <p style={{ color: "#6E685E", fontSize: 11, textAlign: "center", margin: "6px 0 0" }}>Aucun scan sur la période — partagez votre QR pour voir les données arriver.</p>}
+
+                    {/* Appareils */}
+                    {(statsData.byDevice || []).length > 0 && (
+                      <div style={{ marginTop: 16 }}>
+                        <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 8px" }}>Appareils</p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                          {statsData.byDevice.map((d: any) => {
+                            const pct = totalWindow ? Math.round((d.count / totalWindow) * 100) : 0
+                            return (
+                              <div key={d.device} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                                <span style={{ width: 78, flexShrink: 0, color: "#D8D2C6", fontSize: 12 }}>{DEVICE_LABEL[d.device as keyof typeof DEVICE_LABEL] || d.device}</span>
+                                <div style={{ flex: 1, height: 7, borderRadius: 4, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                                  <div style={{ width: `${pct}%`, height: "100%", borderRadius: 4, background: G }} />
+                                </div>
+                                <span style={{ width: 40, flexShrink: 0, textAlign: "right", color: MUTED, fontSize: 11.5, fontVariantNumeric: "tabular-nums" }}>{d.count} · {pct}%</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pays */}
+                    {(statsData.byCountry || []).length > 0 && (
+                      <div style={{ marginTop: 16 }}>
+                        <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 8px" }}>Pays</p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {statsData.byCountry.slice(0, 5).map((c: any) => (
+                            <div key={c.country} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5 }}>
+                              <span style={{ fontSize: 15 }}>{countryFlag(c.country)}</span>
+                              <span style={{ flex: 1, color: "#D8D2C6" }}>{c.country === "??" ? "Inconnu" : c.country}</span>
+                              <span style={{ color: MUTED, fontVariantNumeric: "tabular-nums" }}>{c.count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
+              {/* Upsell : stats détaillées réservées au Pro */}
+              {statsData && statsData.detailed === false && (
+                <a href="/dashboard/qr-dynamique" style={{ display: "block", marginTop: 16, padding: "13px 14px", borderRadius: 12, background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.28)", textDecoration: "none" }}>
+                  <p style={{ color: G, fontSize: 12.5, fontWeight: 700, margin: "0 0 3px", display: "flex", alignItems: "center", gap: 6 }}><BarChart3 size={14} /> Statistiques détaillées</p>
+                  <p style={{ color: MUTED, fontSize: 11.5, margin: 0, lineHeight: 1.5 }}>Scans par jour, appareil et pays avec le palier <strong style={{ color: "#F5F0E8" }}>Pro</strong>. Toucher pour découvrir →</p>
+                </a>
+              )}
+
+              <div style={{ marginTop: 16, padding: "11px 13px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <p style={{ color: "#6E685E", fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 3px" }}>Lien suivi</p>
                 <p style={{ color: "#F5F0E8", fontSize: 12, margin: 0, wordBreak: "break-all", fontFamily: "monospace" }}>{stats.payload}</p>
               </div>
-              <p style={{ color: "#6E685E", fontSize: 10.5, margin: "10px 2px 0", lineHeight: 1.5, textAlign: "center" }}>Mis à jour à chaque scan. Suivi détaillé (par jour, appareil, pays) à venir.</p>
+              <p style={{ color: "#6E685E", fontSize: 10.5, margin: "10px 2px 0", lineHeight: 1.5, textAlign: "center" }}>Mis à jour à chaque scan.</p>
             </div>
           </div>
         )

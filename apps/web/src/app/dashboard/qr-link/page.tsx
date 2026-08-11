@@ -397,6 +397,18 @@ export default function QrLinkPage() {
         </div>
       </div>
 
+      {/* Mise en avant de l'offre QR Dynamique (masquée si déjà abonné). */}
+      {dynPlan === "none" && (
+        <Link href="/dashboard/qr-dynamique" style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 16, padding: "13px 15px", borderRadius: 14, textDecoration: "none", background: "linear-gradient(100deg, rgba(201,168,76,0.16), rgba(201,168,76,0.05))", border: "1px solid rgba(201,168,76,0.32)" }}>
+          <span style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(201,168,76,0.18)", border: "1px solid rgba(201,168,76,0.4)", display: "flex", alignItems: "center", justifyContent: "center", color: G, flexShrink: 0 }}><Zap size={19} /></span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", color: "#F5F0E8", fontSize: 13.5, fontWeight: 800 }}>Passez au QR Dynamique</span>
+            <span style={{ display: "block", color: MUTED, fontSize: 11.5, lineHeight: 1.4 }}>Modifiez la destination après impression + suivez les scans. Essai 7 jours par lien.</span>
+          </span>
+          <span style={{ color: G, fontSize: 20, fontWeight: 700, flexShrink: 0 }}>→</span>
+        </Link>
+      )}
+
       {/* 1 · Type de QR */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 14 }}>
         {TYPES.map(t => {

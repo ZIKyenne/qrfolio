@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Check, Zap, Crown, Star, ArrowLeft, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { PLAN_LIST, PLAN_COMPARISON, fmtPrice } from "@/lib/plans"
+import { DYN_PAID_PLANS, DYN_TRIAL_DAYS, dynMonthlyLabel, dynAnnualTotalLabel, type DynPlanId } from "@/lib/dynamicPlans"
 import { useAccent } from "@/lib/useAccent"
 import Particles from "@/components/Particles"
 
@@ -179,6 +180,54 @@ export default function UpgradePage() {
               </div>
             )
           })}
+        </div>
+
+        {/* ── Offre SÉPARÉE : QR Dynamique ─────────────────────────────────────── */}
+        <div style={{ position: "relative", margin: "8px 0 44px", padding: "34px 22px", borderRadius: 24, overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), #0E0D0A", border: "1px solid rgba(201,168,76,0.22)" }}>
+          <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 26px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 999, padding: "5px 14px", color: G, fontSize: 12, fontWeight: 800, letterSpacing: 0.5, marginBottom: 14 }}>
+              <Zap size={14} /> NOUVEAU · OFFRE SÉPARÉE
+            </span>
+            <h2 style={{ color: "#F5F0E8", fontSize: 30, fontWeight: 800, margin: "0 0 10px", letterSpacing: -0.5, lineHeight: 1.1 }}>QR Dynamique — des QR modifiables, pour toujours</h2>
+            <p style={{ color: MUTED, fontSize: 14.5, margin: 0, lineHeight: 1.55 }}>
+              Changez la destination d'un QR déjà imprimé et suivez les scans. Abonnement <strong style={{ color: "#F5F0E8" }}>dédié</strong>, indépendant de votre plan QRowg — chaque lien est gratuit <strong style={{ color: "#FBBF24" }}>{DYN_TRIAL_DAYS} jours</strong>.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14, maxWidth: 820, margin: "0 auto" }}>
+            {DYN_PAID_PLANS.map(p => {
+              const highlight = p.id === "pro"
+              const icon = p.id === "basique" ? <Zap size={17} /> : p.id === "pro" ? <Sparkles size={17} /> : <Crown size={17} />
+              return (
+                <div key={p.id} style={{ position: "relative", background: highlight ? `linear-gradient(180deg, ${p.color}14, rgba(255,255,255,0.02))` : "rgba(255,255,255,0.025)", border: `1px solid ${highlight ? p.color + "77" : "rgba(255,255,255,0.09)"}`, borderRadius: 18, padding: "20px 18px", display: "flex", flexDirection: "column" }}>
+                  {p.badge && <span style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: G, color: "#080808", fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "3px 11px", letterSpacing: 0.5, whiteSpace: "nowrap" }}>{p.badge}</span>}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                    <span style={{ width: 32, height: 32, borderRadius: 9, background: `${p.color}1f`, border: `1px solid ${p.color}55`, display: "flex", alignItems: "center", justifyContent: "center", color: p.color, flexShrink: 0 }}>{icon}</span>
+                    <span style={{ color: "#F5F0E8", fontSize: 16, fontWeight: 800 }}>{p.label}</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 2 }}>
+                    <span style={{ color: "#F5F0E8", fontSize: 30, fontWeight: 800, letterSpacing: -1 }}>{dynMonthlyLabel(p.id as DynPlanId, annual)}€</span>
+                    <span style={{ color: MUTED, fontSize: 12.5 }}>/mois</span>
+                  </div>
+                  <p style={{ color: "#6E685E", fontSize: 11, margin: "0 0 14px", minHeight: 15 }}>{annual ? `soit ${dynAnnualTotalLabel(p.id as DynPlanId)}€/an` : "sans engagement"}</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 16, flex: 1 }}>
+                    {p.features.slice(0, 4).map((f, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                        <Check size={13} color={p.color} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <span style={{ color: "#D8D2C6", fontSize: 12.5, lineHeight: 1.35 }}>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/dashboard/qr-dynamique" style={{ display: "block", textAlign: "center", padding: "11px", borderRadius: 11, textDecoration: "none", fontSize: 13.5, fontWeight: 700, background: highlight ? G : "transparent", color: highlight ? "#080808" : G, border: highlight ? "none" : `1px solid ${G}55` }}>
+                    Choisir {p.label}
+                  </Link>
+                </div>
+              )
+            })}
+          </div>
+          <p style={{ textAlign: "center", color: "#6E685E", fontSize: 12, margin: "20px 0 0" }}>
+            <Link href="/dashboard/qr-dynamique" style={{ color: G, textDecoration: "none", fontWeight: 600 }}>Voir tous les détails de l'offre QR Dynamique →</Link>
+          </p>
         </div>
 
         {/* Tableau comparatif */}

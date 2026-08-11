@@ -37,8 +37,8 @@ const ECC_OPTS: { k: "L" | "M" | "Q" | "H"; label: string }[] = [
 const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 50, background: "#0A0A0A", border: `1px solid ${BOR}`, borderRadius: 12, color: INK, fontSize: 16, padding: "0 15px", outline: "none" }
 const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: `1px solid ${BOR}`, borderRadius: 18, padding: 18 }
 
-export default function GeneratorClient() {
-  const [qrType, setQrType] = useState<QrType>("link")
+export default function GeneratorClient({ defaultType = "link" }: { defaultType?: QrType }) {
+  const [qrType, setQrType] = useState<QrType>(defaultType)
   const [url, setUrl] = useState("")
   const [text, setText] = useState("")
   const [ssid, setSsid] = useState(""); const [wifiPass, setWifiPass] = useState(""); const [wifiEnc, setWifiEnc] = useState<WifiEnc>("WPA")

@@ -18,8 +18,9 @@ export default async function sitemap() {
     { url: `${baseUrl}/privacy`,  lastModified: new Date(), changeFrequency: "yearly",  priority: 0.2 },
   ]
 
-  // Pages SEO « QR code par usage » (hub + une page par usage).
+  // Pages SEO « QR code par usage » (hub + une page par usage) + outil gratuit.
   const verticalPages = [
+    { url: `${baseUrl}/generateur-qr-code`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.9 },
     { url: `${baseUrl}/qr-code`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
     ...VERTICAL_ORDER.map(slug => ({
       url: `${baseUrl}/qr-code/${slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8,

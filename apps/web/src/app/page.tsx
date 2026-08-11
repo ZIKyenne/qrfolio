@@ -3824,6 +3824,7 @@ export default function HomePage() {
 
           {/* Col: QR codes par usage (maillage interne SEO) */}
           <FooterCol title="QR codes">
+            <Link href="/generateur-qr-code"   className="fl">Générateur gratuit</Link>
             <Link href="/qr-code"              className="fl">Tous les usages</Link>
             <Link href="/qr-code/restaurant"   className="fl">QR code restaurant</Link>
             <Link href="/qr-code/menu"         className="fl">QR code menu</Link>

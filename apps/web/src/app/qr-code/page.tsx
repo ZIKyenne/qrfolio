@@ -54,6 +54,7 @@ export default function QrCodeHub() {
         <section style={{ textAlign: "center", marginTop: 44 }}>
           <Link href="/auth/signup" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 800, padding: "14px 30px", borderRadius: 12, boxShadow: "0 6px 26px rgba(201,168,76,0.32)" }}>Créer mon QR code gratuitement →</Link>
           <p style={{ color: MUT, fontSize: 12.5, margin: "10px 0 0" }}>Sans carte bancaire · Modifiable à tout moment</p>
+          <p style={{ margin: "14px 0 0" }}><Link href="/generateur-qr-code" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>Ou générez un QR code statique gratuit, sans compte →</Link></p>
         </section>
       </main>
 

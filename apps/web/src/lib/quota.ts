@@ -39,13 +39,30 @@ export async function countPages(supabase: any, userId: string): Promise<number>
   return count ?? 0
 }
 
-// Nombre de QR instantanés enregistrés (feature « QR instantané ») — consomme le
-// quota `limits.qr`, DISTINCT du quota de pages (limits.pages).
+// Nombre de QR instantanés STATIQUES enregistrés (WiFi, Contact, ou tout QR non
+// dynamique) — consomme le quota `limits.qr` du plan QRowg. Les QR DYNAMIQUES sont
+// exclus : ils relèvent de l'abonnement dédié « QR Dynamique » (quota séparé, cf.
+// countPermanentDynamicQrs + lib/dynamicPlans). DISTINCT du quota de pages.
 export async function countInstantQrs(supabase: any, userId: string): Promise<number> {
   const { count } = await supabase
     .from("instant_qrs")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
+    .or("dynamic.eq.false,dynamic.is.null")
+  return count ?? 0
+}
+
+// Nombre de QR DYNAMIQUES PERMANENTS actifs (= slots consommés du quota « QR
+// Dynamique »). Permanent = redirigé, actif, SANS expiration (expires_at NULL).
+// Les liens d'ESSAI (expires_at renseigné) ne comptent pas : ils expirent seuls.
+export async function countPermanentDynamicQrs(supabase: any, userId: string): Promise<number> {
+  const { count } = await supabase
+    .from("instant_qrs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("dynamic", true)
+    .eq("status", "active")
+    .is("expires_at", null)
   return count ?? 0
 }
 

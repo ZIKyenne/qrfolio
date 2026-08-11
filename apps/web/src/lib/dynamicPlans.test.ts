@@ -3,7 +3,7 @@ import {
   DYN_PLANS, DYN_PLAN_ORDER, DYN_PAID_PLANS, DYN_PLAN_RANK, DYN_TRIAL_DAYS,
   getDynPlan, dynQrLimit, isDynSubscribed, dynCaps,
   canDynDetailedAnalytics, canDynBrandedDomain, canDynLinkSecurity, canDynBulk, canDynApiTeam,
-  minDynPlanFor, dynMonthlyLabel, dynAnnualTotal, dynAnnualTotalLabel,
+  minDynPlanFor, dynMonthlyLabel, dynAnnualTotal, dynAnnualTotalLabel, dynCanCreatePermanent,
 } from "./dynamicPlans"
 
 describe("dynamicPlans — structure", () => {
@@ -81,6 +81,31 @@ describe("dynamicPlans — gating des fonctionnalités (progressif)", () => {
     expect(minDynPlanFor("linkSecurity")).toBe("pro")
     expect(minDynPlanFor("bulk")).toBe("business")
     expect(minDynPlanFor("apiTeam")).toBe("business")
+  })
+})
+
+describe("dynamicPlans — permanent vs essai", () => {
+  it("non abonné (none) : jamais permanent, quel que soit le compte", () => {
+    expect(dynCanCreatePermanent("none", 0)).toBe(false)
+    expect(dynCanCreatePermanent(null, 0)).toBe(false)
+    expect(dynCanCreatePermanent(undefined, 0)).toBe(false)
+  })
+
+  it("Basique (3) : permanent tant qu'on est sous le quota", () => {
+    expect(dynCanCreatePermanent("basique", 0)).toBe(true)
+    expect(dynCanCreatePermanent("basique", 2)).toBe(true)
+    expect(dynCanCreatePermanent("basique", 3)).toBe(false) // quota atteint
+    expect(dynCanCreatePermanent("basique", 4)).toBe(false)
+  })
+
+  it("Pro (25) : bascule à 25", () => {
+    expect(dynCanCreatePermanent("pro", 24)).toBe(true)
+    expect(dynCanCreatePermanent("pro", 25)).toBe(false)
+  })
+
+  it("Business (illimité) : toujours permanent", () => {
+    expect(dynCanCreatePermanent("business", 0)).toBe(true)
+    expect(dynCanCreatePermanent("business", 9999)).toBe(true)
   })
 })
 

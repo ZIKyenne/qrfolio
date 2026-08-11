@@ -8,7 +8,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { serverError } from "@/lib/apiError"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { qrLimit } from "@/lib/plans"
-import { countInstantQrs } from "@/lib/quota"
+import { countInstantQrs, countPermanentDynamicQrs } from "@/lib/quota"
+import { isDynSubscribed, dynCanCreatePermanent, DYN_TRIAL_DAYS } from "@/lib/dynamicPlans"
 
 const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email"])
 // Types éligibles au DYNAMIQUE (redirigé + expirable). WiFi et Contact restent STATIQUES : ils
@@ -16,7 +17,7 @@ const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "emai
 const DYNAMIC_KINDS = new Set(["link", "text", "phone", "call", "email"])
 const COLS = "id, kind, label, payload, inputs, style, created_at, dynamic, short_code, dest_url, status, expires_at, total_scans"
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
-const TRIAL_MS = 7 * 24 * 60 * 60 * 1000 // essai gratuit : 7 jours par lien
+const TRIAL_MS = DYN_TRIAL_DAYS * 24 * 60 * 60 * 1000 // essai gratuit : 7 jours par lien
 
 // Normalise + durcit une destination de lien dynamique : http(s) uniquement.
 function safeDestUrl(raw: string): string | null {
@@ -68,14 +69,19 @@ export async function POST(req: NextRequest) {
   // payload = /q/<code> et stocke la cible/le contenu dans dest_url.
   if (!wantsDynamic && (!payload.trim() || payload.length > 4000)) return NextResponse.json({ error: "Contenu du QR invalide" }, { status: 400 })
 
-  // Quota du plan : nombre de QR instantanés (limits.qr), distinct des pages.
-  const { data: prof } = await supabase.from("profiles").select("plan").eq("id", user.id).single()
-  const limit = qrLimit(prof?.plan as string)
-  if (limit !== null && (await countInstantQrs(supabase, user.id)) >= limit) {
-    return NextResponse.json(
-      { error: `Limite de ${limit} QR instantané${limit > 1 ? "s" : ""} atteinte sur votre plan.`, upgrade: true },
-      { status: 403 },
-    )
+  const { data: prof } = await supabase.from("profiles").select("plan, dyn_plan").eq("id", user.id).single()
+
+  // Quota QR STATIQUES (limits.qr du plan QRowg) — ne s'applique QU'aux QR statiques.
+  // Les QR dynamiques relèvent de l'abonnement dédié « QR Dynamique » (quota séparé,
+  // appliqué plus bas) et ne sont jamais bloqués à la création (essai ouvert à tous).
+  if (!wantsDynamic) {
+    const limit = qrLimit(prof?.plan as string)
+    if (limit !== null && (await countInstantQrs(supabase, user.id)) >= limit) {
+      return NextResponse.json(
+        { error: `Limite de ${limit} QR statique${limit > 1 ? "s" : ""} atteinte sur votre plan.`, upgrade: true },
+        { status: 403 },
+      )
+    }
   }
 
   const label = typeof body?.label === "string" ? body.label.trim().slice(0, 80) || null : null
@@ -97,8 +103,15 @@ export async function POST(req: NextRequest) {
     }
     let short_code: string
     try { short_code = await uniqueShortCode(supabase) } catch (e) { return serverError("qr-instant", e) }
-    // Essai gratuit 7 jours par QR. (Étape ultérieure : abonnement « QR Dynamique » → expires_at = null.)
-    const expires_at = new Date(Date.now() + TRIAL_MS).toISOString()
+    // PERMANENT si l'utilisateur a un abonnement « QR Dynamique » ET reste sous son
+    // quota de liens permanents ; sinon ESSAI 7 j (expires_at renseigné). L'essai est
+    // ouvert à tout utilisateur connecté (moteur de conversion).
+    let permanent = false
+    if (isDynSubscribed(prof?.dyn_plan)) {
+      const currentPermanent = await countPermanentDynamicQrs(supabase, user.id)
+      permanent = dynCanCreatePermanent(prof?.dyn_plan, currentPermanent)
+    }
+    const expires_at = permanent ? null : new Date(Date.now() + TRIAL_MS).toISOString()
     const dynPayload = `${APP_URL}/q/${short_code}`
     const { data, error } = await supabase
       .from("instant_qrs")

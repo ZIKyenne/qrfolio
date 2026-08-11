@@ -167,6 +167,16 @@ export const canDynApiTeam = (id?: string | null): boolean => getDynPlan(id).cap
 export const minDynPlanFor = (cap: keyof DynCaps): DynPlanId =>
   DYN_PAID_PLANS.find(p => p.caps[cap])?.id ?? "business"
 
+// Décide si un NOUVEAU lien dynamique doit être PERMANENT (sans expiration) ou en
+// ESSAI 7 j. Permanent seulement si l'utilisateur est abonné ET sous son quota de
+// liens permanents. Non abonné (none, quota 0) -> toujours en essai.
+// `currentPermanent` = nombre de liens permanents déjà actifs pour cet utilisateur.
+export function dynCanCreatePermanent(planId: string | null | undefined, currentPermanent: number): boolean {
+  const lim = dynQrLimit(planId)
+  if (lim === null) return true          // illimité (Business)
+  return currentPermanent < lim          // sous le quota (none: 0 -> toujours false)
+}
+
 // Prix affiché d'un palier selon la périodicité (€ / mois). Réutilise fmtPrice (FR, TTC).
 export const dynMonthlyLabel = (id: DynPlanId, annual: boolean): string =>
   fmtPrice(annual ? getDynPlan(id).priceAnnual : getDynPlan(id).priceMonthly)

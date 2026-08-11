@@ -72,6 +72,39 @@ p{font-size:14px;line-height:1.7;color:#8A8478;margin-bottom:28px}
 </body></html>`
 }
 
+// Page de contenu pour un QR instantané DYNAMIQUE non-redirigeable (texte / WiFi / contact).
+// Le QR encode /q/<code> → cette page affiche le contenu (ne fonctionne donc plus hors ligne, mais
+// devient expirable). Contenu échappé (anti-XSS).
+function instantContentHtml(kind: string, content: string, appUrl: string): string {
+  let title = "QR Code", inner = ""
+  if (kind === "text") {
+    title = "Note"
+    inner = `<p class="txt">${escapeHtml(content)}</p>`
+  } else if (kind === "wifi") {
+    title = "Réseau WiFi"
+    const g = (k: string) => { const m = content.match(new RegExp(k + ":((?:\\\\.|[^;])*)")); return m ? m[1].replace(/\\(.)/g, "$1") : "" }
+    const ssid = g("S"), pass = g("P"), type = g("T") || "WPA"
+    inner = `<div class="rows">
+      <div class="row"><span class="k">Réseau</span><b>${escapeHtml(ssid)}</b></div>
+      <div class="row"><span class="k">Mot de passe</span><b>${escapeHtml(pass)}</b></div>
+      <div class="row"><span class="k">Sécurité</span><b>${escapeHtml(type)}</b></div>
+    </div><p class="hint">Connectez-vous à ce réseau avec ces identifiants.</p>`
+  } else if (kind === "contact") {
+    title = "Contact"
+    const href = `data:text/vcard;charset=utf-8,${encodeURIComponent(content)}`
+    inner = `<a class="btn" href="${href}" download="contact.vcf">📇 Ajouter le contact</a><pre class="pre">${escapeHtml(content)}</pre>`
+  }
+  return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;background:#080808;color:#F5F0E8;font-family:'DM Sans',Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#0F0E0B;border:1px solid rgba(201,168,76,0.25);border-radius:20px;padding:32px 26px;max-width:420px;width:100%;text-align:center}
+h1{font-size:20px;font-weight:700;margin-bottom:18px}.txt{font-size:16px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:#E8E2D6}
+.rows{display:flex;flex-direction:column;gap:10px;text-align:left}.row{display:flex;justify-content:space-between;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px}.k{color:#8A8478;font-size:13px}b{font-size:15px;word-break:break-all}
+.hint{color:#8A8478;font-size:12px;margin-top:14px}.btn{display:inline-block;background:#C9A84C;color:#080808;font-weight:700;border-radius:12px;padding:13px 20px;text-decoration:none;font-size:15px;margin-bottom:16px}
+.pre{text-align:left;background:#0A0A0A;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;font-size:11px;color:#8A8478;overflow:auto;white-space:pre-wrap;word-break:break-all}
+.link{display:block;color:#8A8478;text-decoration:none;font-size:12px;margin-top:18px}</style></head>
+<body><div class="card"><h1>${title}</h1>${inner}<a class="link" href="${appUrl}">Créé avec QRowg →</a></div></body></html>`
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params
   if (!code) return redirectNoStore(new URL("/", req.url))
@@ -99,7 +132,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         status, headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store, must-revalidate" },
       })
       const { data: inst } = await supabase
-        .from("instant_qrs").select("id, dynamic, dest_url, status, expires_at, total_scans")
+        .from("instant_qrs").select("id, kind, dynamic, dest_url, status, expires_at, total_scans")
         .eq("short_code", code).maybeSingle()
       if (inst && inst.dynamic) {
         const st = inst.status ?? "active"
@@ -109,14 +142,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         }
         if (st === "paused") return htmlNoStore(pausedHtml("", appUrl), 503)
         if (st === "expired") return htmlNoStore(expiredHtml(appUrl), 410)
-        const dest = inst.dest_url && /^https?:\/\//i.test(inst.dest_url) ? inst.dest_url : null
-        if (dest) {
-          // Scan best-effort (anti-abus + incrément non bloquant).
-          rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
-            if (allow) supabase.from("instant_qrs").update({ total_scans: (inst.total_scans ?? 0) + 1, last_scan_at: new Date().toISOString() }).eq("id", inst.id).then(() => {}, () => {})
-          })
-          return redirectNoStore(dest)
-        }
+
+        // Scan best-effort (anti-abus + incrément non bloquant) — pour TOUS les types.
+        rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
+          if (allow) supabase.from("instant_qrs").update({ total_scans: (inst.total_scans ?? 0) + 1, last_scan_at: new Date().toISOString() }).eq("id", inst.id).then(() => {}, () => {})
+        })
+
+        // Résolution selon le type. Redirigeables : lien (http), appel (tel:), email (mailto:).
+        // Non redirigeables (texte/WiFi/contact) : page de contenu (le QR encode /q/<code>).
+        const content = String(inst.dest_url || "")
+        const kind = String(inst.kind || "link")
+        if (kind === "link" && /^https?:\/\//i.test(content)) return redirectNoStore(content)
+        if ((kind === "phone" || kind === "call") && /^tel:/i.test(content)) return redirectNoStore(content)
+        if (kind === "email" && /^mailto:/i.test(content)) return redirectNoStore(content)
+        if (kind === "text" || kind === "wifi" || kind === "contact") return htmlNoStore(instantContentHtml(kind, content, appUrl), 200)
+        if (/^https?:\/\//i.test(content)) return redirectNoStore(content) // repli
       }
       return redirectNoStore(new URL("/?qr=notfound", appUrl))
     }

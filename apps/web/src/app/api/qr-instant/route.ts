@@ -58,8 +58,11 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({} as any))
   const kind = String(body?.kind || "")
   const payload = typeof body?.payload === "string" ? body.payload : ""
+  const wantsDynamic = body?.dynamic === true
   if (!KINDS.has(kind)) return NextResponse.json({ error: "Type de QR invalide" }, { status: 400 })
-  if (!payload.trim() || payload.length > 4000) return NextResponse.json({ error: "Contenu du QR invalide" }, { status: 400 })
+  // Le contenu encodé (payload) n'est requis qu'en STATIQUE : en dynamique le serveur génère
+  // payload = /q/<code> et stocke la cible/le contenu dans dest_url.
+  if (!wantsDynamic && (!payload.trim() || payload.length > 4000)) return NextResponse.json({ error: "Contenu du QR invalide" }, { status: 400 })
 
   // Quota du plan : nombre de QR instantanés (limits.qr), distinct des pages.
   const { data: prof } = await supabase.from("profiles").select("plan").eq("id", user.id).single()
@@ -75,19 +78,27 @@ export async function POST(req: NextRequest) {
   const inputs = body?.inputs && typeof body.inputs === "object" ? body.inputs : {}
   const style = body?.style && typeof body.style === "object" ? body.style : {}
 
-  // ── Lien DYNAMIQUE (redirigé par /q/[code], destination modifiable, essai 7 j) ──
-  const wantsDynamic = body?.dynamic === true && kind === "link"
+  // ── QR DYNAMIQUE (TOUS les types) : le QR encode /q/<code>, expirable (essai 7 j par QR). ──
+  // dest_url = cible/contenu résolu par /q/[code] : lien→URL, appel→tel:, email→mailto:,
+  // texte/wifi/contact→contenu encodé (rendu sur une page). Les 3 derniers ne marchent plus hors ligne.
   if (wantsDynamic) {
-    const dest = safeDestUrl(String(body?.dest || body?.inputs?.url || ""))
-    if (!dest) return NextResponse.json({ error: "Lien invalide (http/https requis)." }, { status: 400 })
+    let dest: string
+    if (kind === "link") {
+      const d = safeDestUrl(String(body?.dest || body?.inputs?.url || payload || ""))
+      if (!d) return NextResponse.json({ error: "Lien invalide (http/https requis)." }, { status: 400 })
+      dest = d
+    } else {
+      dest = String(body?.dest || payload || "").trim()
+      if (!dest || dest.length > 4000) return NextResponse.json({ error: "Contenu du QR invalide" }, { status: 400 })
+    }
     let short_code: string
     try { short_code = await uniqueShortCode(supabase) } catch (e) { return serverError("qr-instant", e) }
-    // Essai gratuit 7 jours par lien. (Étape ultérieure : abonnement « QR Dynamique » → expires_at = null.)
+    // Essai gratuit 7 jours par QR. (Étape ultérieure : abonnement « QR Dynamique » → expires_at = null.)
     const expires_at = new Date(Date.now() + TRIAL_MS).toISOString()
     const dynPayload = `${APP_URL}/q/${short_code}`
     const { data, error } = await supabase
       .from("instant_qrs")
-      .insert({ user_id: user.id, kind: "link", label, payload: dynPayload, inputs, style,
+      .insert({ user_id: user.id, kind, label, payload: dynPayload, inputs, style,
         dynamic: true, short_code, dest_url: dest, status: "active", expires_at })
       .select(COLS)
       .single()

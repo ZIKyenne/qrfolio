@@ -168,17 +168,19 @@ export default function QrLinkPage() {
     } catch {}
   }
 
-  // ── Lien DYNAMIQUE : le QR encode qrowg.com/q/<code>, destination modifiable, essai 7 j par lien.
+  // ── QR DYNAMIQUE (tous types) : le QR encode qrowg.com/q/<code>, expirable (essai 7 j par QR).
+  // Lien/appel/email redirigent ; texte/wifi/contact affichent une page (ne marchent plus hors ligne).
   async function createDynamic() {
-    if (qrType !== "link" || !url.trim() || saveBusy) return
+    if (!ready || saveBusy) return
     setSaveBusy(true); setSaveMsg(null)
     try {
+      const inputs = { type: qrType, url, ssid, wifiEnc, text, vc, phone, em }
       const res = await fetch("/api/qr-instant", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: "link", dynamic: true, dest: url, label: previewLabel || null, style: { fg, bg, ecc: effectiveEcc, styleKey } }),
+        body: JSON.stringify({ kind: qrType, dynamic: true, payload: data, dest: qrType === "link" ? url : data, label: previewLabel || null, inputs, style: { fg, bg, ecc: effectiveEcc, styleKey } }),
       })
       const d = await res.json().catch(() => ({}))
-      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setSaveMsg({ text: "Lien dynamique créé ✓ (essai 7 jours)", ok: true }) }
+      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setDetail(d.item); setSaveMsg({ text: "QR créé ✓ — essai 7 jours", ok: true }) }
       else setSaveMsg({ text: d.error || "Création impossible", ok: false })
     } catch { setSaveMsg({ text: "Erreur réseau", ok: false }) }
     finally { setSaveBusy(false); setTimeout(() => setSaveMsg(null), 4000) }
@@ -440,25 +442,18 @@ export default function QrLinkPage() {
         </Button>
       </div>
 
-      {/* Enregistrer (persistant, compte dans le quota QR du plan) */}
-      <Button variant="secondary" fullWidth onClick={saveInstant} loading={saveBusy} disabled={!ready}
-        leftIcon={<Save size={16} />} style={{ marginTop: 10 }}>
-        Enregistrer ce QR
-      </Button>
+      {/* Créer le QR — DYNAMIQUE + expirable pour TOUS les types (essai 7 j par QR). */}
+      <div style={{ ...card, marginTop: 12, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)" }}>
+        <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>⚡ Créer le QR code</p>
+        <p style={{ color: MUTED, fontSize: 12, margin: "0 0 11px", lineHeight: 1.5 }}>
+          QR <strong style={{ color: MUTED }}>dynamique</strong> (modifiable + suivi des scans). Essai gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong>, puis abonnement pour rester actif.
+          {qrType !== "link" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 5 }}>Note : ce QR ouvre une page au scan (Internet requis) — il n'est plus valable hors ligne.</span>}
+        </p>
+        <Button onClick={createDynamic} disabled={!ready || saveBusy} style={{ width: "100%" }}>
+          {saveBusy ? "Création…" : "Créer le QR code (essai 7 j)"}
+        </Button>
+      </div>
       {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "9px 0 0" }}>{saveMsg.text}</p>}
-
-      {/* Lien DYNAMIQUE (modifiable après impression + essai 7 jours) — type Lien uniquement */}
-      {qrType === "link" && (
-        <div style={{ ...card, marginTop: 12, borderColor: "rgba(201,168,76,0.28)", background: "rgba(201,168,76,0.05)" }}>
-          <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>⚡ Lien dynamique</p>
-          <p style={{ color: MUTED, fontSize: 12, margin: "0 0 11px", lineHeight: 1.5 }}>
-            Le QR pointe vers une adresse <strong style={{ color: MUTED }}>modifiable à tout moment</strong> (sans réimprimer). Essai gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong> par lien.
-          </p>
-          <Button onClick={createDynamic} disabled={!url.trim() || saveBusy} style={{ width: "100%" }}>
-            {saveBusy ? "Création…" : "Créer un lien dynamique (essai 7 j)"}
-          </Button>
-        </div>
-      )}
 
       {/* Mes liens dynamiques */}
       {dynamicLinks.length > 0 && (

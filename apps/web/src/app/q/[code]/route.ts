@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { resolveOverrideDest, detectDevice, escapeHtml, type OverrideDest } from "./qrResolve"
 import { rateLimit, ipOf } from "@/lib/rateLimit"
 import { parseDevice } from "@/lib/scanStats"
+import { verifyLinkPassword } from "@/lib/linkPassword"
 
 // Redirection NON mise en cache : un QR est DYNAMIQUE (le proprietaire peut changer sa
 // destination apres impression) -> chaque scan doit re-resoudre cote serveur. Sans no-store,
@@ -73,6 +74,42 @@ p{font-size:14px;line-height:1.7;color:#8A8478;margin-bottom:28px}
 </body></html>`
 }
 
+// Page de saisie du mot de passe (sécurité du lien, Pro+). Formulaire GET vers la même URL
+// (?pw=…) : à la validation, le redirect vérifie et résout. `wrong` = tentative précédente erronée.
+function passwordPromptHtml(appUrl: string, wrong: boolean): string {
+  return `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lien protégé</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:#080808;color:#F5F0E8;font-family:'DM Sans',Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#0F0E0B;border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:40px 32px;max-width:400px;width:100%;text-align:center}
+.icon{font-size:48px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);border-radius:20px;padding:4px 14px;font-size:12px;color:#C9A84C;font-weight:600;margin-bottom:20px}
+h1{font-size:22px;font-weight:700;margin-bottom:10px}
+p{font-size:14px;line-height:1.6;color:#8A8478;margin-bottom:22px}
+input{width:100%;height:50px;background:#0A0A0A;border:1px solid rgba(255,255,255,0.14);border-radius:12px;color:#F5F0E8;font-size:16px;padding:0 15px;outline:none;margin-bottom:12px}
+input:focus{border-color:#C9A84C}
+button{width:100%;height:50px;border:none;border-radius:12px;background:#C9A84C;color:#080808;font-size:15px;font-weight:700;cursor:pointer}
+.err{color:#FF6B6B;font-size:13px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">🔒</div>
+  <div class="badge">Lien protégé</div>
+  <h1>Mot de passe requis</h1>
+  <p>Ce lien est protégé. Saisissez le mot de passe pour continuer.</p>
+  ${wrong ? '<p class="err">Mot de passe incorrect. Réessayez.</p>' : ""}
+  <form method="get" autocomplete="off">
+    <input type="password" name="pw" placeholder="Mot de passe" autofocus aria-label="Mot de passe" />
+    <button type="submit">Déverrouiller</button>
+  </form>
+</div>
+</body></html>`
+}
+
 // Page de contenu pour un QR instantané DYNAMIQUE non-redirigeable (texte / WiFi / contact).
 // Le QR encode /q/<code> → cette page affiche le contenu (ne fonctionne donc plus hors ligne, mais
 // devient expirable). Contenu échappé (anti-XSS).
@@ -133,7 +170,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         status, headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store, must-revalidate" },
       })
       const { data: inst } = await supabase
-        .from("instant_qrs").select("id, user_id, kind, dynamic, dest_url, status, expires_at, total_scans")
+        .from("instant_qrs").select("id, user_id, kind, dynamic, dest_url, status, expires_at, total_scans, password_hash")
         .eq("short_code", code).maybeSingle()
       if (inst && inst.dynamic) {
         const st = inst.status ?? "active"
@@ -143,6 +180,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         }
         if (st === "paused") return htmlNoStore(pausedHtml("", appUrl), 503)
         if (st === "expired") return htmlNoStore(expiredHtml(appUrl), 410)
+
+        // Mot de passe (sécurité du lien, Pro+) : exiger le bon pw avant de résoudre/compter le scan.
+        if (inst.password_hash) {
+          const pw = req.nextUrl.searchParams.get("pw") || ""
+          if (!verifyLinkPassword(pw, inst.password_hash)) {
+            return htmlNoStore(passwordPromptHtml(appUrl, pw.length > 0), 401)
+          }
+        }
 
         // Scan best-effort (anti-abus + incrément non bloquant) — pour TOUS les types.
         rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {

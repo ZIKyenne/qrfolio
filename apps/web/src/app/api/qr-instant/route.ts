@@ -9,13 +9,21 @@ import { serverError } from "@/lib/apiError"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { qrLimit } from "@/lib/plans"
 import { countInstantQrs, countPermanentDynamicQrs } from "@/lib/quota"
-import { isDynSubscribed, dynCanCreatePermanent, DYN_TRIAL_DAYS } from "@/lib/dynamicPlans"
+import { isDynSubscribed, dynCanCreatePermanent, DYN_TRIAL_DAYS, canDynLinkSecurity, dynQrLimit } from "@/lib/dynamicPlans"
+import { hashLinkPassword } from "@/lib/linkPassword"
 
 const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email"])
 // Types éligibles au DYNAMIQUE (redirigé + expirable). WiFi et Contact restent STATIQUES : ils
 // doivent fonctionner hors ligne (auto-connexion WiFi, ajout de contact) — impossible via redirection.
 const DYNAMIC_KINDS = new Set(["link", "text", "phone", "call", "email"])
-const COLS = "id, kind, label, payload, inputs, style, created_at, dynamic, short_code, dest_url, status, expires_at, total_scans"
+const COLS = "id, kind, label, payload, inputs, style, created_at, dynamic, short_code, dest_url, status, expires_at, total_scans, paused_reason, password_hash"
+
+// Ne JAMAIS renvoyer le hash du mot de passe au client : on expose seulement `has_password`.
+function pub(row: any): any {
+  if (!row) return row
+  const { password_hash, ...rest } = row
+  return { ...rest, has_password: !!password_hash }
+}
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
 const TRIAL_MS = DYN_TRIAL_DAYS * 24 * 60 * 60 * 1000 // essai gratuit : 7 jours par lien
 
@@ -51,7 +59,7 @@ export async function GET() {
   const { data } = await supabase
     .from("instant_qrs").select(COLS)
     .eq("user_id", user.id).order("created_at", { ascending: false }).limit(300)
-  return NextResponse.json({ items: data || [] })
+  return NextResponse.json({ items: (data || []).map(pub) })
 }
 
 export async function POST(req: NextRequest) {
@@ -120,7 +128,7 @@ export async function POST(req: NextRequest) {
       .select(COLS)
       .single()
     if (error) return serverError("qr-instant", error)
-    return NextResponse.json({ ok: true, item: data })
+    return NextResponse.json({ ok: true, item: pub(data) })
   }
 
   const { data, error } = await supabase
@@ -129,11 +137,12 @@ export async function POST(req: NextRequest) {
     .select(COLS)
     .single()
   if (error) return serverError("qr-instant", error)
-  return NextResponse.json({ ok: true, item: data })
+  return NextResponse.json({ ok: true, item: pub(data) })
 }
 
-// PATCH — modifier la destination d'un lien dynamique (le cœur du QR dynamique : changer où il pointe
-// sans réimprimer le QR). Propriétaire uniquement (RLS + filtre user_id).
+// PATCH — modifier un lien dynamique. Cœur : destination/label (toujours autorisé au
+// propriétaire). SÉCURITÉ (mot de passe, expiration programmée, pause/reprise manuelle) :
+// réservée au palier Pro+ (canDynLinkSecurity). Propriétaire uniquement (RLS + filtre user_id).
 export async function PATCH(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -141,6 +150,12 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => ({} as any))
   const id = String(body?.id || "")
   if (!id) return NextResponse.json({ error: "id requis" }, { status: 400 })
+
+  // Cible (propriétaire) — nécessaire pour les règles de quota/expiration.
+  const { data: link } = await supabase
+    .from("instant_qrs").select("id, dynamic, expires_at, status").eq("id", id).eq("user_id", user.id).maybeSingle()
+  if (!link) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
+
   const patch: Record<string, any> = {}
   if (typeof body?.dest === "string") {
     const dest = safeDestUrl(body.dest)
@@ -148,12 +163,55 @@ export async function PATCH(req: NextRequest) {
     patch.dest_url = dest
   }
   if (typeof body?.label === "string") patch.label = body.label.trim().slice(0, 80) || null
+
+  const action = body?.action as string | undefined
+  const wantsSecurity = ("password" in body) || ("expires_at" in body) || action === "pause" || action === "resume"
+  if (wantsSecurity) {
+    const { data: prof } = await supabase.from("profiles").select("dyn_plan").eq("id", user.id).single()
+    if (!canDynLinkSecurity(prof?.dyn_plan)) {
+      return NextResponse.json({ error: "La sécurité du lien est réservée au palier Pro.", upgrade: true }, { status: 403 })
+    }
+
+    // Mot de passe : chaîne non vide -> hash ; vide/null -> retire le mot de passe.
+    if ("password" in body) {
+      const pw = typeof body.password === "string" ? body.password : ""
+      patch.password_hash = pw ? hashLinkPassword(pw) : null
+    }
+
+    // Expiration programmée : ISO future, ou null/"" pour rendre permanent.
+    if ("expires_at" in body) {
+      if (body.expires_at === null || body.expires_at === "") patch.expires_at = null
+      else {
+        const t = Date.parse(String(body.expires_at))
+        if (isNaN(t)) return NextResponse.json({ error: "Date d'expiration invalide." }, { status: 400 })
+        if (t <= Date.now()) return NextResponse.json({ error: "La date d'expiration doit être dans le futur." }, { status: 400 })
+        patch.expires_at = new Date(t).toISOString()
+      }
+      // Modifier l'expiration réactive un lien expiré.
+      if (link.status === "expired") patch.status = "active"
+    }
+
+    // Pause / reprise MANUELLE.
+    if (action === "pause") { patch.status = "paused"; patch.paused_reason = "manual" }
+    if (action === "resume") {
+      // Reprendre un lien PERMANENT ne doit pas dépasser le quota de liens actifs.
+      const willBePermanent = ("expires_at" in patch) ? patch.expires_at === null : link.expires_at === null
+      if (willBePermanent) {
+        const lim = dynQrLimit(prof?.dyn_plan)
+        if (lim !== null && (await countPermanentDynamicQrs(supabase, user.id)) >= lim) {
+          return NextResponse.json({ error: "Quota de liens actifs atteint — mettez un autre lien en pause d'abord." }, { status: 403 })
+        }
+      }
+      patch.status = "active"; patch.paused_reason = null
+    }
+  }
+
   if (Object.keys(patch).length === 0) return NextResponse.json({ error: "Rien à modifier" }, { status: 400 })
   const { data, error } = await supabase
     .from("instant_qrs").update(patch).eq("id", id).eq("user_id", user.id).select(COLS).single()
   if (error) return serverError("qr-instant", error)
   if (!data) return NextResponse.json({ error: "Introuvable" }, { status: 404 })
-  return NextResponse.json({ ok: true, item: data })
+  return NextResponse.json({ ok: true, item: pub(data) })
 }
 
 export async function DELETE(req: NextRequest) {

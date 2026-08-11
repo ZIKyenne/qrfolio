@@ -7,6 +7,24 @@ import { resolveStripeEvent } from "@/lib/webhookLogic"
 import { buildSubscriptionEmail } from "@/lib/subscriptionEmail"
 import { EMAIL_FROM } from "@/lib/emailFrom"
 import { serverError } from "@/lib/apiError"
+import { dynQrLimit } from "@/lib/dynamicPlans"
+import { planDynamicReconcile } from "@/lib/dynamicReconcile"
+
+// Réconcilie les liens dynamiques d'un utilisateur avec son quota « QR Dynamique » :
+// promeut les essais en permanents (souscription), met en pause les excédents
+// (downgrade/résiliation), réactive les liens re-couverts par le quota. Best-effort.
+async function reconcileDynamicLinks(userId: string, dynPlan: string) {
+  const { data: links } = await supabase
+    .from("instant_qrs")
+    .select("id, status, expires_at")
+    .eq("user_id", userId).eq("dynamic", true)
+    .order("created_at", { ascending: true })
+  if (!links?.length) return
+  const ops = planDynamicReconcile(links as any, dynQrLimit(dynPlan), Date.now())
+  for (const op of ops) {
+    await supabase.from("instant_qrs").update(op.patch).eq("id", op.id)
+  }
+}
 
 // Email de bienvenue abonnement (essai/achat) — fire-and-forget, n'echoue jamais.
 async function sendSubscriptionEmail(userId: string, plan: string, billing?: string | null) {
@@ -83,6 +101,44 @@ export async function POST(req: NextRequest) {
 
       case "payment_failed":
         await supabase.from("subscriptions").update({ status: "past_due" }).eq("stripe_subscription_id", outcome.subId)
+        // Best-effort : couvre aussi un abonnement « QR Dynamique » (aucun effet sinon).
+        await supabase.from("profiles").update({ dyn_status: "past_due" }).eq("dyn_stripe_subscription_id", outcome.subId)
+        break
+
+      // ── Abonnement DÉDIÉ « QR Dynamique » (profiles.dyn_*) ──────────────────
+      case "dyn_checkout_completed":
+        await supabase.from("profiles").update({
+          dyn_plan: outcome.dynPlan,
+          dyn_status: "active",
+          dyn_stripe_subscription_id: outcome.subscriptionId,
+          dyn_current_period_end: outcome.periodEnd ? new Date(outcome.periodEnd * 1000).toISOString() : null,
+          dyn_cancel_at_end: false,
+          stripe_customer_id: outcome.customerId,
+        }).eq("id", outcome.userId)
+        // Les liens d'essai actifs deviennent permanents dans la limite du quota.
+        await reconcileDynamicLinks(outcome.userId, outcome.dynPlan)
+        break
+
+      case "dyn_subscription_updated":
+        await supabase.from("profiles").update({
+          ...(outcome.dynPlan ? { dyn_plan: outcome.dynPlan } : {}),
+          dyn_status: outcome.status,
+          dyn_current_period_end: new Date(outcome.periodEnd * 1000).toISOString(),
+          dyn_cancel_at_end: outcome.cancelAtEnd,
+        }).eq("dyn_stripe_subscription_id", outcome.subId)
+        // Changement de palier confirmé -> réconcilie le quota (pause/upgrade).
+        if (outcome.dynPlan) await reconcileDynamicLinks(outcome.userId, outcome.dynPlan)
+        break
+
+      case "dyn_subscription_deleted":
+        await supabase.from("profiles").update({
+          dyn_plan: "none",
+          dyn_status: "canceled",
+          dyn_cancel_at_end: false,
+          dyn_stripe_subscription_id: null,
+        }).eq("id", outcome.userId)
+        // Plus d'abonnement -> quota 0 : tous les liens permanents passent en pause.
+        await reconcileDynamicLinks(outcome.userId, "none")
         break
     }
   } catch (e: any) {

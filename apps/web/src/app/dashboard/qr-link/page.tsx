@@ -7,9 +7,10 @@
 //    suivi des scans, essai 7 j) ou STATIQUE (WiFi/Contact → hors ligne, sans expiration).
 import { useMemo, useRef, useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity, Pencil } from "lucide-react"
+import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity, Pencil, Lock, Pause, Play } from "lucide-react"
 import Particles from "@/components/Particles"
 import { countryFlag, DEVICE_LABEL } from "@/lib/scanStats"
+import { canDynLinkSecurity } from "@/lib/dynamicPlans"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
@@ -106,6 +107,7 @@ export default function QrLinkPage() {
   const logoInput = useRef<HTMLInputElement>(null)
   // QR instantanés ENREGISTRÉS (persistants, comptent dans le quota du plan limits.qr)
   const [saved, setSaved] = useState<any[]>([])
+  const [dynPlan, setDynPlan] = useState<string>("none") // palier « QR Dynamique » (gating sécurité/stats)
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveMsg, setSaveMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [detail, setDetail] = useState<any | null>(null) // aperçu détaillé d'un QR enregistré (clic)
@@ -133,7 +135,7 @@ export default function QrLinkPage() {
   const [history, setHistory] = useState<QrHistEntry[]>([])
   useEffect(() => { try { const h = JSON.parse(localStorage.getItem("qrfolio_qr_history") || "[]"); if (Array.isArray(h)) setHistory(h.slice(0, 8)) } catch {} }, [])
   // Charge les QR instantanés enregistrés (serveur).
-  useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items) }).catch(() => {}) }, [])
+  useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.dyn_plan) setDynPlan(d.dyn_plan) }).catch(() => {}) }, [])
   const saveToHistory = () => setHistory(prev => {
     const entry: QrHistEntry = { type: qrType, url: url.trim(), ssid, wifiPass, wifiEnc, text: text.trim(), vc, phone, em, fg, bg, ecc, styleKey }
     const next = [entry, ...prev.filter(e => payload(e) !== data)].slice(0, 8)
@@ -234,6 +236,41 @@ export default function QrLinkPage() {
       else alert(d.error || "Modification impossible")
     } catch {}
   }
+  // Applique un item mis à jour (PATCH) à la liste + à la fiche ouverte.
+  function applyItem(item: any) {
+    setSaved(prev => prev.map(x => x.id === item.id ? item : x))
+    setDetail((d: any) => (d && d.id === item.id ? item : d))
+  }
+  async function patchLink(id: string, body: any): Promise<boolean> {
+    try {
+      const res = await fetch("/api/qr-instant", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...body }) })
+      const d = await res.json().catch(() => ({}))
+      if (res.ok && d.item) { applyItem(d.item); return true }
+      alert(d.error || "Modification impossible"); return false
+    } catch { alert("Erreur réseau"); return false }
+  }
+  // ── Sécurité du lien (Pro+) ──
+  async function setLinkPassword(s: any) {
+    const pw = typeof window !== "undefined" ? window.prompt("Mot de passe pour protéger ce lien :", "") : null
+    if (pw === null || !pw.trim()) return
+    await patchLink(s.id, { password: pw })
+  }
+  async function removeLinkPassword(s: any) {
+    if (typeof window !== "undefined" && window.confirm("Retirer le mot de passe de ce lien ?")) await patchLink(s.id, { password: "" })
+  }
+  async function scheduleExpiry(s: any) {
+    const cur = s.expires_at ? new Date(s.expires_at).toISOString().slice(0, 10) : ""
+    const v = typeof window !== "undefined" ? window.prompt("Date d'expiration (AAAA-MM-JJ) — laisser vide pour un lien permanent :", cur) : null
+    if (v === null) return
+    if (!v.trim()) { await patchLink(s.id, { expires_at: null }); return }
+    const t = Date.parse(`${v.trim()}T23:59:59`)
+    if (isNaN(t)) { alert("Date invalide (format AAAA-MM-JJ)."); return }
+    await patchLink(s.id, { expires_at: new Date(t).toISOString() })
+  }
+  async function toggleManualPause(s: any) {
+    await patchLink(s.id, { action: s.status === "active" ? "pause" : "resume" })
+  }
+
   // Statut lisible d'un lien dynamique (essai 7 j par lien).
   function dynStatus(s: any): { label: string; color: string; expired: boolean } {
     if (s.status === "expired") return { label: "Expiré", color: "#FF6B6B", expired: true }
@@ -283,6 +320,10 @@ export default function QrLinkPage() {
   // Couleur d'avant-plan sûre pour les MINI-vignettes (toujours sur fond blanc) : si le QR enregistré
   // est trop clair/peu contrasté (ex. blanc sur fond sombre), on retombe sur du noir pour rester net.
   const safeFg = (c?: string) => (contrast(c || "#080808", "#FFFFFF") >= 2 ? (c || "#080808") : "#080808")
+  // Lignes de la section « Sécurité » (fiche détaillée d'un lien dynamique, Pro+).
+  const secRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10 }
+  const secRowLabel: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, color: "#D8D2C6", fontSize: 12.5, width: 110, flexShrink: 0 }
+  const secBtn: React.CSSProperties = { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 8, color: "#F5F0E8", fontSize: 11.5, fontWeight: 600, cursor: "pointer", padding: "6px 10px", flexShrink: 0 }
   const swatch = (c: string, on: boolean, onClick: () => void, aria: string) => (
     <button key={c} onClick={onClick} aria-label={aria}
       style={{ width: 38, height: 38, borderRadius: 11, background: c, border: on ? `2.5px solid ${G}` : "2px solid rgba(255,255,255,0.14)", boxShadow: on ? `0 0 0 3px ${G}22` : "none", cursor: "pointer", flexShrink: 0, transition: "all .15s" }} />
@@ -645,6 +686,33 @@ export default function QrLinkPage() {
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, alignSelf: "flex-start", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 10, color: G, fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "9px 14px" }}>
                   <BarChart3 size={15} /> Statistiques
                 </button>
+
+                {/* Sécurité du lien (Pro+) : mot de passe, expiration programmée, pause manuelle. */}
+                {canDynLinkSecurity(dynPlan) ? (
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 13, display: "flex", flexDirection: "column", gap: 11 }}>
+                    <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: 0, display: "flex", alignItems: "center", gap: 6 }}><ShieldCheck size={13} /> Sécurité</p>
+                    <div style={secRow}>
+                      <span style={secRowLabel}><Lock size={14} /> Mot de passe</span>
+                      <span style={{ flex: 1, fontSize: 12, color: detail.has_password ? "var(--success)" : MUTED }}>{detail.has_password ? "Activé" : "Aucun"}</span>
+                      <button style={secBtn} onClick={() => detail.has_password ? removeLinkPassword(detail) : setLinkPassword(detail)}>{detail.has_password ? "Retirer" : "Ajouter"}</button>
+                    </div>
+                    <div style={secRow}>
+                      <span style={secRowLabel}><Clock size={14} /> Expiration</span>
+                      <span style={{ flex: 1, fontSize: 12, color: detail.expires_at ? "#FBBF24" : MUTED }}>{detail.expires_at ? new Date(detail.expires_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "Permanent"}</span>
+                      <button style={secBtn} onClick={() => scheduleExpiry(detail)}>Modifier</button>
+                    </div>
+                    <div style={secRow}>
+                      <span style={secRowLabel}>{detail.status === "active" ? <Pause size={14} /> : <Play size={14} />} État</span>
+                      <span style={{ flex: 1, fontSize: 12, color: detail.status === "active" ? "var(--success)" : "#FBBF24" }}>{detail.status === "active" ? "Actif" : detail.status === "paused" ? "En pause" : detail.status === "expired" ? "Expiré" : detail.status}</span>
+                      <button style={secBtn} onClick={() => toggleManualPause(detail)}>{detail.status === "active" ? "Mettre en pause" : "Réactiver"}</button>
+                    </div>
+                  </div>
+                ) : (
+                  <a href="/dashboard/qr-dynamique" style={{ display: "block", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 13, textDecoration: "none" }}>
+                    <p style={{ color: G, fontSize: 12.5, fontWeight: 700, margin: "0 0 3px", display: "flex", alignItems: "center", gap: 6 }}><ShieldCheck size={14} /> Sécurité du lien</p>
+                    <p style={{ color: MUTED, fontSize: 11.5, margin: 0, lineHeight: 1.5 }}>Mot de passe, expiration programmée et pause avec le palier <strong style={{ color: "#F5F0E8" }}>Pro</strong> →</p>
+                  </a>
+                )}
               </div>
             ) : (
               <div>

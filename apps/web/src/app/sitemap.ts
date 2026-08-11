@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { VERTICAL_ORDER } from "./qr-code/verticals"
+import { GUIDE_ORDER } from "./guides/guides"
 
 export default async function sitemap() {
   const supabase = await createServerSupabaseClient()
@@ -24,6 +25,10 @@ export default async function sitemap() {
     { url: `${baseUrl}/qr-code`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
     ...VERTICAL_ORDER.map(slug => ({
       url: `${baseUrl}/qr-code/${slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8,
+    })),
+    { url: `${baseUrl}/guides`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 },
+    ...GUIDE_ORDER.map(slug => ({
+      url: `${baseUrl}/guides/${slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7,
     })),
   ]
 

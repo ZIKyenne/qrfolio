@@ -3816,6 +3816,7 @@ export default function HomePage() {
 
           {/* Col 3: Ressources */}
           <FooterCol title="Ressources">
+            <Link href="/guides"   className="fl">Guides</Link>
             <Link href="/#faq"     className="fl">FAQ</Link>
             <Link href="/examples" className="fl">Exemples</Link>
             <Link href="/contact"  className="fl">Contact</Link>

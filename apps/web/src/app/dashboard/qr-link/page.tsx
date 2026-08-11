@@ -538,9 +538,9 @@ export default function QrLinkPage() {
             <p style={subLabel}>Liens dynamiques</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: staticQrs.length > 0 ? 18 : 0 }}>
               {dynamicLinks.map(s => { const st = dynStatus(s); return (
-                <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
-                  <div style={{ background: "#fff", borderRadius: 10, padding: 6, lineHeight: 0, flexShrink: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
-                    <QRCanvas value={s.payload || "https://qrowg.com"} size={54} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
+                <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 16, padding: 12, cursor: "pointer" }}>
+                  <div style={{ background: "#fff", borderRadius: 12, padding: 8, lineHeight: 0, flexShrink: 0, boxShadow: "0 3px 14px rgba(0,0,0,0.32)" }}>
+                    <QRCanvas value={s.payload || "https://qrowg.com"} size={92} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || (s.dest_url || "").replace(/^https?:\/\//, "")}</p>

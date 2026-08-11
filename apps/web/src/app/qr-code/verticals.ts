@@ -225,9 +225,216 @@ export const VERTICALS: Record<string, Vertical> = {
     ctaTitle: "Créez votre QR code de carte de visite",
     related: ["avis-google", "evenement", "restaurant"],
   },
+
+  instagram: {
+    slug: "instagram",
+    emoji: "📸",
+    eyebrow: "Réseaux sociaux",
+    metaTitle: "QR code Instagram & réseaux sociaux : un lien unique | QRowg",
+    metaDescription: "Créez un QR code qui réunit Instagram, TikTok, YouTube et tous vos réseaux sur une seule page. Modifiable, suivi des clics, prêt à imprimer.",
+    h1: "Tous vos réseaux derrière un seul QR code",
+    intro: "Instagram, TikTok, YouTube, site, boutique : réunissez tout sur une page, accessible d'un scan. Plus besoin de changer le lien de votre bio à chaque campagne.",
+    problems: [
+      { pain: "Un seul lien dans la bio, et trop de choses à y mettre.", gain: "Une page qui réunit tous vos liens et contenus." },
+      { pain: "Réimprimer un flyer à chaque nouveau lien.", gain: "Modifiez la page : le QR imprimé reste identique." },
+      { pain: "Aucune idée de ce sur quoi on clique.", gain: "Suivez les clics par lien et par source." },
+    ],
+    features: [
+      { title: "Tous vos liens réunis", desc: "Instagram, TikTok, YouTube, Spotify, site, boutique — au même endroit." },
+      { title: "Modifiable à volonté", desc: "Ajoutez, retirez ou réordonnez vos liens à tout moment." },
+      { title: "Suivi des clics", desc: "Voyez quels liens et quels réseaux performent le mieux." },
+      { title: "À votre image", desc: "Couleurs, photo et style — une page qui vous ressemble." },
+    ],
+    steps: [
+      "Ajoutez vos réseaux et vos liens importants.",
+      "Personnalisez la page et le QR à votre image.",
+      "Partagez le lien ou imprimez le QR (story, flyer, vitrine).",
+      "Mettez à jour vos liens quand vous voulez.",
+    ],
+    faq: [
+      { q: "Puis-je mettre plusieurs réseaux sur un même QR code ?", a: "Oui. La page réunit autant de liens que vous voulez : Instagram, TikTok, YouTube, site, boutique, etc." },
+      { q: "Puis-je changer mes liens sans refaire le QR code ?", a: "Oui. Le QR code reste identique ; vous modifiez la page à tout moment." },
+      { q: "Puis-je voir quels liens sont cliqués ?", a: "Oui. Le suivi des clics vous montre les liens et les sources les plus performants." },
+    ],
+    ctaTitle: "Créez votre QR code réseaux sociaux",
+    related: ["carte-de-visite", "whatsapp", "avis-google"],
+  },
+
+  whatsapp: {
+    slug: "whatsapp",
+    emoji: "💬",
+    eyebrow: "WhatsApp",
+    metaTitle: "QR code WhatsApp : contactez-vous en un scan | QRowg",
+    metaDescription: "Créez un QR code WhatsApp : vos clients vous écrivent en un scan, avec un message pré-rempli. Idéal en vitrine, sur un flyer ou une carte. Prêt à imprimer.",
+    h1: "Vos clients vous écrivent sur WhatsApp en un scan",
+    intro: "Un QR code qui ouvre directement une conversation WhatsApp avec vous — message pré-rempli inclus. Parfait pour la vitrine, les flyers ou le service client.",
+    problems: [
+      { pain: "Un numéro à recopier pour vous écrire.", gain: "Un scan ouvre la conversation, sans saisie." },
+      { pain: "Des demandes qui se perdent.", gain: "Toutes vos demandes arrivent au même endroit." },
+      { pain: "Difficile de guider le premier message.", gain: "Pré-remplissez le message (ex. « Bonjour, je souhaite… »)." },
+    ],
+    features: [
+      { title: "Conversation directe", desc: "Le QR ouvre WhatsApp sur votre numéro, prêt à écrire." },
+      { title: "Message pré-rempli", desc: "Guidez la demande avec un texte d'amorce." },
+      { title: "À placer partout", desc: "Vitrine, flyer, carte, ticket, page produit." },
+      { title: "Modifiable", desc: "Changez le numéro ou le message sans réimprimer." },
+    ],
+    steps: [
+      "Renseignez votre numéro WhatsApp et un message d'amorce.",
+      "Personnalisez le QR à votre image.",
+      "Imprimez-le sur vos supports.",
+      "Recevez les messages directement sur WhatsApp.",
+    ],
+    faq: [
+      { q: "Le QR code ouvre-t-il directement WhatsApp ?", a: "Oui. Au scan, WhatsApp s'ouvre sur une conversation avec votre numéro, message pré-rempli inclus." },
+      { q: "Faut-il WhatsApp Business ?", a: "Non. Un numéro WhatsApp classique suffit ; WhatsApp Business ajoute simplement des options professionnelles." },
+      { q: "Puis-je changer le numéro plus tard ?", a: "Oui, avec un QR code dynamique : vous modifiez le numéro sans réimprimer." },
+    ],
+    ctaTitle: "Créez votre QR code WhatsApp",
+    related: ["carte-de-visite", "instagram", "restaurant"],
+  },
+
+  immobilier: {
+    slug: "immobilier",
+    emoji: "🏠",
+    eyebrow: "Immobilier",
+    metaTitle: "QR code immobilier : présentez un bien en un scan | QRowg",
+    metaDescription: "Créez un QR code pour vos biens : photos, visite virtuelle, informations et contact agent en un scan. Sur le panneau, la vitrine ou l'annonce.",
+    h1: "Présentez vos biens immobiliers d'un simple scan",
+    intro: "Sur un panneau « À vendre », en vitrine ou sur une annonce : un QR code donne accès aux photos, à la visite, aux informations et à votre contact — 24 h/24.",
+    problems: [
+      { pain: "Un panneau qui ne dit presque rien du bien.", gain: "Un scan ouvre photos, détails et contact." },
+      { pain: "Des appels hors horaires manqués.", gain: "Vos prospects consultent le bien à toute heure." },
+      { pain: "Impossible de savoir quel bien attire.", gain: "Suivez les scans par bien et par panneau." },
+    ],
+    features: [
+      { title: "Fiche du bien complète", desc: "Photos, surface, prix, description et points forts." },
+      { title: "Visite et documents", desc: "Lien vers la visite virtuelle, le plan ou le dossier." },
+      { title: "Contact agent en un geste", desc: "Appel, WhatsApp, formulaire de demande de visite." },
+      { title: "Suivi par bien", desc: "Mesurez l'intérêt de chaque panneau et de chaque annonce." },
+    ],
+    steps: [
+      "Créez la page du bien (photos, infos, contact).",
+      "Personnalisez-la aux couleurs de votre agence.",
+      "Imprimez le QR sur le panneau, la vitrine ou l'annonce.",
+      "Suivez les scans et actualisez le statut (vendu, sous offre).",
+    ],
+    faq: [
+      { q: "Puis-je marquer un bien comme vendu sans changer le QR code ?", a: "Oui. Vous mettez à jour la page (statut, prix) ; le QR imprimé reste identique." },
+      { q: "Puis-je intégrer une visite virtuelle ?", a: "Oui. Ajoutez un lien vers votre visite virtuelle, un plan ou un dossier complet." },
+      { q: "Puis-je savoir quel panneau génère le plus d'intérêt ?", a: "Oui. Créez un QR code par bien pour comparer les scans par emplacement." },
+    ],
+    ctaTitle: "Créez le QR code de votre bien",
+    related: ["carte-de-visite", "evenement", "avis-google"],
+  },
+
+  hotel: {
+    slug: "hotel",
+    emoji: "🏨",
+    eyebrow: "Hôtels & locations",
+    metaTitle: "QR code hôtel & location : WiFi, services et infos | QRowg",
+    metaDescription: "Créez un QR code pour votre hôtel ou location (Airbnb) : WiFi, check-in, services et recommandations en un scan. Modifiable, prêt à imprimer en chambre.",
+    h1: "Tout ce que vos voyageurs doivent savoir, en un scan",
+    intro: "WiFi, check-in, équipements, règles, bonnes adresses : rassemblez toutes les infos de votre hôtel ou de votre location sur une page, accessible d'un scan en chambre.",
+    problems: [
+      { pain: "Répondre sans cesse aux mêmes questions.", gain: "Toutes les réponses sur une page, en libre-service." },
+      { pain: "Un livret d'accueil papier vite périmé.", gain: "Mettez à jour horaires, codes et infos en direct." },
+      { pain: "Des voyageurs qui cherchent le WiFi.", gain: "Connexion WiFi et infos essentielles en un scan." },
+    ],
+    features: [
+      { title: "Livret d'accueil numérique", desc: "Check-in, équipements, règles, contacts d'urgence." },
+      { title: "WiFi intégré", desc: "Connexion au réseau sans taper le mot de passe." },
+      { title: "Recommandations locales", desc: "Restaurants, activités et transports autour de vous." },
+      { title: "Avis en fin de séjour", desc: "Un bouton pour laisser un avis Google ou Airbnb." },
+    ],
+    steps: [
+      "Composez votre livret (WiFi, check-in, services, adresses).",
+      "Personnalisez-le à votre image.",
+      "Imprimez le QR en chambre et à l'accueil.",
+      "Mettez à jour les infos quand vous voulez.",
+    ],
+    faq: [
+      { q: "Puis-je mettre à jour les infos sans réimprimer ?", a: "Oui. Le QR code reste identique ; vous modifiez le livret à tout moment (codes, horaires, contacts)." },
+      { q: "Puis-je inclure la connexion WiFi ?", a: "Oui. Ajoutez la connexion WiFi pour que vos voyageurs se connectent en un geste." },
+      { q: "Est-ce adapté aux locations Airbnb ?", a: "Tout à fait. Le livret numérique remplace le classeur papier et se met à jour à distance." },
+    ],
+    ctaTitle: "Créez le QR code de votre hébergement",
+    related: ["wifi", "avis-google", "restaurant"],
+  },
+
+  salon: {
+    slug: "salon",
+    emoji: "💇",
+    eyebrow: "Beauté & bien-être",
+    metaTitle: "QR code salon de coiffure & beauté : RDV et prestations | QRowg",
+    metaDescription: "Créez un QR code pour votre salon de coiffure, barbier ou institut : prestations, prise de rendez-vous, réseaux et avis en un scan. Prêt à imprimer.",
+    h1: "Prestations, rendez-vous et avis — en un scan",
+    intro: "En vitrine ou sur le fauteuil, un QR code présente vos prestations, ouvre la prise de rendez-vous et invite vos clients à laisser un avis.",
+    problems: [
+      { pain: "Des clients qui ne savent pas comment réserver.", gain: "Un bouton de prise de rendez-vous en un scan." },
+      { pain: "Une carte des prestations vite obsolète.", gain: "Mettez à jour prestations et tarifs sans réimprimer." },
+      { pain: "Peu d'avis malgré des clients fidèles.", gain: "Un bouton avis transforme les habitués en avis." },
+    ],
+    features: [
+      { title: "Prestations & tarifs", desc: "Coupe, couleur, soin, barbe… avec descriptions et prix." },
+      { title: "Prise de rendez-vous", desc: "Lien vers votre agenda ou votre plateforme de réservation." },
+      { title: "Réseaux & portfolio", desc: "Instagram, photos avant/après, galerie de réalisations." },
+      { title: "Avis en un geste", desc: "Dirigez vos clients satisfaits vers votre fiche Google." },
+    ],
+    steps: [
+      "Ajoutez vos prestations, votre lien de réservation et vos réseaux.",
+      "Personnalisez la page à votre image.",
+      "Imprimez le QR en vitrine et sur le fauteuil.",
+      "Mettez à jour prestations et tarifs quand vous voulez.",
+    ],
+    faq: [
+      { q: "Puis-je connecter mon outil de réservation ?", a: "Oui. Ajoutez un bouton qui pointe vers votre agenda ou votre plateforme de rendez-vous existante." },
+      { q: "Puis-je changer mes tarifs sans réimprimer ?", a: "Oui. Le QR code reste identique ; vous modifiez prestations et tarifs à tout moment." },
+      { q: "Puis-je montrer mes réalisations ?", a: "Oui. Ajoutez une galerie avant/après et un lien vers votre Instagram." },
+    ],
+    ctaTitle: "Créez le QR code de votre salon",
+    related: ["avis-google", "instagram", "carte-de-visite"],
+  },
+
+  boutique: {
+    slug: "boutique",
+    emoji: "🛍️",
+    eyebrow: "Boutiques & commerces",
+    metaTitle: "QR code boutique & commerce : catalogue, promos et avis | QRowg",
+    metaDescription: "Créez un QR code pour votre boutique : catalogue, promotions, réseaux, horaires et avis en un scan. Sur la vitrine, l'étiquette ou le sac. Prêt à imprimer.",
+    h1: "Votre boutique, prolongée sur le mobile de vos clients",
+    intro: "En vitrine, sur une étiquette ou un sac, un QR code ouvre votre catalogue, vos promotions, vos réseaux et vos horaires — et ramène vos clients.",
+    problems: [
+      { pain: "Une vitrine fermée = un client perdu.", gain: "Vos infos et promos accessibles 24 h/24." },
+      { pain: "Des promotions que personne ne voit.", gain: "Mettez en avant vos offres, actualisées en direct." },
+      { pain: "Peu de clients qui reviennent.", gain: "Réseaux, fidélité et avis pour recréer le lien." },
+    ],
+    features: [
+      { title: "Catalogue & nouveautés", desc: "Produits, photos, prix et nouveautés du moment." },
+      { title: "Promotions à jour", desc: "Affichez et modifiez vos offres sans réimprimer." },
+      { title: "Réseaux & fidélité", desc: "Instagram, programme de fidélité, newsletter." },
+      { title: "Horaires & itinéraire", desc: "Horaires à jour, adresse et itinéraire en un geste." },
+    ],
+    steps: [
+      "Composez votre page (catalogue, promos, réseaux, horaires).",
+      "Personnalisez-la à votre image de marque.",
+      "Imprimez le QR en vitrine, sur les étiquettes ou les sacs.",
+      "Mettez à jour promos et horaires quand vous voulez.",
+    ],
+    faq: [
+      { q: "Puis-je changer mes promotions à tout moment ?", a: "Oui. Le QR code reste identique ; vous mettez à jour vos offres en direct." },
+      { q: "Puis-je vendre en ligne depuis la page ?", a: "Vous pouvez renvoyer vers votre boutique en ligne ou votre moyen de paiement existant." },
+      { q: "Est-ce adapté à un petit commerce ?", a: "Oui. C'est pensé pour être créé en quelques minutes, sans compétence technique." },
+    ],
+    ctaTitle: "Créez le QR code de votre boutique",
+    related: ["avis-google", "instagram", "menu"],
+  },
 }
 
 export const VERTICAL_SLUGS = Object.keys(VERTICALS)
 export const getVertical = (slug: string): Vertical | undefined => VERTICALS[slug]
 // Ordre d'affichage du hub /qr-code (le plus recherché en premier).
-export const VERTICAL_ORDER = ["restaurant", "menu", "avis-google", "wifi", "evenement", "carte-de-visite"]
+export const VERTICAL_ORDER = [
+  "restaurant", "menu", "avis-google", "wifi", "instagram", "whatsapp",
+  "immobilier", "hotel", "salon", "boutique", "evenement", "carte-de-visite",
+]

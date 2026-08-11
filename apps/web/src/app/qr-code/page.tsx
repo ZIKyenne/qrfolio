@@ -37,7 +37,7 @@ export default function QrCodeHub() {
         <section style={{ textAlign: "center", maxWidth: 700, margin: "10px auto 40px" }}>
           <p style={{ color: G, fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase" }}>QR codes par usage</p>
           <h1 style={{ color: INK, fontSize: "clamp(30px,6vw,50px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, margin: "12px 0 16px", textWrap: "balance" }}>Le bon QR code pour chaque besoin</h1>
-          <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto", maxWidth: 600 }}>Restaurant, menu, avis Google, WiFi, événement ou carte de visite — choisissez votre usage et créez un QR code dynamique, modifiable et prêt à imprimer.</p>
+          <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto", maxWidth: 600 }}>Quel que soit votre métier ou votre besoin, choisissez votre usage et créez un QR code dynamique, modifiable et prêt à imprimer.</p>
         </section>
 
         <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>

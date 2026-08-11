@@ -640,7 +640,7 @@ function BrandProSection() {
             Votre marque.<br /><span style={{ color: G }}>Pas la nôtre.</span>
           </h2>
           <p style={{ color: "rgba(188,182,166,0.9)", fontSize: 16, lineHeight: 1.7, margin: "0 0 24px", maxWidth: 420 }}>
-            Sur les plans payants, votre page s'affiche sur <strong style={{ color: "#E8E6E0" }}>votre propre nom de domaine</strong>, <strong style={{ color: "#E8E6E0" }}>sans aucune mention QRowg</strong>. Vos clients ne voient que vous.
+            Dès un <strong style={{ color: "#E8E6E0" }}>plan payant</strong>, la mention QRowg disparaît ; à partir du plan <strong style={{ color: "#E8E6E0" }}>Pro</strong>, votre page s'affiche sur votre propre nom de domaine. Vos clients ne voient que vous.
           </p>
           <button type="button" onClick={() => setOpen(true)}
             style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(201,168,76,0.1)", border: `1px solid ${G}55`, color: G, fontSize: 14, fontWeight: 700, padding: "12px 22px", borderRadius: 12, cursor: "pointer" }}>
@@ -701,7 +701,9 @@ const PLAN_LANDING_UI = {
   business: { cta: "Démarrer l'essai gratuit",     href: "/auth/signup?plan=business", badge: null,                note: null },
 } as Record<string, { cta: string; href: string; badge: string | null; note: string | null }>
 
-// Bénéfices orientés résultat (Pb 12) — on vend ce que ça apporte, pas une liste de specs
+// Bénéfices orientés résultat (Pb 12) — on vend ce que ça apporte, pas une liste de specs.
+// ⚠️ Les `ok` DOIVENT refléter lib/plans.ts (source de vérité) : retrait du branding dès Starter
+// (removeBranding), domaine personnalisé à partir de Pro. Ne pas laisser diverger.
 const LANDING_BENEFITS: Record<string, { text: string; ok: boolean }[]> = {
   free: [
     { text: "Votre page en ligne en 5 minutes", ok: true },
@@ -713,7 +715,7 @@ const LANDING_BENEFITS: Record<string, { text: string; ok: boolean }[]> = {
   ],
   starter: [
     { text: "Votre marque, sans mention QRowg", ok: true },
-    { text: "Votre propre nom de domaine", ok: true },
+    { text: "Votre propre nom de domaine (dès Pro)", ok: false },
     { text: "Des QR codes personnalisés à votre image", ok: true },
     { text: "5 pages · 850 vues / mois", ok: true },
     { text: "Téléchargement PNG prêt à imprimer", ok: true },
@@ -2890,7 +2892,7 @@ const FAQ_ITEMS = [
   { q:"Puis-je utiliser QRowg gratuitement ?",                          a:"Oui. Le plan gratuit donne accès à 3 pages, 200 vues par mois et 3 QR codes. Aucune carte bancaire n'est demandée pour commencer." },
   { q:"Puis-je connecter mon propre nom de domaine ?",                    a:"Oui, à partir du plan Pro. Vous pouvez utiliser un sous-domaine personnalisé (ex. : carte.votresite.fr) pour une image vraiment professionnelle." },
   { q:"Est-ce que je vois les statistiques de scans ?",                   a:"Oui. Vues, scans, appareils, sources de trafic et pages les plus consultées. Statistiques de base sur le plan gratuit, statistiques avancées sur Pro." },
-  { q:"Puis-je retirer la mention QRowg de ma page ?",                  a:"Oui, à partir du plan Pro : votre page affiche uniquement votre marque. Sur le plan gratuit, une mention discrète apparaît en bas de page." },
+  { q:"Puis-je retirer la mention QRowg de ma page ?",                  a:"Oui, dès le plan Starter : votre page affiche uniquement votre marque. Sur le plan gratuit, une mention discrète apparaît en bas de page." },
   { q:"Est-ce adapté aux restaurants et commerces locaux ?",             a:"Tout à fait. Des modèles prêts à l'emploi existent pour le menu numérique, les horaires, la réservation, les avis Google et les promotions — utilisables en 5 minutes." },
   { q:"Puis-je télécharger mon QR code pour l'imprimer ?",               a:"Oui. Le téléchargement est disponible en PNG haute résolution, SVG et PDF — prêts à imprimer sur cartes de visite, flyers, menus ou affiches." },
   { q:"Puis-je annuler mon abonnement à tout moment ?",                  a:"Oui, à tout moment depuis votre espace compte. Aucun engagement, aucun frais d'annulation : votre accès reste actif jusqu'à la fin de la période déjà payée." },

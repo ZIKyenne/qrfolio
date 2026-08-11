@@ -1,11 +1,13 @@
 "use client"
 
-// Generateur de QR code — Lien / WiFi / Texte / Contact. 100% local (qr-code-
-// styling via qrRender), sans API. Styles, logo, correction, export PNG/SVG,
-// historique.
+// Générateur de QR code — Lien / WiFi / Texte / Contact / Appel / Email.
+// Rendu 100% local (qr-code-styling via qrRender), sans API. Deux sorties :
+//  · TÉLÉCHARGEMENT PNG/SVG : fichier statique (contenu encodé directement).
+//  · COMPTE : QR DYNAMIQUE (lien/texte/appel/email → redirigé /q/<code>, modifiable,
+//    suivi des scans, essai 7 j) ou STATIQUE (WiFi/Contact → hors ligne, sans expiration).
 import { useMemo, useRef, useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2 } from "lucide-react"
+import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap } from "lucide-react"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
@@ -41,6 +43,9 @@ type EmailFields = { to?: string; subject?: string; body?: string }
 const EMPTY_VC: VCardFields = { firstName: "", lastName: "", phone: "", email: "", org: "", title: "", url: "" }
 const EMPTY_EM: EmailFields = { to: "", subject: "", body: "" }
 
+// Types éligibles au QR DYNAMIQUE (redirigé + expirable). WiFi/Contact restent statiques.
+const isDynamicType = (t: QrType) => t !== "wifi" && t !== "contact"
+
 // Champs qui determinent la charge utile du QR (partages entre l'etat live et l'historique).
 type QrSource = {
   type: QrType; url: string; ssid: string; wifiPass: string; wifiEnc: WifiEnc; text: string
@@ -75,6 +80,7 @@ export default function QrLinkPage() {
   const [ecc, setEcc] = useState<"L" | "M" | "Q" | "H">("M")
   const [styleKey, setStyleKey] = useState("carre")
   const [logo, setLogo] = useState<string | null>(null)
+  const [showStyle, setShowStyle] = useState(false) // « Apparence » repliée par défaut (montrer moins)
   const [busy, setBusy] = useState<null | "png" | "svg">(null)
   const [done, setDone] = useState(false)
   const logoInput = useRef<HTMLInputElement>(null)
@@ -89,6 +95,7 @@ export default function QrLinkPage() {
   const ready = data.length > 0
   const ratio = contrast(fg, bg)
   const inverted = isInverted(fg, bg)
+  const dynamic = isDynamicType(qrType)
 
   const [history, setHistory] = useState<QrHistEntry[]>([])
   useEffect(() => { try { const h = JSON.parse(localStorage.getItem("qrfolio_qr_history") || "[]"); if (Array.isArray(h)) setHistory(h.slice(0, 8)) } catch {} }, [])
@@ -143,7 +150,7 @@ export default function QrLinkPage() {
     } finally { setBusy(null) }
   }
 
-  // Enregistre le QR courant côté serveur (persistant + compté dans le quota limits.qr).
+  // Enregistre le QR courant côté serveur (STATIQUE : contenu encodé, hors ligne). WiFi/Contact.
   async function saveInstant() {
     if (!ready || saveBusy) return
     setSaveBusy(true); setSaveMsg(null)
@@ -168,8 +175,7 @@ export default function QrLinkPage() {
     } catch {}
   }
 
-  // ── QR DYNAMIQUE (tous types) : le QR encode qrowg.com/q/<code>, expirable (essai 7 j par QR).
-  // Lien/appel/email redirigent ; texte/wifi/contact affichent une page (ne marchent plus hors ligne).
+  // QR DYNAMIQUE (lien/texte/appel/email) : le QR encode qrowg.com/q/<code>, expirable (essai 7 j).
   async function createDynamic() {
     if (!ready || saveBusy) return
     setSaveBusy(true); setSaveMsg(null)
@@ -233,11 +239,14 @@ export default function QrLinkPage() {
 
   const dynamicLinks = saved.filter(s => s.dynamic)
   const staticQrs = saved.filter(s => !s.dynamic)
+  const hasSaved = dynamicLinks.length > 0 || staticQrs.length > 0
 
   const secTitle: React.CSSProperties = { color: MUTED, fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 7, marginBottom: 11, textTransform: "uppercase", letterSpacing: 1.4 }
+  const subLabel: React.CSSProperties = { color: "#6E685E", fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 9px 2px" }
   const accentBar = <span style={{ width: 3, height: 13, borderRadius: 2, background: G, flexShrink: 0 }} />
   const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: 18 }
   const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 50, background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, color: "#F5F0E8", fontSize: 16, padding: "0 15px", outline: "none" }
+  const dot = (c: string): React.CSSProperties => ({ width: 15, height: 15, borderRadius: 5, background: c, border: "1px solid rgba(255,255,255,0.22)", flexShrink: 0 })
   const swatch = (c: string, on: boolean, onClick: () => void, aria: string) => (
     <button key={c} onClick={onClick} aria-label={aria}
       style={{ width: 38, height: 38, borderRadius: 11, background: c, border: on ? `2.5px solid ${G}` : "2px solid rgba(255,255,255,0.14)", boxShadow: on ? `0 0 0 3px ${G}22` : "none", cursor: "pointer", flexShrink: 0, transition: "all .15s" }} />
@@ -251,23 +260,36 @@ export default function QrLinkPage() {
     : qrType === "email" ? (em.to?.trim() ? `✉️ ${em.to.trim()}` : "")
     : normalizeUrl(url).replace(/^https?:\/\//, "")
 
+  // Boutons de téléchargement PNG/SVG (fichier statique). `primary` = mis en avant.
+  const downloadRow = (primary: boolean) => (
+    <div style={{ display: "flex", gap: 10 }}>
+      <Button variant={primary ? "primary" : "secondary"} size="lg" onClick={() => download("png")} loading={busy === "png"} disabled={!ready || busy !== null}
+        leftIcon={done ? <Check size={18} /> : <Download size={18} />} style={{ flex: 1 }}>
+        {done ? "Téléchargé" : "Télécharger PNG"}
+      </Button>
+      <Button variant="secondary" size="lg" onClick={() => download("svg")} loading={busy === "svg"} disabled={!ready || busy !== null}>
+        SVG
+      </Button>
+    </div>
+  )
+
   return (
     <div className="rpad" style={{ minHeight: "100dvh", maxWidth: 640, margin: "0 auto", padding: "18px 18px calc(30px + env(safe-area-inset-bottom))" }}>
       <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUTED, textDecoration: "none", fontSize: 13, marginBottom: 16 }}>
         <ArrowLeft size={16} /> Retour
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 20 }}>
-        <div style={{ width: 50, height: 50, borderRadius: 14, flexShrink: 0, background: "linear-gradient(145deg,rgba(201,168,76,0.22),rgba(201,168,76,0.06))", border: "1px solid rgba(201,168,76,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <QrIcon size={24} color={G} />
+      <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 18 }}>
+        <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0, background: "linear-gradient(145deg,rgba(201,168,76,0.22),rgba(201,168,76,0.06))", border: "1px solid rgba(201,168,76,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <QrIcon size={22} color={G} />
         </div>
         <div>
-          <h1 style={{ color: "#F5F0E8", fontSize: 23, fontWeight: 800, margin: 0, letterSpacing: -0.3 }}>Créer un QR code</h1>
-          <p style={{ color: MUTED, fontSize: 13, margin: "2px 0 0", lineHeight: 1.4 }}>Lien, WiFi, contact, appel, email — prêt à imprimer en 3 secondes.</p>
+          <h1 style={{ color: "#F5F0E8", fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: -0.3 }}>Créer un QR code</h1>
+          <p style={{ color: MUTED, fontSize: 12.5, margin: "2px 0 0", lineHeight: 1.4 }}>Choisissez un type, remplissez, téléchargez.</p>
         </div>
       </div>
 
-      {/* Type de QR */}
+      {/* 1 · Type de QR */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 14 }}>
         {TYPES.map(t => {
           const on = qrType === t.k
@@ -281,7 +303,7 @@ export default function QrLinkPage() {
         })}
       </div>
 
-      {/* Saisie selon le type */}
+      {/* 2 · Saisie selon le type */}
       <div style={{ ...card, marginBottom: 14 }}>
         {qrType === "link" && (<>
           <p style={secTitle}>{accentBar} Lien à encoder</p>
@@ -346,7 +368,7 @@ export default function QrLinkPage() {
         </>)}
       </div>
 
-      {/* Aperçu — poster QR */}
+      {/* 3 · Aperçu — poster QR */}
       <div style={{ position: "relative", borderRadius: 20, padding: "26px 18px", marginBottom: 14, overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.16)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
         <div style={{ background: bg, borderRadius: 20, padding: 20, boxShadow: "0 14px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, transition: "background .2s", maxWidth: "100%" }}>
           <QRCanvas value={data || "https://qrowg.com"} size={210} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
@@ -376,145 +398,165 @@ export default function QrLinkPage() {
                 </div>}
       </div>
 
-      {/* Personnalisation */}
-      <div style={{ ...card, marginBottom: 14 }}>
-        <p style={secTitle}>{accentBar} Style</p>
-        <div style={{ display: "flex", gap: 7, marginBottom: 4 }}>
-          {STYLE_PRESETS.map(p => {
-            const on = styleKey === p.k
-            return (
-              <button key={p.k} onClick={() => setStyleKey(p.k)}
-                style={{ flex: "1 1 0", minWidth: 0, minHeight: 42, borderRadius: 10, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : "rgba(255,255,255,0.1)"}`, color: on ? G : MUTED, fontSize: 11.5, fontWeight: on ? 800 : 600, transition: "all .15s" }}>{p.label}</button>
-            )
-          })}
-        </div>
+      {/* 4 · Apparence (repliée par défaut : style, couleurs, correction, logo) */}
+      <div style={{ ...card, padding: 0, marginBottom: 14, overflow: "hidden" }}>
+        <button onClick={() => setShowStyle(v => !v)} aria-expanded={showStyle}
+          style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "15px 18px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" }}>
+          <span style={{ ...secTitle, marginBottom: 0 }}>{accentBar} Apparence</span>
+          <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 9 }}>
+            {!showStyle && (
+              <span style={{ display: "flex", alignItems: "center", gap: 6, color: MUTED, fontSize: 11.5 }}>
+                <span style={dot(fg)} /><span style={dot(bg)} />
+                <span>{preset.label}{logo ? " · logo" : ""}</span>
+              </span>
+            )}
+            <ChevronDown size={18} color={MUTED} style={{ transform: showStyle ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }} />
+          </span>
+        </button>
 
-        <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Couleur du QR</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 4 }}>
-          {FG_SWATCHES.map(c => swatch(c, fg === c, () => setFg(c), `Couleur ${c}`))}
-          <label style={{ width: 38, height: 38, borderRadius: 11, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
-            <input type="color" value={fg} onChange={e => setFg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
-          </label>
-        </div>
-
-        <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Couleur du fond</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
-          {BG_SWATCHES.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${c}`))}
-          <label style={{ width: 38, height: 38, borderRadius: 11, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
-            <input type="color" value={bg} onChange={e => setBg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
-          </label>
-        </div>
-
-        <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Correction d&apos;erreur</p>
-        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3 }}>
-          {ECC_OPTS.map(o => (
-            <button key={o.k} onClick={() => setEcc(o.k)}
-              style={{ flex: 1, minHeight: 42, borderRadius: 8, border: "none", cursor: "pointer", background: ecc === o.k ? G : "transparent", color: ecc === o.k ? "#080808" : MUTED, fontSize: 12.5, fontWeight: ecc === o.k ? 800 : 600, transition: "all .15s" }}>{o.label}</button>
-          ))}
-        </div>
-        <p style={{ color: MUTED, fontSize: 11, margin: "9px 2px 0", lineHeight: 1.45 }}>Plus la correction est élevée, plus le QR reste lisible s&apos;il est abîmé (utile pour l&apos;impression).</p>
-
-        <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Logo au centre <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, color: "#6E685E" }}>· optionnel</span></p>
-        {logo ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 46, height: 46, borderRadius: 10, background: "#fff", overflow: "hidden", flexShrink: 0, border: "1px solid rgba(255,255,255,0.12)" }}>
-              <img src={logo} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        {showStyle && (
+          <div style={{ padding: "0 18px 18px" }}>
+            <p style={secTitle}>{accentBar} Style</p>
+            <div style={{ display: "flex", gap: 7, marginBottom: 4 }}>
+              {STYLE_PRESETS.map(p => {
+                const on = styleKey === p.k
+                return (
+                  <button key={p.k} onClick={() => setStyleKey(p.k)}
+                    style={{ flex: "1 1 0", minWidth: 0, minHeight: 42, borderRadius: 10, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : "rgba(255,255,255,0.1)"}`, color: on ? G : MUTED, fontSize: 11.5, fontWeight: on ? 800 : 600, transition: "all .15s" }}>{p.label}</button>
+                )
+              })}
             </div>
-            <span style={{ flex: 1, color: MUTED, fontSize: 11.5, lineHeight: 1.4 }}>Logo ajouté — correction d&apos;erreur portée au maximum pour rester scannable.</span>
-            <button onClick={() => setLogo(null)} aria-label="Retirer le logo" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, width: 38, height: 38, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={16} /></button>
+
+            <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Couleur du QR</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 4 }}>
+              {FG_SWATCHES.map(c => swatch(c, fg === c, () => setFg(c), `Couleur ${c}`))}
+              <label style={{ width: 38, height: 38, borderRadius: 11, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
+                <input type="color" value={fg} onChange={e => setFg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
+              </label>
+            </div>
+
+            <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Couleur du fond</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
+              {BG_SWATCHES.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${c}`))}
+              <label style={{ width: 38, height: 38, borderRadius: 11, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
+                <input type="color" value={bg} onChange={e => setBg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
+              </label>
+            </div>
+
+            <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Correction d&apos;erreur</p>
+            <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3 }}>
+              {ECC_OPTS.map(o => (
+                <button key={o.k} onClick={() => setEcc(o.k)}
+                  style={{ flex: 1, minHeight: 42, borderRadius: 8, border: "none", cursor: "pointer", background: ecc === o.k ? G : "transparent", color: ecc === o.k ? "#080808" : MUTED, fontSize: 12.5, fontWeight: ecc === o.k ? 800 : 600, transition: "all .15s" }}>{o.label}</button>
+              ))}
+            </div>
+            <p style={{ color: MUTED, fontSize: 11, margin: "9px 2px 0", lineHeight: 1.45 }}>Plus la correction est élevée, plus le QR reste lisible s&apos;il est abîmé (utile pour l&apos;impression).</p>
+
+            <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Logo au centre <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, color: "#6E685E" }}>· optionnel</span></p>
+            {logo ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 46, height: 46, borderRadius: 10, background: "#fff", overflow: "hidden", flexShrink: 0, border: "1px solid rgba(255,255,255,0.12)" }}>
+                  <img src={logo} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                </div>
+                <span style={{ flex: 1, color: MUTED, fontSize: 11.5, lineHeight: 1.4 }}>Logo ajouté — correction d&apos;erreur portée au maximum pour rester scannable.</span>
+                <button onClick={() => setLogo(null)} aria-label="Retirer le logo" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, width: 38, height: 38, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={16} /></button>
+              </div>
+            ) : (
+              <button onClick={() => logoInput.current?.click()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 46, borderRadius: 11, border: "1.5px dashed rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.04)", color: G, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                <Upload size={16} /> Ajouter un logo
+              </button>
+            )}
+            <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onLogoFile(f); e.target.value = "" }} />
           </div>
-        ) : (
-          <button onClick={() => logoInput.current?.click()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 46, borderRadius: 11, border: "1.5px dashed rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.04)", color: G, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-            <Upload size={16} /> Ajouter un logo
-          </button>
         )}
-        <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onLogoFile(f); e.target.value = "" }} />
       </div>
 
-      {/* Téléchargement */}
-      <div style={{ display: "flex", gap: 10 }}>
-        <Button variant="primary" size="lg" onClick={() => download("png")} loading={busy === "png"} disabled={!ready || busy !== null}
-          leftIcon={done ? <Check size={18} /> : <Download size={18} />} style={{ flex: 1 }}>
-          {done ? "Téléchargé" : "Télécharger PNG"}
-        </Button>
-        <Button variant="secondary" size="lg" onClick={() => download("svg")} loading={busy === "svg"} disabled={!ready || busy !== null}>
-          SVG
-        </Button>
-      </div>
-
-      {/* WiFi / Contact : QR STATIQUE (fonctionne hors ligne, sans expiration). Autres : dynamique. */}
-      {(qrType === "wifi" || qrType === "contact") ? (
-        <div style={{ ...card, marginTop: 12 }}>
-          <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>💾 Enregistrer ce QR</p>
-          <p style={{ color: MUTED, fontSize: 12, margin: "0 0 11px", lineHeight: 1.5 }}>
-            QR <strong style={{ color: MUTED }}>statique</strong> — fonctionne hors ligne, sans expiration ({qrType === "wifi" ? "auto-connexion WiFi" : "ajout du contact"} directement au scan).
+      {/* 5 · Actions — hiérarchie selon le type. Dynamique (lien/texte/appel/email) : créer en avant,
+          téléchargement en repli. Statique (WiFi/Contact) : téléchargement en avant, enregistrement en repli. */}
+      <div style={{ ...card, marginBottom: hasSaved || history.length > 0 ? 4 : 14 }}>
+        {dynamic ? (<>
+          <Button onClick={createDynamic} disabled={!ready || saveBusy} size="lg" leftIcon={<Zap size={17} />} style={{ width: "100%" }}>
+            {saveBusy ? "Création…" : "Créer le QR dynamique — essai 7 j"}
+          </Button>
+          <p style={{ color: MUTED, fontSize: 11.5, margin: "9px 2px 0", lineHeight: 1.5 }}>
+            Modifiable après impression + suivi des scans. Gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong>, puis abonnement pour rester actif.
+            {qrType === "text" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 3 }}>Ouvre une page au scan (Internet requis).</span>}
           </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "15px 0 13px" }}>
+            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.09)" }} />
+            <span style={{ color: "#6E685E", fontSize: 11, fontWeight: 600 }}>ou télécharger un fichier statique</span>
+            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.09)" }} />
+          </div>
+          {downloadRow(false)}
+          <p style={{ color: "#6E685E", fontSize: 11, margin: "8px 2px 0", lineHeight: 1.45 }}>Image imprimable, non modifiable et sans suivi.</p>
+        </>) : (<>
+          {downloadRow(true)}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "15px 0 13px" }}>
+            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.09)" }} />
+            <span style={{ color: "#6E685E", fontSize: 11, fontWeight: 600 }}>ou enregistrer dans mon compte</span>
+            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.09)" }} />
+          </div>
           <Button variant="secondary" onClick={saveInstant} loading={saveBusy} disabled={!ready} leftIcon={<Save size={16} />} style={{ width: "100%" }}>
             Enregistrer ce QR
           </Button>
-        </div>
-      ) : (
-        <div style={{ ...card, marginTop: 12, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)" }}>
-          <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>⚡ Créer le QR code</p>
-          <p style={{ color: MUTED, fontSize: 12, margin: "0 0 11px", lineHeight: 1.5 }}>
-            QR <strong style={{ color: MUTED }}>dynamique</strong> (modifiable + suivi des scans). Essai gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong>, puis abonnement pour rester actif.
-            {qrType === "text" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 5 }}>Note : ce QR ouvre une page au scan (Internet requis).</span>}
+          <p style={{ color: "#6E685E", fontSize: 11, margin: "8px 2px 0", lineHeight: 1.45 }}>
+            QR statique — fonctionne hors ligne, sans expiration ({qrType === "wifi" ? "auto-connexion WiFi" : "ajout du contact"} au scan).
           </p>
-          <Button onClick={createDynamic} disabled={!ready || saveBusy} style={{ width: "100%" }}>
-            {saveBusy ? "Création…" : "Créer le QR code (essai 7 j)"}
-          </Button>
-        </div>
-      )}
-      {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "9px 0 0" }}>{saveMsg.text}</p>}
+        </>)}
+        {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "11px 0 0" }}>{saveMsg.text}</p>}
+      </div>
 
-      {/* Mes liens dynamiques */}
-      {dynamicLinks.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <p style={secTitle}>{accentBar} Mes liens dynamiques</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-            {dynamicLinks.map(s => { const st = dynStatus(s); return (
-              <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: "10px 12px", cursor: "pointer" }}>
-                <div style={{ background: "#fff", borderRadius: 8, padding: 4, lineHeight: 0, flexShrink: 0 }}>
-                  <QRCanvas value={s.payload || "https://qrowg.com"} size={46} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || s.dest_url}</p>
-                  <p style={{ color: MUTED, fontSize: 11, margin: "0 0 3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>→ {s.dest_url}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: st.color, fontSize: 10.5, fontWeight: 700 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: st.color }} />{st.label}</span>
-                    <span style={{ color: "#6E685E", fontSize: 10.5 }}>· {s.total_scans ?? 0} scan{(s.total_scans ?? 0) > 1 ? "s" : ""}</span>
+      {/* 6 · Mes QR codes — liens dynamiques + QR enregistrés, regroupés sous un seul titre. */}
+      {hasSaved && (
+        <div style={{ marginTop: 22 }}>
+          <p style={secTitle}>{accentBar} Mes QR codes</p>
+
+          {dynamicLinks.length > 0 && (<>
+            <p style={subLabel}>Liens dynamiques</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: staticQrs.length > 0 ? 18 : 0 }}>
+              {dynamicLinks.map(s => { const st = dynStatus(s); return (
+                <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: "10px 12px", cursor: "pointer" }}>
+                  <div style={{ background: "#fff", borderRadius: 8, padding: 4, lineHeight: 0, flexShrink: 0 }}>
+                    <QRCanvas value={s.payload || "https://qrowg.com"} size={46} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
                   </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || s.dest_url}</p>
+                    <p style={{ color: MUTED, fontSize: 11, margin: "0 0 3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>→ {s.dest_url}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: st.color, fontSize: 10.5, fontWeight: 700 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: st.color }} />{st.label}</span>
+                      <span style={{ color: "#6E685E", fontSize: 10.5 }}>· {s.total_scans ?? 0} scan{(s.total_scans ?? 0) > 1 ? "s" : ""}</span>
+                    </div>
+                  </div>
+                  <button onClick={e => { e.stopPropagation(); editDest(s) }} title="Modifier la destination" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "7px 10px", flexShrink: 0 }}>Modifier</button>
+                  <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer" style={{ background: "rgba(239,68,68,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trash2 size={14} /></button>
                 </div>
-                <button onClick={e => { e.stopPropagation(); editDest(s) }} title="Modifier la destination" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "7px 10px", flexShrink: 0 }}>Modifier</button>
-                <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer" style={{ background: "rgba(239,68,68,0.12)", border: "none", borderRadius: 8, width: 32, height: 32, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Trash2 size={14} /></button>
-              </div>
-            ) })}
-          </div>
+              ) })}
+            </div>
+          </>)}
+
+          {staticQrs.length > 0 && (<>
+            <p style={subLabel}>Enregistrés (statiques)</p>
+            <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
+              {staticQrs.map(s => (
+                <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail"
+                  style={{ position: "relative", flexShrink: 0, width: 124, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
+                  <div style={{ background: s.style?.bg || "#fff", borderRadius: 9, padding: 6, lineHeight: 0 }}>
+                    <QRCanvas value={s.payload || "https://qrowg.com"} size={80} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
+                  </div>
+                  <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || s.kind}</span>
+                  <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer ce QR"
+                    style={{ position: "absolute", top: 5, right: 5, background: "rgba(239,68,68,0.15)", border: "none", borderRadius: 7, width: 24, height: 24, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={12} /></button>
+                </div>
+              ))}
+            </div>
+          </>)}
         </div>
       )}
 
-      {staticQrs.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <p style={secTitle}>{accentBar} Mes QR enregistrés</p>
-          <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
-            {staticQrs.map(s => (
-              <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail"
-                style={{ position: "relative", flexShrink: 0, width: 124, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
-                <div style={{ background: s.style?.bg || "#fff", borderRadius: 9, padding: 6, lineHeight: 0 }}>
-                  <QRCanvas value={s.payload || "https://qrowg.com"} size={80} fg={s.style?.fg || "#080808"} bg={s.style?.bg || "#FFFFFF"} />
-                </div>
-                <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || s.kind}</span>
-                <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer ce QR"
-                  style={{ position: "absolute", top: 5, right: 5, background: "rgba(239,68,68,0.15)", border: "none", borderRadius: 7, width: 24, height: 24, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={12} /></button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
+      {/* Brouillons récents (locaux, non enregistrés — cliquer pour réutiliser le design) */}
       {history.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <p style={secTitle}>{accentBar} Mes QR récents</p>
+        <div style={{ marginTop: 22 }}>
+          <p style={secTitle}>{accentBar} Brouillons récents</p>
           <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
             {history.map((h, i) => (
               <button key={i} title={`Réutiliser : ${histLabel(h)}`} onClick={() => loadEntry(h)}
@@ -528,10 +570,6 @@ export default function QrLinkPage() {
           </div>
         </div>
       )}
-
-      <p style={{ color: "#6E685E", fontSize: 11.5, margin: "18px 0 0", lineHeight: 1.55, textAlign: "center" }}>
-        Un QR <strong style={{ color: MUTED }}>enregistré</strong> encode directement son contenu. Un <strong style={{ color: MUTED }}>lien dynamique</strong> (type Lien) est modifiable après impression et bénéficie d'un essai 7 jours par lien.
-      </p>
 
       {/* Aperçu détaillé d'un QR enregistré (clic) : grand QR + infos + décompte d'expiration */}
       {detail && (() => { const ex = expiryText(detail); return (

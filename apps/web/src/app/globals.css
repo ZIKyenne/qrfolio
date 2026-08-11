@@ -210,6 +210,15 @@ button:not(:disabled):active { transform: scale(.97); }
 @keyframes mo-pulse   { 0%, 100% { opacity: 1 } 50% { opacity: .5 } }
 @keyframes mo-ring    { 0% { box-shadow: 0 0 0 0 rgba(57,255,143,.5) } 70% { box-shadow: 0 0 0 8px rgba(57,255,143,0) } 100% { box-shadow: 0 0 0 0 rgba(57,255,143,0) } }
 
+/* Page QR Dynamique : 2 colonnes sur desktop (saisie à gauche · panneau résultat collant à droite).
+   Pas de row-gap : on conserve les marges internes existantes des blocs. */
+.qrdyn-layout { display: grid; grid-template-columns: 1fr; align-items: start; }
+.qrdyn-main, .qrdyn-aside { display: flex; flex-direction: column; min-width: 0; }
+@media (min-width: 920px) {
+  .qrdyn-layout { grid-template-columns: minmax(0, 1fr) 384px; column-gap: 22px; }
+  .qrdyn-aside { position: sticky; top: 16px; }
+}
+
 /* Classes utilitaires — la façon recommandée d'animer (composent le système). */
 .mo-spin     { animation: mo-spin 700ms linear infinite; }
 .mo-fade-in  { animation: mo-fade-in var(--mo-base) var(--mo-ease-standard) backwards; }

@@ -97,7 +97,7 @@ export default async function QRCodesPage() {
 
             {/* QR d'un lien : generateur de QR pour n'importe quelle URL (decouvrable ici aussi, pas seulement dans le sheet mobile). */}
             <a href="/dashboard/qr-link" className="qrh-cta" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(201,168,76,0.08)", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)", color: "var(--accent)", textDecoration: "none", fontSize: 12.5, fontWeight: 700, padding: "10px 16px", borderRadius: 10, whiteSpace: "nowrap" as const }}>
-              <Link2 size={14}/> QR instantané
+              <Link2 size={14}/> QR Dynamique
             </a>
 
             {/* Un QR = une page dans QRowg : la creation part donc d'une page (templates). */}

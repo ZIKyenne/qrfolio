@@ -381,19 +381,19 @@ export default function QrLinkPage() {
   )
 
   return (
-    <div className="rpad" style={{ position: "relative", minHeight: "100dvh", maxWidth: 640, margin: "0 auto", padding: "18px 18px calc(30px + env(safe-area-inset-bottom))" }}>
+    <div className="rpad" style={{ position: "relative", minHeight: "100dvh", maxWidth: 1000, margin: "0 auto", padding: "18px 18px calc(40px + env(safe-area-inset-bottom))" }}>
       <Particles behind />
       <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUTED, textDecoration: "none", fontSize: 13, marginBottom: 16 }}>
         <ArrowLeft size={16} /> Retour
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 18 }}>
-        <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0, background: "linear-gradient(145deg,rgba(201,168,76,0.22),rgba(201,168,76,0.06))", border: "1px solid rgba(201,168,76,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <QrIcon size={22} color={G} />
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+        <div style={{ width: 50, height: 50, borderRadius: 14, flexShrink: 0, background: "linear-gradient(145deg,rgba(201,168,76,0.24),rgba(201,168,76,0.06))", border: "1px solid rgba(201,168,76,0.32)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <QrIcon size={24} color={G} />
         </div>
         <div>
-          <h1 style={{ color: "#F5F0E8", fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: -0.3 }}>Créer un QR code</h1>
-          <p style={{ color: MUTED, fontSize: 12.5, margin: "2px 0 0", lineHeight: 1.4 }}>Choisissez un type, remplissez, téléchargez.</p>
+          <h1 style={{ color: "#F5F0E8", fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: -0.4 }}>QR Dynamique</h1>
+          <p style={{ color: MUTED, fontSize: 13, margin: "2px 0 0", lineHeight: 1.4 }}>Créez un QR code — et gardez la main dessus après impression.</p>
         </div>
       </div>
 
@@ -408,6 +408,10 @@ export default function QrLinkPage() {
           <span style={{ color: G, fontSize: 20, fontWeight: 700, flexShrink: 0 }}>→</span>
         </Link>
       )}
+
+      {/* Mise en page : saisie (gauche) · panneau résultat collant (droite) sur desktop. */}
+      <div className="qrdyn-layout">
+        <div className="qrdyn-main">
 
       {/* 1 · Type de QR */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 14 }}>
@@ -487,6 +491,10 @@ export default function QrLinkPage() {
           <p style={{ color: MUTED, fontSize: 11, margin: "9px 2px 0", lineHeight: 1.45 }}>Scanné, ce QR ouvre un brouillon d&apos;email pré-rempli vers cette adresse.</p>
         </>)}
       </div>
+
+        </div>{/* fin qrdyn-main */}
+
+        <div className="qrdyn-aside">
 
       {/* 3 · Aperçu — poster QR */}
       <div style={{ position: "relative", borderRadius: 20, padding: "26px 18px", marginBottom: 14, overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.16)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
@@ -625,6 +633,9 @@ export default function QrLinkPage() {
         </>)}
         {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "11px 0 0" }}>{saveMsg.text}</p>}
       </div>
+
+        </div>{/* fin qrdyn-aside */}
+      </div>{/* fin qrdyn-layout */}
 
       {/* Génération en masse (Business) : créer plusieurs liens dynamiques depuis un CSV. */}
       {canDynBulk(dynPlan) && (

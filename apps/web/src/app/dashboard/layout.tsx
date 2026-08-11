@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/goals", icon: Target, label: "Objectifs" },
   { href: "/dashboard/leads", icon: Inbox, label: "Messages" },
   { href: "/dashboard/qr-codes", icon: QrCode, label: "QR Codes" },
-  { href: "/dashboard/qr-link", icon: Zap, label: "QR instantané" },
+  { href: "/dashboard/qr-link", icon: Zap, label: "QR Dynamique" },
   { href: "/dashboard/team", icon: Users, label: "Équipe" },
   { href: "/dashboard/domains", icon: Globe, label: "Domaines" },
   { href: "/dashboard/redirects", icon: Shuffle, label: "Redirections" },
@@ -44,7 +44,7 @@ const MOBILE_NAV = [
 const CREATE_ACTIONS = [
   { href: "/dashboard/builder", icon: FileText, label: "Créer une page", sub: "Une page pro éditable" },
   { href: "/dashboard/qr-codes", icon: QrCode, label: "Créer un QR code", sub: "Dynamique, modifiable" },
-  { href: "/dashboard/qr-link", icon: Link2, label: "QR instantané", sub: "Lien, WiFi, contact…" },
+  { href: "/dashboard/qr-link", icon: Link2, label: "QR Dynamique", sub: "Modifiable · suivi des scans" },
   { href: "/dashboard/qr-codes", icon: Printer, label: "QR Print Studio", sub: "Affiche prête à imprimer" },
   { href: "/dashboard/templates", icon: Sparkles, label: "Utiliser un modèle", sub: "Partir d'un design" },
   { href: "/dashboard/assets", icon: Upload, label: "Importer un média", sub: "Photos, logos…" },

@@ -11,6 +11,7 @@ import { qrLimit } from "@/lib/plans"
 import { countInstantQrs, countPermanentDynamicQrs } from "@/lib/quota"
 import { isDynSubscribed, dynCanCreatePermanent, DYN_TRIAL_DAYS, canDynLinkSecurity, dynQrLimit } from "@/lib/dynamicPlans"
 import { hashLinkPassword } from "@/lib/linkPassword"
+import { uniqueShortCode } from "@/lib/shortCode"
 
 const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email"])
 // Types éligibles au DYNAMIQUE (redirigé + expirable). WiFi et Contact restent STATIQUES : ils
@@ -34,22 +35,6 @@ function safeDestUrl(raw: string): string | null {
   const withProto = /^https?:\/\//i.test(v) ? v : `https://${v}`
   try { const u = new URL(withProto); return (u.protocol === "http:" || u.protocol === "https:") ? u.toString() : null }
   catch { return null }
-}
-
-// Génère un short_code unique (base62), en évitant les collisions dans instant_qrs ET qr_codes.
-async function uniqueShortCode(supabase: any): Promise<string> {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789" // sans O/0/I/l/1 ambigus
-  for (let attempt = 0; attempt < 8; attempt++) {
-    let code = ""
-    const bytes = new Uint8Array(7); crypto.getRandomValues(bytes)
-    for (let i = 0; i < 7; i++) code += alphabet[bytes[i] % alphabet.length]
-    const [{ data: a }, { data: b }] = await Promise.all([
-      supabase.from("instant_qrs").select("id").eq("short_code", code).maybeSingle(),
-      supabase.from("qr_codes").select("id").eq("short_code", code).maybeSingle(),
-    ])
-    if (!a && !b) return code
-  }
-  throw new Error("short_code generation failed")
 }
 
 export async function GET() {

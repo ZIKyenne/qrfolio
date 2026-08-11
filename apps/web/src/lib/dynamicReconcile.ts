@@ -12,9 +12,10 @@ export type DynLink = {
   id: string
   status: string | null          // 'active' | 'paused' | ...
   expires_at: string | null      // null = permanent ; date = essai (expire à cette date)
+  paused_reason?: string | null  // 'manual' = pause choisie par l'utilisateur (intouchable) ; 'quota'/null = pause auto
 }
 
-export type DynLinkOp = { id: string; patch: { status?: string; expires_at?: null } }
+export type DynLinkOp = { id: string; patch: { status?: string; expires_at?: null; paused_reason?: string | null } }
 
 // `links` DOIT être trié du plus ANCIEN au plus récent (created_at asc).
 // `limit` = quota de liens permanents (null = illimité, 0 = aucun -> essai seul).
@@ -27,18 +28,20 @@ export function planDynamicReconcile(links: DynLink[], limit: number | null, now
     const expTs = l.expires_at ? Date.parse(l.expires_at) : null
     // Essai déjà expiré : on n'y touche pas (il reste expiré, ne consomme aucun slot).
     if (expTs !== null && expTs <= now) continue
+    // Pause MANUELLE (choix de l'utilisateur) : jamais réactivée ni comptée dans le quota.
+    if (l.status === "paused" && l.paused_reason === "manual") continue
 
     if (used < cap) {
       // Dans le quota : rendre actif + permanent.
       const patch: DynLinkOp["patch"] = {}
-      if (l.status !== "active") patch.status = "active"     // réactive un lien mis en pause
+      if (l.status !== "active") { patch.status = "active"; if (l.paused_reason != null) patch.paused_reason = null } // réactive une pause-quota
       if (l.expires_at !== null) patch.expires_at = null      // promeut un essai en permanent
       if (Object.keys(patch).length) ops.push({ id: l.id, patch })
       used++
     } else {
-      // Au-delà du quota : ne mettre en pause QUE les permanents actifs.
+      // Au-delà du quota : ne mettre en pause QUE les permanents actifs (motif 'quota').
       // Un essai encore valide est laissé tel quel (il expirera de lui-même).
-      if (l.status === "active" && l.expires_at === null) ops.push({ id: l.id, patch: { status: "paused" } })
+      if (l.status === "active" && l.expires_at === null) ops.push({ id: l.id, patch: { status: "paused", paused_reason: "quota" } })
     }
   }
   return ops

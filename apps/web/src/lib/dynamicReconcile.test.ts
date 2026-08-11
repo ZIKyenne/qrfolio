@@ -9,6 +9,7 @@ const past = new Date(NOW - 86400000).toISOString()    // essai expiré (hier)
 const perm = (id: string): DynLink => ({ id, status: "active", expires_at: null })
 const trial = (id: string): DynLink => ({ id, status: "active", expires_at: future })
 const paused = (id: string): DynLink => ({ id, status: "paused", expires_at: null })
+const manualPaused = (id: string): DynLink => ({ id, status: "paused", expires_at: null, paused_reason: "manual" })
 
 describe("planDynamicReconcile", () => {
   it("souscription : promeut les essais en permanents dans la limite du quota", () => {
@@ -21,12 +22,12 @@ describe("planDynamicReconcile", () => {
     ])
   })
 
-  it("downgrade : met en pause les permanents en trop (les plus récents)", () => {
+  it("downgrade : met en pause les permanents en trop (les plus récents), motif quota", () => {
     const ops = planDynamicReconcile([perm("a"), perm("b"), perm("c"), perm("d")], 2, NOW)
-    // a, b gardés ; c, d (plus récents) en pause
+    // a, b gardés ; c, d (plus récents) en pause quota
     expect(ops).toEqual([
-      { id: "c", patch: { status: "paused" } },
-      { id: "d", patch: { status: "paused" } },
+      { id: "c", patch: { status: "paused", paused_reason: "quota" } },
+      { id: "d", patch: { status: "paused", paused_reason: "quota" } },
     ])
   })
 
@@ -38,12 +39,24 @@ describe("planDynamicReconcile", () => {
     ])
   })
 
-  it("résiliation (quota 0) : tous les permanents actifs passent en pause", () => {
+  it("résiliation (quota 0) : tous les permanents actifs passent en pause quota", () => {
     const ops = planDynamicReconcile([perm("a"), perm("b")], 0, NOW)
     expect(ops).toEqual([
-      { id: "a", patch: { status: "paused" } },
-      { id: "b", patch: { status: "paused" } },
+      { id: "a", patch: { status: "paused", paused_reason: "quota" } },
+      { id: "b", patch: { status: "paused", paused_reason: "quota" } },
     ])
+  })
+
+  it("pause MANUELLE : jamais réactivée ni comptée dans le quota", () => {
+    // 2 permanents actifs + 1 pause manuelle, quota 3 : la pause manuelle est ignorée (aucune op),
+    // les actifs restent (déjà conformes) -> aucune op du tout.
+    expect(planDynamicReconcile([perm("a"), manualPaused("m"), perm("b")], 3, NOW)).toEqual([])
+    // Même au ré-upgrade généreux (quota illimité), la pause manuelle n'est PAS réactivée.
+    expect(planDynamicReconcile([manualPaused("m"), trial("t")], null, NOW)).toEqual([
+      { id: "t", patch: { expires_at: null } },
+    ])
+    // La pause manuelle ne consomme pas de slot : ici quota 1, 'a' garde le slot, 'm' ignoré.
+    expect(planDynamicReconcile([perm("a"), manualPaused("m")], 1, NOW)).toEqual([])
   })
 
   it("réactive les liens mis en pause dans la limite du quota (ré-upgrade)", () => {

@@ -3756,7 +3756,7 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer style={{ borderTop:"1px solid rgba(201,168,76,0.1)", position:"relative", zIndex:2 }} aria-label="Pied de page">
         <style>{`
-          .fg { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr; gap:40px; padding:56px 48px 48px; }
+          .fg { display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr; gap:36px; padding:56px 48px 48px; }
           .fc-title { color:#C9A84C; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; font-weight:700; margin-bottom:18px; }
           .fl { display:block; color:rgba(188,182,166,0.72); text-decoration:none; font-size:13.5px; margin-bottom:11px; line-height:1.4; transition:color 0.2s; }
           .fl:hover { color:#F5F0E8; }
@@ -3789,7 +3789,7 @@ export default function HomePage() {
           @media(prefers-reduced-motion:reduce){ .fstatus-dot{ animation:none!important; } }
         `}</style>
 
-        {/* Grille 5 colonnes */}
+        {/* Grille 6 colonnes (brand + 5 colonnes de liens) */}
         <div className="fg">
 
           {/* Col 1: Brand */}
@@ -3820,6 +3820,15 @@ export default function HomePage() {
             <Link href="/examples" className="fl">Exemples</Link>
             <Link href="/contact"  className="fl">Contact</Link>
             <span className="fl fl-soon" aria-label="Blog — bientôt disponible">Blog</span>
+          </FooterCol>
+
+          {/* Col: QR codes par usage (maillage interne SEO) */}
+          <FooterCol title="QR codes">
+            <Link href="/qr-code"              className="fl">Tous les usages</Link>
+            <Link href="/qr-code/restaurant"   className="fl">QR code restaurant</Link>
+            <Link href="/qr-code/menu"         className="fl">QR code menu</Link>
+            <Link href="/qr-code/avis-google"  className="fl">QR code avis Google</Link>
+            <Link href="/qr-code/wifi"         className="fl">QR code WiFi</Link>
           </FooterCol>
 
           {/* Col 4: Légal */}

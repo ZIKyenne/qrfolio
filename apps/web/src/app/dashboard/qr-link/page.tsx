@@ -10,7 +10,8 @@ import Link from "next/link"
 import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity, Pencil, Lock, Pause, Play } from "lucide-react"
 import Particles from "@/components/Particles"
 import { countryFlag, DEVICE_LABEL } from "@/lib/scanStats"
-import { canDynLinkSecurity } from "@/lib/dynamicPlans"
+import { canDynLinkSecurity, canDynBulk } from "@/lib/dynamicPlans"
+import { parseBulkCsv } from "@/lib/bulkCsv"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
@@ -115,6 +116,12 @@ export default function QrLinkPage() {
   const [stats, setStats] = useState<any | null>(null) // pop-up statistiques d'un lien dynamique
   const [statsData, setStatsData] = useState<any | null>(null) // stats détaillées (Pro+) chargées
   const [statsLoading, setStatsLoading] = useState(false)
+  const [bulkOpen, setBulkOpen] = useState(false) // modal génération en masse (Business)
+  const [bulkText, setBulkText] = useState("")
+  const [bulkBusy, setBulkBusy] = useState(false)
+  const [bulkMsg, setBulkMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const bulkFileInput = useRef<HTMLInputElement>(null)
+  const bulkParse = useMemo(() => parseBulkCsv(bulkText), [bulkText])
   const isMobile = useIsMobile(768)
 
   // Charge les stats détaillées (par jour/appareil/pays) à l'ouverture de la pop-up.
@@ -269,6 +276,29 @@ export default function QrLinkPage() {
   }
   async function toggleManualPause(s: any) {
     await patchLink(s.id, { action: s.status === "active" ? "pause" : "resume" })
+  }
+
+  // ── Génération en masse (Business) ──
+  function onBulkFile(file: File) {
+    const r = new FileReader()
+    r.onload = () => setBulkText(String(r.result || ""))
+    r.readAsText(file)
+  }
+  async function runBulk() {
+    const items = bulkParse.rows.filter(r => r.valid).map(r => ({ label: r.label, dest: r.dest }))
+    if (items.length === 0 || bulkBusy) return
+    setBulkBusy(true); setBulkMsg(null)
+    try {
+      const res = await fetch("/api/qr-instant/bulk", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) })
+      const d = await res.json().catch(() => ({}))
+      if (res.ok && Array.isArray(d.items)) {
+        setSaved(prev => [...d.items, ...prev])
+        const extra = [d.skipped ? `${d.skipped} ignoré(s)` : "", d.truncated ? `${d.truncated} au-delà de la limite (100)` : ""].filter(Boolean).join(" · ")
+        setBulkMsg({ ok: true, text: `${d.created} lien(s) créé(s)${extra ? " · " + extra : ""}` })
+        setBulkText("")
+      } else setBulkMsg({ ok: false, text: d.error || "Import impossible" })
+    } catch { setBulkMsg({ ok: false, text: "Erreur réseau" }) }
+    finally { setBulkBusy(false) }
   }
 
   // Statut lisible d'un lien dynamique (essai 7 j par lien).
@@ -584,6 +614,14 @@ export default function QrLinkPage() {
         {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "11px 0 0" }}>{saveMsg.text}</p>}
       </div>
 
+      {/* Génération en masse (Business) : créer plusieurs liens dynamiques depuis un CSV. */}
+      {canDynBulk(dynPlan) && (
+        <button onClick={() => { setBulkOpen(true); setBulkMsg(null) }}
+          style={{ marginTop: 22, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 46, borderRadius: 12, border: "1.5px dashed rgba(201,168,76,0.35)", background: "rgba(201,168,76,0.05)", color: G, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
+          <Upload size={16} /> Importer des liens en masse (CSV)
+        </button>
+      )}
+
       {/* 6 · Mes QR codes — liens dynamiques + QR enregistrés, regroupés sous un seul titre. */}
       {hasSaved && (
         <div style={{ marginTop: 22 }}>
@@ -874,6 +912,57 @@ export default function QrLinkPage() {
           </div>
         )
       })()}
+
+      {/* Modal génération en masse (Business) : coller/charger un CSV → créer N liens dynamiques. */}
+      {bulkOpen && (
+        <div onClick={() => setBulkOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 320, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, maxHeight: "90vh", overflowY: "auto", background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 20, padding: 20, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 6 }}>
+              <Upload size={17} color={G} />
+              <p style={{ flex: 1, color: "#F5F0E8", fontSize: 16, fontWeight: 800, margin: 0 }}>Importer en masse</p>
+              <button onClick={() => setBulkOpen(false)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30 }}><X size={15} /></button>
+            </div>
+            <p style={{ color: MUTED, fontSize: 12, margin: "0 0 14px", lineHeight: 1.55 }}>
+              Une ligne par lien : <code style={{ color: "#F5F0E8" }}>destination</code> ou <code style={{ color: "#F5F0E8" }}>libellé,destination</code>. En-tête (<code style={{ color: "#F5F0E8" }}>label,url</code>) et point-virgule acceptés. Jusqu'à 100 liens.
+            </p>
+
+            <div style={{ display: "flex", gap: 9, marginBottom: 10 }}>
+              <button onClick={() => bulkFileInput.current?.click()} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 10, color: "#F5F0E8", fontSize: 12.5, fontWeight: 600, cursor: "pointer", padding: "9px 13px" }}><Upload size={14} /> Charger un .csv</button>
+              {bulkText && <button onClick={() => { setBulkText(""); setBulkMsg(null) }} style={{ background: "transparent", border: "none", color: MUTED, fontSize: 12.5, cursor: "pointer" }}>Effacer</button>}
+              <input ref={bulkFileInput} type="file" accept=".csv,text/csv,text/plain" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onBulkFile(f); e.target.value = "" }} />
+            </div>
+
+            <textarea value={bulkText} onChange={e => setBulkText(e.target.value)} rows={7} placeholder={"label,url\nMa boutique,maboutique.fr\nInstagram,instagram.com/moncompte"}
+              style={{ width: "100%", boxSizing: "border-box", resize: "vertical", minHeight: 130, background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, color: "#F5F0E8", fontSize: 13, padding: "12px 14px", lineHeight: 1.5, fontFamily: "monospace", outline: "none" }} />
+
+            {bulkText.trim() && (
+              <div style={{ marginTop: 12 }}>
+                <p style={{ color: MUTED, fontSize: 11.5, margin: "0 0 8px" }}>
+                  <strong style={{ color: "var(--success)" }}>{bulkParse.validCount}</strong> valide{bulkParse.validCount > 1 ? "s" : ""}
+                  {bulkParse.rows.length - bulkParse.validCount > 0 && <> · <strong style={{ color: "#FF6B6B" }}>{bulkParse.rows.length - bulkParse.validCount}</strong> à corriger</>}
+                  {bulkParse.truncated > 0 && <> · {bulkParse.truncated} au-delà de 100 (ignorées)</>}
+                </p>
+                <div style={{ maxHeight: 150, overflowY: "auto", display: "flex", flexDirection: "column", gap: 5 }}>
+                  {bulkParse.rows.slice(0, 30).map((r, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11.5 }}>
+                      {r.valid ? <Check size={13} color="var(--success)" style={{ flexShrink: 0 }} /> : <X size={13} color="#FF6B6B" style={{ flexShrink: 0 }} />}
+                      <span style={{ color: "#D8D2C6", flexShrink: 0, maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || "—"}</span>
+                      <span style={{ color: r.valid ? MUTED : "#FF6B6B", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.valid ? r.dest : `${r.dest || "(vide)"} · ${r.error}`}</span>
+                    </div>
+                  ))}
+                  {bulkParse.rows.length > 30 && <p style={{ color: "#6E685E", fontSize: 11, margin: 0 }}>… et {bulkParse.rows.length - 30} autres</p>}
+                </div>
+              </div>
+            )}
+
+            {bulkMsg && <p style={{ color: bulkMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "12px 0 0" }}>{bulkMsg.text}</p>}
+
+            <Button onClick={runBulk} disabled={bulkParse.validCount === 0 || bulkBusy} style={{ width: "100%", marginTop: 14 }}>
+              {bulkBusy ? "Création…" : `Créer ${bulkParse.validCount} lien${bulkParse.validCount > 1 ? "s" : ""} dynamique${bulkParse.validCount > 1 ? "s" : ""}`}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

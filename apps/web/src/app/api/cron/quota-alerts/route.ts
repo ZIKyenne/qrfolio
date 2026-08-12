@@ -14,35 +14,26 @@ import { NextRequest, NextResponse } from "next/server"
 import { serverError } from "@/lib/apiError"
 import { getPlan } from "@/lib/plans"
 import { EMAIL_FROM } from "@/lib/emailFrom"
+import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
+import { escapeHtml } from "@/lib/escapeHtml"
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
+// Alerte de quota, sur la coquille partagée (vouvoiement, nom échappé) — cohérente
+// avec tous les autres emails transactionnels.
 function alertHtml(name: string, views: number, limit: number, over: boolean, appUrl: string): string {
   const pct = Math.round((views / limit) * 100)
   const accent = over ? "#FF6B6B" : "#C9A84C"
-  return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head>
-<body style="margin:0;background:#080808;font-family:Arial,sans-serif">
-  <div style="max-width:520px;margin:0 auto;padding:32px 24px">
-    <p style="color:#C9A84C;font-size:22px;font-weight:700;margin:0 0 4px">QRowg</p>
-    <div style="background:#111009;border:1px solid ${accent}40;border-radius:16px;padding:28px 24px;margin-top:16px">
-      <p style="color:#F5F0E8;font-size:18px;font-weight:700;margin:0 0 10px">
-        ${over ? "Quota de vues atteint ce mois-ci" : "Tu approches de ton quota de vues"}
-      </p>
-      <p style="color:#C9C4B8;font-size:14px;line-height:1.6;margin:0 0 16px">
-        Salut ${name || "!"},<br/>
-        Tu en es à <strong style="color:${accent}">${views.toLocaleString("fr-FR")} / ${limit.toLocaleString("fr-FR")} vues</strong> (${pct}%) ce mois-ci.
-      </p>
-      <p style="color:#8A8478;font-size:13px;line-height:1.6;margin:0 0 20px">
-        Pas d'inquiétude : <strong style="color:#39FF8F">tes QR codes et tes pages restent 100% en ligne</strong>, rien n'est coupé.
-        Passe à un plan supérieur pour augmenter ton quota et garder de la marge.
-      </p>
-      <a href="${appUrl}/upgrade" style="display:inline-block;background:linear-gradient(90deg,#C9A84C,#b8953f);color:#080808;text-decoration:none;font-weight:700;font-size:14px;padding:12px 24px;border-radius:10px">
-        Augmenter mon quota →
-      </a>
-    </div>
-    <p style="color:#5a574f;font-size:11px;margin:20px 0 0;text-align:center">QRowg — alerte automatique de quota</p>
-  </div>
-</body></html>`
+  const safeName = name ? escapeHtml(String(name).trim()) : ""
+  const greeting = safeName ? `Bonjour ${safeName},` : "Bonjour,"
+  const content = `
+    ${emailH1(over ? "Quota de vues atteint ce mois-ci" : "Vous approchez de votre quota de vues")}
+    ${emailP(greeting)}
+    ${emailP(`Vous en êtes à <strong style="color:${accent}">${views.toLocaleString("fr-FR")} / ${limit.toLocaleString("fr-FR")} vues</strong> (${pct} %) ce mois-ci.`)}
+    ${emailP(`Pas d'inquiétude : <strong style="color:#39FF8F">vos QR codes et vos pages restent 100 % en ligne</strong>, rien n'est coupé. Passez à un plan supérieur pour augmenter votre quota et garder de la marge.`, 24)}
+    ${emailButton("Augmenter mon quota →", `${appUrl}/upgrade`)}
+  `
+  return emailShell({ preheader: over ? "Votre quota de vues est atteint ce mois-ci." : "Vous approchez de votre quota de vues.", content })
 }
 
 export async function GET(req: NextRequest) {
@@ -101,7 +92,7 @@ export async function GET(req: NextRequest) {
           body: JSON.stringify({
             from: EMAIL_FROM,
             to: [p.email],
-            subject: threshold === "over" ? "⚠️ Quota de vues atteint — QRowg" : "📊 Tu approches de ton quota de vues — QRowg",
+            subject: threshold === "over" ? "⚠️ Quota de vues atteint — QRowg" : "📊 Vous approchez de votre quota de vues — QRowg",
             html: alertHtml(p.full_name as string, views, limit, threshold === "over", appUrl),
           }),
         })

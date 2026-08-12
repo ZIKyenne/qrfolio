@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { PLAN_LIST, PLAN_COMPARISON, fmtPrice } from "@/lib/plans"
@@ -1595,6 +1596,12 @@ function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [active,   setActive]   = useState("")
+  const [authed,   setAuthed]   = useState(false)
+  useEffect(() => {
+    // Header conscient de la connexion : un utilisateur connecté voit « Mon espace »
+    // au lieu de « Connexion / Commencer » (sinon il croit être anonyme).
+    createClient().auth.getUser().then(({ data }) => setAuthed(!!data.user)).catch(() => {})
+  }, [])
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
     window.addEventListener("scroll", fn, { passive: true })
@@ -1656,18 +1663,31 @@ function Navbar() {
           })}
         </div>
         <div className="dNav" style={{display:"flex",alignItems:"center",gap:16}}>
-          <Link href="/auth/login" className="nl"
-            style={{color:"#BCB6A6",textDecoration:"none",fontSize:14,position:"relative",paddingBottom:2,transition:"color 0.2s"}}>Connexion</Link>
-          <Link href="/auth/signup" className="nct" style={{
-            background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:"#080808",
-            textDecoration:"none",fontSize:14,fontWeight:700,padding:"9px 22px",borderRadius:10,
-            display:"inline-block",boxShadow:"0 2px 16px rgba(201,168,76,0.3)",
-            transition:"transform 0.2s var(--mo-ease-spring),box-shadow 0.2s",
-          }}
-            onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-2px) scale(1.03)";el.style.boxShadow="0 6px 24px rgba(201,168,76,0.5)"}}
-            onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.boxShadow="0 2px 16px rgba(201,168,76,0.3)"}}>
-            Commencer
-          </Link>
+          {authed ? (
+            <Link href="/dashboard" className="nct" style={{
+              background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:"#080808",
+              textDecoration:"none",fontSize:14,fontWeight:700,padding:"9px 22px",borderRadius:10,
+              display:"inline-block",boxShadow:"0 2px 16px rgba(201,168,76,0.3)",
+              transition:"transform 0.2s var(--mo-ease-spring),box-shadow 0.2s",
+            }}
+              onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-2px) scale(1.03)";el.style.boxShadow="0 6px 24px rgba(201,168,76,0.5)"}}
+              onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.boxShadow="0 2px 16px rgba(201,168,76,0.3)"}}>
+              Mon espace →
+            </Link>
+          ) : (<>
+            <Link href="/auth/login" className="nl"
+              style={{color:"#BCB6A6",textDecoration:"none",fontSize:14,position:"relative",paddingBottom:2,transition:"color 0.2s"}}>Connexion</Link>
+            <Link href="/auth/signup" className="nct" style={{
+              background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:"#080808",
+              textDecoration:"none",fontSize:14,fontWeight:700,padding:"9px 22px",borderRadius:10,
+              display:"inline-block",boxShadow:"0 2px 16px rgba(201,168,76,0.3)",
+              transition:"transform 0.2s var(--mo-ease-spring),box-shadow 0.2s",
+            }}
+              onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-2px) scale(1.03)";el.style.boxShadow="0 6px 24px rgba(201,168,76,0.5)"}}
+              onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.boxShadow="0 2px 16px rgba(201,168,76,0.3)"}}>
+              Commencer
+            </Link>
+          </>)}
         </div>
         {/* Burger — sibling direct de <nav> (hors .dNav, sinon masqué par display:none parent en mobile) */}
         <button onClick={()=>setMenuOpen(o=>!o)} aria-label={menuOpen?"Fermer le menu":"Ouvrir le menu"}
@@ -1699,15 +1719,24 @@ function Navbar() {
               onClick={()=>setMenuOpen(false)}>{label}</Link>
           ))}
           <div style={{marginTop:32,display:"flex",flexDirection:"column",gap:12}}>
-            <Link href="/auth/login" onClick={()=>setMenuOpen(false)} style={{
-              display:"block",textAlign:"center",color:"#BCB6A6",textDecoration:"none",
-              fontSize:16,padding:"14px",border:"1px solid rgba(201,168,76,0.15)",borderRadius:12}}>Connexion</Link>
-            <Link href="/auth/signup" onClick={()=>setMenuOpen(false)} style={{
-              display:"block",textAlign:"center",
-              background:"linear-gradient(90deg,#C9A84C,#b8953f)",
-              color:"#080808",textDecoration:"none",fontSize:16,fontWeight:700,
-              padding:"16px",borderRadius:12,boxShadow:"0 4px 24px rgba(201,168,76,0.4)"}}>
-              Commencer gratuitement →</Link>
+            {authed ? (
+              <Link href="/dashboard" onClick={()=>setMenuOpen(false)} style={{
+                display:"block",textAlign:"center",
+                background:"linear-gradient(90deg,#C9A84C,#b8953f)",
+                color:"#080808",textDecoration:"none",fontSize:16,fontWeight:700,
+                padding:"16px",borderRadius:12,boxShadow:"0 4px 24px rgba(201,168,76,0.4)"}}>
+                Mon espace →</Link>
+            ) : (<>
+              <Link href="/auth/login" onClick={()=>setMenuOpen(false)} style={{
+                display:"block",textAlign:"center",color:"#BCB6A6",textDecoration:"none",
+                fontSize:16,padding:"14px",border:"1px solid rgba(201,168,76,0.15)",borderRadius:12}}>Connexion</Link>
+              <Link href="/auth/signup" onClick={()=>setMenuOpen(false)} style={{
+                display:"block",textAlign:"center",
+                background:"linear-gradient(90deg,#C9A84C,#b8953f)",
+                color:"#080808",textDecoration:"none",fontSize:16,fontWeight:700,
+                padding:"16px",borderRadius:12,boxShadow:"0 4px 24px rgba(201,168,76,0.4)"}}>
+                Commencer gratuitement →</Link>
+            </>)}
           </div>
         </div>
       )}

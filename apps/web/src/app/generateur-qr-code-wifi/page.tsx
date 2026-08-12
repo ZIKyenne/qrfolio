@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 import Link from "next/link"
 import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import GeneratorClient from "../generateur-qr-code/GeneratorClient"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
@@ -11,7 +13,7 @@ const URL = `${APP}/generateur-qr-code-wifi`
 
 export const metadata: Metadata = {
   title: "Générateur de QR code WiFi gratuit — connexion en un scan | QRowg",
-  description: "Créez un QR code WiFi gratuit : vos invités se connectent en un scan, sans taper le mot de passe. Fonctionne hors ligne, PNG/SVG à imprimer. Sans compte.",
+  description: "Créez un QR code WiFi gratuit : vos invités se connectent en un scan, sans taper le mot de passe. Fonctionne hors ligne, PNG/SVG à imprimer. Compte gratuit.",
   alternates: { canonical: URL },
   openGraph: { title: "Générateur de QR code WiFi gratuit | QRowg", description: "Créez un QR code WiFi gratuit : connexion automatique en un scan, sans mot de passe à taper. À imprimer.", url: URL, siteName: "QRowg", type: "website" },
   twitter: { card: "summary_large_image", title: "Générateur de QR code WiFi gratuit | QRowg", description: "Connexion WiFi en un scan, sans taper le mot de passe. Gratuit, à imprimer." },
@@ -22,7 +24,7 @@ const FAQ = [
   { q: "Est-ce compatible iPhone et Android ?", a: "Oui. Les appareils récents iOS et Android proposent de rejoindre le réseau automatiquement dès le scan, sans application à installer." },
   { q: "Le mot de passe est-il visible dans le QR code ?", a: "Le QR contient le mot de passe, comme une affichette classique. Pour un lieu public, créez un réseau invité dédié plutôt que d'exposer votre WiFi principal." },
   { q: "Quel type de sécurité choisir ?", a: "WPA/WPA2 pour la plupart des box récentes, WEP pour les anciens équipements, ou « Ouvert » pour un réseau sans mot de passe." },
-  { q: "Le générateur de QR code WiFi est-il gratuit ?", a: "Oui, entièrement. Vous créez et téléchargez votre QR code WiFi en PNG ou SVG haute résolution, sans compte et sans filigrane." },
+  { q: "Le générateur de QR code WiFi est-il gratuit ?", a: "Oui. Avec un compte gratuit, vous créez et téléchargez votre QR code WiFi en PNG ou SVG haute résolution, sans filigrane." },
 ]
 const STEPS = [
   "Entrez le nom du réseau (SSID) et le mot de passe.",
@@ -31,7 +33,12 @@ const STEPS = [
   "Téléchargez le QR en PNG ou SVG et imprimez-le (table, mur, affichette).",
 ]
 
-export default function WifiGeneratorPage() {
+export default async function WifiGeneratorPage() {
+  // Accès réservé aux comptes (cf. générateur principal).
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect("/auth/signup")
+
   const appLd = {
     "@context": "https://schema.org", "@type": "WebApplication",
     name: "Générateur de QR code WiFi gratuit QRowg", url: URL,
@@ -73,7 +80,7 @@ export default function WifiGeneratorPage() {
         <section style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 30px" }}>
           <p style={{ color: G, fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase" }}>📶 Outil gratuit</p>
           <h1 style={{ color: INK, fontSize: "clamp(30px,6vw,50px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, margin: "12px 0 16px", textWrap: "balance" }}>Générateur de QR code WiFi gratuit</h1>
-          <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto", maxWidth: 620 }}>Vos invités se connectent au WiFi en un scan, sans taper le mot de passe. Idéal sur une table, un mur ou une affichette. Fonctionne hors ligne, sans compte.</p>
+          <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto", maxWidth: 620 }}>Vos invités se connectent au WiFi en un scan, sans taper le mot de passe. Idéal sur une table, un mur ou une affichette. Fonctionne hors ligne, une fois créé.</p>
         </section>
 
         {/* L'outil, pré-réglé sur WiFi */}

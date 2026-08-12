@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 import Link from "next/link"
 import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { VERTICAL_ORDER, VERTICALS } from "../qr-code/verticals"
 import GeneratorClient from "./GeneratorClient"
 
@@ -11,15 +13,15 @@ const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#0808
 const URL = `${APP}/generateur-qr-code`
 
 export const metadata: Metadata = {
-  title: "Générateur de QR code gratuit — en ligne, sans inscription | QRowg",
-  description: "Créez un QR code gratuit en ligne : lien, texte, WiFi, email, téléphone. Couleurs, logo, téléchargement PNG et SVG haute résolution. Sans compte, sans filigrane.",
+  title: "Générateur de QR code gratuit — en ligne, PNG & SVG | QRowg",
+  description: "Créez un QR code en ligne : lien, texte, WiFi, email, téléphone. Couleurs, logo, téléchargement PNG et SVG haute résolution. Compte gratuit, sans filigrane.",
   alternates: { canonical: URL },
-  openGraph: { title: "Générateur de QR code gratuit | QRowg", description: "Créez un QR code gratuit en ligne (lien, WiFi, texte…) avec couleurs et logo. Téléchargement PNG/SVG, sans compte.", url: URL, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Générateur de QR code gratuit | QRowg", description: "Créez un QR code gratuit en ligne, sans inscription. PNG/SVG haute résolution." },
+  openGraph: { title: "Générateur de QR code gratuit | QRowg", description: "Créez un QR code en ligne (lien, WiFi, texte…) avec couleurs et logo. Téléchargement PNG/SVG, compte gratuit.", url: URL, siteName: "QRowg", type: "website" },
+  twitter: { card: "summary_large_image", title: "Générateur de QR code gratuit | QRowg", description: "Créez un QR code en ligne avec un compte gratuit. PNG/SVG haute résolution." },
 }
 
 const FAQ = [
-  { q: "Le générateur de QR code est-il vraiment gratuit ?", a: "Oui. Vous créez et téléchargez votre QR code gratuitement, sans compte et sans filigrane, en haute résolution." },
+  { q: "Le générateur de QR code est-il gratuit ?", a: "Oui. Avec un compte gratuit, vous créez et téléchargez vos QR codes sans filigrane, en haute résolution. Le compte permet de gérer vos codes et d'en faire des QR dynamiques." },
   { q: "Le QR code expire-t-il un jour ?", a: "Non. Un QR code statique encode directement son contenu : il fonctionne pour toujours, même sans connexion." },
   { q: "Puis-je modifier le QR code après l'avoir créé ?", a: "Un QR code statique est figé. Pour changer la destination sans réimprimer et suivre les scans, créez un compte et générez un QR code dynamique." },
   { q: "Quels formats puis-je télécharger ?", a: "PNG en haute résolution (1024 px) et SVG vectoriel — parfaits pour l'impression sur cartes, flyers, menus ou affiches." },
@@ -32,7 +34,12 @@ const STEPS = [
   "Téléchargez-le en PNG ou SVG haute résolution, prêt à imprimer.",
 ]
 
-export default function GeneratorPage() {
+export default async function GeneratorPage() {
+  // Accès réservé aux comptes : on ne veut plus de création anonyme illimitée.
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect("/auth/signup")
+
   const appLd = {
     "@context": "https://schema.org", "@type": "WebApplication",
     name: "Générateur de QR code gratuit QRowg", url: URL,
@@ -73,7 +80,7 @@ export default function GeneratorPage() {
         <section style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 30px" }}>
           <p style={{ color: G, fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase" }}>Outil gratuit</p>
           <h1 style={{ color: INK, fontSize: "clamp(30px,6vw,50px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, margin: "12px 0 16px", textWrap: "balance" }}>Générateur de QR code gratuit</h1>
-          <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto", maxWidth: 620 }}>Créez votre QR code en ligne — lien, texte, WiFi, email ou téléphone. Couleurs, logo, aperçu en direct, téléchargement PNG et SVG. Sans compte, sans filigrane.</p>
+          <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto", maxWidth: 620 }}>Créez votre QR code en ligne — lien, texte, WiFi, email ou téléphone. Couleurs, logo, aperçu en direct, téléchargement PNG et SVG. Compte gratuit, sans filigrane.</p>
         </section>
 
         {/* L'outil (îlot client) */}

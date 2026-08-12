@@ -1,8 +1,9 @@
 "use client"
 
-// Générateur de QR code GRATUIT (public, sans compte) — îlot interactif embarqué dans la
-// page SEO serveur. Réutilise le moteur QR local (qrRender / QRCanvas) et les helpers purs
-// (qrLinkUtils). Sortie STATIQUE (PNG/SVG) ; CTA vers l'inscription pour le QR dynamique.
+// Générateur de QR code (réservé aux comptes connectés — le mur est posé côté page serveur)
+// — îlot interactif embarqué dans la page SEO serveur. Réutilise le moteur QR local
+// (qrRender / QRCanvas) et les helpers purs (qrLinkUtils). Sortie STATIQUE (PNG/SVG) ;
+// CTA vers l'inscription pour le QR dynamique.
 import { useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { Download, Check, Link2, Type, Wifi, Phone, Mail, AlertTriangle, ShieldCheck, Zap, Upload, X } from "lucide-react"
@@ -197,7 +198,7 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
           </button>
           <button type="button" onClick={() => download("svg")} disabled={!ready || busy !== null} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${BOR}`, background: "rgba(255,255,255,0.04)", color: INK, fontSize: 14, fontWeight: 700, cursor: ready ? "pointer" : "default" }}>SVG</button>
         </div>
-        <p style={{ color: "#6E685E", fontSize: 11.5, textAlign: "center", margin: 0 }}>Gratuit, sans compte. Haute résolution, prêt à imprimer.</p>
+        <p style={{ color: "#6E685E", fontSize: 11.5, textAlign: "center", margin: 0 }}>Haute résolution, prêt à imprimer.</p>
 
         {/* CTA dynamique */}
         <Link href="/auth/signup" style={{ textDecoration: "none", display: "block", ...card, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)" }}>

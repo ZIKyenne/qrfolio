@@ -212,7 +212,7 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
           <div style={{ background: bg, borderRadius: 20, padding: 18, boxShadow: "0 14px 40px rgba(0,0,0,0.5)", transition: "background .2s", maxWidth: "100%" }}>
             <div style={{ position: "relative", lineHeight: 0, borderRadius: 8, overflow: "hidden" }}>
               <QRCanvas value={encodedValue || "https://qrowg.com"} size={196} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
-              {ready && !(saved && saved.sig === sig) && <QrWatermark />}
+              {ready && <QrWatermark size={196} />}
             </div>
           </div>
           {!ready

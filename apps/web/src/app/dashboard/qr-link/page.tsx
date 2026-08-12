@@ -685,10 +685,7 @@ export default function QrLinkPage() {
               {dynamicLinks.map(s => { const st = dynStatus(s); return (
                 <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 16, padding: 12, cursor: "pointer" }}>
                   <div style={{ background: "#fff", borderRadius: 12, padding: 8, lineHeight: 0, flexShrink: 0, boxShadow: "0 3px 14px rgba(0,0,0,0.32)" }}>
-                    <div style={{ position: "relative", lineHeight: 0, borderRadius: 5, overflow: "hidden" }}>
-                      <QRCanvas value={s.payload || "https://qrowg.com"} size={92} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
-                      <QrWatermark size={92} />
-                    </div>
+                    <QRCanvas value={s.payload || "https://qrowg.com"} size={92} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || (s.dest_url || "").replace(/^https?:\/\//, "")}</p>
@@ -714,10 +711,7 @@ export default function QrLinkPage() {
                 <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail"
                   style={{ position: "relative", flexShrink: 0, width: 124, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
                   <div style={{ background: "#fff", borderRadius: 10, padding: 7, lineHeight: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
-                    <div style={{ position: "relative", lineHeight: 0, borderRadius: 5, overflow: "hidden" }}>
-                      <QRCanvas value={s.payload || "https://qrowg.com"} size={82} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
-                      <QrWatermark size={82} />
-                    </div>
+                    <QRCanvas value={s.payload || "https://qrowg.com"} size={82} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
                   <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || s.kind}</span>
                   <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer ce QR"
@@ -738,10 +732,7 @@ export default function QrLinkPage() {
               <button key={i} title={`Réutiliser : ${histLabel(h)}`} onClick={() => loadEntry(h)}
                 style={{ flexShrink: 0, width: 98, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: 9, cursor: "pointer" }}>
                 <div style={{ background: "#fff", borderRadius: 9, padding: 6, lineHeight: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>
-                  <div style={{ position: "relative", lineHeight: 0, borderRadius: 4, overflow: "hidden" }}>
-                    <QRCanvas value={payload(h) || "https://qrowg.com"} size={58} fg={safeFg(h.fg)} bg="#FFFFFF" />
-                    <QrWatermark size={58} />
-                  </div>
+                  <QRCanvas value={payload(h) || "https://qrowg.com"} size={58} fg={safeFg(h.fg)} bg="#FFFFFF" />
                 </div>
                 <span style={{ color: MUTED, fontSize: 9.5, maxWidth: 86, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{histLabel(h)}</span>
               </button>
@@ -760,10 +751,7 @@ export default function QrLinkPage() {
             </div>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
               <div style={{ background: detail.style?.bg || "#fff", borderRadius: 14, padding: 12, lineHeight: 0 }}>
-                <div style={{ position: "relative", lineHeight: 0, borderRadius: 6, overflow: "hidden" }}>
-                  <QRCanvas value={detail.payload || "https://qrowg.com"} size={196} fg={detail.style?.fg || "#080808"} bg={detail.style?.bg || "#FFFFFF"} />
-                  <QrWatermark size={196} />
-                </div>
+                <QRCanvas value={detail.payload || "https://qrowg.com"} size={196} fg={detail.style?.fg || "#080808"} bg={detail.style?.bg || "#FFFFFF"} />
               </div>
             </div>
 

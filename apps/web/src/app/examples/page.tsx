@@ -297,7 +297,6 @@ function ExampleCard({ example }: { example: Example }) {
               border: `1px solid ${PLAN_COLOR[example.plan]}30`,
               color: PLAN_COLOR[example.plan], letterSpacing: 1,
             }}>{example.plan.toUpperCase()}</span>
-            <span style={{ color: MUT, fontSize: 11 }}>{example.blocks} blocs</span>
           </div>
           <Link href="/auth/signup" style={{
             display: "inline-flex", alignItems: "center", gap: 5,
@@ -305,7 +304,7 @@ function ExampleCard({ example }: { example: Example }) {
             textDecoration: "none", fontSize: 12, fontWeight: 600,
             transition: "color 0.2s",
           }}>
-            Utiliser ce template →
+            Utiliser ce modèle →
           </Link>
         </div>
       </div>

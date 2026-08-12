@@ -1119,6 +1119,7 @@ const TEMPLATE_DATA = [
     id: "restaurant",
     name: "Restaurant & Bar",
     category: "Food & Beverage",
+    includes: ["Menu", "Réservation", "Avis Google"],
     blocks: 7,
     isPro: false,
     accent: "#F97316",
@@ -1135,6 +1136,7 @@ const TEMPLATE_DATA = [
     id: "freelance",
     name: "Freelance Pro",
     category: "Services",
+    includes: ["Portfolio", "Contact", "Réseaux"],
     blocks: 6,
     isPro: false,
     accent: "var(--action)",
@@ -1151,6 +1153,7 @@ const TEMPLATE_DATA = [
     id: "coach",
     name: "Coach & Thérapeute",
     category: "Bien-être",
+    includes: ["Prestations", "Prise de RDV", "Avis"],
     blocks: 8,
     isPro: false,
     accent: "var(--success)",
@@ -1167,6 +1170,7 @@ const TEMPLATE_DATA = [
     id: "artist",
     name: "Artiste & Musicien",
     category: "Créatif",
+    includes: ["Musique", "Galerie", "Dates"],
     blocks: 7,
     isPro: true,
     accent: "#A78BFA",
@@ -1183,6 +1187,7 @@ const TEMPLATE_DATA = [
     id: "immo",
     name: "Agent Immobilier",
     category: "Immobilier",
+    includes: ["Biens", "Estimation", "Contact"],
     blocks: 6,
     isPro: true,
     accent: "#C9A84C",
@@ -1199,6 +1204,7 @@ const TEMPLATE_DATA = [
     id: "boutique",
     name: "Boutique E-commerce",
     category: "Commerce",
+    includes: ["Catalogue", "Paiement", "Promos"],
     blocks: 9,
     isPro: true,
     accent: "#F43F5E",
@@ -1348,8 +1354,8 @@ function TemplateCard({ tpl, i, visible }: { tpl: typeof TEMPLATE_DATA[number]; 
 
       {/* Footer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ color: "rgba(188,182,166,0.6)", fontSize: 11 }}>
-          {tpl.blocks} blocs inclus
+        <span style={{ color: "rgba(188,182,166,0.7)", fontSize: 10.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "68%" }}>
+          {tpl.includes.join(" · ")}
         </span>
         <a href="/dashboard/templates" style={{
           display: "inline-flex", alignItems: "center", gap: 5,
@@ -1569,7 +1575,7 @@ function TemplatesSection() {
             el.style.background = "transparent"
             el.style.borderColor = "rgba(201,168,76,0.25)"
           }}>
-          Voir tous les templates
+          Voir tous les modèles
           <span style={{ fontSize: 16 }}>→</span>
         </a>
       </div>

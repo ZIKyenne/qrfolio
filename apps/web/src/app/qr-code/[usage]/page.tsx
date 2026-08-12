@@ -5,6 +5,11 @@ import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import { VERTICALS, VERTICAL_SLUGS, getVertical, objectiveForVertical } from "../verticals"
+import { GUIDES } from "../../guides/guides"
+
+// Guides fondamentaux montrés sur chaque page d'usage (maillage vers le cluster GEO,
+// réciproque du lien guides -> verticales). Pertinents pour tout usage imprimé.
+const RELATED_GUIDES = ["comment-creer-un-qr-code", "qr-code-dynamique-vs-statique", "taille-qr-code-impression"]
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -165,6 +170,19 @@ export default async function VerticalPage({ params }: { params: Promise<{ usage
               </Link>
             ) : null })}
             <Link href="/qr-code" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(201,168,76,0.08)", border: `1px solid ${BOR}`, color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 700, padding: "10px 15px", borderRadius: 11 }}>Tous les usages →</Link>
+          </div>
+        </section>
+
+        {/* Guides pour aller plus loin (maillage vers le cluster GEO) */}
+        <section style={{ marginBottom: 20 }}>
+          <p style={{ ...eyebrowCss, textAlign: "center", marginBottom: 14 }}>Pour aller plus loin</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+            {RELATED_GUIDES.map(slug => { const g = GUIDES[slug]; return g ? (
+              <Link key={slug} href={`/guides/${slug}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${BOR}`, color: INK, textDecoration: "none", fontSize: 13.5, fontWeight: 600, padding: "10px 15px", borderRadius: 11 }}>
+                <span aria-hidden>{g.emoji}</span> {g.h1}
+              </Link>
+            ) : null })}
+            <Link href="/guides" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(201,168,76,0.08)", border: `1px solid ${BOR}`, color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 700, padding: "10px 15px", borderRadius: 11 }}>Tous les guides →</Link>
           </div>
         </section>
       </main>

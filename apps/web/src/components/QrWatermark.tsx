@@ -5,7 +5,7 @@ import type { CSSProperties } from "react"
 //  1) marquer la propriété QRowg ;
 //  2) rendre l'aperçu NON SCANNABLE (voile qui casse le contraste des modules +
 //     marque dense) → impossible de récupérer un QR propre par capture d'écran.
-// À poser dans un conteneur `position: relative` qui enveloppe le <QRCanvas>.
+// À poser dans un conteneur `position: relative` qui enveloppe le QRCanvas.
 // `size` = côté du QR en px : densité/taille du filigrane adaptées (vignettes ↔ grand aperçu).
 export default function QrWatermark({ text = "QROWG", size = 210 }: { text?: string; size?: number }) {
   const small = size < 120

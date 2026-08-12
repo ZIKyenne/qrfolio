@@ -6,15 +6,15 @@
 // CTA vers l'inscription pour le QR dynamique.
 import { useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { Download, Check, Link2, Type, Wifi, Phone, Mail, MessageSquare, AlertTriangle, ShieldCheck, Zap, Upload, X } from "lucide-react"
+import { Download, Check, Link2, Type, Wifi, Phone, Mail, MessageSquare, Contact, AlertTriangle, ShieldCheck, Zap, Upload, X } from "lucide-react"
 import QRCanvas from "../dashboard/qr-codes/QRCanvas"
 import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../dashboard/qr-codes/qrRender"
-import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail, buildSms } from "../dashboard/qr-link/qrLinkUtils"
+import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail, buildSms, buildVCard } from "../dashboard/qr-link/qrLinkUtils"
 
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(168,161,144,0.92)", BOR = "rgba(255,255,255,0.1)"
 
-type QrType = "link" | "text" | "wifi" | "email" | "phone" | "sms"
+type QrType = "link" | "text" | "wifi" | "email" | "phone" | "sms" | "contact"
 type WifiEnc = "WPA" | "WEP" | "nopass"
 
 const TYPES: { k: QrType; label: string; icon: any }[] = [
@@ -24,6 +24,7 @@ const TYPES: { k: QrType; label: string; icon: any }[] = [
   { k: "email", label: "Email", icon: Mail },
   { k: "phone", label: "Appel", icon: Phone },
   { k: "sms", label: "SMS", icon: MessageSquare },
+  { k: "contact", label: "vCard", icon: Contact },
 ]
 const STYLE_PRESETS: { k: string; label: string; dotStyle: QRStyleConfig["dotStyle"]; cornerStyle: QRStyleConfig["cornerStyle"] }[] = [
   { k: "carre", label: "Carré", dotStyle: "square", cornerStyle: "square" },
@@ -48,6 +49,8 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
   const [email, setEmail] = useState(""); const [subject, setSubject] = useState("")
   const [phone, setPhone] = useState("")
   const [smsPhone, setSmsPhone] = useState(""); const [smsBody, setSmsBody] = useState("")
+  const [vcFirst, setVcFirst] = useState(""); const [vcLast, setVcLast] = useState(""); const [vcOrg, setVcOrg] = useState("")
+  const [vcPhone, setVcPhone] = useState(""); const [vcEmail, setVcEmail] = useState(""); const [vcUrl, setVcUrl] = useState("")
   const [fg, setFg] = useState("#080808"); const [bg, setBg] = useState("#FFFFFF")
   const [ecc, setEcc] = useState<"L" | "M" | "Q" | "H">("M")
   const [styleKey, setStyleKey] = useState("carre")
@@ -65,8 +68,9 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
     if (qrType === "email") return buildEmail(email, subject)
     if (qrType === "phone") return buildTel(phone)
     if (qrType === "sms") return buildSms(smsPhone, smsBody)
+    if (qrType === "contact") return buildVCard({ firstName: vcFirst, lastName: vcLast, phone: vcPhone, email: vcEmail, org: vcOrg, url: vcUrl })
     return normalizeUrl(url)
-  }, [qrType, url, text, ssid, wifiPass, wifiEnc, email, subject, phone, smsPhone, smsBody])
+  }, [qrType, url, text, ssid, wifiPass, wifiEnc, email, subject, phone, smsPhone, smsBody, vcFirst, vcLast, vcPhone, vcEmail, vcOrg, vcUrl])
 
   const ready = data.length > 0
   const ratio = contrast(fg, bg)
@@ -129,7 +133,7 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
       {/* Colonne gauche : saisie + style */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
         {/* Types */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
           {TYPES.map(t => { const on = qrType === t.k; const Icon = t.icon; return (
             <button key={t.k} type="button" onClick={() => setQrType(t.k)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, minHeight: 56, borderRadius: 12, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : BOR}`, color: on ? G : MUT, fontSize: 11.5, fontWeight: on ? 800 : 600 }}>
@@ -167,6 +171,17 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
             <input value={smsPhone} onChange={e => setSmsPhone(e.target.value)} inputMode="tel" type="tel" placeholder="ex : +33 6 12 34 56 78" aria-label="Numéro du destinataire SMS" style={{ ...field, marginBottom: 10, borderColor: smsPhone.trim() ? G + "80" : BOR }} />
             <textarea value={smsBody} onChange={e => setSmsBody(e.target.value)} rows={2} placeholder="Message pré-rempli (optionnel)" aria-label="Message du SMS"
               style={{ width: "100%", boxSizing: "border-box", resize: "vertical", minHeight: 56, background: "#0A0A0A", border: `1px solid ${BOR}`, borderRadius: 12, color: INK, fontSize: 15, padding: "12px 14px", outline: "none", fontFamily: "inherit" }} />
+          </>)}
+          {qrType === "contact" && (<>
+            <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+              <input value={vcFirst} onChange={e => setVcFirst(e.target.value)} placeholder="Prénom" aria-label="Prénom" style={{ ...field, flex: 1, minWidth: 0, borderColor: (vcFirst.trim() || vcLast.trim()) ? G + "80" : BOR }} />
+              <input value={vcLast} onChange={e => setVcLast(e.target.value)} placeholder="Nom" aria-label="Nom" style={{ ...field, flex: 1, minWidth: 0, borderColor: (vcFirst.trim() || vcLast.trim()) ? G + "80" : BOR }} />
+            </div>
+            <input value={vcOrg} onChange={e => setVcOrg(e.target.value)} placeholder="Société (optionnel)" aria-label="Société" style={{ ...field, marginBottom: 10 }} />
+            <input value={vcPhone} onChange={e => setVcPhone(e.target.value)} inputMode="tel" type="tel" placeholder="Téléphone (optionnel)" aria-label="Téléphone" style={{ ...field, marginBottom: 10 }} />
+            <input value={vcEmail} onChange={e => setVcEmail(e.target.value)} inputMode="email" type="email" placeholder="Email (optionnel)" aria-label="Email" style={{ ...field, marginBottom: 10 }} />
+            <input value={vcUrl} onChange={e => setVcUrl(e.target.value)} inputMode="url" placeholder="Site web (optionnel)" aria-label="Site web" style={field} />
+            <p style={{ color: MUT, fontSize: 11, margin: "8px 2px 0", lineHeight: 1.4 }}>Au scan, le téléphone propose d'enregistrer le contact. Au moins un prénom ou un nom est requis.</p>
           </>)}
         </div>
 

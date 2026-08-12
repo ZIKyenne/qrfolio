@@ -42,7 +42,7 @@ export default async function AnalyticsPage() {
     { data: tapEventsRaw },
   ] = await Promise.all([
     supabase.from("scans")
-      .select("scanned_at, device, country, city, os, browser, page_id")
+      .select("scanned_at, device, country, city, os, browser, page_id, qr_code_id")
       .in("page_id", pageIds).gte("scanned_at", since.toISOString())
       .order("scanned_at", { ascending: false }).limit(LIM),
     supabase.from("block_clicks")
@@ -67,6 +67,20 @@ export default async function AnalyticsPage() {
       .eq("kind", "tap").in("page_id", pageIds)
       .gte("created_at", since.toISOString()).limit(LIM),
   ])
+
+  // Attribution par support (QR de pages) — colonnes récentes hors types générés -> cast any.
+  // Si la migration n'est pas appliquée, ces requêtes renvoient vide (dégradation douce).
+  const [
+    { data: supportQrs },
+    { data: supportViews },
+    { data: supportClicks },
+    { data: supportLeads },
+  ] = (await Promise.all([
+    (supabase.from("qr_codes") as any).select("id, short_code, label, page_id").in("page_id", pageIds).order("created_at", { ascending: false }).limit(2000),
+    (supabase.from("page_views") as any).select("qr_source").in("page_id", pageIds).gte("viewed_at", since.toISOString()).not("qr_source", "is", null).limit(LIM),
+    (supabase.from("block_clicks") as any).select("qr_source").in("page_id", pageIds).gte("clicked_at", since90.toISOString()).not("qr_source", "is", null).limit(LIM),
+    (supabase.from("leads") as any).select("qr_source").in("page_id", pageIds).gte("created_at", since.toISOString()).not("qr_source", "is", null).limit(LIM),
+  ])) as any[]
 
   type PageEvRow = { kind: "scroll" | "impression" | "dwell" | "tap"; ref: string; value: number | null; x: number | null; y: number | null; page_id: string; created_at: string }
   const pageEvents: PageEvRow[] = [
@@ -112,6 +126,10 @@ export default async function AnalyticsPage() {
       deviceScans={deviceScans}
       pageEvents={pageEvents}
       userEmail={profile?.email ?? ""}
+      supportQrs={supportQrs || []}
+      supportViews={supportViews || []}
+      supportClicks={supportClicks || []}
+      supportLeads={supportLeads || []}
     />
   )
 }

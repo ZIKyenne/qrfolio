@@ -17,11 +17,14 @@ import { buildDailyData, buildDeviceData, buildSourceData, buildScrollFunnel, bu
 import ScrollDepthPanel from "./ScrollDepthPanel"
 import ConversionFunnelPanel from "./ConversionFunnelPanel"
 import HeatmapPanel from "./HeatmapPanel"
+import SupportPanel from "./SupportPanel"
 import Particles from "@/components/Particles"
 
 type Profile = { total_pages: number; total_scans: number; plan: string; email?: string; full_name?: string } | null
 type Page = { id: string; title: string; slug: string; total_views: number; unique_views: number; status: string }
-type Scan = { scanned_at: string; device: string; country: string | null; page_id: string }
+type Scan = { scanned_at: string; device: string; country: string | null; page_id: string; qr_code_id?: string | null }
+type SupportQr = { id: string; short_code: string; label?: string | null; page_id?: string | null }
+type SrcRow = { qr_source?: string | null }
 type View = { viewed_at: string; device: string; source: string | null; country: string | null; page_id: string }
 type Click = { block_id: string; click_target: string | null; clicked_at: string; page_id: string; block_type?: string }
 type BRow    = { id: string; type: string; page_id: string; position: number; is_visible: boolean }
@@ -40,6 +43,10 @@ interface Props {
   deviceScans?: DeviceScan[]
   pageEvents?: PageEv[]
   userEmail?: string
+  supportQrs?: SupportQr[]
+  supportViews?: SrcRow[]
+  supportClicks?: SrcRow[]
+  supportLeads?: SrcRow[]
 }
 
 const GOLD = "var(--accent)"
@@ -70,7 +77,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-export default function AnalyticsClient({ profile, pages, recentScans, recentViews, clicks = [], blocks = [], geoScans = [], deviceScans = [], pageEvents = [], userEmail = "" }: Props) {
+export default function AnalyticsClient({ profile, pages, recentScans, recentViews, clicks = [], blocks = [], geoScans = [], deviceScans = [], pageEvents = [], userEmail = "", supportQrs = [], supportViews = [], supportClicks = [], supportLeads = [] }: Props) {
   const [selectedPage, setSelectedPage] = useState<string>("all")
   const [showFull, setShowFull] = useState(false) // analyse détaillée repliée par défaut
 
@@ -81,6 +88,13 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
   const filteredViews = useMemo(() =>
     selectedPage === "all" ? recentViews : recentViews.filter(v => v.page_id === selectedPage),
     [recentViews, selectedPage]
+  )
+
+  // QR de la sélection = supports (vitrine/table/flyer…). Le funnel par support est calculé
+  // dans SupportPanel via lib/supportFunnel (scans par qr_code_id, vue/clic/conv par qr_source).
+  const filteredSupportQrs = useMemo(() =>
+    selectedPage === "all" ? supportQrs : supportQrs.filter(q => q.page_id === selectedPage),
+    [supportQrs, selectedPage]
   )
 
   const dailyData = useMemo(() => buildDailyData(filteredScans, filteredViews), [filteredScans, filteredViews])
@@ -457,6 +471,11 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
         <div style={{ marginBottom: 24, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
           <ConversionFunnelPanel steps={funnel.steps} conversionRate={funnel.conversionRate} hasEngagementData={funnel.hasEngagementData} />
           <ScrollDepthPanel funnel={scrollFunnel} />
+        </div>
+
+        {/* ── Performance par support physique (funnel scan→vue→clic→conversion par QR) ── */}
+        <div style={{ marginBottom: 24 }}>
+          <SupportPanel qrs={filteredSupportQrs} scans={filteredScans} views={supportViews} clicks={supportClicks} leads={supportLeads} />
         </div>
 
         {/* ── Carte de chaleur des clics ────────────────────────────────── */}

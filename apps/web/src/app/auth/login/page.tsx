@@ -10,9 +10,11 @@ export const metadata: Metadata = { title: 'Connexion' }
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; redirect?: string }>
 }) {
   const sp = await searchParams
+  // Conserve la destination interne (deep-link SEO) quand on bascule vers l'inscription.
+  const signupHref = sp.redirect ? `/auth/signup?redirect=${encodeURIComponent(sp.redirect)}` : '/auth/signup'
   return (
     <div style={{
       minHeight: '100dvh', background: '#080808',
@@ -46,7 +48,7 @@ export default async function LoginPage({
 
         <p style={{ textAlign: 'center', marginTop: 22, fontSize: 14.5, color: '#C9C3B6' }}>
           Pas encore de compte ?{' '}
-          <a href="/auth/signup" style={{ color: '#C9A84C', textDecoration: 'none', fontWeight: 700 }}>Créer un compte</a>
+          <a href={signupHref} style={{ color: '#C9A84C', textDecoration: 'none', fontWeight: 700 }}>Créer un compte</a>
         </p>
       </div>
     </div>

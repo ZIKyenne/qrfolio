@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useFormStatus } from "react-dom"
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
 import { signUp } from "../actions"
@@ -36,10 +36,14 @@ function SubmitButton() {
 
 export default function SignupForm({ refCode }: { refCode?: string }) {
   const [show, setShow] = useState(false)
+  // Destination interne après inscription (ex. deep-link SEO -> onboarding par objectif).
+  const [redirectTo, setRedirectTo] = useState("")
+  useEffect(() => { setRedirectTo(new URLSearchParams(window.location.search).get("redirect") || "") }, [])
   return (
     <form action={signUp} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <style>{``}</style>
       {refCode && <input type="hidden" name="ref" value={refCode} />}
+      {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
       <div>
         <label htmlFor="full_name" style={LABEL}>Nom complet</label>
         <input id="full_name" type="text" name="full_name" placeholder="Jean Dupont" required

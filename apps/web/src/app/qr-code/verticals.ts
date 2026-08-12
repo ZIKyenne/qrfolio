@@ -705,6 +705,19 @@ export const VERTICALS: Record<string, Vertical> = {
 
 export const VERTICAL_SLUGS = Object.keys(VERTICALS)
 export const getVertical = (slug: string): Vertical | undefined => VERTICALS[slug]
+
+// Objectif d'onboarding pré-sélectionné depuis une page SEO (deep-link du CTA vers
+// /dashboard/onboarding). Les valeurs correspondent à une clé d'OBJECTIVES du wizard
+// (validé par verticals.test.ts). Les usages sans objectif clair (wifi, pdf) sont omis
+// -> le CTA reste une inscription simple. Chaîne de contenu HONNÊTE conservée.
+export const VERTICAL_OBJECTIVE: Record<string, string> = {
+  restaurant: "menu", menu: "menu", "avis-google": "avis", instagram: "reseaux",
+  whatsapp: "appels", sms: "contact", immobilier: "contact", hotel: "contact",
+  salon: "reservation", boutique: "vente", "food-truck": "menu", artisan: "contact",
+  paiement: "vente", association: "contact", musique: "reseaux", cv: "portfolio",
+  evenement: "evenement", "carte-de-visite": "contact",
+}
+export const objectiveForVertical = (slug: string): string | undefined => VERTICAL_OBJECTIVE[slug]
 // Ordre d'affichage du hub /qr-code (le plus recherché en premier).
 export const VERTICAL_ORDER = [
   "restaurant", "menu", "avis-google", "wifi", "instagram", "whatsapp", "sms", "pdf",

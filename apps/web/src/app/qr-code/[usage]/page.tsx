@@ -4,7 +4,7 @@ import { notFound } from "next/navigation"
 import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
-import { VERTICALS, VERTICAL_SLUGS, getVertical } from "../verticals"
+import { VERTICALS, VERTICAL_SLUGS, getVertical, objectiveForVertical } from "../verticals"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -32,10 +32,10 @@ const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", borde
 const eyebrowCss: React.CSSProperties = { color: G, fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase" }
 const h2Css: React.CSSProperties = { color: INK, fontSize: "clamp(22px,3.2vw,30px)", fontWeight: 800, letterSpacing: "-0.01em", margin: 0 }
 
-function Cta({ label, sub }: { label: string; sub?: string }) {
+function Cta({ label, sub, href = "/auth/signup" }: { label: string; sub?: string; href?: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      <Link href="/auth/signup" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 800, padding: "14px 30px", borderRadius: 12, boxShadow: "0 6px 26px rgba(201,168,76,0.32)" }}>
+      <Link href={href} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 800, padding: "14px 30px", borderRadius: 12, boxShadow: "0 6px 26px rgba(201,168,76,0.32)" }}>
         {label} →
       </Link>
       {sub && <span style={{ color: MUT, fontSize: 12.5 }}>{sub}</span>}
@@ -49,6 +49,11 @@ export default async function VerticalPage({ params }: { params: Promise<{ usage
   if (!v) notFound()
 
   const url = `${APP}/qr-code/${v.slug}`
+  // Deep-link : après inscription, atterrir sur l'onboarding avec l'objectif pré-sélectionné.
+  const objectif = objectiveForVertical(v.slug)
+  const signupHref = objectif
+    ? `/auth/signup?redirect=${encodeURIComponent(`/dashboard/onboarding?objectif=${objectif}`)}`
+    : "/auth/signup"
   const faqLd = {
     "@context": "https://schema.org", "@type": "FAQPage",
     mainEntity: v.faq.map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
@@ -88,7 +93,7 @@ export default async function VerticalPage({ params }: { params: Promise<{ usage
           <p style={eyebrowCss}>{v.eyebrow}</p>
           <h1 style={{ color: INK, fontSize: "clamp(30px,6vw,50px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, margin: "12px 0 16px", textWrap: "balance" }}>{v.h1}</h1>
           <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto 26px", maxWidth: 620 }}>{v.intro}</p>
-          <Cta label="Créer mon QR code gratuitement" sub="Sans carte bancaire · Prêt à imprimer en 5 minutes" />
+          <Cta label="Créer mon QR code gratuitement" sub="Sans carte bancaire · Prêt à imprimer en 5 minutes" href={signupHref} />
         </section>
 
         {/* Problème → solution */}
@@ -134,7 +139,7 @@ export default async function VerticalPage({ params }: { params: Promise<{ usage
         {/* CTA milieu */}
         <section style={{ ...card, textAlign: "center", padding: "34px 22px", marginBottom: 48, background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), rgba(255,255,255,0.02)", border: `1px solid ${BOR}` }}>
           <h2 style={{ ...h2Css, marginBottom: 16 }}>{v.ctaTitle}</h2>
-          <Cta label="Commencer gratuitement" sub="Modifiable à tout moment · sans réimprimer" />
+          <Cta label="Commencer gratuitement" sub="Modifiable à tout moment · sans réimprimer" href={signupHref} />
         </section>
 
         {/* FAQ */}

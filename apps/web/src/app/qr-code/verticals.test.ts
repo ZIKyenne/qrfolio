@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest"
-import { VERTICALS, VERTICAL_SLUGS, VERTICAL_ORDER, getVertical } from "./verticals"
+import { VERTICALS, VERTICAL_SLUGS, VERTICAL_ORDER, VERTICAL_OBJECTIVE, objectiveForVertical, getVertical } from "./verticals"
+
+// Clés d'OBJECTIVES du wizard d'onboarding (apps/web/src/app/dashboard/onboarding/objectives.ts).
+// Dupliquées ici volontairement : éviter d'importer objectives.ts (qui tire page-templates)
+// dans le bundle SEO. Si une clé y est ajoutée/retirée, mettre à jour cette liste.
+const OBJECTIVE_KEYS = ["avis", "menu", "reservation", "appels", "vente", "contact", "evenement", "portfolio", "reseaux"]
 
 describe("verticals — intégrité des données", () => {
   it("la clé de l'objet == le slug de chaque vertical", () => {
@@ -41,6 +46,20 @@ describe("verticals — intégrité des données", () => {
         expect(f.a.trim().length).toBeGreaterThan(10)
       }
     }
+  })
+
+  it("VERTICAL_OBJECTIVE : clés = vraies verticales, valeurs = vrais objectifs", () => {
+    for (const [slug, objective] of Object.entries(VERTICAL_OBJECTIVE)) {
+      expect(VERTICAL_SLUGS, slug).toContain(slug)
+      expect(OBJECTIVE_KEYS, `${slug} -> ${objective}`).toContain(objective)
+    }
+  })
+
+  it("objectiveForVertical renvoie l'objectif mappé ou undefined", () => {
+    expect(objectiveForVertical("restaurant")).toBe("menu")
+    expect(objectiveForVertical("cv")).toBe("portfolio")
+    expect(objectiveForVertical("wifi")).toBeUndefined() // volontairement non mappé
+    expect(objectiveForVertical("inexistant")).toBeUndefined()
   })
 
   it("getVertical renvoie le bon vertical ou undefined", () => {

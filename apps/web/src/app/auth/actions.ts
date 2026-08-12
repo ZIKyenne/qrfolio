@@ -53,7 +53,9 @@ export async function signUp(formData: FormData) {
     } catch {}
   }
   if (error) redirect('/auth/signup?error=' + encodeURIComponent(error.message))
-  redirect('/dashboard')
+  // Redirection interne sûre (ex. deep-link SEO -> onboarding par objectif) ; sinon dashboard.
+  const to = (formData.get('redirect') as string | null) || ''
+  redirect(to.startsWith('/') && !to.startsWith('//') ? to : '/dashboard')
 }
 
 export async function signIn(formData: FormData) {

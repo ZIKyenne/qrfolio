@@ -3,7 +3,7 @@
 // Onboarding par objectif — wizard 2 étapes : objectif → secteur (facultatif) → génération.
 // On génère une page pré-remplie (blocs + CTA) + un QR + un objectif de conversion, puis on
 // atterrit dans le builder. Réutilise POST /api/templates/use + POST /api/goals (aucune migration).
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Sparkles } from "lucide-react"
@@ -19,6 +19,15 @@ export default function OnboardingClient() {
   const [chosen, setChosen] = useState<Objective | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+
+  // Pré-sélection d'objectif via ?objectif=<clé> (deep-link depuis une page SEO).
+  // Saute directement à l'étape 2 (secteur) si la clé correspond à un objectif connu.
+  useEffect(() => {
+    const key = new URLSearchParams(window.location.search).get("objectif")
+    if (!key) return
+    const match = OBJECTIVES.find(o => o.key === key)
+    if (match) setChosen(match)
+  }, [])
 
   async function generate(o: Objective, s?: Sector) {
     if (busy) return

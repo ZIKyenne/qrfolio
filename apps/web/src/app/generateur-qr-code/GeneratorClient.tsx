@@ -6,15 +6,15 @@
 // CTA vers l'inscription pour le QR dynamique.
 import { useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { Download, Check, Link2, Type, Wifi, Phone, Mail, AlertTriangle, ShieldCheck, Zap, Upload, X } from "lucide-react"
+import { Download, Check, Link2, Type, Wifi, Phone, Mail, MessageSquare, AlertTriangle, ShieldCheck, Zap, Upload, X } from "lucide-react"
 import QRCanvas from "../dashboard/qr-codes/QRCanvas"
 import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../dashboard/qr-codes/qrRender"
-import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail } from "../dashboard/qr-link/qrLinkUtils"
+import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail, buildSms } from "../dashboard/qr-link/qrLinkUtils"
 
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(168,161,144,0.92)", BOR = "rgba(255,255,255,0.1)"
 
-type QrType = "link" | "text" | "wifi" | "email" | "phone"
+type QrType = "link" | "text" | "wifi" | "email" | "phone" | "sms"
 type WifiEnc = "WPA" | "WEP" | "nopass"
 
 const TYPES: { k: QrType; label: string; icon: any }[] = [
@@ -23,6 +23,7 @@ const TYPES: { k: QrType; label: string; icon: any }[] = [
   { k: "wifi", label: "WiFi", icon: Wifi },
   { k: "email", label: "Email", icon: Mail },
   { k: "phone", label: "Appel", icon: Phone },
+  { k: "sms", label: "SMS", icon: MessageSquare },
 ]
 const STYLE_PRESETS: { k: string; label: string; dotStyle: QRStyleConfig["dotStyle"]; cornerStyle: QRStyleConfig["cornerStyle"] }[] = [
   { k: "carre", label: "Carré", dotStyle: "square", cornerStyle: "square" },
@@ -46,6 +47,7 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
   const [ssid, setSsid] = useState(""); const [wifiPass, setWifiPass] = useState(""); const [wifiEnc, setWifiEnc] = useState<WifiEnc>("WPA")
   const [email, setEmail] = useState(""); const [subject, setSubject] = useState("")
   const [phone, setPhone] = useState("")
+  const [smsPhone, setSmsPhone] = useState(""); const [smsBody, setSmsBody] = useState("")
   const [fg, setFg] = useState("#080808"); const [bg, setBg] = useState("#FFFFFF")
   const [ecc, setEcc] = useState<"L" | "M" | "Q" | "H">("M")
   const [styleKey, setStyleKey] = useState("carre")
@@ -62,8 +64,9 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
     if (qrType === "wifi") return buildWifi(ssid, wifiPass, wifiEnc)
     if (qrType === "email") return buildEmail(email, subject)
     if (qrType === "phone") return buildTel(phone)
+    if (qrType === "sms") return buildSms(smsPhone, smsBody)
     return normalizeUrl(url)
-  }, [qrType, url, text, ssid, wifiPass, wifiEnc, email, subject, phone])
+  }, [qrType, url, text, ssid, wifiPass, wifiEnc, email, subject, phone, smsPhone, smsBody])
 
   const ready = data.length > 0
   const ratio = contrast(fg, bg)
@@ -126,7 +129,7 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
       {/* Colonne gauche : saisie + style */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
         {/* Types */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
           {TYPES.map(t => { const on = qrType === t.k; const Icon = t.icon; return (
             <button key={t.k} type="button" onClick={() => setQrType(t.k)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, minHeight: 56, borderRadius: 12, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : BOR}`, color: on ? G : MUT, fontSize: 11.5, fontWeight: on ? 800 : 600 }}>
@@ -160,6 +163,11 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
           {qrType === "phone" && (
             <input value={phone} onChange={e => setPhone(e.target.value)} inputMode="tel" type="tel" placeholder="ex : +33 6 12 34 56 78" aria-label="Numéro de téléphone" style={{ ...field, borderColor: phone.trim() ? G + "80" : BOR }} />
           )}
+          {qrType === "sms" && (<>
+            <input value={smsPhone} onChange={e => setSmsPhone(e.target.value)} inputMode="tel" type="tel" placeholder="ex : +33 6 12 34 56 78" aria-label="Numéro du destinataire SMS" style={{ ...field, marginBottom: 10, borderColor: smsPhone.trim() ? G + "80" : BOR }} />
+            <textarea value={smsBody} onChange={e => setSmsBody(e.target.value)} rows={2} placeholder="Message pré-rempli (optionnel)" aria-label="Message du SMS"
+              style={{ width: "100%", boxSizing: "border-box", resize: "vertical", minHeight: 56, background: "#0A0A0A", border: `1px solid ${BOR}`, borderRadius: 12, color: INK, fontSize: 15, padding: "12px 14px", outline: "none", fontFamily: "inherit" }} />
+          </>)}
         </div>
 
         {/* Style */}

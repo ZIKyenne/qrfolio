@@ -13,7 +13,7 @@ import { isDynSubscribed, dynCanCreatePermanent, DYN_TRIAL_DAYS, DYN_FREE_TRIALS
 import { hashLinkPassword } from "@/lib/linkPassword"
 import { uniqueShortCode } from "@/lib/shortCode"
 
-const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email"])
+const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email", "sms"])
 // Types éligibles au DYNAMIQUE (redirigé + expirable). WiFi et Contact restent STATIQUES : ils
 // doivent fonctionner hors ligne (auto-connexion WiFi, ajout de contact) — impossible via redirection.
 const DYNAMIC_KINDS = new Set(["link", "text", "phone", "call", "email"])

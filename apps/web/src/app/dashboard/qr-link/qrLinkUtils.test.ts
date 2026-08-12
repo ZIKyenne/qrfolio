@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { lum, contrast, normalizeUrl, escapeWifi, buildWifi, escapeVCard, buildVCard, buildTel, buildEmail, isInverted } from "./qrLinkUtils"
+import { lum, contrast, normalizeUrl, escapeWifi, buildWifi, escapeVCard, buildVCard, buildTel, buildEmail, buildSms, isInverted } from "./qrLinkUtils"
 
 describe("isInverted", () => {
   it("clair sur fond sombre = inverse (a eviter)", () => {
@@ -9,6 +9,22 @@ describe("isInverted", () => {
   it("sombre sur fond clair = normal", () => {
     expect(isInverted("#080808", "#FFFFFF")).toBe(false)
     expect(isInverted("#1D4ED8", "#FEF3C7")).toBe(false)
+  })
+})
+
+describe("buildSms", () => {
+  it("format SMSTO avec numero nettoye et message", () => {
+    expect(buildSms("+33 6 12 34 56 78", "Bonjour")).toBe("SMSTO:+33612345678:Bonjour")
+  })
+  it("sans message = numero seul (pas de : superflu)", () => {
+    expect(buildSms("0612345678")).toBe("SMSTO:0612345678")
+  })
+  it("message vide/espaces ignore", () => {
+    expect(buildSms("06", "   ")).toBe("SMSTO:06")
+  })
+  it("numero vide = chaine vide", () => {
+    expect(buildSms("")).toBe("")
+    expect(buildSms("   ", "salut")).toBe("")
   })
 })
 

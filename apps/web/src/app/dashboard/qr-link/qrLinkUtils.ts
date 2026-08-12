@@ -53,6 +53,16 @@ export function buildTel(phone: string): string {
   return p ? `tel:${p}` : ""
 }
 
+// Construit un QR SMS (scan -> ouvre l'app SMS avec destinataire + message pre-remplis).
+// Format SMSTO: (standard de fait des lecteurs QR, large compatibilite iOS/Android).
+// Ne garde que les chiffres et le prefixe international + pour le numero.
+export function buildSms(phone: string, message?: string): string {
+  const p = phone.replace(/[^\d+]/g, "")
+  if (!p) return ""
+  const m = (message ?? "").trim()
+  return m ? `SMSTO:${p}:${m}` : `SMSTO:${p}`
+}
+
 // Construit un QR email mailto: (scan -> ouvre un brouillon pre-rempli, RFC 6068).
 export function buildEmail(to: string, subject?: string, body?: string): string {
   const t = to.trim()

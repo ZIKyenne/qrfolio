@@ -13,6 +13,7 @@ import { countryFlag, DEVICE_LABEL } from "@/lib/scanStats"
 import { canDynLinkSecurity, canDynBulk } from "@/lib/dynamicPlans"
 import { parseBulkCsv } from "@/lib/bulkCsv"
 import QRCanvas from "../qr-codes/QRCanvas"
+import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
 import { Button } from "@/components/ui/Button"
@@ -578,7 +579,10 @@ export default function QrLinkPage() {
       {/* 3 · Aperçu — poster QR */}
       <div style={{ position: "relative", borderRadius: 20, padding: "26px 18px", marginBottom: 14, overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.16)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
         <div style={{ background: bg, borderRadius: 20, padding: 20, boxShadow: "0 14px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, transition: "background .2s", maxWidth: "100%" }}>
-          <QRCanvas value={data || "https://qrowg.com"} size={210} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
+          <div style={{ position: "relative", lineHeight: 0, borderRadius: 8, overflow: "hidden" }}>
+            <QRCanvas value={data || "https://qrowg.com"} size={210} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
+            {ready && <QrWatermark />}
+          </div>
           {ready && previewLabel && (
             <p style={{ margin: 0, maxWidth: 210, color: fg, opacity: 0.85, fontSize: 10.5, fontWeight: 600, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", letterSpacing: 0.2 }}>{previewLabel}</p>
           )}

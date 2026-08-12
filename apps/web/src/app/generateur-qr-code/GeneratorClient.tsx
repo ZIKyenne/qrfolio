@@ -8,6 +8,7 @@ import { useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { Download, Check, Link2, Type, Wifi, Phone, Mail, AlertTriangle, ShieldCheck, Zap, Upload, X } from "lucide-react"
 import QRCanvas from "../dashboard/qr-codes/QRCanvas"
+import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../dashboard/qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail } from "../dashboard/qr-link/qrLinkUtils"
 
@@ -209,7 +210,10 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
       <div className="gen-aside" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ position: "relative", borderRadius: 20, padding: "26px 18px", overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.16)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
           <div style={{ background: bg, borderRadius: 20, padding: 18, boxShadow: "0 14px 40px rgba(0,0,0,0.5)", transition: "background .2s", maxWidth: "100%" }}>
-            <QRCanvas value={encodedValue || "https://qrowg.com"} size={196} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
+            <div style={{ position: "relative", lineHeight: 0, borderRadius: 8, overflow: "hidden" }}>
+              <QRCanvas value={encodedValue || "https://qrowg.com"} size={196} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
+              {ready && !(saved && saved.sig === sig) && <QrWatermark />}
+            </div>
           </div>
           {!ready
             ? <p style={{ color: MUT, fontSize: 12.5, margin: 0, textAlign: "center" }}>Renseignez le contenu pour générer votre QR code.</p>

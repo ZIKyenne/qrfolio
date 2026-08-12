@@ -157,12 +157,90 @@ export const GUIDES: Record<string, Guide> = {
     relatedUsages: ["restaurant", "immobilier"],
     cta: "Créer un QR code avec statistiques",
   },
+
+  "comment-scanner-un-qr-code": {
+    slug: "comment-scanner-un-qr-code",
+    emoji: "📱",
+    category: "Guide",
+    metaTitle: "Comment scanner un QR code (iPhone et Android) | QRowg",
+    metaDescription: "Comment scanner un QR code avec un iPhone ou un Android : avec l'appareil photo, depuis une photo de la galerie, et que faire si le QR ne se scanne pas.",
+    h1: "Comment scanner un QR code (iPhone et Android)",
+    lede: "Scanner un QR code ne demande aucune application sur la plupart des téléphones récents. Voici la marche à suivre, et les solutions si rien ne se passe.",
+    tldr: "Sur iPhone comme sur Android récent, ouvrez l'appareil photo et visez le QR code : une notification apparaît, touchez-la pour ouvrir le lien. Aucune application à installer dans la majorité des cas.",
+    sections: [
+      { h2: "Scanner un QR code sur iPhone", body: ["Ouvrez l'application Appareil photo (mode Photo), visez le QR code sans prendre de photo, puis touchez la bannière qui apparaît en haut de l'écran."], bullets: ["Ouvrez l'appareil photo.", "Cadrez le QR code au centre.", "Touchez la notification pour ouvrir le lien."] },
+      { h2: "Scanner un QR code sur Android", body: ["Sur la plupart des Android récents, l'appareil photo détecte les QR codes. Sinon, utilisez Google Lens (intégré à l'appareil photo ou à l'application Google)."], bullets: ["Ouvrez l'appareil photo et visez le QR.", "Touchez le lien proposé.", "Si rien n'apparaît : ouvrez Google Lens et cadrez le QR."] },
+      { h2: "Scanner un QR code depuis une photo", body: ["Vous avez reçu un QR par message ou en capture d'écran ? Sur iPhone, ouvrez la photo et utilisez la détection intégrée (Texte en direct) ; sur Android, ouvrez l'image dans Google Lens ou Google Photos et touchez le QR."] },
+      { h2: "Le QR code ne se scanne pas : que faire ?", bullets: ["Approchez ou éloignez le téléphone pour la mise au point.", "Nettoyez l'objectif et améliorez l'éclairage.", "Assurez-vous que tout le QR est dans le cadre, marge comprise.", "Essayez Google Lens ou une application de scan dédiée.", "Le QR est peut-être trop petit, flou ou peu contrasté à l'impression."] },
+    ],
+    faq: [
+      { q: "Faut-il une application pour scanner un QR code ?", a: "Non, dans la plupart des cas. Les iPhone et les Android récents scannent les QR codes directement depuis l'appareil photo, sans application." },
+      { q: "Comment scanner un QR code reçu sur le même téléphone ?", a: "Affichez ou enregistrez l'image, puis ouvrez-la dans Google Lens (Android) ou via la détection de l'appareil photo/Photos (iPhone) pour toucher le lien." },
+      { q: "Pourquoi mon téléphone ne détecte pas le QR code ?", a: "Souvent un problème de mise au point, d'éclairage, de cadrage (marge coupée) ou un QR trop petit ou flou. Google Lens aide dans les cas difficiles." },
+    ],
+    related: ["comment-creer-un-qr-code", "qr-code-scannable"],
+    relatedUsages: ["restaurant", "menu"],
+    cta: "Créer mon QR code",
+  },
+
+  "personnaliser-qr-code": {
+    slug: "personnaliser-qr-code",
+    emoji: "🎨",
+    category: "Bonnes pratiques",
+    metaTitle: "Personnaliser un QR code : couleurs, logo et style | QRowg",
+    metaDescription: "Comment personnaliser un QR code (couleurs, logo, forme des modules) sans casser la scannabilité : les règles de contraste, de marge et de correction d'erreur.",
+    h1: "Personnaliser un QR code sans casser la scannabilité",
+    lede: "Un QR code à votre image inspire plus confiance qu'un carré noir générique — à condition de respecter quelques règles.",
+    tldr: "Vous pouvez changer les couleurs, la forme des modules et ajouter un logo au centre d'un QR code. La règle d'or : garder un contraste fort, une marge blanche et une correction d'erreur élevée si vous ajoutez un logo.",
+    sections: [
+      { h2: "Ce que vous pouvez personnaliser", bullets: ["Couleur des modules et du fond", "Forme des modules et des coins (les « yeux »)", "Logo ou icône au centre", "Cadre et arrière-plan sur le support d'impression"] },
+      { h2: "La règle du contraste", body: ["Les modules doivent rester nettement plus foncés que le fond. Foncé sur clair est le plus sûr ; évitez l'inversion (clair sur foncé) et les couleurs trop proches."] },
+      { h2: "Ajouter un logo sans casser le scan", body: ["Un logo masque des modules au centre. Gardez-le petit (environ 20 % de la largeur) et montez la correction d'erreur (Q ou H) pour compenser la zone couverte."] },
+      { h2: "Garder la marge blanche", body: ["La zone de silence autour du QR (au moins 4 modules) reste indispensable, même avec un design travaillé. Sans elle, de nombreux lecteurs échouent."] },
+      { h2: "Toujours tester", body: ["Après personnalisation, scannez le QR sur plusieurs téléphones à la distance réelle. Une jauge de scannabilité, comme celle de QRowg, aide à rester dans le vert."] },
+    ],
+    faq: [
+      { q: "Un QR code de couleur se scanne-t-il aussi bien ?", a: "Oui, tant que le contraste entre modules et fond reste fort. Des couleurs proches ou une inversion clair/foncé réduisent la fiabilité." },
+      { q: "Quelle taille de logo maximum ?", a: "Autour de 20 % de la largeur du QR, avec une correction d'erreur élevée. Au-delà, le risque d'échec de lecture augmente." },
+      { q: "Peut-on mettre une photo en fond du QR code ?", a: "C'est déconseillé : un fond chargé réduit le contraste. Préférez un fond uni et réservez la personnalisation aux couleurs, aux modules et au logo." },
+    ],
+    related: ["qr-code-scannable", "comment-creer-un-qr-code"],
+    relatedUsages: ["carte-de-visite", "boutique"],
+    cta: "Personnaliser mon QR code",
+  },
+
+  "duree-de-vie-qr-code": {
+    slug: "duree-de-vie-qr-code",
+    emoji: "⏳",
+    category: "Les bases",
+    metaTitle: "Un QR code expire-t-il ? Durée de vie et validité | QRowg",
+    metaDescription: "Un QR code statique n'expire jamais ; un QR code dynamique fonctionne tant que sa redirection reste active. Durée de vie et validité, expliquées.",
+    h1: "Un QR code expire-t-il ? Durée de vie et validité",
+    lede: "« Est-ce que mon QR code va cesser de fonctionner ? » Une question légitime, surtout avant d'imprimer en quantité. Voici la réponse claire.",
+    tldr: "Un QR code statique n'expire jamais : son contenu est encodé directement. Un QR code dynamique fonctionne tant que sa redirection reste active (le plus souvent liée à un abonnement) — le QR lui-même ne « s'use » pas.",
+    sections: [
+      { h2: "Le QR code en lui-même ne s'use pas", body: ["Un QR code est un motif imprimé : il ne se périme pas physiquement. Ce qui peut cesser de fonctionner, c'est ce vers quoi il pointe."] },
+      { h2: "QR statique : permanent", body: ["Un QR statique encode directement son contenu (lien, texte, WiFi). Tant que l'imprimé est lisible, il fonctionne — pour toujours, sans dépendre d'un service."] },
+      { h2: "QR dynamique : tant que la redirection est active", body: ["Un QR dynamique passe par une adresse de redirection. Il fonctionne tant que cette redirection reste active, le plus souvent tant que l'abonnement associé est en cours. Chez QRowg, un lien dynamique ne s'arrête pas brutalement sans que vous le sachiez."] },
+      { h2: "Éviter les mauvaises surprises", bullets: ["Pour un support imprimé en masse, préférez un QR dynamique chez un fournisseur pérenne.", "Vérifiez la destination avant chaque grande impression.", "Gardez la main sur la destination pour la corriger sans réimprimer.", "Pour un usage ponctuel et définitif, un QR statique gratuit suffit."] },
+      { h2: "Statique ou dynamique selon la durée ?", table: { head: ["Besoin", "Recommandation"], rows: [["Contenu qui ne changera jamais", "QR statique (permanent, gratuit)"], ["Support imprimé en quantité", "QR dynamique (corrigible sans réimprimer)"], ["Suivi des scans", "QR dynamique"], ["Usage unique et court", "QR statique"]] } },
+    ],
+    faq: [
+      { q: "Un QR code statique peut-il expirer ?", a: "Non. Son contenu est encodé directement dans le motif : il fonctionne indéfiniment, sans dépendre d'un service en ligne." },
+      { q: "Que se passe-t-il si j'arrête mon abonnement dynamique ?", a: "La redirection peut cesser de fonctionner. Chez QRowg, ce comportement est transparent : un lien ne s'arrête pas sans que vous en soyez informé." },
+      { q: "Combien de temps un QR code dynamique reste-t-il valable ?", a: "Tant que sa redirection est active, généralement tant que l'abonnement associé est en cours. Le QR imprimé, lui, reste identique." },
+    ],
+    related: ["qr-code-dynamique-vs-statique", "qr-code-avec-statistiques"],
+    relatedUsages: ["menu", "immobilier"],
+    cta: "Créer un QR code dynamique",
+  },
 }
 
 export const GUIDE_SLUGS = Object.keys(GUIDES)
 export const getGuide = (slug: string): Guide | undefined => GUIDES[slug]
 // Ordre d'affichage du hub /guides.
 export const GUIDE_ORDER = [
-  "qr-code-dynamique-vs-statique", "comment-creer-un-qr-code", "taille-qr-code-impression",
-  "qr-code-scannable", "qr-code-avec-statistiques",
+  "qr-code-dynamique-vs-statique", "comment-creer-un-qr-code", "comment-scanner-un-qr-code",
+  "personnaliser-qr-code", "taille-qr-code-impression", "qr-code-scannable",
+  "qr-code-avec-statistiques", "duree-de-vie-qr-code",
 ]

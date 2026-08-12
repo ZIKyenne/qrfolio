@@ -1524,7 +1524,7 @@ function TemplatesSection() {
           color: "#F5F0E8", fontWeight: 700, margin: "0 auto 20px",
           lineHeight: 1.1, maxWidth: 620, letterSpacing: "-0.02em",
         }}>
-          Des templates prets{" "}
+          Des modèles prêts{" "}
           <span style={{ color: "#C9A84C" }}>pour votre métier.</span>
         </h2>
         <p style={{
@@ -3650,17 +3650,17 @@ export default function HomePage() {
       <FeaturesSection />
       <SectionSeam delay={0.7} />
 
-      {/* BUILDER */}
+      {/* TEMPLATES — les RÉSULTATS montrés AVANT le builder (« voici ce que vous pouvez créer »). */}
+      <TemplatesSection />
+      <SectionSeam delay={1.05} />
+
+      {/* BUILDER — « voici comme c'est facile à le faire et à le modifier ». */}
       <BuilderSection />
       <SectionSeam delay={1.4} />
 
-      {/* PARCOURS NARRATIF (Création -> Scan -> Analytics) */}
+      {/* PARCOURS NARRATIF (démo animée « Voyez-le en action »). */}
       <StoryFlow />
       <SectionSeam delay={2.1} />
-
-      {/* TEMPLATES */}
-      <TemplatesSection />
-      <SectionSeam delay={2.8} />
 
       {/* QR STUDIO LIVE — démo interactive (vrai QR généré en local, aperçu en direct) */}
       <QRStudioLive />

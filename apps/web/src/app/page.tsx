@@ -1794,58 +1794,100 @@ function HowItWorks() {
 }
 
 // ── Builder section ───────────────────────────────────────────────────────────
-function BuilderMockup(){
-  const BL=[{icon:"👤",label:"Profil",c:"#C9A84C"},{icon:"🔗",label:"Liens",c:"var(--action)"},
-    {icon:"📸",label:"Galerie",c:"#A78BFA"},{icon:"💬",label:"WhatsApp",c:"var(--success)"},
-    {icon:"📅",label:"Réservation",c:"#F97316"},{icon:"💳",label:"Paiement",c:"#F43F5E"}]
-  const PH=[{h:28,c:"rgba(201,168,76,0.5)",w:"80%"},{h:14,c:"rgba(255,255,255,0.12)",w:"60%"},
-    {h:10,c:"rgba(201,168,76,0.25)",w:"40%"},{h:32,c:"rgba(56,189,248,0.25)",w:"90%"},
-    {h:12,c:"rgba(255,255,255,0.08)",w:"70%"},{h:28,c:"rgba(57,255,143,0.2)",w:"85%"}]
-  return(
-    <div className="bm" style={{display:"grid",gridTemplateColumns:"1fr 2.2fr 1fr",gap:12,alignItems:"start",maxWidth:820,margin:"0 auto"}}>
-      <div style={{background:"rgba(255,255,255,0.025)",border:"1px solid rgba(201,168,76,0.12)",borderRadius:14,padding:"14px 10px",display:"flex",flexDirection:"column",gap:6}}>
-        <p style={{color:"rgba(201,168,76,0.6)",fontSize:9,letterSpacing:2,textTransform:"uppercase",fontWeight:700,marginBottom:4,paddingLeft:4}}>Blocs</p>
-        {BL.map(b=>(<div key={b.label} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderRadius:9,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)"}}>
-          <span style={{fontSize:14}}>{b.icon}</span>
-          <span style={{color:"rgba(245,240,232,0.7)",fontSize:11,fontWeight:500}}>{b.label}</span>
-          <span style={{marginLeft:"auto",width:6,height:6,borderRadius:"50%",background:b.c,opacity:0.7,flexShrink:0}}/>
-        </div>))}
+// Mini-builder JOUABLE : cliquer un bloc l'ajoute/retire dans le canvas ET dans
+// l'aperçu téléphone, en direct. Un sélecteur d'accent recolore tout instantanément.
+const BM_BLOCKS = [
+  { key: "profil", icon: "👤", label: "Profil" },
+  { key: "liens", icon: "🔗", label: "Liens" },
+  { key: "galerie", icon: "📸", label: "Galerie" },
+  { key: "whatsapp", icon: "💬", label: "WhatsApp" },
+  { key: "reservation", icon: "📅", label: "Réservation" },
+  { key: "paiement", icon: "💳", label: "Paiement" },
+] as const
+const BM_ACCENTS = ["#C9A84C", "#38BDF8", "#39FF8F", "#F97316", "#A78BFA"]
+const BM_COL: Record<string, string> = { profil: "", liens: "#38BDF8", galerie: "#A78BFA", whatsapp: "#39FF8F", reservation: "#F97316", paiement: "#F43F5E" }
+
+function BuilderMockup() {
+  const [added, setAdded] = useState<string[]>(["profil", "liens", "galerie"])
+  const [accent, setAccent] = useState("#C9A84C")
+  const toggle = (k: string) => setAdded(a => a.includes(k) ? a.filter(x => x !== k) : [...a, k])
+  const col = (k: string) => (k === "profil" ? accent : BM_COL[k])
+
+  const canvasBlock = (k: string) => {
+    const c = col(k)
+    if (k === "profil") return (
+      <div key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 12px", background: `${accent}0d`, border: `1px dashed ${accent}55`, borderRadius: 10 }}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg,${accent},${accent}bb)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
+        <div style={{ height: 7, width: "60%", borderRadius: 4, background: "rgba(245,240,232,0.22)" }} />
+        <div style={{ height: 5, width: "40%", borderRadius: 4, background: "rgba(245,240,232,0.12)" }} />
       </div>
-      <div style={{background:"rgba(255,255,255,0.018)",border:"1px solid rgba(201,168,76,0.15)",borderRadius:16,padding:16,display:"flex",flexDirection:"column",gap:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,paddingBottom:10,borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-          {["var(--danger)","#F97316","var(--success)"].map((c,i)=>(<div key={i} style={{width:8,height:8,borderRadius:"50%",background:c,opacity:0.6}}/>))}
-          <span style={{flex:1,textAlign:"center",color:"rgba(201,168,76,0.5)",fontSize:10,letterSpacing:1}}>Canvas</span>
-          <div style={{padding:"3px 10px",borderRadius:5,background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.25)",fontSize:9,color:"#C9A84C",fontWeight:700}}>PUBLIER</div>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,padding:"16px 12px",background:"rgba(201,168,76,0.04)",border:"1px dashed rgba(201,168,76,0.2)",borderRadius:10}}>
-            <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,#C9A84C,#b8953f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>👤</div>
-            <div style={{height:7,width:"60%",borderRadius:4,background:"rgba(245,240,232,0.2)"}}/>
-            <div style={{height:5,width:"40%",borderRadius:4,background:"rgba(245,240,232,0.1)"}}/>
-          </div>
-          <div style={{padding:"10px 12px",borderRadius:9,background:"linear-gradient(90deg,rgba(201,168,76,0.25),rgba(201,168,76,0.12))",border:"1px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontSize:14}}>💬</span><div style={{height:6,width:"50%",borderRadius:3,background:"rgba(201,168,76,0.5)"}}/>
-          </div>
-          <div style={{padding:"10px 12px",borderRadius:9,background:"rgba(56,189,248,0.06)",border:"1px solid rgba(56,189,248,0.15)",display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontSize:14}}>🔗</span><div style={{height:5,width:"65%",borderRadius:3,background:"rgba(56,189,248,0.3)"}}/>
-          </div>
-          <div style={{padding:"10px 12px",borderRadius:9,background:"rgba(167,139,250,0.06)",border:"1px solid rgba(167,139,250,0.12)",display:"flex",gap:6}}>
-            {[0,1,2].map(i=>(<div key={i} style={{flex:1,height:28,borderRadius:6,background:"rgba(167,139,250,0.2)"}}/>))}
-          </div>
-        </div>
+    )
+    if (k === "galerie") return (
+      <div key={k} style={{ padding: "10px 12px", borderRadius: 9, background: `${c}10`, border: `1px solid ${c}22`, display: "flex", gap: 6 }}>
+        {[0, 1, 2].map(i => <div key={i} style={{ flex: 1, height: 28, borderRadius: 6, background: `${c}33` }} />)}
       </div>
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-        <p style={{color:"rgba(201,168,76,0.5)",fontSize:9,letterSpacing:2,textTransform:"uppercase",fontWeight:700}}>Aperçu</p>
-        <div style={{width:88,border:"2px solid rgba(201,168,76,0.25)",borderRadius:18,padding:"10px 6px",background:"rgba(8,8,8,0.8)",boxShadow:"0 0 24px rgba(201,168,76,0.08)",display:"flex",flexDirection:"column"}}>
-          <div style={{width:24,height:4,borderRadius:2,background:"rgba(255,255,255,0.1)",margin:"0 auto 8px"}}/>
-          <div style={{display:"flex",flexDirection:"column",gap:5,alignItems:"center"}}>
-            <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#C9A84C,#b8953f)",marginBottom:2}}/>
-            {PH.map((b,i)=>(<div key={i} style={{height:b.h,width:b.w,borderRadius:5,background:b.c}}/>))}
+    )
+    const labels: Record<string, string> = { liens: "Mes liens", whatsapp: "Discuter sur WhatsApp", reservation: "Réserver", paiement: "Payer" }
+    const icon = BM_BLOCKS.find(b => b.key === k)?.icon
+    return (
+      <div key={k} style={{ padding: "11px 12px", borderRadius: 9, background: `${c}12`, border: `1px solid ${c}30`, display: "flex", alignItems: "center", gap: 9 }}>
+        <span style={{ fontSize: 14 }}>{icon}</span>
+        <div style={{ height: 6, flex: 1, borderRadius: 3, background: `${c}55` }} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="bm" style={{ display: "grid", gridTemplateColumns: "1fr 2.2fr 1fr", gap: 12, alignItems: "start", maxWidth: 820, margin: "0 auto" }}>
+      {/* Palette de blocs (cliquables) */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(201,168,76,0.12)", borderRadius: 14, padding: "14px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+        <p style={{ color: "rgba(201,168,76,0.7)", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700, marginBottom: 4, paddingLeft: 4 }}>Blocs · cliquez</p>
+        {BM_BLOCKS.map(b => { const on = added.includes(b.key); return (
+          <button key={b.key} type="button" onClick={() => toggle(b.key)} aria-pressed={on}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 9, cursor: "pointer", textAlign: "left",
+              background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? "rgba(201,168,76,0.4)" : "rgba(255,255,255,0.06)"}`, transition: "all .15s" }}>
+            <span style={{ fontSize: 14 }}>{b.icon}</span>
+            <span style={{ color: on ? "#F5F0E8" : "rgba(245,240,232,0.7)", fontSize: 11, fontWeight: on ? 700 : 500 }}>{b.label}</span>
+            <span style={{ marginLeft: "auto", width: 16, height: 16, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, background: on ? "#C9A84C" : "rgba(255,255,255,0.08)", color: on ? "#080808" : "rgba(245,240,232,0.5)" }}>{on ? "✓" : "+"}</span>
+          </button>
+        ) })}
+      </div>
+
+      {/* Canvas — se construit en direct */}
+      <div style={{ background: "rgba(255,255,255,0.018)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 10, minHeight: 220 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          {["var(--danger)", "#F97316", "var(--success)"].map((c, i) => <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, opacity: 0.6 }} />)}
+          <span style={{ flex: 1, textAlign: "center", color: "rgba(201,168,76,0.5)", fontSize: 10, letterSpacing: 1 }}>Canvas</span>
+          <div style={{ padding: "3px 10px", borderRadius: 5, background: `${accent}20`, border: `1px solid ${accent}40`, fontSize: 9, color: accent, fontWeight: 700 }}>PUBLIER</div>
+        </div>
+        {added.length === 0
+          ? <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(188,182,166,0.5)", fontSize: 12, textAlign: "center", padding: "24px 12px" }}>Cliquez un bloc à gauche pour construire votre page ✨</div>
+          : <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{added.map(canvasBlock)}</div>}
+      </div>
+
+      {/* Aperçu téléphone + accent */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <p style={{ color: "rgba(201,168,76,0.5)", fontSize: 9, letterSpacing: 2, textTransform: "uppercase", fontWeight: 700 }}>Aperçu</p>
+        <div style={{ width: 92, border: "2px solid rgba(201,168,76,0.25)", borderRadius: 18, padding: "10px 7px", background: "rgba(8,8,8,0.85)", boxShadow: "0 0 24px rgba(201,168,76,0.08)", display: "flex", flexDirection: "column", minHeight: 150 }}>
+          <div style={{ width: 24, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.1)", margin: "0 auto 8px" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 5, alignItems: "center" }}>
+            {added.includes("profil") && <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,${accent},${accent}bb)`, marginBottom: 2, transition: "background .2s" }} />}
+            {added.filter(k => k !== "profil").map((k, i) => (
+              <div key={i} style={{ height: k === "galerie" ? 22 : 14, width: "88%", borderRadius: 5, background: `${col(k)}55`, transition: "background .2s" }} />
+            ))}
+            {added.length === 0 && <div style={{ color: "rgba(188,182,166,0.35)", fontSize: 8, textAlign: "center", marginTop: 20 }}>vide</div>}
           </div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:20,background:"rgba(57,255,143,0.08)",border:"1px solid rgba(57,255,143,0.2)"}}>
-          <div style={{width:5,height:5,borderRadius:"50%",background:"var(--success)",animation:"livePulse 1.5s ease-in-out infinite"}}/>
-          <span style={{color:"var(--success)",fontSize:9,fontWeight:700,letterSpacing:1}}>LIVE</span>
+        {/* Accent live */}
+        <div style={{ display: "flex", gap: 6 }}>
+          {BM_ACCENTS.map(c => (
+            <button key={c} type="button" onClick={() => setAccent(c)} aria-label={`Accent ${c}`}
+              style={{ width: 18, height: 18, borderRadius: "50%", background: c, cursor: "pointer", border: accent === c ? "2px solid #F5F0E8" : "2px solid transparent", boxShadow: accent === c ? `0 0 0 2px ${c}` : "none", padding: 0 }} />
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 20, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)" }}>
+          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--success)", animation: "livePulse 1.5s ease-in-out infinite" }} />
+          <span style={{ color: "var(--success)", fontSize: 9, fontWeight: 700, letterSpacing: 1 }}>LIVE</span>
         </div>
       </div>
     </div>
@@ -1881,8 +1923,8 @@ function BuilderSection(){
             color:"#F5F0E8",fontWeight:700,margin:"0 auto 20px",lineHeight:1.1,maxWidth:680,letterSpacing:"-0.02em"}}>
             Créez une page professionnelle{" "}<span style={{color:"#C9A84C"}}>en quelques minutes.</span>
           </h2>
-          <p style={{color:"rgba(188,182,166,0.85)",fontSize:16,maxWidth:520,margin:"0 auto",lineHeight:1.7}}>
-            Ajoutez des blocs, personnalisez votre thème, publiez et partagez votre QR code.
+          <p style={{color:"rgba(188,182,166,0.85)",fontSize:16,maxWidth:540,margin:"0 auto",lineHeight:1.7}}>
+            <strong style={{color:"#F5F0E8",fontWeight:600}}>Essayez maintenant</strong> : cliquez un bloc à gauche, il apparaît dans votre page. Changez la couleur — tout se met à jour en direct.
           </p>
         </div>
         <div style={{opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(32px)",

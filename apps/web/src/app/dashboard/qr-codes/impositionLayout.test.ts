@@ -49,4 +49,29 @@ describe("impositionLayout", () => {
     expect(l.pages).toBe(0)
     expect(l.perPage).toBe(24)
   })
+
+  it("cellule carrée : cellW/cellH/cellSize alignés (rétrocompat)", () => {
+    const l = impositionLayout({ count: 1, ...A4, cell: 40, margin: 10, gutter: 5 })
+    expect(l.cellSize).toBe(40)
+    expect(l.cellW).toBe(40)
+    expect(l.cellH).toBe(40)
+  })
+
+  it("cellule RECTANGULAIRE (carte 85×55) : grille selon cellW/cellH", () => {
+    const l = impositionLayout({ count: 10, ...A4, cellW: 85, cellH: 55, margin: 5, gutter: 4 })
+    // usableW=200 -> floor((200+4)/89)=2 ; usableH=287 -> floor((287+4)/59)=4
+    expect(l.cols).toBe(2)
+    expect(l.rows).toBe(4)
+    expect(l.perPage).toBe(8)
+    expect(l.pages).toBe(2)
+    expect(l.cellW).toBe(85)
+    expect(l.cellH).toBe(55)
+    expect(l.cellSize).toBe(85) // = cellW
+    for (const c of l.cells) {
+      expect(c.x).toBeGreaterThanOrEqual(5)
+      expect(c.y).toBeGreaterThanOrEqual(5)
+      expect(c.x + l.cellW).toBeLessThanOrEqual(205) // pageW - margin
+      expect(c.y + l.cellH).toBeLessThanOrEqual(292) // pageH - margin
+    }
+  })
 })

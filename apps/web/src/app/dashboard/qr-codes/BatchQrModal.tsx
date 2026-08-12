@@ -11,7 +11,11 @@ import { Modal } from "@/components/ui/Modal"
 import { Button } from "@/components/ui/Button"
 import { parseBatchInput, batchFilenames } from "./batchQr"
 import { impositionLayout } from "./impositionLayout"
+import { supportById, pageMmOf } from "./printSupports"
 import { blobToDataUrl, downloadBlob } from "./qrRender"
+
+// Planches proposées (dérivées du catalogue de supports imprimables).
+const SHEET_IDS = ["a4", "a3", "us_letter"] as const
 
 interface Props {
   open: boolean
@@ -30,14 +34,18 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
   const [ext, setExt] = useState<"png" | "svg">("png")
   const [mode, setMode] = useState<"zip" | "sheet">("zip") // ZIP séparés vs planche PDF
   const [cellMm, setCellMm] = useState(40)                  // taille d'un QR sur la planche (mm)
+  const [sheetId, setSheetId] = useState<string>("a4")      // format de la planche (catalogue)
   const [cutMarks, setCutMarks] = useState(true)            // traits de coupe sur la planche
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(0)
 
   const parsed = useMemo(() => parseBatchInput(text, max), [text, max])
   const count = parsed.rows.length
+  // Planche choisie (dimensions physiques en mm depuis le catalogue).
+  const sheetSup = supportById(sheetId) ?? supportById("a4")!
+  const pageMm = pageMmOf(sheetSup)
   // Aperçu d'imposition (perPage/pages) pour le mode planche.
-  const sheet = useMemo(() => impositionLayout({ count: count || 1, pageW: 210, pageH: 297, cell: cellMm, margin: 10, gutter: 5 }), [count, cellMm])
+  const sheet = useMemo(() => impositionLayout({ count: count || 1, pageW: pageMm.w, pageH: pageMm.h, cell: cellMm, margin: 10, gutter: 5 }), [count, cellMm, pageMm.w, pageMm.h])
 
   if (!open) return null
 
@@ -58,8 +66,8 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
   // Planche PDF A4 : N QR par page, grille centrée, traits de coupe optionnels.
   const runSheet = async () => {
     const { jsPDF } = await import("jspdf")
-    const lay = impositionLayout({ count, pageW: 210, pageH: 297, cell: cellMm, margin: 10, gutter: 5 })
-    const pdf = new jsPDF({ unit: "mm", format: "a4" })
+    const lay = impositionLayout({ count, pageW: pageMm.w, pageH: pageMm.h, cell: cellMm, margin: 10, gutter: 5 })
+    const pdf = new jsPDF({ unit: "mm", orientation: pageMm.w > pageMm.h ? "l" : "p", format: [pageMm.w, pageMm.h] })
     let curPage = 0
     for (let n = 0; n < lay.cells.length; n++) {
       const c = lay.cells[n]
@@ -72,7 +80,7 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
       }
       setDone(n + 1)
     }
-    pdf.save(`qrowg-planche-${count}.pdf`)
+    pdf.save(`qrowg-planche-${sheetId}-${count}.pdf`)
   }
 
   const run = async () => {
@@ -137,6 +145,12 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
       ) : (
         <div style={{ marginTop: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ color: MUTED, fontSize: 12.5, minWidth: 46 }}>Planche</span>
+            {SHEET_IDS.map(id => (
+              <button key={id} type="button" onClick={() => setSheetId(id)} style={chip(sheetId === id)}>{supportById(id)?.label ?? id}</button>
+            ))}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
             <span style={{ color: MUTED, fontSize: 12.5, minWidth: 46 }}>Taille</span>
             {[30, 40, 50].map(s => (
               <button key={s} type="button" onClick={() => setCellMm(s)} style={chip(cellMm === s)}>{s} mm</button>
@@ -146,7 +160,7 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
             <input type="checkbox" checked={cutMarks} onChange={e => setCutMarks(e.target.checked)} style={{ accentColor: "var(--accent)", width: 16, height: 16 }} />
             Traits de coupe (contour de chaque QR)
           </label>
-          <p style={{ color: MUTED, fontSize: 11, margin: "8px 0 0" }}>Planche A4 · {sheet.perPage} QR par page{count > 0 ? ` · ${sheet.pages} page${sheet.pages > 1 ? "s" : ""}` : ""}.</p>
+          <p style={{ color: MUTED, fontSize: 11, margin: "8px 0 0" }}>Planche {sheetSup.label} · {sheet.perPage} QR par page{count > 0 ? ` · ${sheet.pages} page${sheet.pages > 1 ? "s" : ""}` : ""}.</p>
         </div>
       )}
 

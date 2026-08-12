@@ -10,6 +10,9 @@ import {
   supportPreflightBaseline,
   legacyFormats,
   legacyFormatMm,
+  pageMmOf,
+  canImpose,
+  sheetImposition,
 } from "./printSupports"
 import { exportPlan } from "./exportPlan"
 
@@ -144,6 +147,58 @@ describe("printSupports — helpers purs", () => {
     expect(supportPreflightBaseline(a4)).toEqual({ dpi: 300, edgeMarginMm: 5, isScreen: false })
     const story = supportById("story")!
     expect(supportPreflightBaseline(story).isScreen).toBe(true)
+  })
+})
+
+describe("printSupports — planches (imposition N-up)", () => {
+  const a4 = supportById("a4")!
+  const a3 = supportById("a3")!
+  const carte = supportById("carte")!
+  const sticker = supportById("sticker_round")!
+  const story = supportById("story")!
+
+  it("pageMmOf renvoie les dimensions physiques (mm)", () => {
+    expect(pageMmOf(a4)).toEqual({ w: 210, h: 297 })
+    expect(pageMmOf(carte)).toEqual({ w: 85, h: 55 })
+    expect(pageMmOf(story)).toEqual({ w: 0, h: 0 }) // écran = pas de mm
+  })
+
+  it("pageMmOf respecte l'orientation demandée", () => {
+    expect(pageMmOf(carte, "portrait")).toEqual({ w: 55, h: 85 })
+    expect(pageMmOf(carte, "landscape")).toEqual({ w: 85, h: 55 })
+    expect(pageMmOf(a4, "landscape")).toEqual({ w: 297, h: 210 })
+  })
+
+  it("canImpose refuse un support écran", () => {
+    expect(canImpose(carte, a4)).toBe(true)
+    expect(canImpose(story, a4)).toBe(false)
+    expect(canImpose(carte, story)).toBe(false)
+  })
+
+  it("tile des cartes de visite 85×55 sur A4 (marge 5, gouttière 4)", () => {
+    const lay = sheetImposition({ item: carte, sheet: a4, count: 10, marginMm: 5, gutterMm: 4 })
+    // usableW=200 -> floor((200+4)/89)=2 ; usableH=287 -> floor((287+4)/59)=4
+    expect(lay.cols).toBe(2)
+    expect(lay.rows).toBe(4)
+    expect(lay.perPage).toBe(8)
+    expect(lay.cellW).toBe(85)
+    expect(lay.cellH).toBe(55)
+    expect(lay.pages).toBe(2)
+  })
+
+  it("A3 tient plus de pièces qu'A4 (même pièce)", () => {
+    const onA4 = sheetImposition({ item: carte, sheet: a4, count: 100, marginMm: 5, gutterMm: 4 })
+    const onA3 = sheetImposition({ item: carte, sheet: a3, count: 100, marginMm: 5, gutterMm: 4 })
+    expect(onA3.perPage).toBeGreaterThan(onA4.perPage)
+  })
+
+  it("marge par défaut = marge de sécurité de la planche", () => {
+    const lay = sheetImposition({ item: sticker, sheet: a4, count: 20 })
+    // a4.safeMarginMm = 5 -> mêmes bornes que margin 5
+    for (const c of lay.cells) {
+      expect(c.x).toBeGreaterThanOrEqual(5)
+      expect(c.y).toBeGreaterThanOrEqual(5)
+    }
   })
 })
 

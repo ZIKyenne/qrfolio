@@ -14,6 +14,7 @@
 
 import type { ExportPlanInput, ExportType } from "./exportPlan"
 import type { PreflightMetrics } from "./printPreflight"
+import { impositionLayout, type ImpoLayout } from "./impositionLayout"
 
 export type SupportCategory =
   | "carte"    // carte de visite, carte postale
@@ -111,6 +112,56 @@ export function supportById(id: string): PrintSupport | undefined {
 
 export function supportsByCategory(cat: SupportCategory): PrintSupport[] {
   return PRINT_SUPPORTS.filter(s => s.category === cat)
+}
+
+// -----------------------------------------------------------------------------
+// PLANCHES (imposition N-up) — tile un support « pièce » sur un support « planche ».
+// Réutilise impositionLayout (moteur pur testé) : le catalogue fournit les mm.
+// Ex. : imprimer une planche A4/A3 de stickers 50 mm ou de cartes de visite.
+// -----------------------------------------------------------------------------
+
+// Dimensions physiques (mm) d'un support, orientation optionnelle. Renvoie
+// { w: 0, h: 0 } pour un format écran (pas de taille physique).
+export function pageMmOf(
+  s: PrintSupport,
+  orientation?: "portrait" | "landscape",
+): { w: number; h: number } {
+  if (s.mm <= 0) return { w: 0, h: 0 }
+  const w = s.mm
+  const h = Math.round((s.mm / s.ratio) * 10) / 10
+  const long = Math.max(w, h), short = Math.min(w, h)
+  if (orientation === "portrait") return { w: short, h: long }
+  if (orientation === "landscape") return { w: long, h: short }
+  return { w, h }
+}
+
+export type SheetImpoInput = {
+  item: PrintSupport   // support à répéter (pièce)
+  sheet: PrintSupport  // support-planche (A4, A3, US Letter…)
+  count: number
+  gutterMm?: number    // gouttière entre pièces (massicot) ; défaut 4
+  marginMm?: number    // marge de la planche ; défaut = marge de sécurité de la planche
+  sheetOrientation?: "portrait" | "landscape"
+}
+
+// Peut-on imposer cette pièce sur cette planche ? (les deux doivent être physiques.)
+export function canImpose(item: PrintSupport, sheet: PrintSupport): boolean {
+  return item.mm > 0 && sheet.mm > 0
+}
+
+// Plan d'imposition (grille, pages, positions mm) pour tiler `item` sur `sheet`.
+export function sheetImposition(i: SheetImpoInput): ImpoLayout {
+  const page = pageMmOf(i.sheet, i.sheetOrientation)
+  const item = pageMmOf(i.item)
+  return impositionLayout({
+    count: i.count,
+    pageW: page.w,
+    pageH: page.h,
+    cellW: item.w,
+    cellH: item.h,
+    margin: i.marginMm ?? i.sheet.safeMarginMm,
+    gutter: i.gutterMm ?? 4,
+  })
 }
 
 // Enregistrements dérivés pour PrintStudio (compat avec le code existant qui lit

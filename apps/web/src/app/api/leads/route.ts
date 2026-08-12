@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const { data: page } = await admin.from("pages").select("id").eq("id", pageId).maybeSingle()
   if (!page) return NextResponse.json({ error: "Page introuvable" }, { status: 404 })
 
-  const { error } = await admin.from("leads").insert({
+  const base = {
     page_id:  pageId,
     block_id: body.blockId ? String(body.blockId).slice(0, 200) : null,
     type:     typeof body.type === "string" && body.type ? body.type.slice(0, 40) : "form",
@@ -32,7 +32,13 @@ export async function POST(req: NextRequest) {
     phone:    typeof body.phone === "string" ? body.phone.slice(0, 60) || null : null,
     message:  typeof body.message === "string" ? body.message.slice(0, 3000) || null : null,
     data:     body.data && typeof body.data === "object" ? body.data : {},
-  })
+  }
+  // Attribution par support (qr_source) — insert résilient : si la colonne n'existe pas
+  // encore (migration non appliquée), on réessaie SANS -> la soumission ne casse jamais.
+  // `qr_source` pas encore dans les types Supabase générés (migration récente) -> cast any.
+  const qs = typeof body.qrSource === "string" ? body.qrSource.slice(0, 40) || null : null
+  let { error } = await admin.from("leads").insert((qs ? { ...base, qr_source: qs } : base) as any)
+  if (error && qs) ({ error } = await admin.from("leads").insert(base))
   if (error) return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 })
 
   return NextResponse.json({ ok: true })

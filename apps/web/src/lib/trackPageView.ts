@@ -1,6 +1,7 @@
 ﻿// trackPageView.ts — tracker une vue avec source de trafic détectée
 // Appelé côté client sur les pages publiques
 import { detectTrafficSource } from "./detectTrafficSource"
+import { qrSource } from "./qrSource"
 
 // Déduplication par pageId (et non par contexte JS) : une vue comptée une seule fois par
 // page, tout en supportant la navigation client-side entre plusieurs pages publiques et
@@ -30,7 +31,7 @@ export async function trackPageView(pageId: string) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       keepalive: true,
-      body: JSON.stringify({ type: "view", pageId, source, referrer, device, session_id: sessionId }),
+      body: JSON.stringify({ type: "view", pageId, source, referrer, device, session_id: sessionId, qrSource: qrSource() }),
     })
   } catch {
     // Silencieux — le tracking ne doit jamais casser la page

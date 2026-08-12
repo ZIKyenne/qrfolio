@@ -19,6 +19,14 @@ function str(v: unknown, max: number): string | null {
 function num01(v: unknown): number { const n = Number(v); return n >= 0 && n <= 1 ? Math.round(n * 1000) / 1000 : 0 }
 function clampNum(v: unknown, lo: number, hi: number): number { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : 0 }
 
+// Insert résilient pour l'attribution par support : tente avec qr_source ; si la colonne
+// n'existe pas encore (migration non appliquée), réessaie SANS -> le tracking ne casse jamais.
+async function insertTracked(admin: any, table: string, row: Record<string, unknown>, qs: string | null) {
+  if (!qs) return admin.from(table).insert(row)
+  const { error } = await admin.from(table).insert({ ...row, qr_source: qs })
+  if (error) return admin.from(table).insert(row)
+}
+
 export async function POST(req: NextRequest) {
   try {
     if (!(await rateLimit("track:" + ipOf(req), 60, 60_000))) return NextResponse.json({ ok: false }, { status: 429 })
@@ -33,21 +41,22 @@ export async function POST(req: NextRequest) {
     const { data: page } = await admin.from("pages").select("id").eq("id", pageId).eq("status", "published").maybeSingle()
     if (!page) return NextResponse.json({ ok: true, skipped: true })
 
+    const qs = str(body.qrSource, 40)
     if (type === "view") {
-      await admin.from("page_views").insert({
+      await insertTracked(admin, "page_views", {
         page_id: pageId,
         source: str(body.source, 40),
         referrer: str(body.referrer, 200),
         device: str(body.device, 20),
         session_id: str(body.session_id, 80),
-      })
+      }, qs)
     } else if (type === "click") {
       if (!str(body.clickTarget, 500)) return NextResponse.json({ ok: true })
-      await admin.from("block_clicks").insert({
+      await insertTracked(admin, "block_clicks", {
         page_id: pageId,
         block_id: str(body.blockId, 200),
         click_target: str(body.clickTarget, 500),
-      })
+      }, qs)
     } else if (type === "events") {
       const rows = Array.isArray(body.rows) ? body.rows.slice(0, 300) : []
       const clean = rows

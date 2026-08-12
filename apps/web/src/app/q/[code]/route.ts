@@ -273,7 +273,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       if (override.type === "page") {
         // Type "page" : resolution du slug via la DB (hors helper pur).
         const { data: pg } = await supabase.from("pages").select("slug").eq("id", override.value).maybeSingle()
-        if (pg?.slug) return redirectNoStore(`${appUrl}/${pg.slug}`)
+        if (pg?.slug) return redirectNoStore(`${appUrl}/${pg.slug}?s=${encodeURIComponent(code)}`)
       } else {
         const dest = resolveOverrideDest(override)
         if (dest) return redirectNoStore(dest)
@@ -284,9 +284,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       // Slug déjà joint au lookup initial (pages(slug)) -> pas de 2ᵉ aller-retour DB
       // sur le chemin le plus fréquent. Repli sur une requête si l'embed manque.
       const joinedSlug = (qr as any).pages?.slug as string | undefined
-      if (joinedSlug) return redirectNoStore(`${appUrl}/${joinedSlug}`)
+      if (joinedSlug) return redirectNoStore(`${appUrl}/${joinedSlug}?s=${encodeURIComponent(code)}`)
       const { data: pg } = await supabase.from("pages").select("slug").eq("id", qr.page_id).maybeSingle()
-      if (pg?.slug) return redirectNoStore(`${appUrl}/${pg.slug}`)
+      if (pg?.slug) return redirectNoStore(`${appUrl}/${pg.slug}?s=${encodeURIComponent(code)}`)
     }
 
     return redirectNoStore(new URL("/?qr=error", appUrl))

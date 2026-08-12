@@ -2,6 +2,7 @@
 // via la route serveur /api/leads. Volontairement SANS @supabase/supabase-js : ce
 // helper est chargé sur toutes les pages publiques, l'importer ici embarquerait
 // ~214 Ko de client Supabase dans le bundle de chaque page scannée.
+import { qrSource } from "./qrSource"
 
 export type LeadInput = {
   pageId: string
@@ -23,7 +24,7 @@ export async function submitLead(input: LeadInput): Promise<boolean> {
       body: JSON.stringify({
         pageId: input.pageId, blockId: input.blockId, type: input.type || "form",
         name: input.name, email: input.email, phone: input.phone,
-        message: input.message, data: input.data || {},
+        message: input.message, data: input.data || {}, qrSource: qrSource(),
       }),
     })
     if (!res.ok) return false

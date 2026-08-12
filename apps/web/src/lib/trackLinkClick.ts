@@ -2,6 +2,8 @@
 // Passe par l'endpoint serveur /api/track (service role) : plus d'insert anonyme
 // direct. RGPD : on stocke uniquement l'URL cible et le label, pas d'IP.
 
+import { qrSource } from "./qrSource"
+
 export function trackLinkClick(
   pageId: string,
   blockId: string,
@@ -14,7 +16,7 @@ export function trackLinkClick(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       keepalive: true,
-      body: JSON.stringify({ type: "click", pageId, blockId, clickTarget: clickTarget.slice(0, 500) }),
+      body: JSON.stringify({ type: "click", pageId, blockId, clickTarget: clickTarget.slice(0, 500), qrSource: qrSource() }),
     }).catch(() => {})
   } catch {
     // silencieux

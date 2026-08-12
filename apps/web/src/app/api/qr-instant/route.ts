@@ -44,8 +44,8 @@ export async function GET() {
   const { data } = await supabase
     .from("instant_qrs").select(COLS)
     .eq("user_id", user.id).order("created_at", { ascending: false }).limit(300)
-  const { data: prof } = await supabase.from("profiles").select("dyn_plan").eq("id", user.id).single()
-  return NextResponse.json({ items: (data || []).map(pub), dyn_plan: prof?.dyn_plan ?? "none" })
+  const { data: prof } = await supabase.from("profiles").select("plan, dyn_plan").eq("id", user.id).single()
+  return NextResponse.json({ items: (data || []).map(pub), plan: prof?.plan ?? "free", dyn_plan: prof?.dyn_plan ?? "none" })
 }
 
 export async function POST(req: NextRequest) {

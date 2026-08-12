@@ -1,17 +1,22 @@
 import type { CSSProperties } from "react"
 
 // Filigrane de marque superposé aux APERÇUS de QR (jamais sur le fichier réellement
-// créé / téléchargé, qui passe par getQRBlob). But : empêcher de récupérer un QR
-// propre par simple capture d'écran de l'aperçu, et marquer la propriété QRowg.
+// créé / téléchargé, qui passe par getQRBlob). Double rôle :
+//  1) marquer la propriété QRowg ;
+//  2) rendre l'aperçu NON SCANNABLE (voile qui casse le contraste des modules +
+//     marque dense) → impossible de récupérer un QR propre par capture d'écran.
 // À poser dans un conteneur `position: relative` qui enveloppe le <QRCanvas>.
-// `size` = côté du QR en px : la densité/taille du filigrane s'y adapte (vignettes ↔ grand aperçu).
+// `size` = côté du QR en px : densité/taille du filigrane adaptées (vignettes ↔ grand aperçu).
 export default function QrWatermark({ text = "QROWG", size = 210 }: { text?: string; size?: number }) {
-  const fontSize = Math.max(6.5, Math.min(12, size / 17))
-  const count = size < 120 ? 18 : 80
-  const gap = size < 120 ? "5px 8px" : "9px 15px"
+  const small = size < 120
+  const fontSize = Math.max(8, Math.min(15, size / 13))
+  const count = small ? 26 : 96
+  const gap = small ? "3px 6px" : "6px 11px"
   const wrap: CSSProperties = {
     position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none",
     borderRadius: "inherit", display: "flex", alignItems: "center", justifyContent: "center",
+    // Voile clair : abaisse le contraste noir/blanc des modules → l'aperçu ne se scanne plus proprement.
+    background: "rgba(255,255,255,0.28)",
   }
   const tile: CSSProperties = {
     position: "absolute", inset: "-45%", transform: "rotate(-30deg)",
@@ -19,8 +24,8 @@ export default function QrWatermark({ text = "QROWG", size = 210 }: { text?: str
     alignContent: "center", justifyContent: "center",
   }
   const word: CSSProperties = {
-    fontSize, fontWeight: 800, letterSpacing: size < 120 ? 0.6 : 1.4, whiteSpace: "nowrap",
-    color: "rgba(201,168,76,0.62)", textShadow: "0 1px 2px rgba(0,0,0,0.45)", userSelect: "none",
+    fontSize, fontWeight: 900, letterSpacing: small ? 0.4 : 1.1, whiteSpace: "nowrap",
+    color: "rgba(201,168,76,0.95)", textShadow: "0 1px 2px rgba(0,0,0,0.65)", userSelect: "none",
   }
   return (
     <div aria-hidden style={wrap}>

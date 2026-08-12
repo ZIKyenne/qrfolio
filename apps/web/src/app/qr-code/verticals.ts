@@ -599,13 +599,115 @@ export const VERTICALS: Record<string, Vertical> = {
     ctaTitle: "Créez votre QR code CV",
     related: ["carte-de-visite", "instagram", "pdf"],
   },
+
+  sms: {
+    slug: "sms",
+    emoji: "📲",
+    eyebrow: "SMS",
+    metaTitle: "QR code SMS : un message pré-rempli en un scan | QRowg",
+    metaDescription: "Créez un QR code SMS : vos clients vous envoient un message pré-rempli en un scan. Idéal pour un concours, un avis ou un contact rapide. Prêt à imprimer.",
+    h1: "Un QR code qui déclenche un SMS pré-rempli",
+    intro: "Concours, demande d'avis, réservation, contact : un QR code SMS ouvre l'application Messages avec votre numéro et un texte déjà écrit. Vos clients n'ont qu'à envoyer.",
+    problems: [
+      { pain: "Un numéro à recopier pour vous écrire par SMS.", gain: "Un scan ouvre le message, destinataire et texte pré-remplis." },
+      { pain: "Des participations à un concours compliquées.", gain: "« Envoyez OUI pour participer » en un scan." },
+      { pain: "Des demandes qui partent dans tous les sens.", gain: "Un message d'amorce cadre chaque demande." },
+    ],
+    features: [
+      { title: "Message pré-rempli", desc: "Le SMS s'ouvre avec votre numéro et un texte d'amorce déjà écrit." },
+      { title: "Compatible tous mobiles", desc: "Le format SMS est lu par les iPhone et les Android." },
+      { title: "Aucune application", desc: "Vos clients utilisent l'app Messages, rien à installer." },
+      { title: "À placer partout", desc: "Vitrine, flyer, affiche, ticket, packaging." },
+    ],
+    steps: [
+      "Renseignez votre numéro et le message d'amorce.",
+      "Personnalisez le QR à votre image.",
+      "Téléchargez-le et imprimez-le sur vos supports.",
+      "Recevez les SMS directement sur votre téléphone.",
+    ],
+    faq: [
+      { q: "Le message est-il vraiment pré-rempli ?", a: "Oui. Au scan, l'application Messages s'ouvre avec votre numéro en destinataire et le texte d'amorce déjà saisi ; il ne reste qu'à envoyer." },
+      { q: "Est-ce compatible iPhone et Android ?", a: "Oui. Le format SMS utilisé est lu par les téléphones iOS et Android récents." },
+      { q: "Le SMS est-il facturé à mes clients ?", a: "L'envoi suit le forfait de la personne, comme un SMS classique. Vous ne contrôlez pas ce coût." },
+    ],
+    ctaTitle: "Créez votre QR code SMS",
+    related: ["whatsapp", "carte-de-visite", "avis-google"],
+  },
+
+  paiement: {
+    slug: "paiement",
+    emoji: "💳",
+    eyebrow: "Paiement & pourboire",
+    metaTitle: "QR code paiement & pourboire : régler en un scan | QRowg",
+    metaDescription: "Créez un QR code qui renvoie vers votre lien de paiement ou de pourboire (Stripe, PayPal, SumUp, Lydia). QRowg ne traite pas les paiements.",
+    h1: "Un QR code pour être payé ou recevoir un pourboire",
+    intro: "Sur l'addition, le comptoir ou un badge, un QR code amène vos clients droit à votre lien de paiement ou de pourboire — vous encaissez avec l'outil que vous utilisez déjà.",
+    problems: [
+      { pain: "Un lien de paiement trop long à taper.", gain: "Un scan ouvre directement la page de règlement." },
+      { pain: "Des pourboires en baisse faute d'espèces.", gain: "Un QR pourboire, réglé en quelques secondes." },
+      { pain: "Devoir changer le support à chaque évolution.", gain: "Modifiez la destination sans réimprimer." },
+    ],
+    features: [
+      { title: "Renvoi vers votre lien", desc: "Stripe, PayPal, SumUp, Lydia, HelloAsso… le paiement se fait chez votre prestataire." },
+      { title: "Pourboire en un scan", desc: "Idéal pour la restauration, la coiffure et les services." },
+      { title: "Modifiable", desc: "Changez le lien ou le montant sans réimprimer le QR." },
+      { title: "Suivi des scans", desc: "Mesurez combien de personnes ouvrent la page de paiement." },
+    ],
+    steps: [
+      "Collez votre lien de paiement ou de pourboire.",
+      "Personnalisez le QR à votre image.",
+      "Imprimez-le sur l'addition, le comptoir ou un badge.",
+      "Modifiez la destination quand vous voulez.",
+    ],
+    faq: [
+      { q: "QRowg encaisse-t-il les paiements ?", a: "Non. QRowg ne traite aucun paiement : le QR code renvoie vers votre lien de paiement existant (Stripe, PayPal, SumUp, Lydia…), où le règlement a lieu." },
+      { q: "Puis-je changer le montant sans réimprimer ?", a: "Oui, si votre lien le permet : vous mettez à jour la destination du QR dynamique sans réimprimer le support." },
+      { q: "Est-ce adapté aux pourboires ?", a: "Oui. Un QR pointant vers votre page de pourboire permet de laisser un montant en quelques secondes, sans espèces." },
+    ],
+    ctaTitle: "Créez votre QR code de paiement",
+    related: ["restaurant", "salon", "boutique"],
+  },
+
+  musique: {
+    slug: "musique",
+    emoji: "🎵",
+    eyebrow: "Musique & artistes",
+    metaTitle: "QR code musique : Spotify, clips et dates en un scan | QRowg",
+    metaDescription: "Créez un QR code pour votre musique : Spotify, Apple Music, YouTube, clips et dates de concert sur une page. Modifiable, suivi des scans, prêt à imprimer.",
+    h1: "Toute votre musique derrière un seul QR code",
+    intro: "Spotify, Apple Music, YouTube, clips, dates de concert, réseaux : réunissez tout sur une page, accessible d'un scan — sur une affiche, un vinyle, un flyer ou un stand.",
+    problems: [
+      { pain: "Un seul lien de streaming à la fois.", gain: "Toutes vos plateformes réunies sur une page." },
+      { pain: "Réimprimer à chaque nouvelle sortie.", gain: "Ajoutez un titre ou une date sans refaire le QR." },
+      { pain: "Aucune idée de ce qui est écouté.", gain: "Suivez les clics par plateforme et par lien." },
+    ],
+    features: [
+      { title: "Toutes les plateformes", desc: "Spotify, Apple Music, Deezer, YouTube, Bandcamp, SoundCloud." },
+      { title: "Clips & actus", desc: "Vidéos, dernières sorties et dates de concert." },
+      { title: "Modifiable à volonté", desc: "Mettez en avant une nouvelle sortie en un instant." },
+      { title: "Suivi des clics", desc: "Voyez quelles plateformes et quels liens performent." },
+    ],
+    steps: [
+      "Ajoutez vos liens de streaming, vos clips et vos dates.",
+      "Personnalisez la page à votre univers.",
+      "Imprimez le QR sur vos affiches, vinyles ou flyers.",
+      "Mettez à jour à chaque sortie.",
+    ],
+    faq: [
+      { q: "Puis-je réunir plusieurs plateformes de streaming ?", a: "Oui. La page regroupe autant de liens que vous voulez : Spotify, Apple Music, Deezer, YouTube, etc." },
+      { q: "Puis-je mettre à jour à chaque sortie ?", a: "Oui. Le QR code reste identique ; vous ajoutez titres, clips et dates à tout moment." },
+      { q: "Puis-je annoncer mes concerts ?", a: "Oui. Ajoutez vos dates et un lien vers la billetterie ou vos réseaux." },
+    ],
+    ctaTitle: "Créez le QR code de votre musique",
+    related: ["instagram", "evenement", "carte-de-visite"],
+  },
 }
 
 export const VERTICAL_SLUGS = Object.keys(VERTICALS)
 export const getVertical = (slug: string): Vertical | undefined => VERTICALS[slug]
 // Ordre d'affichage du hub /qr-code (le plus recherché en premier).
 export const VERTICAL_ORDER = [
-  "restaurant", "menu", "avis-google", "wifi", "instagram", "whatsapp", "pdf",
-  "immobilier", "hotel", "salon", "boutique", "food-truck", "artisan",
-  "association", "cv", "evenement", "carte-de-visite",
+  "restaurant", "menu", "avis-google", "wifi", "instagram", "whatsapp", "sms", "pdf",
+  "immobilier", "hotel", "salon", "boutique", "food-truck", "artisan", "paiement",
+  "association", "musique", "cv", "evenement", "carte-de-visite",
 ]

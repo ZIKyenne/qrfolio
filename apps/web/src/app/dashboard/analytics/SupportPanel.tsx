@@ -4,9 +4,10 @@
 // l'entonnoir scan → vue → clic → conversion + comparaison entre supports. Utilise le moteur
 // pur lib/supportFunnel. Les SCANS sont historiques (scans.qr_code_id) ; vues/clics/conversions
 // démarrent à l'activation du pistage par support (qr_source), donc peuvent être à 0 au début.
-import { useMemo } from "react"
-import { Store, Eye, MousePointerClick, Target } from "lucide-react"
-import { buildSupportFunnel, supportTotals, type SupportRow } from "@/lib/supportFunnel"
+// Le nom du support est éditable en ligne (POST /api/qr-label -> qr_codes.label).
+import { useMemo, useState } from "react"
+import { Store, Eye, MousePointerClick, Target, Pencil } from "lucide-react"
+import { buildSupportFunnel, supportTotals, defaultSupportLabel, type SupportRow } from "@/lib/supportFunnel"
 
 type Q = { id: string; short_code: string; label?: string | null; page_id?: string | null }
 type ScanRow = { qr_code_id?: string | null }
@@ -31,6 +32,21 @@ export default function SupportPanel({ qrs, scans, views, clicks, leads }: {
   const totals = useMemo(() => supportTotals(rows), [rows])
   const maxScans = Math.max(1, ...rows.map(r => r.scans))
 
+  // Renommage en ligne : override local + sauvegarde serveur.
+  const [over, setOver] = useState<Record<string, string>>({})
+  const [editing, setEditing] = useState<string | null>(null)
+  const [draft, setDraft] = useState("")
+  const labelOf = (r: SupportRow) => over[r.id] ?? r.label
+
+  async function saveLabel(r: SupportRow) {
+    const value = draft.trim()
+    setEditing(null)
+    try {
+      const res = await fetch("/api/qr-label", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qr_id: r.id, label: value }) })
+      if (res.ok) setOver(prev => ({ ...prev, [r.id]: value || defaultSupportLabel(r.shortCode) }))
+    } catch { /* silencieux */ }
+  }
+
   const card: React.CSSProperties = { background: "rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.14)", borderRadius: 18, padding: 20 }
 
   return (
@@ -41,7 +57,7 @@ export default function SupportPanel({ qrs, scans, views, clicks, leads }: {
             <Store size={17} color={GOLD} /> Performance par support
           </p>
           <p style={{ color: MUTED, fontSize: 12.5, margin: "4px 0 0", lineHeight: 1.5 }}>
-            Le ROI de chaque support physique : scan → vue → clic → conversion. Nommez vos QR dans le QR Studio (« Vitrine », « Table 4 »…).
+            Le ROI de chaque support physique : scan → vue → clic → conversion. Cliquez un nom pour le renommer (« Vitrine », « Table 4 »…).
           </p>
         </div>
         {totals.scans > 0 && (
@@ -58,7 +74,7 @@ export default function SupportPanel({ qrs, scans, views, clicks, leads }: {
 
       {rows.length === 0 ? (
         <p style={{ color: MUTED, fontSize: 13, margin: "16px 0 2px", textAlign: "center", padding: "20px 0" }}>
-          Aucun QR pour cette sélection. Créez un QR par support (un pour la vitrine, un pour les tables…) et nommez-le dans le QR Studio.
+          Aucun QR pour cette sélection. Créez un QR par support (un pour la vitrine, un pour les tables…) — dupliquez un QR depuis le QR Studio pour une même page.
         </p>
       ) : (
         <div style={{ overflowX: "auto", marginTop: 16 }}>
@@ -74,16 +90,29 @@ export default function SupportPanel({ qrs, scans, views, clicks, leads }: {
             <tbody>
               {rows.map(r => (
                 <tr key={r.id}>
-                  <td style={{ padding: "11px 10px", borderBottom: "1px solid rgba(255,255,255,0.05)", maxWidth: 220 }}>
-                    <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label}</p>
+                  <td style={{ padding: "11px 10px", borderBottom: "1px solid rgba(255,255,255,0.05)", maxWidth: 240 }}>
+                    {editing === r.id ? (
+                      <input autoFocus value={draft} maxLength={60}
+                        onChange={e => setDraft(e.target.value)}
+                        onBlur={() => saveLabel(r)}
+                        onKeyDown={e => { if (e.key === "Enter") saveLabel(r); if (e.key === "Escape") setEditing(null) }}
+                        placeholder="Nom du support…"
+                        style={{ width: "100%", boxSizing: "border-box", background: "#0A0A0A", border: "1px solid color-mix(in srgb, var(--accent) 50%, transparent)", borderRadius: 8, color: "#F5F0E8", fontSize: 13, fontWeight: 700, padding: "6px 9px", outline: "none" }} />
+                    ) : (
+                      <button type="button" title="Renommer ce support"
+                        onClick={() => { setEditing(r.id); setDraft(over[r.id] ?? (r.label.startsWith("QR ") ? "" : r.label)) }}
+                        style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", padding: 0, cursor: "pointer", color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, maxWidth: "100%" }}>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{labelOf(r)}</span>
+                        <Pencil size={11} color={DIM} style={{ flexShrink: 0 }} />
+                      </button>
+                    )}
                     {/* barre relative de scans */}
-                    <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", marginTop: 5, overflow: "hidden" }}>
+                    <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", marginTop: 6, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${Math.round((r.scans / maxScans) * 100)}%`, background: GOLD, borderRadius: 2 }} />
                     </div>
                   </td>
                   {STAGES.map((s, i) => {
                     const val = r[s.key]
-                    // taux de passage depuis l'étape précédente (vues/scans, clics/vues, conv/clics)
                     const rate = i === 1 ? r.viewRate : i === 2 ? r.clickRate : i === 3 ? r.convRate : null
                     return (
                       <td key={s.key} style={{ padding: "11px 10px", borderBottom: "1px solid rgba(255,255,255,0.05)", textAlign: "right", whiteSpace: "nowrap" }}>

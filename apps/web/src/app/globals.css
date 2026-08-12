@@ -450,3 +450,16 @@ img, video, canvas { max-width: 100%; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ── MobileNav (Liquid Nav) : éclaboussure de gouttelettes à l'arrivée de la bulle.
+   Deux noms alternés (A/B) pour relancer l'animation à chaque changement d'onglet. */
+@keyframes qrf-burstA {
+  0%   { transform: scale(0.35); opacity: 0; }
+  20%  { opacity: 0.5; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+@keyframes qrf-burstB {
+  0%   { transform: scale(0.35); opacity: 0; }
+  20%  { opacity: 0.5; }
+  100% { transform: scale(1.5); opacity: 0; }
+}

@@ -11,6 +11,7 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { ToastProvider } from "@/components/Toast"
 import { ConfirmProvider } from "@/components/ui/Confirm"
+import MobileNav from "@/components/MobileNav"
 import { accessibleOwnerIds } from "@/lib/team"
 
 const DEFAULT_ACCENT = "#C9A84C"
@@ -32,14 +33,6 @@ const NAV_ITEMS = [
   { href: "/dashboard/settings", icon: Settings, label: "Paramètres" },
 ]
 
-// Barre mobile : EXACTEMENT 5 destinations (le bouton central "Créer" ouvre un sheet).
-const MOBILE_NAV = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Accueil", exact: true },
-  { href: "/dashboard/qr-codes", icon: QrCode, label: "Pages" },
-  { create: true as const, icon: Plus, label: "Créer" },
-  { href: "/dashboard/analytics", icon: BarChart, label: "Stats" },
-  { href: "/dashboard/profile", icon: User, label: "Profil" },
-]
 // Actions du bouton central "Créer".
 const CREATE_ACTIONS = [
   { href: "/dashboard/builder", icon: FileText, label: "Créer une page", sub: "Une page pro éditable" },
@@ -356,45 +349,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* BARRE DE NAVIGATION MOBILE — 5 entrees, safe-area, bouton central "Créer" */}
+      {/* BARRE DE NAVIGATION MOBILE — « Liquid Nav » (components/MobileNav).
+          Le bouton central « Créer » ouvre le même sheet qu'avant (onCreate). */}
       {isMobile && !hideMobileNav && (
-        <nav aria-label="Navigation" style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
-          display: "flex", alignItems: "stretch", justifyContent: "space-around",
-          minHeight: "calc(64px + env(safe-area-inset-bottom))",
-          padding: "7px 12px calc(7px + env(safe-area-inset-bottom))",
-          background: "rgba(12,11,9,0.97)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-          borderTop: "1px solid rgba(201,168,76,0.16)",
-          boxShadow: "0 -6px 22px rgba(0,0,0,0.45)",
-        }}>
-          {MOBILE_NAV.map((item) => {
-            if ("create" in item) {
-              const Icon = item.icon
-              return (
-                <button key="create" type="button" onClick={() => setCreateOpen(true)} aria-label="Créer"
-                  style={{ flex: 1, minWidth: 48, minHeight: 48, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                  <span style={{ width: 46, height: 46, marginTop: -14, borderRadius: "50%", background: `linear-gradient(180deg, color-mix(in srgb, ${G} 82%, #fff), ${G})`, display: "flex", alignItems: "center", justifyContent: "center", color: "#141210", boxShadow: `0 6px 18px color-mix(in srgb, ${G} 50%, transparent)` }}><Icon size={24} strokeWidth={2.6} /></span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: G }}>{item.label}</span>
-                </button>
-              )
-            }
-            const { href, icon: Icon, label, exact } = item
-            const active = isActive(href, (exact as boolean) || false)
-            return (
-              <Link key={href} href={href}
-                style={{ flex: 1, minWidth: 48, minHeight: 48, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, padding: "4px 2px", textDecoration: "none", color: active ? G : MUTED, position: "relative", transition: "color .15s" }}>
-                {active && <span style={{ position: "absolute", top: -7, left: "50%", transform: "translateX(-50%)", width: 26, height: 3, borderRadius: "0 0 3px 3px", background: G }} />}
-                <div style={{ position: "relative", display: "flex" }}>
-                  <Icon size={23} strokeWidth={active ? 2.4 : 2} />
-                  {href === "/dashboard" && unreadLeads > 0 && (
-                    <span style={{ position: "absolute", top: -6, right: -8, minWidth: 15, height: 15, padding: "0 4px", borderRadius: 8, background: "#EF4444", color: "#fff", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>{unreadLeads > 99 ? "99+" : unreadLeads}</span>
-                  )}
-                </div>
-                <span style={{ fontSize: 11, fontWeight: active ? 700 : 500, letterSpacing: 0.1 }}>{label}</span>
-              </Link>
-            )
-          })}
-        </nav>
+        <MobileNav onCreate={() => setCreateOpen(true)} unread={unreadLeads} />
       )}
 
       <style>{`

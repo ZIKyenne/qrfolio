@@ -8,6 +8,7 @@ import { PLAN_LIST, PLAN_COMPARISON, fmtPrice } from "@/lib/plans"
 import { DYN_PAID_PLANS, DYN_TRIAL_DAYS, dynMonthlyLabel, dynAnnualTotalLabel, type DynPlanId } from "@/lib/dynamicPlans"
 import { useAccent } from "@/lib/useAccent"
 import Particles from "@/components/Particles"
+import SubscribeButton from "@/components/SubscribeButton"
 
 // UI par plan (icône, CTA, mise en avant) ; les DONNÉES viennent de lib/plans
 const PLAN_UI = {
@@ -69,7 +70,25 @@ export default function UpgradePage() {
     } catch { setLoading(null) }
   }
 
+  // Renvoie l'URL de paiement Stripe ; le SubscribeButton redirige lui-même en fin
+  // d'animation (une string renvoyée = redirection auto). Throw -> le bouton se réinitialise.
+  async function checkoutUrl(plan: typeof PLANS[0]): Promise<string | void> {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = "/auth/login"; return }
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: plan.id, annual, userId: user.id }),
+    })
+    const data = await res.json()
+    if (!data.url) throw new Error("URL de paiement manquante")
+    return data.url as string
+  }
+
   const G = useAccent(); const MUTED = "#8A8478"
+  // Le SubscribeButton attend une couleur hex ; on sécurise (accent utilisateur ou or de marque).
+  const accentHex = /^#[0-9a-fA-F]{6}$/.test(G || "") ? (G as string) : "#C9A84C"
 
   // Cette page est hors du layout dashboard : on applique l'accent au document
   // (et on prévient les particules) pour qu'elles prennent la couleur de l'utilisateur.
@@ -173,10 +192,24 @@ export default function UpgradePage() {
                   ))}
                 </div>
 
-                <button onClick={() => handleUpgrade(plan)} disabled={loading === plan.id || isCurrentPlan || plan.ctaDisabled}
-                  style={{ width: "100%", padding: "13px 20px", borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: isCurrentPlan || plan.ctaDisabled ? "default" : "pointer", background: isCurrentPlan ? "rgba(57,255,143,0.08)" : plan.highlight ? "linear-gradient(90deg,var(--action),#818CF8)" : pc + "15", color: isCurrentPlan ? "var(--success)" : plan.highlight ? "#080808" : pc, border: isCurrentPlan ? "1px solid rgba(57,255,143,0.2)" : plan.highlight ? "none" : "1px solid " + pc + "30", transition: "all 0.2s", fontFamily: "DM Sans, sans-serif" }}>
-                  {loading === plan.id ? "Chargement..." : isCurrentPlan ? "Plan actuel" : plan.cta}
-                </button>
+                {!isCurrentPlan && !plan.ctaDisabled && plan.id !== "business" ? (
+                  // Plans Stripe actionnables (starter / pro) : CTA animé « scan QR » qui
+                  // récupère l'URL de paiement et redirige lui-même en fin d'animation.
+                  <SubscribeButton
+                    label={plan.cta}
+                    accent={accentHex}
+                    successLabel="Redirection vers le paiement…"
+                    minScanMs={1600}
+                    height={48}
+                    onSubscribe={() => checkoutUrl(plan)}
+                    onError={() => setLoading(null)}
+                  />
+                ) : (
+                  <button onClick={() => handleUpgrade(plan)} disabled={loading === plan.id || isCurrentPlan || plan.ctaDisabled}
+                    style={{ width: "100%", padding: "13px 20px", borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: isCurrentPlan || plan.ctaDisabled ? "default" : "pointer", background: isCurrentPlan ? "rgba(57,255,143,0.08)" : plan.highlight ? "linear-gradient(90deg,var(--action),#818CF8)" : pc + "15", color: isCurrentPlan ? "var(--success)" : plan.highlight ? "#080808" : pc, border: isCurrentPlan ? "1px solid rgba(57,255,143,0.2)" : plan.highlight ? "none" : "1px solid " + pc + "30", transition: "all 0.2s", fontFamily: "DM Sans, sans-serif" }}>
+                    {loading === plan.id ? "Chargement..." : isCurrentPlan ? "Plan actuel" : plan.cta}
+                  </button>
+                )}
               </div>
             )
           })}

@@ -265,7 +265,7 @@ export default function DashboardClient({
               </span>
             </div>
           </div>
-          <Link href="/dashboard/templates" className="dz-cta"
+          <Link href="/dashboard/onboarding" className="dz-cta"
             style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius: 12, padding: "11px 22px", color: "#080808", textDecoration: "none", fontSize: 14, fontWeight: 800, boxShadow: "0 6px 22px color-mix(in srgb, var(--accent) 28%, transparent)", flexShrink: 0 }}>
             <Plus size={16} strokeWidth={2.6} /> Nouvelle page
           </Link>

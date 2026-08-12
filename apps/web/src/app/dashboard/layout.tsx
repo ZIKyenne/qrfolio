@@ -35,6 +35,7 @@ const NAV_ITEMS = [
 
 // Actions du bouton central "Créer".
 const CREATE_ACTIONS = [
+  { href: "/dashboard/onboarding", icon: Sparkles, label: "Créer par objectif", sub: "Guidé — on génère tout pour vous" },
   { href: "/dashboard/builder", icon: FileText, label: "Créer une page", sub: "Une page pro éditable" },
   { href: "/dashboard/qr-codes", icon: QrCode, label: "Créer un QR code", sub: "Dynamique, modifiable" },
   { href: "/dashboard/qr-link", icon: Link2, label: "QR Dynamique", sub: "Modifiable · suivi des scans" },

@@ -37,6 +37,7 @@ import { qrScannability, scanLevelColor } from "./qrScannability"
 import { selKind, mobileContextTools } from "./mobileContextTools"
 import { stackedAt, boxCenter, type LayerBox } from "./stackedObjects"
 import { exportPlan, type ExportType } from "./exportPlan"
+import { legacyFormats, legacyFormatMm } from "./printSupports"
 import { dist as gDist, LONG_PRESS_MS, MOVE_TOLERANCE } from "./touchGestures"
 import { showSection, coerceMode, type UiMode } from "./uiComplexity"
 import BigSlider from "./BigSlider"
@@ -53,20 +54,17 @@ const BG      = "#EDEFF3"   // zone de travail + champs (gris clair)
 const CANVAS_BG_DEFAULT = "#FFFFFF"
 
 // ---- Formats supportes -----------------------------------------------------
+// SOURCE UNIQUE : le catalogue de supports imprimables (printSupports.ts, moteur
+// pur teste). Les 6 formats historiques y sont repris a l'identique + de nouveaux
+// supports (A3, A6, US Letter, carte portrait, stickers, marque-page). On derive
+// ici les tables FORMATS / FORMAT_MM que le reste du composant consomme.
 // ratio = largeur / hauteur ; exportW = largeur cible export (~300 DPI / format reseau)
-type FormatId = "a4" | "square" | "story" | "carte" | "flyer" | "table"
-const FORMATS: Record<FormatId, { label: string; ratio: number; exportW: number }> = {
-  a4:     { label: "A4",     ratio: 210 / 297,   exportW: 2480 }, // portrait, ~300 DPI
-  square: { label: "Carré",  ratio: 1,           exportW: 2000 },
-  story:  { label: "Story",  ratio: 1080 / 1920, exportW: 1080 }, // 9:16
-  carte:  { label: "Carte",  ratio: 85 / 55,     exportW: 1004 }, // carte de visite 85x55mm paysage
-  flyer:  { label: "Flyer",  ratio: 148 / 210,   exportW: 1748 }, // A5 portrait
-  table:  { label: "Table",  ratio: 100 / 70,    exportW: 1181 }, // carte de table 10x7cm paysage
-}
+type FormatId = string
+const FORMATS: Record<string, { label: string; ratio: number; exportW: number }> = legacyFormats()
 const EDIT_MAX_H = 600 // hauteur max du canvas d'edition a l'ecran
 const EDIT_MAX_W = 860 // largeur max (pour les formats paysage / carre -> remplit mieux)
 // Largeur physique reelle du support, en mm (pour estimer la taille du QR imprime). 0 = format ecran.
-const FORMAT_MM: Record<FormatId, number> = { a4: 210, square: 100, story: 0, carte: 85, flyer: 148, table: 100 }
+const FORMAT_MM: Record<string, number> = legacyFormatMm()
 
 function editDims(fmt: FormatId) {
   const { ratio } = FORMATS[fmt] // largeur / hauteur
@@ -3613,7 +3611,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   // modifie pas sa taille (couleurs/modules/coins/ECC seulement).
   const openPreflight = () => {
     const fc = fcRef.current
-    const isScreen = format === "story"
+    const isScreen = (FORMAT_MM[format] || 0) === 0
     const widthMm = FORMAT_MM[format] || 0
     const fgHex = /^#[0-9a-fA-F]{6}$/.test(qrFg) ? qrFg : "#0A0A0A"
     let contrastBg = /^#[0-9a-fA-F]{6}$/.test(bgColor) ? bgColor : "#FFFFFF"

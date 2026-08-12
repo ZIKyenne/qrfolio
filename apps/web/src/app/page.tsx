@@ -3618,15 +3618,18 @@ export default function HomePage() {
               display: "flex", gap: 20, marginTop: 26, flexWrap: "wrap",
               animation: "mo-fade-up 0.7s ease 0.9s both"
             }}>
-              {["Chiffré", "Hébergé en Europe", "QR dynamique", "Sans engagement"].map((item) => (
-                <span key={item} style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  color: "#BCB6A6", fontSize: 12.5
-                }}>
-                  <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 2, background: "rgba(201,168,76,0.85)" }} />
-                  {item}
-                </span>
-              ))}
+              {[
+                { t: "Chiffré", href: "/security" },
+                { t: "Hébergé en Europe", href: "/security" },
+                { t: "QR dynamique", href: undefined as string | undefined },
+                { t: "Sans engagement", href: undefined as string | undefined },
+              ].map(({ t, href }) => {
+                const st: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 8, color: "#BCB6A6", fontSize: 12.5, textDecoration: "none" }
+                const inner = <><span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 2, background: "rgba(201,168,76,0.85)" }} />{t}</>
+                return href
+                  ? <Link key={t} href={href} style={st} title="En savoir plus sur la sécurité">{inner}</Link>
+                  : <span key={t} style={st}>{inner}</span>
+              })}
             </div>
           </div>
 
@@ -3881,6 +3884,7 @@ export default function HomePage() {
 
           {/* Col 4: Légal */}
           <FooterCol title="Légal">
+            <Link href="/security" className="fl">Sécurité</Link>
             <Link href="/privacy" className="fl">Confidentialité</Link>
             <Link href="/terms"   className="fl">Conditions</Link>
             <Link href="/legal"   className="fl">Mentions légales</Link>

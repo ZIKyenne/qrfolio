@@ -429,12 +429,183 @@ export const VERTICALS: Record<string, Vertical> = {
     ctaTitle: "Créez le QR code de votre boutique",
     related: ["avis-google", "instagram", "menu"],
   },
+
+  pdf: {
+    slug: "pdf",
+    emoji: "📄",
+    eyebrow: "Document PDF",
+    metaTitle: "QR code PDF : partagez un document en un scan | QRowg",
+    metaDescription: "Créez un QR code PDF pour partager un document (menu, notice, catalogue, CV) en un scan. Remplacez le fichier sans changer le QR code. Prêt à imprimer.",
+    h1: "Partagez n'importe quel PDF en un scan",
+    intro: "Notice, catalogue, carte, tarif, dossier : un QR code ouvre votre document sur le téléphone de vos lecteurs. Et si le document change, vous le remplacez sans refaire le QR.",
+    problems: [
+      { pain: "Un PDF envoyé par email que personne ne retrouve.", gain: "Un QR code qui ouvre le document à tout moment." },
+      { pain: "Réimprimer le QR à chaque nouvelle version du fichier.", gain: "Remplacez le PDF : le QR code reste identique." },
+      { pain: "Un fichier lourd qui s'ouvre mal sur mobile.", gain: "Une page claire qui présente et ouvre votre document." },
+    ],
+    features: [
+      { title: "Document toujours accessible", desc: "Votre PDF s'ouvre d'un scan, sans application à installer." },
+      { title: "Version modifiable", desc: "Remplacez le fichier quand vous voulez ; le QR imprimé ne bouge pas." },
+      { title: "Plusieurs documents", desc: "Regroupez notice, tarifs et catalogue sur une même page." },
+      { title: "Suivi des scans", desc: "Voyez combien de personnes ouvrent votre document, et quand." },
+    ],
+    steps: [
+      "Importez votre PDF (ou plusieurs) sur votre page.",
+      "Personnalisez la page à votre image.",
+      "Générez le QR code et imprimez-le où vous voulez.",
+      "Remplacez le document quand il évolue — le QR reste le même.",
+    ],
+    faq: [
+      { q: "Puis-je remplacer le PDF sans refaire le QR code ?", a: "Oui. Le QR code est dynamique : vous remplacez le document à tout moment, le QR imprimé reste identique." },
+      { q: "Faut-il une application pour ouvrir le document ?", a: "Non. Le PDF s'ouvre directement dans le navigateur du téléphone, sans rien installer." },
+      { q: "Puis-je mettre plusieurs documents derrière un seul QR code ?", a: "Oui. Regroupez plusieurs documents sur une même page : notice, tarifs, catalogue, etc." },
+    ],
+    ctaTitle: "Créez votre QR code PDF",
+    related: ["menu", "carte-de-visite", "boutique"],
+  },
+
+  "food-truck": {
+    slug: "food-truck",
+    emoji: "🚚",
+    eyebrow: "Food truck",
+    metaTitle: "QR code food truck : emplacement du jour, menu et réseaux | QRowg",
+    metaDescription: "Créez un QR code pour votre food truck : emplacement du jour, menu, horaires et réseaux en un scan. Mettez à jour votre position sans réimprimer.",
+    h1: "Votre food truck retrouvé où que vous soyez",
+    intro: "Emplacement du jour, menu, horaires, réseaux : un QR code rassemble tout, et vous mettez à jour votre position à chaque service — sans jamais réimprimer.",
+    problems: [
+      { pain: "Vos clients ne savent pas où vous êtes aujourd'hui.", gain: "Indiquez votre emplacement du jour, mis à jour en direct." },
+      { pain: "Un menu qui change au gré des produits.", gain: "Actualisez la carte quand vous voulez." },
+      { pain: "Difficile de fidéliser une clientèle mobile.", gain: "Réseaux et avis pour garder le lien." },
+    ],
+    features: [
+      { title: "Emplacement du jour", desc: "Affichez votre position et vos prochaines dates, actualisées en direct." },
+      { title: "Menu du moment", desc: "Carte modifiable selon vos produits et vos services." },
+      { title: "Réseaux & itinéraire", desc: "Instagram, itinéraire et horaires en un geste." },
+      { title: "Suivi des scans", desc: "Voyez quels emplacements et supports fonctionnent le mieux." },
+    ],
+    steps: [
+      "Composez votre page : emplacement, menu, réseaux.",
+      "Personnalisez-la à votre image.",
+      "Imprimez le QR sur le camion, les gobelets ou les flyers.",
+      "Mettez à jour votre position à chaque service.",
+    ],
+    faq: [
+      { q: "Puis-je changer mon emplacement chaque jour ?", a: "Oui. Vous mettez à jour votre position et vos dates autant que vous voulez ; le QR code reste identique." },
+      { q: "Puis-je modifier le menu selon les produits ?", a: "Oui. La carte se modifie à tout moment, sans réimprimer le QR." },
+      { q: "Où placer le QR code ?", a: "Sur le camion, les gobelets, les emballages ou vos flyers — partout où vos clients le voient." },
+    ],
+    ctaTitle: "Créez le QR code de votre food truck",
+    related: ["restaurant", "menu", "instagram"],
+  },
+
+  artisan: {
+    slug: "artisan",
+    emoji: "🔧",
+    eyebrow: "Artisans & services",
+    metaTitle: "QR code artisan : réalisations, devis et contact | QRowg",
+    metaDescription: "Créez un QR code pour votre activité d'artisan : réalisations, demande de devis, avis et contact en un scan. Sur le véhicule, le chantier ou la carte.",
+    h1: "Vos réalisations et vos devis, en un scan",
+    intro: "Sur votre véhicule, un chantier ou une carte, un QR code présente vos réalisations, ouvre une demande de devis et rassure avec des avis — pendant que vous travaillez.",
+    problems: [
+      { pain: "Des prospects qui ne voient pas votre travail.", gain: "Une galerie de réalisations accessible d'un scan." },
+      { pain: "Des demandes de devis qui se perdent.", gain: "Un formulaire de devis clair, reçu directement." },
+      { pain: "Difficile d'inspirer confiance à distance.", gain: "Avis clients et coordonnées réunis au même endroit." },
+    ],
+    features: [
+      { title: "Galerie de réalisations", desc: "Photos avant/après et chantiers marquants." },
+      { title: "Demande de devis", desc: "Un formulaire qui capte chaque demande, avec les détails utiles." },
+      { title: "Contact direct", desc: "Appel, WhatsApp et itinéraire en un geste." },
+      { title: "Avis & confiance", desc: "Regroupez vos avis pour rassurer vos futurs clients." },
+    ],
+    steps: [
+      "Ajoutez vos réalisations, votre formulaire de devis et vos contacts.",
+      "Personnalisez la page à votre image.",
+      "Imprimez le QR sur le véhicule, la carte ou le panneau de chantier.",
+      "Mettez à jour vos réalisations au fil des projets.",
+    ],
+    faq: [
+      { q: "Puis-je recevoir les demandes de devis directement ?", a: "Oui. Le formulaire capte chaque demande avec les détails utiles, que vous recevez au même endroit." },
+      { q: "Puis-je montrer mes chantiers ?", a: "Oui. Ajoutez une galerie de réalisations avec photos avant/après." },
+      { q: "Puis-je mettre à jour la page sans réimprimer ?", a: "Oui. Le QR code reste identique ; vous actualisez réalisations et infos à tout moment." },
+    ],
+    ctaTitle: "Créez le QR code de votre activité",
+    related: ["carte-de-visite", "avis-google", "immobilier"],
+  },
+
+  association: {
+    slug: "association",
+    emoji: "🤝",
+    eyebrow: "Associations & clubs",
+    metaTitle: "QR code association : adhésion, dons et agenda | QRowg",
+    metaDescription: "Créez un QR code pour votre association : adhésion, dons, agenda et contact en un scan. Sur vos affiches, stands et événements. Modifiable, prêt à imprimer.",
+    h1: "Fédérez votre association autour d'un QR code",
+    intro: "Adhésion, dons, agenda, bénévolat, réseaux : rassemblez tout ce qui fait vivre votre association sur une page, accessible d'un scan sur vos stands et affiches.",
+    problems: [
+      { pain: "Des adhésions et des dons compliqués à collecter.", gain: "Un bouton qui renvoie vers votre lien d'adhésion ou de don." },
+      { pain: "Un agenda que personne ne connaît.", gain: "Vos prochains rendez-vous, mis à jour en direct." },
+      { pain: "Des bénévoles difficiles à mobiliser.", gain: "Un formulaire de contact et vos réseaux au même endroit." },
+    ],
+    features: [
+      { title: "Adhésion & dons", desc: "Renvoyez vers votre plateforme d'adhésion ou de don existante." },
+      { title: "Agenda & événements", desc: "Prochains rendez-vous, actualisés quand vous voulez." },
+      { title: "Appel aux bénévoles", desc: "Formulaire de contact et présentation de vos actions." },
+      { title: "Réseaux & partage", desc: "Regroupez vos réseaux pour faire connaître vos actions." },
+    ],
+    steps: [
+      "Composez votre page : adhésion, dons, agenda, contact.",
+      "Personnalisez-la aux couleurs de l'association.",
+      "Imprimez le QR sur vos affiches, stands et flyers.",
+      "Mettez à jour l'agenda et les actions quand vous voulez.",
+    ],
+    faq: [
+      { q: "Puis-je collecter des dons via QRowg ?", a: "QRowg ne traite pas les paiements, mais renvoie d'un bouton vers votre plateforme de dons ou d'adhésion existante." },
+      { q: "Puis-je mettre à jour l'agenda après impression ?", a: "Oui. Le QR code reste identique ; vous actualisez vos événements à tout moment." },
+      { q: "Est-ce adapté à un petit club ?", a: "Oui. La page se crée en quelques minutes, sans compétence technique." },
+    ],
+    ctaTitle: "Créez le QR code de votre association",
+    related: ["evenement", "instagram", "carte-de-visite"],
+  },
+
+  cv: {
+    slug: "cv",
+    emoji: "💼",
+    eyebrow: "CV & recherche d'emploi",
+    metaTitle: "QR code CV : partagez votre profil en un scan | QRowg",
+    metaDescription: "Créez un QR code CV : profil, expériences, portfolio et contact en un scan. À ajouter sur votre CV papier ou votre carte. Modifiable, prêt à imprimer.",
+    h1: "Votre CV augmenté, derrière un QR code",
+    intro: "Ajoutez un QR code à votre CV papier : il ouvre une page complète — expériences, portfolio, LinkedIn, contact — et vous la mettez à jour sans réimprimer.",
+    problems: [
+      { pain: "Un CV papier figé et vite dépassé.", gain: "Une page à jour, modifiable à tout moment." },
+      { pain: "Un portfolio impossible à glisser sur une feuille.", gain: "Un scan ouvre vos projets et vos liens." },
+      { pain: "Des coordonnées recopiées avec des erreurs.", gain: "Contact enregistrable en un geste (vCard)." },
+    ],
+    features: [
+      { title: "Profil complet", desc: "Parcours, compétences, expériences et centres d'intérêt." },
+      { title: "Portfolio & liens", desc: "Projets, LinkedIn, site et documents (CV PDF)." },
+      { title: "Contact en un geste", desc: "Enregistrement de vos coordonnées (vCard) sans faute." },
+      { title: "Toujours à jour", desc: "Modifiez votre profil sans réimprimer votre CV." },
+    ],
+    steps: [
+      "Composez votre page : parcours, portfolio, liens, contact.",
+      "Personnalisez-la à votre image.",
+      "Ajoutez le QR code sur votre CV et votre carte.",
+      "Mettez à jour votre profil quand vous voulez.",
+    ],
+    faq: [
+      { q: "Puis-je mettre à jour mon CV sans le réimprimer ?", a: "Oui. Le QR code reste identique ; vous modifiez votre page à tout moment." },
+      { q: "Puis-je ajouter mon CV en PDF ?", a: "Oui. Ajoutez votre CV en document téléchargeable, en plus de votre profil en ligne." },
+      { q: "Puis-je inclure LinkedIn et mon portfolio ?", a: "Oui. Regroupez LinkedIn, votre site, vos projets et vos coordonnées au même endroit." },
+    ],
+    ctaTitle: "Créez votre QR code CV",
+    related: ["carte-de-visite", "instagram", "pdf"],
+  },
 }
 
 export const VERTICAL_SLUGS = Object.keys(VERTICALS)
 export const getVertical = (slug: string): Vertical | undefined => VERTICALS[slug]
 // Ordre d'affichage du hub /qr-code (le plus recherché en premier).
 export const VERTICAL_ORDER = [
-  "restaurant", "menu", "avis-google", "wifi", "instagram", "whatsapp",
-  "immobilier", "hotel", "salon", "boutique", "evenement", "carte-de-visite",
+  "restaurant", "menu", "avis-google", "wifi", "instagram", "whatsapp", "pdf",
+  "immobilier", "hotel", "salon", "boutique", "food-truck", "artisan",
+  "association", "cv", "evenement", "carte-de-visite",
 ]

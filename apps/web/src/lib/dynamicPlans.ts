@@ -5,10 +5,11 @@
 // lib/plans.ts). Gère les QR DYNAMIQUES (liens redirigés /q/<code>, modifiables,
 // suivi des scans). Quota SÉPARÉ de limits.qr (QR statiques).
 //
-// Modèle décidé avec le propriétaire (2026-08-11) :
+// Modèle décidé avec le propriétaire (révisé 2026-08-12) :
 //  · 3 paliers payants : Basique / Pro / Business. Pas de gratuit permanent.
-//  · Essai 7 JOURS PAR LIEN, ouvert à tout utilisateur CONNECTÉ (compte requis) :
-//    un lien créé sans abonnement fonctionne 7 j puis expire → moteur de conversion.
+//  · Essai 30 JOURS PAR LIEN, limité à 2 PAR MOIS calendaire pour un compte
+//    CONNECTÉ sans abonnement : un lien créé sans abonnement fonctionne 30 j puis
+//    expire → moteur de conversion. Au-delà de 2/mois, création d'essai refusée.
 //  · Le quota (3 / 25 / illimité) borne les liens PERMANENTS (sans expiration).
 //    À la souscription, les liens d'essai actifs deviennent permanents dans la
 //    limite du quota. En cas de dépassement (downgrade), les liens en trop (les
@@ -23,7 +24,7 @@
 import { fmtPrice } from "./plans"
 
 // "none" = aucun abonnement QR Dynamique (l'utilisateur ne peut créer que des
-// liens d'ESSAI 7 j). Les trois autres = paliers payants.
+// liens d'ESSAI 30 j, max 2/mois). Les trois autres = paliers payants.
 export type DynPlanId = "none" | "basique" | "pro" | "business"
 
 // Fonctionnalités débloquées par palier (gating).
@@ -50,7 +51,10 @@ export interface DynPlan {
 }
 
 // Essai gratuit par lien (jours). Source unique, réutilisée par l'API qr-instant.
-export const DYN_TRIAL_DAYS = 7
+export const DYN_TRIAL_DAYS = 30
+// Nombre d'essais dynamiques gratuits par MOIS calendaire pour un compte sans
+// abonnement « QR Dynamique ». Au-delà, la création d'un essai est refusée (upsell).
+export const DYN_FREE_TRIALS_PER_MONTH = 2
 
 const NONE_CAPS: DynCaps = { detailedAnalytics: false, brandedDomain: false, linkSecurity: false, bulk: false, apiTeam: false }
 
@@ -59,15 +63,15 @@ export const DYN_PLANS: Record<DynPlanId, DynPlan> = {
     id: "none",
     label: "Sans abonnement",
     color: "#8A8478",
-    description: "Essayez un lien dynamique 7 jours",
+    description: "Essayez un lien dynamique 30 jours",
     priceMonthly: 0,
     priceAnnual: 0,
     badge: null,
-    qrLimit: 0, // aucun lien permanent : seuls les liens d'essai 7 j sont possibles
+    qrLimit: 0, // aucun lien permanent : seuls des essais 30 j (max 2/mois) sont possibles
     caps: NONE_CAPS,
-    features: ["Essai 7 jours par lien", "Le lien expire ensuite", "Stats basiques"],
+    features: ["2 essais / mois", "Essai 30 jours par lien", "Le lien expire ensuite", "Stats basiques"],
     perks: [
-      { text: "Créer des liens dynamiques en essai 7 j", included: true },
+      { text: "2 liens dynamiques en essai (30 j) par mois", included: true },
       { text: "Modifier la destination pendant l'essai", included: true },
       { text: "Liens permanents", included: false },
       { text: "Statistiques détaillées", included: false },
@@ -168,7 +172,7 @@ export const minDynPlanFor = (cap: keyof DynCaps): DynPlanId =>
   DYN_PAID_PLANS.find(p => p.caps[cap])?.id ?? "business"
 
 // Décide si un NOUVEAU lien dynamique doit être PERMANENT (sans expiration) ou en
-// ESSAI 7 j. Permanent seulement si l'utilisateur est abonné ET sous son quota de
+// ESSAI 30 j. Permanent seulement si l'utilisateur est abonné ET sous son quota de
 // liens permanents. Non abonné (none, quota 0) -> toujours en essai.
 // `currentPermanent` = nombre de liens permanents déjà actifs pour cet utilisateur.
 export function dynCanCreatePermanent(planId: string | null | undefined, currentPermanent: number): boolean {

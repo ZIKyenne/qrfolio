@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import {
-  DYN_PLANS, DYN_PLAN_ORDER, DYN_PAID_PLANS, DYN_PLAN_RANK, DYN_TRIAL_DAYS,
+  DYN_PLANS, DYN_PLAN_ORDER, DYN_PAID_PLANS, DYN_PLAN_RANK, DYN_TRIAL_DAYS, DYN_FREE_TRIALS_PER_MONTH,
   getDynPlan, dynQrLimit, isDynSubscribed, dynCaps,
   canDynDetailedAnalytics, canDynBrandedDomain, canDynLinkSecurity, canDynBulk, canDynApiTeam,
   minDynPlanFor, dynMonthlyLabel, dynAnnualTotal, dynAnnualTotalLabel, dynCanCreatePermanent,
@@ -13,8 +13,9 @@ describe("dynamicPlans — structure", () => {
     expect(DYN_PAID_PLANS.every(p => p.id !== "none")).toBe(true) // none jamais dans la grille de prix
   })
 
-  it("essai = 7 jours", () => {
-    expect(DYN_TRIAL_DAYS).toBe(7)
+  it("essai = 30 jours, plafonné à 2/mois pour les non-abonnés", () => {
+    expect(DYN_TRIAL_DAYS).toBe(30)
+    expect(DYN_FREE_TRIALS_PER_MONTH).toBe(2)
   })
 
   it("rangs ordonnés none < basique < pro < business", () => {

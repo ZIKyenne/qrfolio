@@ -68,7 +68,7 @@ const SUBJECTS = [
 const FAQ = [
   {
     q: "Puis-je utiliser QRowg gratuitement ?",
-    a: "Oui. Le plan Free donne accès à 3 pages, 200 vues/mois et 3 QR codes basiques — sans carte bancaire.",
+    a: "Oui. Le plan Free donne accès à 3 pages, 200 vues/mois, 1 QR statique permanent et 2 QR dynamiques/mois — sans carte bancaire.",
   },
   {
     q: "Puis-je connecter mon propre domaine ?",

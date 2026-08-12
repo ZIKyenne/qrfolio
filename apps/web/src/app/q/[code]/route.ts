@@ -164,7 +164,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     if (qrErr) console.error("[qr-redirect] erreur lookup", code, qrErr.message)
 
     // ── Lien instantané DYNAMIQUE (table `instant_qrs`) : résolu ici via l'admin client (hors RLS).
-    // Même logique de statut/expiration que les qr_codes (essai 7 j par lien → status "expired").
+    // Même logique de statut/expiration que les qr_codes (essai 30 j par lien → status "expired").
     if (!qr) {
       const htmlNoStore = (html: string, status: number) => new NextResponse(html, {
         status, headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store, must-revalidate" },

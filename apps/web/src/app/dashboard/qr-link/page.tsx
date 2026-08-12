@@ -4,7 +4,7 @@
 // Rendu 100% local (qr-code-styling via qrRender), sans API. Deux sorties :
 //  · TÉLÉCHARGEMENT PNG/SVG : fichier statique (contenu encodé directement).
 //  · COMPTE : QR DYNAMIQUE (lien/texte/appel/email → redirigé /q/<code>, modifiable,
-//    suivi des scans, essai 7 j) ou STATIQUE (WiFi/Contact → hors ligne, sans expiration).
+//    suivi des scans, essai 30 j) ou STATIQUE (WiFi/Contact → hors ligne, sans expiration).
 import { useMemo, useRef, useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity, Pencil, Lock, Pause, Play } from "lucide-react"
@@ -223,7 +223,7 @@ export default function QrLinkPage() {
     } catch {}
   }
 
-  // QR DYNAMIQUE (lien/texte/appel/email) : le QR encode qrowg.com/q/<code>, expirable (essai 7 j).
+  // QR DYNAMIQUE (lien/texte/appel/email) : le QR encode qrowg.com/q/<code>, expirable (essai 30 j).
   async function createDynamic() {
     if (!ready || saveBusy) return
     setSaveBusy(true); setSaveMsg(null)
@@ -234,7 +234,7 @@ export default function QrLinkPage() {
         body: JSON.stringify({ kind: qrType, dynamic: true, payload: data, dest: qrType === "link" ? url : data, label: previewLabel || null, inputs, style: { fg, bg, ecc: effectiveEcc, styleKey } }),
       })
       const d = await res.json().catch(() => ({}))
-      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setDetail(d.item); setSaveMsg({ text: "QR créé ✓ — essai 7 jours", ok: true }) }
+      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setDetail(d.item); setSaveMsg({ text: "QR créé ✓ — essai 30 jours", ok: true }) }
       else setSaveMsg({ text: d.error || "Création impossible", ok: false })
     } catch { setSaveMsg({ text: "Erreur réseau", ok: false }) }
     finally { setSaveBusy(false); setTimeout(() => setSaveMsg(null), 4000) }
@@ -307,7 +307,7 @@ export default function QrLinkPage() {
     finally { setBulkBusy(false) }
   }
 
-  // Statut lisible d'un lien dynamique (essai 7 j par lien).
+  // Statut lisible d'un lien dynamique (essai 30 j par lien).
   function dynStatus(s: any): { label: string; color: string; expired: boolean } {
     if (s.status === "expired") return { label: "Expiré", color: "#FF6B6B", expired: true }
     if (s.status === "paused") return { label: "En pause", color: "#FBBF24", expired: false }
@@ -409,7 +409,7 @@ export default function QrLinkPage() {
           <span style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(201,168,76,0.18)", border: "1px solid rgba(201,168,76,0.4)", display: "flex", alignItems: "center", justifyContent: "center", color: G, flexShrink: 0 }}><Zap size={19} /></span>
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ display: "block", color: "#F5F0E8", fontSize: 13.5, fontWeight: 800 }}>Passez au QR Dynamique</span>
-            <span style={{ display: "block", color: MUTED, fontSize: 11.5, lineHeight: 1.4 }}>Modifiez la destination après impression + suivez les scans. Essai 7 jours par lien.</span>
+            <span style={{ display: "block", color: MUTED, fontSize: 11.5, lineHeight: 1.4 }}>Modifiez la destination après impression + suivez les scans. 2 essais gratuits / mois, 30 jours chacun.</span>
           </span>
           <span style={{ color: G, fontSize: 20, fontWeight: 700, flexShrink: 0 }}>→</span>
         </Link>
@@ -610,10 +610,10 @@ export default function QrLinkPage() {
       <div style={{ ...card, marginBottom: hasSaved || history.length > 0 ? 4 : 14 }}>
         {dynamic ? (<>
           <Button onClick={createDynamic} disabled={!ready || saveBusy} size="lg" leftIcon={<Zap size={17} />} style={{ width: "100%" }}>
-            {saveBusy ? "Création…" : "Créer le QR dynamique — essai 7 j"}
+            {saveBusy ? "Création…" : "Créer le QR dynamique — essai 30 j"}
           </Button>
           <p style={{ color: MUTED, fontSize: 11.5, margin: "9px 2px 0", lineHeight: 1.5 }}>
-            Modifiable après impression + suivi des scans. Gratuit <strong style={{ color: "#FBBF24" }}>7 jours</strong>, puis <Link href="/dashboard/qr-dynamique" style={{ color: G, fontWeight: 700, textDecoration: "none" }}>un abonnement</Link> pour rester actif.
+            Modifiable après impression + suivi des scans. Gratuit <strong style={{ color: "#FBBF24" }}>30 jours</strong> (2/mois), puis <Link href="/dashboard/qr-dynamique" style={{ color: G, fontWeight: 700, textDecoration: "none" }}>un abonnement</Link> pour rester actif.
             {qrType === "text" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 3 }}>Ouvre une page au scan (Internet requis).</span>}
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "15px 0 13px" }}>

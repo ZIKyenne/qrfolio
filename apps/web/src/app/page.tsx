@@ -2940,7 +2940,7 @@ function UseCasesSection() {
 const FAQ_ITEMS = [
   { q:"Le QR code reste-t-il le même si je modifie ma page ?",            a:"Oui, c'est tout l'intérêt d'un QR code dynamique : vous modifiez votre page autant de fois que vous voulez, et le QR code déjà imprimé reste identique et continue de fonctionner." },
   { q:"Qu'est-ce qu'une carte de visite numérique QRowg ?",             a:"Une page mobile professionnelle qui regroupe vos informations, vos liens et vos boutons d'action (appel, WhatsApp, réservation…). On y accède en scannant votre QR code ou via un simple lien." },
-  { q:"Puis-je utiliser QRowg gratuitement ?",                          a:"Oui. Le plan gratuit donne accès à 3 pages, 200 vues par mois et 3 QR codes. Aucune carte bancaire n'est demandée pour commencer." },
+  { q:"Puis-je utiliser QRowg gratuitement ?",                          a:"Oui. Le plan gratuit donne accès à 3 pages, 200 vues par mois, 1 QR statique permanent et 2 QR dynamiques par mois. Aucune carte bancaire n'est demandée pour commencer." },
   { q:"Puis-je connecter mon propre nom de domaine ?",                    a:"Oui, à partir du plan Pro. Vous pouvez utiliser un sous-domaine personnalisé (ex. : carte.votresite.fr) pour une image vraiment professionnelle." },
   { q:"Est-ce que je vois les statistiques de scans ?",                   a:"Oui. Vues, scans, appareils, sources de trafic et pages les plus consultées. Statistiques de base sur le plan gratuit, statistiques avancées sur Pro." },
   { q:"Puis-je retirer la mention QRowg de ma page ?",                  a:"Oui, dès le plan Starter : votre page affiche uniquement votre marque. Sur le plan gratuit, une mention discrète apparaît en bas de page." },

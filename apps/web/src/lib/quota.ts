@@ -66,6 +66,21 @@ export async function countPermanentDynamicQrs(supabase: any, userId: string): P
   return count ?? 0
 }
 
+// Nombre de QR DYNAMIQUES d'ESSAI créés depuis le début du MOIS calendaire courant
+// (UTC). Un compte sans abonnement « QR Dynamique » est plafonné à
+// DYN_FREE_TRIALS_PER_MONTH essais/mois. Essai = dynamique avec expires_at renseigné.
+export async function countDynamicTrialsThisMonth(supabase: any, userId: string, now: Date = new Date()): Promise<number> {
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
+  const { count } = await supabase
+    .from("instant_qrs")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("dynamic", true)
+    .not("expires_at", "is", null)
+    .gte("created_at", start)
+  return count ?? 0
+}
+
 // Statut initial d'un nouveau QR : actif si le quota du plan le permet, sinon
 // brouillon (créé quand même, mais non visitable tant qu'un slot n'est pas libéré).
 export async function initialQrStatus(

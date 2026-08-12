@@ -1,15 +1,15 @@
 // /api/qr-instant — CRUD des QR instantanés persistants (lien, WiFi, texte,
 // contact, appel, email). STATIQUES par défaut (contenu encodé directement) ;
 // les LIENS peuvent être DYNAMIQUES (redirigés par /q/[code], destination
-// modifiable, essai 7 jours par lien). Stockés dans `instant_qrs`. Consomme le
-// quota `limits.qr` (distinct des pages).
+// modifiable, essai 30 jours par lien, max 2/mois sans abonnement). Stockés dans
+// `instant_qrs`. Consomme le quota `limits.qr` (distinct des pages).
 
 import { NextRequest, NextResponse } from "next/server"
 import { serverError } from "@/lib/apiError"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { qrLimit } from "@/lib/plans"
-import { countInstantQrs, countPermanentDynamicQrs } from "@/lib/quota"
-import { isDynSubscribed, dynCanCreatePermanent, DYN_TRIAL_DAYS, canDynLinkSecurity, dynQrLimit } from "@/lib/dynamicPlans"
+import { countInstantQrs, countPermanentDynamicQrs, countDynamicTrialsThisMonth } from "@/lib/quota"
+import { isDynSubscribed, dynCanCreatePermanent, DYN_TRIAL_DAYS, DYN_FREE_TRIALS_PER_MONTH, canDynLinkSecurity, dynQrLimit } from "@/lib/dynamicPlans"
 import { hashLinkPassword } from "@/lib/linkPassword"
 import { uniqueShortCode } from "@/lib/shortCode"
 
@@ -26,7 +26,7 @@ function pub(row: any): any {
   return { ...rest, has_password: !!password_hash }
 }
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
-const TRIAL_MS = DYN_TRIAL_DAYS * 24 * 60 * 60 * 1000 // essai gratuit : 7 jours par lien
+const TRIAL_MS = DYN_TRIAL_DAYS * 24 * 60 * 60 * 1000 // essai gratuit : 30 jours par lien
 
 // Normalise + durcit une destination de lien dynamique : http(s) uniquement.
 function safeDestUrl(raw: string): string | null {
@@ -82,10 +82,21 @@ export async function POST(req: NextRequest) {
   const inputs = body?.inputs && typeof body.inputs === "object" ? body.inputs : {}
   const style = body?.style && typeof body.style === "object" ? body.style : {}
 
-  // ── QR DYNAMIQUE (TOUS les types) : le QR encode /q/<code>, expirable (essai 7 j par QR). ──
+  // ── QR DYNAMIQUE (TOUS les types) : le QR encode /q/<code>, expirable (essai 30 j par QR). ──
   // dest_url = cible/contenu résolu par /q/[code] : lien→URL, appel→tel:, email→mailto:,
   // texte/wifi/contact→contenu encodé (rendu sur une page). Les 3 derniers ne marchent plus hors ligne.
   if (wantsDynamic) {
+    // Compte SANS abonnement « QR Dynamique » : plafonné à N essais par mois calendaire.
+    // Les abonnés ne sont pas concernés (ils créent des liens permanents dans leur quota).
+    if (!isDynSubscribed(prof?.dyn_plan)) {
+      const usedThisMonth = await countDynamicTrialsThisMonth(supabase, user.id)
+      if (usedThisMonth >= DYN_FREE_TRIALS_PER_MONTH) {
+        return NextResponse.json(
+          { error: `Limite de ${DYN_FREE_TRIALS_PER_MONTH} QR dynamiques gratuits atteinte ce mois-ci. Passez à un abonnement QR Dynamique pour en créer plus et les garder actifs après 30 jours.`, upgrade: true },
+          { status: 403 },
+        )
+      }
+    }
     let dest: string
     if (kind === "link") {
       const d = safeDestUrl(String(body?.dest || body?.inputs?.url || payload || ""))
@@ -98,8 +109,8 @@ export async function POST(req: NextRequest) {
     let short_code: string
     try { short_code = await uniqueShortCode(supabase) } catch (e) { return serverError("qr-instant", e) }
     // PERMANENT si l'utilisateur a un abonnement « QR Dynamique » ET reste sous son
-    // quota de liens permanents ; sinon ESSAI 7 j (expires_at renseigné). L'essai est
-    // ouvert à tout utilisateur connecté (moteur de conversion).
+    // quota de liens permanents ; sinon ESSAI 30 j (expires_at renseigné, plafonné
+    // à 2/mois ci-dessus). Moteur de conversion vers l'abonnement dédié.
     let permanent = false
     if (isDynSubscribed(prof?.dyn_plan)) {
       const currentPermanent = await countPermanentDynamicQrs(supabase, user.id)

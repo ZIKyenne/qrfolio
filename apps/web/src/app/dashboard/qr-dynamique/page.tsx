@@ -144,7 +144,7 @@ export default function QrDynamiquePage() {
       {/* Réassurance */}
       <div style={{ ...card, marginTop: 22, display: "flex", flexWrap: "wrap", gap: 18, justifyContent: "center" }}>
         {[
-          { t: "Essai 7 j par lien", d: "Testez sans payer, chaque lien est gratuit une semaine." },
+          { t: "2 essais / mois, 30 j", d: "Testez sans payer : 2 liens dynamiques gratuits par mois, 30 jours chacun." },
           { t: "Modifiable après impression", d: "Changez la destination sans réimprimer le QR." },
           { t: "Scans illimités", d: "Aucun plafond de trafic, quel que soit le palier." },
         ].map((f, i) => (

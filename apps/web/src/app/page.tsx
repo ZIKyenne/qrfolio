@@ -1459,13 +1459,13 @@ function QRStudioLive() {
               ))}
             </div>
           </div>
-          <a href="/auth/signup" style={{
+          <a href="/generateur-qr-code" style={{
             display: "inline-flex", alignItems: "center", gap: 8, alignSelf: "flex-start", marginTop: 4,
             background: "linear-gradient(135deg, #EBCE72, #C9A84C)", color: "#0A0A0A",
             fontWeight: 700, fontSize: 15, padding: "13px 24px", borderRadius: 12,
             textDecoration: "none", boxShadow: "0 8px 24px rgba(201,168,76,0.25)",
             fontFamily: "'DM Sans', system-ui, sans-serif",
-          }}>Créer le mien <span aria-hidden="true">→</span></a>
+          }}>Créer mon QR code gratuit <span aria-hidden="true">→</span></a>
         </div>
 
         {/* Aperçu live */}
@@ -3547,7 +3547,7 @@ export default function HomePage() {
                 }}>
                 Créer ma page gratuitement <span aria-hidden="true">→</span>
               </Link>
-              <Link href="#how" style={{
+              <Link href="#story" style={{
                 background: "transparent",
                 border: "1px solid rgba(201,168,76,0.2)",
                 color: "rgba(245,240,232,0.7)", textDecoration: "none", fontSize: 15,

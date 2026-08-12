@@ -135,6 +135,21 @@ export function pageMmOf(
   return { w, h }
 }
 
+// -----------------------------------------------------------------------------
+// GUIDES D'ÉCRAN — géométrie du repère « zone de sécurité » affiché sur le canvas.
+// Pur (px) -> testable ; l'adaptateur (PrintStudio) dessine le Rect/Ellipse.
+// -----------------------------------------------------------------------------
+export type OverlayGuide = { insetPx: number; shape: SupportShape }
+
+// Repère de marge de sécurité pour un support, en px, selon la largeur du canvas.
+// Inset = safeMarginMm converti via la largeur physique ; repli 4 % en format écran.
+export function safeAreaGuide(support: PrintSupport | undefined, canvasW: number): OverlayGuide {
+  const mm = support?.mm ?? 0
+  const safeMm = support?.safeMarginMm ?? 5
+  const insetPx = mm > 0 ? Math.round((safeMm / mm) * canvasW) : Math.round(canvasW * 0.04)
+  return { insetPx: Math.max(0, insetPx), shape: support?.shape ?? "rect" }
+}
+
 export type SheetImpoInput = {
   item: PrintSupport   // support à répéter (pièce)
   sheet: PrintSupport  // support-planche (A4, A3, US Letter…)

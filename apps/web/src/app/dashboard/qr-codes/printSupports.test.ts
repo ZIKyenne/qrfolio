@@ -13,6 +13,7 @@ import {
   pageMmOf,
   canImpose,
   sheetImposition,
+  safeAreaGuide,
 } from "./printSupports"
 import { exportPlan } from "./exportPlan"
 
@@ -199,6 +200,34 @@ describe("printSupports — planches (imposition N-up)", () => {
       expect(c.x).toBeGreaterThanOrEqual(5)
       expect(c.y).toBeGreaterThanOrEqual(5)
     }
+  })
+})
+
+describe("printSupports — repère de zone de sécurité", () => {
+  it("inset dérivé de la marge de sécurité du support (A4 = 5 mm)", () => {
+    const g = safeAreaGuide(supportById("a4"), 800)
+    expect(g.insetPx).toBe(Math.round((5 / 210) * 800))
+    expect(g.shape).toBe("rect")
+  })
+
+  it("chaque support utilise SA marge (carte = 3 mm, pas 5)", () => {
+    const g = safeAreaGuide(supportById("carte"), 800)
+    expect(g.insetPx).toBe(Math.round((3 / 85) * 800))
+  })
+
+  it("support rond -> shape round (sticker rond)", () => {
+    expect(safeAreaGuide(supportById("sticker_round"), 600).shape).toBe("round")
+  })
+
+  it("format écran (mm 0) -> repli 4 %", () => {
+    const g = safeAreaGuide(supportById("story"), 1000)
+    expect(g.insetPx).toBe(40)
+  })
+
+  it("support inconnu -> repli sûr (5 mm impossible sans mm -> 4 %)", () => {
+    const g = safeAreaGuide(undefined, 500)
+    expect(g.insetPx).toBe(20) // 4 % de 500
+    expect(g.shape).toBe("rect")
   })
 })
 

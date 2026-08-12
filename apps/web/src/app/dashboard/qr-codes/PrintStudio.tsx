@@ -37,7 +37,7 @@ import { qrScannability, scanLevelColor } from "./qrScannability"
 import { selKind, mobileContextTools } from "./mobileContextTools"
 import { stackedAt, boxCenter, type LayerBox } from "./stackedObjects"
 import { exportPlan, type ExportType } from "./exportPlan"
-import { legacyFormats, legacyFormatMm, supportById, sheetImposition, canImpose } from "./printSupports"
+import { legacyFormats, legacyFormatMm, supportById, sheetImposition, canImpose, safeAreaGuide } from "./printSupports"
 import { dist as gDist, LONG_PRESS_MS, MOVE_TOLERANCE } from "./touchGestures"
 import { showSection, coerceMode, type UiMode } from "./uiComplexity"
 import BigSlider from "./BigSlider"
@@ -864,7 +864,7 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   const qrUrlRef = useRef(qrDataUrl)
   const vGuideRef = useRef<fabric.Line | null>(null)
   const hGuideRef = useRef<fabric.Line | null>(null)
-  const safeAreaRef = useRef<fabric.Rect | null>(null)   // repère de marge de sécurité (overlay)
+  const safeAreaRef = useRef<fabric.Object | null>(null) // repère de marge de sécurité (overlay ; Rect ou Ellipse)
   const clipRef = useRef<fabric.Object | null>(null) // presse-papier (copier/coller)
   const histRef = useRef<{ stack: string[]; i: number; lock: boolean }>({ stack: [], i: -1, lock: false })
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -2696,13 +2696,16 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
     if (safeAreaRef.current) { fc.remove(safeAreaRef.current); safeAreaRef.current = null }
     if (showSafe) {
       const d = editDims(format)
-      const mm = FORMAT_MM[format] || 0
-      const inset = mm > 0 ? Math.round((5 / mm) * d.w) : Math.round(d.w * 0.04)  // 5 mm, ou 4 % en format écran
-      const rect = new fabric.Rect({
-        left: inset, top: inset, width: d.w - 2 * inset, height: d.h - 2 * inset,
-        fill: "transparent", stroke: G, strokeWidth: 1, strokeDashArray: [6, 5],
+      // Marge propre à CHAQUE support (catalogue) + forme : cercle pour les stickers ronds.
+      const g = safeAreaGuide(supportById(format), d.w)
+      const inset = g.insetPx
+      const common = {
+        fill: "transparent", stroke: G, strokeWidth: 1, strokeDashArray: [6, 5] as number[],
         selectable: false, evented: false, excludeFromExport: true, hoverCursor: "default", objectCaching: false,
-      })
+      }
+      const rect: fabric.Object = g.shape === "round"
+        ? new fabric.Ellipse({ left: inset, top: inset, rx: Math.max(1, (d.w - 2 * inset) / 2), ry: Math.max(1, (d.h - 2 * inset) / 2), ...common })
+        : new fabric.Rect({ left: inset, top: inset, width: d.w - 2 * inset, height: d.h - 2 * inset, ...common })
       ;(rect as any).isGuide = true; (rect as any).isOverlay = true
       fc.add(rect); fc.bringToFront(rect)
       safeAreaRef.current = rect

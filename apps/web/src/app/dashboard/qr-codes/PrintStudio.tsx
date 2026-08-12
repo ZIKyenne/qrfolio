@@ -37,7 +37,7 @@ import { qrScannability, scanLevelColor } from "./qrScannability"
 import { selKind, mobileContextTools } from "./mobileContextTools"
 import { stackedAt, boxCenter, type LayerBox } from "./stackedObjects"
 import { exportPlan, type ExportType } from "./exportPlan"
-import { legacyFormats, legacyFormatMm } from "./printSupports"
+import { legacyFormats, legacyFormatMm, supportById, sheetImposition, canImpose } from "./printSupports"
 import { dist as gDist, LONG_PRESS_MS, MOVE_TOLERANCE } from "./touchGestures"
 import { showSection, coerceMode, type UiMode } from "./uiComplexity"
 import BigSlider from "./BigSlider"
@@ -892,6 +892,9 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   const [expMarks, setExpMarks] = useState(false)
   const [expWiz, setExpWiz] = useState(-1)                 // assistant d'export : etape 0..2, -1 = ferme
   const [wizType, setWizType] = useState<ExportType>("png") // type de fichier choisi dans l'assistant
+  const [sheetMode, setSheetMode] = useState(false)         // export « planche » : plusieurs exemplaires par feuille (PDF)
+  const [sheetOf, setSheetOf]     = useState<string>("a4")  // support-planche (A4/A3/US Letter)
+  const [sheetCount, setSheetCount] = useState(9)           // nombre d'exemplaires à imposer
   const [mockOpen, setMockOpen] = useState(false)
   const [mockEnv, setMockEnv] = useState<"wall" | "table" | "window" | "desk" | "cadre" | "counter" | "main" | "carte">("wall")
   const mockTouchX = useRef<number | null>(null) // swipe entre décors de l'aperçu
@@ -3704,6 +3707,43 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
       toast.error("Export PDF impossible. Si une image importée bloque l'export, remplacez-la.")
     } finally { setExporting(false); setExpOpen(false) }
   }
+  // Export PLANCHE : la composition courante répétée N fois sur une feuille (A4/A3/
+  // US Letter), grille centrée prête à massicoter. Réutilise le moteur pur testé
+  // sheetImposition (positions en mm) ; on rend la composition UNE fois en PNG puis
+  // on la place à chaque cellule. Réservé Pro (comme l'export PDF pro).
+  const exportCompositionSheet = async () => {
+    if (!isPro) { onUpsell?.("l'export planche (PDF pro)", "pro"); return }
+    const fc = fcRef.current; if (!fc) return
+    const item = supportById(format)
+    const sheet = supportById(sheetOf)
+    if (!item || !sheet || !canImpose(item, sheet)) {
+      toast.error("Ce format ne peut pas être imposé en planche (choisis un support imprimable).")
+      return
+    }
+    setExporting(true)
+    try {
+      prepExport(fc)
+      // Rendu de la composition en PNG (une seule fois), à ~300 DPI de la pièce.
+      const pw = FORMATS[format].exportW
+      const url = withBaseZoom(fc, base => fc.toDataURL({ format: "png", multiplier: pw / base.w }))
+      const lay = sheetImposition({ item, sheet, count: Math.max(1, Math.floor(sheetCount)) })
+      const { jsPDF } = await import("jspdf")
+      const sheetH = Math.round((sheet.mm / sheet.ratio) * 10) / 10
+      const pdf = new jsPDF({ unit: "mm", orientation: sheet.mm > sheetH ? "l" : "p", format: [sheet.mm, sheetH] })
+      let curPage = 0
+      for (const c of lay.cells) {
+        if (c.page > curPage) { pdf.addPage(); curPage = c.page }
+        pdf.addImage(url, "PNG", c.x, c.y, lay.cellW, lay.cellH)
+        if (expMarks) {
+          pdf.setDrawColor(180); pdf.setLineWidth(0.1)
+          pdf.rect(c.x, c.y, lay.cellW, lay.cellH) // contour de coupe léger
+        }
+      }
+      pdf.save(`qrowg-planche-${format}-sur-${sheetOf}-${lay.cells.length}.pdf`)
+    } catch {
+      toast.error("Export planche impossible. Si une image importée bloque l'export, remplacez-la.")
+    } finally { setExporting(false); setExpOpen(false) }
+  }
   // Export SVG VECTORIEL de la composition (affiche redimensionnable sans perte).
   // Le QR est injecte en VECTORIEL (genere en SVG via regenQr) a la position exacte
   // du QR raster, qu'on exclut de toSVG. Repli gracieux sur le QR raster si le SVG du
@@ -3748,7 +3788,8 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
   }
   // Lance l'export choisi dans l'assistant (etape 3) puis referme l'assistant.
   const runExport = () => {
-    if (wizType === "pdf") { void exportPdfPro() }
+    if (wizType === "pdf" && sheetMode) { void exportCompositionSheet() }
+    else if (wizType === "pdf") { void exportPdfPro() }
     else if (wizType === "svg") { void exportSvg() }
     else { exportImage(wizType) }
     setExpWiz(-1)
@@ -3982,7 +4023,11 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
         const plan = exportPlan({ format, exportW: FORMATS[format].exportW, ratio: FORMATS[format].ratio, widthMm: FORMAT_MM[format] || 0, dpi: expDpi, type: wizType, isPro })
         const steps = ["Format", "Qualité", "Télécharger"]
         const chip = (active: boolean) => ({ padding: "9px 13px", borderRadius: 10, border: `1px solid ${active ? G : "rgba(255,255,255,0.16)"}`, background: active ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.05)", color: active ? G : "#ECE8E0", fontSize: 13, fontWeight: 700, cursor: "pointer", minHeight: 44 }) as const
-        const recap: [string, string][] = [["Format", FORMATS[format].label], ["Fichier", plan.filename], ["Dimensions", `${plan.widthPx} × ${plan.heightPx} px`], ...(plan.widthMm ? [["Taille imprimée", `${plan.widthMm} × ${plan.heightMm} mm`] as [string, string]] : []), ["Qualité", plan.quality]]
+        const sheetOn = wizType === "pdf" && sheetMode && (FORMAT_MM[format] || 0) > 0
+        const sheetPrev = sheetOn ? (() => { const it = supportById(format), sh = supportById(sheetOf); return (it && sh) ? sheetImposition({ item: it, sheet: sh, count: Math.max(1, Math.floor(sheetCount)) }) : null })() : null
+        const recap: [string, string][] = sheetOn && sheetPrev
+          ? [["Format", FORMATS[format].label], ["Planche", `${supportById(sheetOf)?.label ?? sheetOf} · ${sheetPrev.perPage}/feuille`], ["Exemplaires", `${sheetCount} · ${sheetPrev.pages} feuille${sheetPrev.pages > 1 ? "s" : ""}`], ["Qualité", plan.quality]]
+          : [["Format", FORMATS[format].label], ["Fichier", plan.filename], ["Dimensions", `${plan.widthPx} × ${plan.heightPx} px`], ...(plan.widthMm ? [["Taille imprimée", `${plan.widthMm} × ${plan.heightMm} mm`] as [string, string]] : []), ["Qualité", plan.quality]]
         return (
           <div onClick={() => setExpWiz(-1)} style={{ position: "fixed", inset: 0, zIndex: 72, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(2px)", display: "flex", alignItems: landscapeMobile ? "flex-end" : "center", justifyContent: "center", padding: landscapeMobile ? 0 : 24 }}>
             <div onClick={e => e.stopPropagation()} className="ps-msheet" style={{ width: "100%", maxWidth: landscapeMobile ? "none" : 460, maxHeight: "88vh", overflowY: "auto", background: "#17171B", border: "1px solid rgba(255,255,255,0.08)", borderRadius: landscapeMobile ? "22px 22px 0 0" : 20, padding: "16px 16px calc(16px + env(safe-area-inset-bottom))", boxShadow: "0 -14px 44px rgba(0,0,0,0.5)", animation: "psSheetUp .26s var(--mo-ease-standard)" }}>
@@ -4028,6 +4073,40 @@ export default function PrintStudio({ qrId, qrDataUrl, userPlan, onClose, onUpse
                       Traits de coupe + fond perdu
                     </label>
                   )}
+                  {wizType === "pdf" && (FORMAT_MM[format] || 0) > 0 && (() => {
+                    const itemSup = supportById(format)
+                    const sheetSup = supportById(sheetOf)
+                    const prev = (sheetMode && itemSup && sheetSup) ? sheetImposition({ item: itemSup, sheet: sheetSup, count: Math.max(1, Math.floor(sheetCount)) }) : null
+                    return (
+                      <div style={{ marginTop: 4, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 2px", color: "#ECE8E0", fontSize: 13, cursor: "pointer" }}>
+                          <input type="checkbox" checked={sheetMode} onChange={e => setSheetMode(e.target.checked)} style={{ accentColor: G, width: 18, height: 18, flexShrink: 0 }} />
+                          Imprimer en planche (plusieurs exemplaires par feuille)
+                        </label>
+                        {sheetMode && (
+                          <div style={{ paddingLeft: 2 }}>
+                            <p className="ps-sec-label" style={{ marginTop: 8 }}>Feuille</p>
+                            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                              {([["a4", "A4"], ["a3", "A3"], ["us_letter", "US Letter"]] as [string, string][]).map(([id, l]) => (
+                                <button key={id} type="button" onClick={() => setSheetOf(id)} style={{ ...chip(sheetOf === id), flex: 1 }}>{l}</button>
+                              ))}
+                            </div>
+                            <p className="ps-sec-label">Nombre d'exemplaires</p>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              {[4, 6, 9, 12, 24].map(n => (
+                                <button key={n} type="button" onClick={() => setSheetCount(n)} style={{ ...chip(sheetCount === n), flex: 1, minHeight: 40 }}>{n}</button>
+                              ))}
+                            </div>
+                            {prev && (
+                              <p style={{ color: "#9A9384", fontSize: 11, marginTop: 10, lineHeight: 1.5 }}>
+                                {prev.perPage} par feuille · {prev.pages} feuille{prev.pages > 1 ? "s" : ""} ({prev.cols} × {prev.rows}).
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
                   <div style={{ marginTop: 10, padding: "10px 12px", background: "rgba(255,255,255,0.05)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)" }}>
                     <span style={{ color: "#C9A84C", fontSize: 12, fontWeight: 800 }}>{plan.quality}</span>
                     <span style={{ color: "#ECE8E0", fontSize: 12 }}> · {plan.widthPx} × {plan.heightPx} px{plan.widthMm ? ` · ${plan.widthMm} × ${plan.heightMm} mm` : ""}</span>

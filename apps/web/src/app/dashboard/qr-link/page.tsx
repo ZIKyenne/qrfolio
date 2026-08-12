@@ -112,7 +112,6 @@ export default function QrLinkPage() {
   // Palier « QR Dynamique » (gating sécurité/stats/masse + bandeau d'upsell). Démarre INCONNU ("")
   // et non "none" : évite d'afficher le bandeau « Passez au QR Dynamique » aux abonnés avant le fetch.
   const [dynPlan, setDynPlan] = useState<string>("")
-  const [plan, setPlan] = useState<string>("")            // plan principal (free/starter/…) : gate le téléchargement statique du plan gratuit
   const [dlSig, setDlSig] = useState<string | null>(null) // design déjà consommé au téléchargement (évite de reconsommer PNG→SVG du même design)
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveMsg, setSaveMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -151,7 +150,7 @@ export default function QrLinkPage() {
   const [history, setHistory] = useState<QrHistEntry[]>([])
   useEffect(() => { try { const h = JSON.parse(localStorage.getItem("qrfolio_qr_history") || "[]"); if (Array.isArray(h)) setHistory(h.slice(0, 8)) } catch {} }, [])
   // Charge les QR instantanés enregistrés (serveur).
-  useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.plan) setPlan(d.plan); if (d.dyn_plan) setDynPlan(d.dyn_plan) }).catch(() => {}) }, [])
+  useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.dyn_plan) setDynPlan(d.dyn_plan) }).catch(() => {}) }, [])
   const saveToHistory = () => setHistory(prev => {
     const entry: QrHistEntry = { type: qrType, url: url.trim(), ssid, wifiPass, wifiEnc, text: text.trim(), vc, phone, em, fg, bg, ecc, styleKey }
     const next = [entry, ...prev.filter(e => payload(e) !== data)].slice(0, 8)
@@ -191,12 +190,12 @@ export default function QrLinkPage() {
     if (!ready) return
     setBusy(ext)
     try {
-      // Plan GRATUIT : le QR statique est plafonné à 1 (anti-fuite : sinon on télécharge
-      // des statiques propres à l'infini). Au 1er téléchargement d'un design, on l'enregistre
-      // via l'API (qui applique le quota du plan) ; refus → upsell, pas de fichier. Re-télécharger
-      // le MÊME design (PNG puis SVG) ne reconsomme rien. Plans PAYANTS : téléchargement libre.
+      // Le QR statique téléchargé est enregistré via l'API, qui applique le quota du plan
+      // (gratuit 1, Starter 7, Pro 35, Business illimité). Au-delà → 403 : PAS de fichier,
+      // message + upsell (aucun QR propre hors quota, tous plans confondus). Re-télécharger
+      // le MÊME design (PNG puis SVG) ne reconsomme rien (mémo dlSig).
       const sig = `${qrType}|${data}`
-      if (plan === "free" && dlSig !== sig) {
+      if (dlSig !== sig) {
         const inputs = { type: qrType, url, ssid, wifiEnc, text, vc, phone, em }
         const res = await fetch("/api/qr-instant", {
           method: "POST", headers: { "Content-Type": "application/json" },
@@ -204,7 +203,7 @@ export default function QrLinkPage() {
         })
         if (res.status === 401) { window.location.href = "/auth/login"; return }
         const d = await res.json().catch(() => ({}))
-        if (!res.ok) { setSaveMsg({ text: d.error || "Limite de QR statique atteinte sur le plan gratuit.", ok: false }); setTimeout(() => setSaveMsg(null), 4500); return }
+        if (!res.ok) { setSaveMsg({ text: d.error || "Limite de QR statiques atteinte sur votre plan.", ok: false }); setTimeout(() => setSaveMsg(null), 4500); return }
         if (d.item) setSaved(prev => [d.item, ...prev])
         setDlSig(sig)
       }
@@ -732,7 +731,10 @@ export default function QrLinkPage() {
               <button key={i} title={`Réutiliser : ${histLabel(h)}`} onClick={() => loadEntry(h)}
                 style={{ flexShrink: 0, width: 98, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: 9, cursor: "pointer" }}>
                 <div style={{ background: "#fff", borderRadius: 9, padding: 6, lineHeight: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>
-                  <QRCanvas value={payload(h) || "https://qrowg.com"} size={58} fg={safeFg(h.fg)} bg="#FFFFFF" />
+                  <div style={{ position: "relative", lineHeight: 0, borderRadius: 4, overflow: "hidden" }}>
+                    <QRCanvas value={payload(h) || "https://qrowg.com"} size={58} fg={safeFg(h.fg)} bg="#FFFFFF" />
+                    <QrWatermark size={58} />
+                  </div>
                 </div>
                 <span style={{ color: MUTED, fontSize: 9.5, maxWidth: 86, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{histLabel(h)}</span>
               </button>

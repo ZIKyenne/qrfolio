@@ -15,8 +15,9 @@ export default function QrWatermark({ text = "QROWG", size = 210 }: { text?: str
   const wrap: CSSProperties = {
     position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none",
     borderRadius: "inherit", display: "flex", alignItems: "center", justifyContent: "center",
-    // Voile très léger : abaisse un peu le contraste des modules sans salir l'aperçu.
-    background: "rgba(255,255,255,0.14)",
+    // Voile : abaisse assez le contraste des modules pour que l'aperçu NE SE SCANNE PLUS,
+    // tout en restant lisible (aspect « aperçu protégé », pas la bouillie dense).
+    background: "rgba(255,255,255,0.42)",
   }
   const tile: CSSProperties = {
     position: "absolute", inset: "-30%", transform: "rotate(-30deg)",

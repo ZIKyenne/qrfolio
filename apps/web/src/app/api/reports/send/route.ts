@@ -6,6 +6,8 @@ import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { serverError } from "@/lib/apiError"
 import { escapeHtml as esc } from "@/lib/escapeHtml"
+import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
+import { EMAIL_FROM } from "@/lib/emailFrom"
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
@@ -33,118 +35,54 @@ function buildEmailHtml(params: {
     if (!g) return ""
     const color = g.up ? "#39FF8F" : "#FF6B6B"
     const arrow = g.up ? "↑" : "↓"
-    return `<span style="color:${color};font-size:12px;font-weight:700;margin-left:6px">${arrow} ${Math.abs(g.pct)}%</span>`
+    return `<span style="color:${color};font-size:13px;font-weight:700;margin-left:6px;">${arrow} ${Math.abs(g.pct)}%</span>`
   }
 
-  const topLinksHtml = params.topLinks.slice(0, 5).map((l, i) =>
-    `<tr>
-      <td style="padding:8px 12px;color:#8A8478;font-size:12px">#${i+1}</td>
-      <td style="padding:8px 12px;color:#F5F0E8;font-size:12px;word-break:break-all">${esc(l.target.slice(0, 60))}</td>
-      <td style="padding:8px 12px;color:#C9A84C;font-size:12px;font-weight:700;text-align:right">${l.clicks}</td>
-    </tr>`
-  ).join("")
+  // Carte KPI (chiffre dore + libelle), coherente avec l'email hebdo. valueHtml peut
+  // contenir le badge de croissance (deja stylise).
+  const statCard = (valueHtml: string, label: string, side: "left" | "right") => {
+    const pad = side === "left" ? "0 6px 0 0" : "0 0 0 6px"
+    return `<td width="50%" valign="top" style="padding:${pad};">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.18);border-radius:12px;"><tr><td align="center" style="padding:20px 12px;">
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:#C9A84C;line-height:1;">${valueHtml}</div>
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#8A8478;text-transform:uppercase;letter-spacing:1px;margin-top:7px;">${label}</div>
+      </td></tr></table>
+    </td>`
+  }
 
-  const topPagesHtml = params.topPages.slice(0, 5).map((p, i) =>
-    `<tr>
-      <td style="padding:8px 12px;color:#8A8478;font-size:12px">#${i+1}</td>
-      <td style="padding:8px 12px;color:#F5F0E8;font-size:12px">${esc(p.title)}</td>
-      <td style="padding:8px 12px;color:#39FF8F;font-size:12px;font-weight:700;text-align:right">${p.views}</td>
-    </tr>`
-  ).join("")
+  // Tableau "Top" (liens / pages) reutilisable, palette de la coquille partagee.
+  const topTable = (title: string, rows: { label: string; value: number; accent: string }[]) => {
+    if (!rows.length) return ""
+    const body = rows.slice(0, 5).map((r, i) =>
+      `<tr>
+        <td style="padding:8px 12px;color:#8A8478;font-family:Arial,Helvetica,sans-serif;font-size:12px;">#${i + 1}</td>
+        <td style="padding:8px 12px;color:#F5F0E8;font-family:Arial,Helvetica,sans-serif;font-size:12px;word-break:break-all;">${esc(r.label)}</td>
+        <td style="padding:8px 12px;color:${r.accent};font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;text-align:right;">${r.value}</td>
+      </tr>`
+    ).join("")
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin:0 0 20px;overflow:hidden;">
+      <tr><td style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.06);font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#F5F0E8;">${title}</td></tr>
+      <tr><td style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${body}</table></td></tr>
+    </table>`
+  }
 
-  return `<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#080808;font-family:'DM Sans',Arial,sans-serif">
-  <div style="max-width:560px;margin:0 auto;padding:32px 20px">
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
 
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:32px">
-      <div style="display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:8px 20px;margin-bottom:16px">
-        <span style="color:#C9A84C;font-size:13px;font-weight:700;letter-spacing:2px">QROWG REPORT</span>
-      </div>
-      <h1 style="color:#F5F0E8;font-size:24px;font-weight:300;margin:0 0 6px;font-family:'Fraunces',Georgia,serif">
-        Bonjour ${esc(params.userName)} 👋
-      </h1>
-      <p style="color:#8A8478;font-size:13px;margin:0">Voici vos performances · ${params.period}</p>
-    </div>
+  const content = `
+    ${emailH1(`Bonjour ${esc(params.userName)} 👋`)}
+    ${emailP(`Voici vos performances · ${esc(params.period)}`, 22)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;"><tr>
+      ${statCard(`${params.totalViews.toLocaleString("fr-FR")}${growthBadge(viewGrowth)}`, "Vues de page", "left")}
+      ${statCard(`${params.totalScans.toLocaleString("fr-FR")}${growthBadge(scanGrowth)}`, "Scans QR", "right")}
+    </tr></table>
+    ${topTable("🔗 Top liens cliqués", params.topLinks.map(l => ({ label: l.target.slice(0, 60), value: l.clicks, accent: "#C9A84C" })))}
+    ${topTable("📄 Top pages", params.topPages.map(p => ({ label: p.title, value: p.views, accent: "#39FF8F" })))}
+    ${emailButton("Voir le dashboard complet →", `${appUrl}/dashboard/analytics`)}
+  `
 
-    <!-- KPIs -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px">
-      <tr>
-        <td width="50%" style="padding:0 6px 0 0">
-          <div style="background:#0F0E0B;border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:20px;text-align:center">
-            <p style="color:#8A8478;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 6px">Vues de page</p>
-            <p style="color:#F5F0E8;font-size:28px;font-weight:800;margin:0">
-              ${params.totalViews.toLocaleString("fr-FR")}${growthBadge(viewGrowth)}
-            </p>
-          </div>
-        </td>
-        <td width="50%" style="padding:0 0 0 6px">
-          <div style="background:#0F0E0B;border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:20px;text-align:center">
-            <p style="color:#8A8478;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 6px">Scans QR</p>
-            <p style="color:#F5F0E8;font-size:28px;font-weight:800;margin:0">
-              ${params.totalScans.toLocaleString("fr-FR")}${growthBadge(scanGrowth)}
-            </p>
-          </div>
-        </td>
-      </tr>
-    </table>
+  const footer = `Vous recevez ce rapport car vous êtes abonné aux notifications QRowg.<br><a href="${params.unsubUrl}" style="color:#8A8478;text-decoration:underline;">Se désabonner</a> · <a href="${appUrl}/dashboard/settings" style="color:#8A8478;text-decoration:underline;">Gérer les notifications</a>`
 
-    <!-- Top liens -->
-    ${params.topLinks.length > 0 ? `
-    <div style="background:#0F0E0B;border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:20px;overflow:hidden">
-      <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06)">
-        <span style="color:#F5F0E8;font-size:13px;font-weight:700">🔗 Top liens cliqués</span>
-      </div>
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <thead>
-          <tr style="background:rgba(255,255,255,0.02)">
-            <th style="padding:8px 12px;color:#8A8478;font-size:10px;text-align:left;font-weight:600">#</th>
-            <th style="padding:8px 12px;color:#8A8478;font-size:10px;text-align:left;font-weight:600">Lien</th>
-            <th style="padding:8px 12px;color:#8A8478;font-size:10px;text-align:right;font-weight:600">Clics</th>
-          </tr>
-        </thead>
-        <tbody>${topLinksHtml}</tbody>
-      </table>
-    </div>` : ""}
-
-    <!-- Top pages -->
-    ${params.topPages.length > 0 ? `
-    <div style="background:#0F0E0B;border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:24px;overflow:hidden">
-      <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06)">
-        <span style="color:#F5F0E8;font-size:13px;font-weight:700">📄 Top pages</span>
-      </div>
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <thead>
-          <tr style="background:rgba(255,255,255,0.02)">
-            <th style="padding:8px 12px;color:#8A8478;font-size:10px;text-align:left;font-weight:600">#</th>
-            <th style="padding:8px 12px;color:#8A8478;font-size:10px;text-align:left;font-weight:600">Page</th>
-            <th style="padding:8px 12px;color:#8A8478;font-size:10px;text-align:right;font-weight:600">Vues</th>
-          </tr>
-        </thead>
-        <tbody>${topPagesHtml}</tbody>
-      </table>
-    </div>` : ""}
-
-    <!-- CTA -->
-    <div style="text-align:center;margin-bottom:32px">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/analytics"
-        style="display:inline-block;background:linear-gradient(90deg,#C9A84C,#b8953f);border-radius:10px;padding:13px 28px;color:#080808;font-size:14px;font-weight:700;text-decoration:none">
-        Voir le dashboard complet →
-      </a>
-    </div>
-
-    <!-- Footer -->
-    <div style="text-align:center;border-top:1px solid rgba(255,255,255,0.06);padding-top:20px">
-      <p style="color:#555;font-size:11px;margin:0 0 8px">
-        Vous recevez ce rapport car vous êtes abonné aux notifications QRowg.
-      </p>
-      <a href="${params.unsubUrl}" style="color:#8A8478;font-size:11px">Se désabonner</a>
-    </div>
-  </div>
-</body>
-</html>`
+  return emailShell({ preheader: `Vos performances QRowg · ${esc(params.period)}`, content, footer })
 }
 
 export async function GET(req: NextRequest) {
@@ -290,7 +228,7 @@ export async function GET(req: NextRequest) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from:    "QRowg Reports <reports@qrowg.com>",
+            from:    EMAIL_FROM,
             to:      [sub.email],
             subject: `📊 Votre rapport ${sub.frequency === "weekly" ? "hebdomadaire" : "mensuel"} QRowg`,
             html,

@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react"
  * dans la colonne de contenu). Identique à celui de la landing — à poser comme premier
  * enfant d'un conteneur `position:relative`, le contenu au-dessus en `zIndex:1`.
  */
-export default function Particles({ behind = false }: { behind?: boolean }) {
+export default function Particles({ behind = false, mobileVivid = false }: { behind?: boolean; mobileVivid?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -50,6 +50,10 @@ export default function Particles({ behind = false }: { behind?: boolean }) {
 
     const isMobile = W < 768
     const COUNT    = isMobile ? 22 : 38
+    // Sur mobile le contenu occupe toute la largeur : l'atténuation au centre (pensée
+    // pour les larges marges du desktop) rendrait les particules quasi invisibles.
+    // `mobileVivid` la désactive sur petit écran → particules bien visibles sur mobile.
+    const skipDim  = mobileVivid && isMobile
 
     const pts = Array.from({ length: COUNT }, (_, idx) => {
       const layer = idx < COUNT * 0.4 ? 0 : idx < COUNT * 0.75 ? 1 : 2
@@ -100,7 +104,7 @@ export default function Particles({ behind = false }: { behind?: boolean }) {
           const halfW = (zone.x2 - zone.x1) / 2
           const d     = Math.min(1, Math.abs(p.x - cx2) / halfW) // 0 centre .. 1 bord (clamp au-delà)
           const s     = d * d * (3 - 2 * d)                      // smoothstep
-          alpha       = alpha * (0.14 + 0.86 * s)                // 0.14 au centre -> 1 au bord (et au-delà)
+          if (!skipDim) alpha = alpha * (0.14 + 0.86 * s)        // 0.14 au centre -> 1 au bord (sauté si mobileVivid)
 
           if (alpha < 0.005) {
             p.x += p.dx; p.y += p.dy

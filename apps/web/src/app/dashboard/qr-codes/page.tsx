@@ -39,7 +39,7 @@ export default async function QRCodesPage() {
 
   return (
     <div style={{ minHeight: "100dvh", background: "transparent", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
-      <Particles behind />
+      <Particles behind mobileVivid />
 
       {/* ===== Header ===== */}
       <style>{`

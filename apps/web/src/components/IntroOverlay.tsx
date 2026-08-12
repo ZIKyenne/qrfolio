@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react"
 
 const ONCE_PER_SESSION = true   // true = une seule fois par session (recommandé en prod)
-const DURATION_MS = 4500        // BAR_DELAY(250) + LOAD(2400) + HOLD_FULL(1000) + EXIT(850)
+const DURATION_MS = 3900        // BAR_DELAY(250) + LOAD(2400) + HOLD_FULL(400) + EXIT(850)
 
 const cssVars = (o: Record<string, string | number>) => o as CSSProperties
 
@@ -104,7 +104,7 @@ const QW_CSS = `
 @font-face { font-family:'Space Grotesk'; font-style:normal; font-weight:300 700; font-display:swap;
   src:url('/fonts/space-grotesk-latinext.woff2') format('woff2');
   unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
-#qw-intro{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;font-family:'Space Grotesk',Helvetica,Arial,sans-serif;animation:qw-exit .85s cubic-bezier(.6,0,.75,0) 3.65s forwards}
+#qw-intro{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;font-family:'Space Grotesk',Helvetica,Arial,sans-serif;animation:qw-exit .85s cubic-bezier(.6,0,.75,0) 3.05s forwards}
 #qw-intro .qw-halo{position:absolute;inset:0;background:radial-gradient(56% 44% at 50% 44%,rgba(212,169,74,.15),transparent 72%);animation:qw-halo 4s ease-in-out infinite}
 #qw-intro .qw-vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 50%,transparent 40%,rgba(0,0,0,.85) 100%)}
 #qw-intro .qw-grain{position:absolute;inset:0;opacity:.05;mix-blend-mode:screen;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}

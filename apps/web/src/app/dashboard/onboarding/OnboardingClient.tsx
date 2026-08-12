@@ -23,11 +23,11 @@ export default function OnboardingClient() {
   async function generate(o: Objective, s?: Sector) {
     if (busy) return
     setBusy(true); setErr(null)
-    const { templateName, blocks, goal } = composeRecipe(o, s)
+    const { templateName, blocks, goal, theme } = composeRecipe(o, s)
     try {
       const res = await fetch("/api/templates/use", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId: `goal_${o.key}${s ? "_" + s.key : ""}`, templateName, theme: {}, blocks }),
+        body: JSON.stringify({ templateId: `goal_${o.key}${s ? "_" + s.key : ""}`, templateName, theme, blocks }),
       })
       const d = await res.json().catch(() => ({} as any))
       if (!res.ok || !d.pageId) { setErr(d.message || d.error || "Création impossible pour le moment."); setBusy(false); return }

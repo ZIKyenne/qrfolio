@@ -4,6 +4,8 @@
 // affine le pré-remplissage (nom/accroche du profil, titre de la page). AUCUN code métier
 // ailleurs : cette donnée + la composition ci-dessous sont le seul « neuf » de la feature.
 
+import { themeForAmbiance } from "@/app/dashboard/builder/page-templates"
+
 export type ObjBlock = { type: string; content: Record<string, any> }
 export type ObjGoal = { name: string; goal_type: string; target_match: string }
 
@@ -149,13 +151,19 @@ export const SECTORS: Sector[] = [
   { key: "pro", label: "Profession · Cabinet", emoji: "💼", name: "Mon Cabinet", tagline: "Prise de rendez-vous" },
 ]
 
+// Ambiance visuelle (thème cohérent, réutilise AMBIANCE_THEMES) par secteur puis par objectif :
+// la page générée est belle et adaptée dès l'ouverture, pas sur le thème générique par défaut.
+const SECTOR_AMBIANCE: Record<string, string> = { restaurant: "velvet", beaute: "rose", commerce: "slate", artisan: "wood", createur: "violet", pro: "navy" }
+const OBJ_AMBIANCE: Record<string, string> = { avis: "gold", menu: "velvet", reservation: "velvet", appels: "calm", vente: "slate", contact: "calm", evenement: "cocktail", portfolio: "ink", reseaux: "violet" }
+
 // Compose la recette finale (objectif [× secteur]) envoyée à /api/templates/use.
-export function composeRecipe(o: Objective, s?: Sector): { templateName: string; blocks: ObjBlock[]; goal?: ObjGoal } {
+export function composeRecipe(o: Objective, s?: Sector) {
   const blocks = o.blocks.map(b =>
     b.type === "profile" && s
       ? { type: "profile", content: { ...b.content, name: s.name } } // le secteur nomme, l'objectif garde son accroche
       : b,
   )
   const templateName = s ? `${s.name} — ${o.label}` : `Ma page — ${o.label}`
-  return { templateName, blocks, goal: o.goal }
+  const ambiance = (s && SECTOR_AMBIANCE[s.key]) || OBJ_AMBIANCE[o.key] || "gold"
+  return { templateName, blocks, goal: o.goal, theme: themeForAmbiance(ambiance) }
 }

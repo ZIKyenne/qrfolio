@@ -4,13 +4,15 @@
 // — îlot interactif embarqué dans la page SEO serveur. Réutilise le moteur QR local
 // (qrRender / QRCanvas) et les helpers purs (qrLinkUtils). Sortie STATIQUE (PNG/SVG) ;
 // CTA vers l'inscription pour le QR dynamique.
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { Download, Check, Link2, Type, Wifi, Phone, Mail, MessageSquare, Contact, AlertTriangle, ShieldCheck, Zap, Upload, X } from "lucide-react"
+import { Download, Check, Link2, Type, Wifi, Phone, Mail, MessageSquare, Contact, AlertTriangle, ShieldCheck, Zap, Upload, X, Lock } from "lucide-react"
 import QRCanvas from "../dashboard/qr-codes/QRCanvas"
 import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../dashboard/qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail, buildSms, buildVCard } from "../dashboard/qr-link/qrLinkUtils"
+import { qrLimit } from "@/lib/plans"
+import { DYN_FREE_TRIALS_PER_MONTH } from "@/lib/dynamicPlans"
 
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(168,161,144,0.92)", BOR = "rgba(255,255,255,0.1)"
 
@@ -61,6 +63,19 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
   const [saved, setSaved] = useState<{ sig: string; encoded: string } | null>(null)
   const [err, setErr] = useState<{ msg: string; upgrade?: boolean; dyn?: boolean } | null>(null)
   const logoInput = useRef<HTMLInputElement>(null)
+  // Usage réel du compte (pour connaître le quota EN AMONT et neutraliser l'aperçu).
+  const [usage, setUsage] = useState<any[]>([])
+  const [plan, setPlan] = useState("free")
+  const [dynPlan, setDynPlan] = useState("none")
+
+  useEffect(() => {
+    fetch("/api/qr-instant").then(r => (r.ok ? r.json() : null)).then(d => {
+      if (!d) return
+      if (Array.isArray(d.items)) setUsage(d.items)
+      if (d.plan) setPlan(d.plan)
+      if (d.dyn_plan) setDynPlan(d.dyn_plan)
+    }).catch(() => {})
+  }, [])
 
   const data = useMemo(() => {
     if (qrType === "text") return text.trim()
@@ -92,11 +107,37 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
   const sig = `${qrType}|${data}|${isDyn ? "D" : "S"}`
   const encodedValue = saved && saved.sig === sig ? saved.encoded : data
 
+  // Quota atteint pour le TYPE courant — MÊME règle que le serveur (lib/quota) :
+  //  · statique : nb de QR non-dynamiques >= limits.qr du plan (gratuit = 1).
+  //  · dynamique (non abonné) : nb d'essais dynamiques créés ce mois-ci (UTC) >= 2.
+  // Au-delà, on neutralise l'aperçu (encode qrowg.com) et on bloque le téléchargement,
+  // AUCUNE extraction d'un QR fonctionnel n'est possible. Un QR DÉJÀ créé (design en
+  // cache, sig sauvegardé) reste re-téléchargeable (PNG puis SVG).
+  const isSavedCurrent = !!(saved && saved.sig === sig)
+  const overQuota = useMemo(() => {
+    if (isDyn) {
+      if (dynPlan !== "none") return false // abonné dynamique : quota géré côté serveur
+      const now = new Date()
+      const startMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+      const trials = usage.filter(i => i?.dynamic === true && i?.expires_at != null && Date.parse(i?.created_at) >= startMs).length
+      return trials >= DYN_FREE_TRIALS_PER_MONTH
+    }
+    const lim = qrLimit(plan)
+    if (lim === null) return false
+    const staticCount = usage.filter(i => i?.dynamic === false || i?.dynamic == null).length
+    return staticCount >= lim
+  }, [isDyn, dynPlan, plan, usage])
+  const blocked = overQuota && !isSavedCurrent
+
   // Enregistre le QR dans le compte (POST /api/qr-instant → consomme le quota) PUIS le
   // télécharge. Dynamique → le QR encode /q/<code> renvoyé par le serveur (traçable,
   // modifiable, essai 30 j) ; statique → contenu brut. Erreur 403 = quota atteint (upsell).
   async function createAndDownload(ext: "png" | "svg") {
     if (!ready || busy) return
+    // Quota atteint : on ne tente même pas la création/téléchargement (défense en
+    // profondeur ; le serveur renvoie de toute façon 403). Re-download d'un QR déjà
+    // créé (isSavedCurrent) autorisé car `blocked` est déjà faux dans ce cas.
+    if (blocked) { setErr({ msg: isDyn ? `Limite de ${DYN_FREE_TRIALS_PER_MONTH} QR dynamiques gratuits atteinte ce mois-ci.` : "Limite de QR de votre plan gratuit atteinte.", upgrade: true, dyn: isDyn }); return }
     setErr(null); setBusy(ext)
     try {
       let enc = data
@@ -113,6 +154,9 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
         if (!res.ok) { setErr({ msg: d?.error || "Création impossible pour le moment.", upgrade: !!d?.upgrade, dyn: isDyn }); return }
         enc = isDyn ? (d?.item?.payload || data) : data
         setSaved({ sig, encoded: enc })
+        // Le QR vient d'être créé : on incrémente le compteur local pour que la
+        // PROCHAINE création (autre design) bascule l'aperçu en « limite atteinte ».
+        setUsage(u => [{ dynamic: isDyn, expires_at: isDyn ? new Date().toISOString() : null, created_at: new Date().toISOString() }, ...u])
       }
       const opts: QROptions = { data: enc, fg, bg, ecc: effectiveEcc, style: qrStyle, size: 1024 }
       const blob = await getQRBlob(opts, ext)
@@ -234,12 +278,16 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
         <div style={{ position: "relative", borderRadius: 20, padding: "26px 18px", overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.16)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
           <div style={{ background: bg, borderRadius: 20, padding: 18, boxShadow: "0 14px 40px rgba(0,0,0,0.5)", transition: "background .2s", maxWidth: "100%" }}>
             <div style={{ position: "relative", lineHeight: 0, borderRadius: 8, overflow: "hidden" }}>
-              <QRCanvas value={encodedValue || "https://qrowg.com"} size={196} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
-              {ready && <QrWatermark size={196} />}
+              <QRCanvas value={blocked ? "https://qrowg.com" : (encodedValue || "https://qrowg.com")} size={196} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
+              {blocked
+                ? <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(8,8,8,0.82)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", color: "#F5F0E8", textAlign: "center", padding: 10 }}><Lock size={22} color={G} /><span style={{ fontSize: 11.5, fontWeight: 700, lineHeight: 1.3 }}>Limite atteinte</span></div>
+                : (ready && <QrWatermark size={196} />)}
             </div>
           </div>
           {!ready
             ? <p style={{ color: MUT, fontSize: 12.5, margin: 0, textAlign: "center" }}>Renseignez le contenu pour générer votre QR code.</p>
+            : blocked
+              ? <Link href={isDyn ? "/dashboard/qr-dynamique" : "/upgrade"} style={{ display: "flex", alignItems: "center", gap: 7, color: "#FBBF24", fontSize: 12, fontWeight: 700, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: 999, padding: "6px 14px", textDecoration: "none" }}><Lock size={13} /> Limite atteinte — voir les offres</Link>
             : ratio < 3
               ? <button type="button" onClick={() => { setFg("#080808"); setBg("#FFFFFF") }} style={{ display: "flex", alignItems: "center", gap: 7, color: "#FF6B6B", fontSize: 12, fontWeight: 600, background: "rgba(255,107,107,0.1)", border: "1px solid rgba(255,107,107,0.3)", borderRadius: 999, padding: "6px 14px", cursor: "pointer" }}><AlertTriangle size={14} /> Risque de non-scan — corriger</button>
               : inverted
@@ -269,10 +317,10 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
         )}
 
         <div style={{ display: "flex", gap: 10 }}>
-          <button type="button" onClick={() => createAndDownload("png")} disabled={!ready || busy !== null} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 50, borderRadius: 12, border: "none", background: ready ? G : "rgba(201,168,76,0.3)", color: "#080808", fontSize: 15, fontWeight: 800, cursor: ready ? "pointer" : "default" }}>
-            {done ? <Check size={18} /> : <Download size={18} />} {busy === "png" ? "…" : done ? "Téléchargé" : "Créer & télécharger"}
+          <button type="button" onClick={() => createAndDownload("png")} disabled={!ready || busy !== null || blocked} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 50, borderRadius: 12, border: "none", background: (ready && !blocked) ? G : "rgba(201,168,76,0.3)", color: "#080808", fontSize: 15, fontWeight: 800, cursor: (ready && !blocked) ? "pointer" : "default" }}>
+            {blocked ? <Lock size={18} /> : done ? <Check size={18} /> : <Download size={18} />} {blocked ? "Limite atteinte" : busy === "png" ? "…" : done ? "Téléchargé" : "Créer & télécharger"}
           </button>
-          <button type="button" onClick={() => createAndDownload("svg")} disabled={!ready || busy !== null} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${BOR}`, background: "rgba(255,255,255,0.04)", color: INK, fontSize: 14, fontWeight: 700, cursor: ready ? "pointer" : "default" }}>{busy === "svg" ? "…" : "SVG"}</button>
+          <button type="button" onClick={() => createAndDownload("svg")} disabled={!ready || busy !== null || blocked} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${BOR}`, background: "rgba(255,255,255,0.04)", color: INK, fontSize: 14, fontWeight: 700, cursor: (ready && !blocked) ? "pointer" : "default", opacity: blocked ? 0.5 : 1 }}>{busy === "svg" ? "…" : "SVG"}</button>
         </div>
         <p style={{ color: "#6E685E", fontSize: 11.5, textAlign: "center", margin: 0 }}>{isDyn ? "Enregistré dans votre compte · le QR pointe vers un lien traçable." : "Enregistré dans votre compte · haute résolution, prêt à imprimer."}</p>
 

@@ -12,7 +12,7 @@ import SubscribeButton from "@/components/SubscribeButton"
 
 // UI par plan (icône, CTA, mise en avant) ; les DONNÉES viennent de lib/plans
 const PLAN_UI = {
-  free:     { icon: <Star size={20} />,     cta: "Plan actuel",                 ctaDisabled: true,  highlight: false, priceId: undefined },
+  free:     { icon: <Star size={20} />,     cta: "Plan gratuit",                ctaDisabled: true,  highlight: false, priceId: undefined },
   starter:  { icon: <Zap size={20} />,      cta: "Commencer l essai gratuit",   ctaDisabled: false, highlight: false, priceId: "starter"  },
   pro:      { icon: <Sparkles size={20} />, cta: "Passer a Pro",                ctaDisabled: false, highlight: true,  priceId: "pro"      },
   business: { icon: <Crown size={20} />,    cta: "Passer a Business",           ctaDisabled: false, highlight: false, priceId: "business" },
@@ -51,10 +51,6 @@ export default function UpgradePage() {
 
   async function handleUpgrade(plan: typeof PLANS[0]) {
     if (plan.ctaDisabled || currentPlan === plan.id) return
-    if (plan.id === "business") {
-      window.location.href = "mailto:hello@qrowg.com?subject=Plan Business QRowg"
-      return
-    }
     setLoading(plan.id)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -87,8 +83,6 @@ export default function UpgradePage() {
   }
 
   const G = useAccent(); const MUTED = "#8A8478"
-  // Le SubscribeButton attend une couleur hex ; on sécurise (accent utilisateur ou or de marque).
-  const accentHex = /^#[0-9a-fA-F]{6}$/.test(G || "") ? (G as string) : "#C9A84C"
 
   // Cette page est hors du layout dashboard : on applique l'accent au document
   // (et on prévient les particules) pour qu'elles prennent la couleur de l'utilisateur.
@@ -192,12 +186,13 @@ export default function UpgradePage() {
                   ))}
                 </div>
 
-                {!isCurrentPlan && !plan.ctaDisabled && plan.id !== "business" ? (
-                  // Plans Stripe actionnables (starter / pro) : CTA animé « scan QR » qui
-                  // récupère l'URL de paiement et redirige lui-même en fin d'animation.
+                {!isCurrentPlan && !plan.ctaDisabled ? (
+                  // Plans Stripe actionnables (starter / pro / business) : CTA animé « scan QR »
+                  // qui récupère l'URL de paiement et redirige en fin d'animation. L'accent =
+                  // la couleur de CHAQUE carte (pas l'or global) pour rester cohérent.
                   <SubscribeButton
                     label={plan.cta}
-                    accent={accentHex}
+                    accent={pc}
                     successLabel="Redirection vers le paiement…"
                     minScanMs={1600}
                     height={48}

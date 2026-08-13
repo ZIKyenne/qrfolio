@@ -10,7 +10,7 @@
 //  · Essai 30 JOURS PAR LIEN, limité à 2 PAR MOIS calendaire pour un compte
 //    CONNECTÉ sans abonnement : un lien créé sans abonnement fonctionne 30 j puis
 //    expire → moteur de conversion. Au-delà de 2/mois, création d'essai refusée.
-//  · Le quota (3 / 25 / illimité) borne les liens PERMANENTS (sans expiration).
+//  · Le quota (5 / 25 / illimité) borne les liens PERMANENTS (sans expiration).
 //    À la souscription, les liens d'essai actifs deviennent permanents dans la
 //    limite du quota. En cas de dépassement (downgrade), les liens en trop (les
 //    plus récents) passent EN PAUSE (réactivés si ré-upgrade), rien n'est supprimé.
@@ -85,11 +85,11 @@ export const DYN_PLANS: Record<DynPlanId, DynPlan> = {
     priceMonthly: 1.50,
     priceAnnual: 1.20, // 1,50 × 0,8
     badge: null,
-    qrLimit: 3,
+    qrLimit: 5,
     caps: { ...NONE_CAPS },
-    features: ["3 QR dynamiques permanents", "Scans illimités", "Modifier la destination", "Statistiques basiques"],
+    features: ["5 QR dynamiques permanents", "Scans illimités", "Modifier la destination", "Statistiques basiques"],
     perks: [
-      { text: "3 QR dynamiques permanents", included: true },
+      { text: "5 QR dynamiques permanents", included: true },
       { text: "Scans illimités", included: true },
       { text: "Modifier la destination à volonté", included: true },
       { text: "Statistiques basiques (total, dernier scan)", included: true },

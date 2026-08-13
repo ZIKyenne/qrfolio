@@ -26,9 +26,9 @@ describe("dynamicPlans — structure", () => {
 })
 
 describe("dynamicPlans — quotas de liens permanents", () => {
-  it("none = 0 (essai seul), basique = 3, pro = 25, business = illimité", () => {
+  it("none = 0 (essai seul), basique = 5, pro = 25, business = illimité", () => {
     expect(dynQrLimit("none")).toBe(0)
-    expect(dynQrLimit("basique")).toBe(3)
+    expect(dynQrLimit("basique")).toBe(5)
     expect(dynQrLimit("pro")).toBe(25)
     expect(dynQrLimit("business")).toBeNull()
   })
@@ -92,11 +92,11 @@ describe("dynamicPlans — permanent vs essai", () => {
     expect(dynCanCreatePermanent(undefined, 0)).toBe(false)
   })
 
-  it("Basique (3) : permanent tant qu'on est sous le quota", () => {
+  it("Basique (5) : permanent tant qu'on est sous le quota", () => {
     expect(dynCanCreatePermanent("basique", 0)).toBe(true)
-    expect(dynCanCreatePermanent("basique", 2)).toBe(true)
-    expect(dynCanCreatePermanent("basique", 3)).toBe(false) // quota atteint
-    expect(dynCanCreatePermanent("basique", 4)).toBe(false)
+    expect(dynCanCreatePermanent("basique", 4)).toBe(true)
+    expect(dynCanCreatePermanent("basique", 5)).toBe(false) // quota atteint
+    expect(dynCanCreatePermanent("basique", 6)).toBe(false)
   })
 
   it("Pro (25) : bascule à 25", () => {

@@ -734,9 +734,9 @@ const LANDING_BENEFITS: Record<string, { text: string; ok: boolean }[]> = {
     { text: "Pages et vues illimitées", ok: true },
     { text: "Tout le plan Pro inclus", ok: true },
     { text: "Support prioritaire 24/7", ok: true },
-    { text: "Travaillez à plusieurs · 5 membres (bientôt)", ok: true },
-    { text: "Marque blanche (bientôt)", ok: true },
-    { text: "Accès API (bientôt)", ok: true },
+    { text: "Travaillez à plusieurs · 5 membres", ok: true },
+    { text: "Marque blanche", ok: true },
+    { text: "Accès API · 10 000 appels / mois", ok: true },
   ],
 }
 

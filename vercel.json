@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/quota-alerts",
       "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/cron/dynamic-expiry",
+      "schedule": "0 10 * * *"
     }
   ]
 }

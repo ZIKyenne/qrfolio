@@ -10,7 +10,8 @@ import Link from "next/link"
 import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity, Pencil, Lock, Pause, Play } from "lucide-react"
 import Particles from "@/components/Particles"
 import { countryFlag, DEVICE_LABEL } from "@/lib/scanStats"
-import { canDynLinkSecurity, canDynBulk } from "@/lib/dynamicPlans"
+import { canDynLinkSecurity, canDynBulk, DYN_FREE_TRIALS_PER_MONTH } from "@/lib/dynamicPlans"
+import { qrLimit } from "@/lib/plans"
 import { parseBulkCsv } from "@/lib/bulkCsv"
 import QRCanvas from "../qr-codes/QRCanvas"
 import QrWatermark from "@/components/QrWatermark"
@@ -112,6 +113,7 @@ export default function QrLinkPage() {
   // Palier « QR Dynamique » (gating sécurité/stats/masse + bandeau d'upsell). Démarre INCONNU ("")
   // et non "none" : évite d'afficher le bandeau « Passez au QR Dynamique » aux abonnés avant le fetch.
   const [dynPlan, setDynPlan] = useState<string>("")
+  const [plan, setPlan] = useState("free")
   const [dlSig, setDlSig] = useState<string | null>(null) // design déjà consommé au téléchargement (évite de reconsommer PNG→SVG du même design)
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveMsg, setSaveMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -146,11 +148,21 @@ export default function QrLinkPage() {
   const ratio = contrast(fg, bg)
   const inverted = isInverted(fg, bg)
   const dynamic = isDynamicType(qrType)
+  // Quota atteint — MÊME règle que le serveur (lib/quota). Neutralise l'aperçu + désactive
+  // les actions qui donneraient un QR fonctionnel du design courant (fermeture de la fuite
+  // par screenshot, cf. générateur). Un design DÉJÀ téléchargé (dlSig) reste re-téléchargeable.
+  const curSig = `${qrType}|${data}`
+  const staticBlocked = ((): boolean => { const lim = qrLimit(plan); if (lim === null) return false; return (saved as any[]).filter(i => !i?.dynamic).length >= lim })() && dlSig !== curSig
+  const dynSubscribed = !!dynPlan && dynPlan !== "none"
+  const dynBlocked = dynamic && !dynSubscribed && ((): number => { const n = new Date(); const s = Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), 1); return (saved as any[]).filter(i => i?.dynamic === true && i?.expires_at != null && Date.parse(i?.created_at) >= s).length })() >= DYN_FREE_TRIALS_PER_MONTH
+  // Aperçu neutralisé si AUCUNE action possible ne produit un QR fonctionnel : statique →
+  // download statique bloqué ; dynamique → download statique ET création dynamique bloqués.
+  const previewBlocked = dynamic ? (staticBlocked && dynBlocked) : staticBlocked
 
   const [history, setHistory] = useState<QrHistEntry[]>([])
   useEffect(() => { try { const h = JSON.parse(localStorage.getItem("qrfolio_qr_history") || "[]"); if (Array.isArray(h)) setHistory(h.slice(0, 8)) } catch {} }, [])
   // Charge les QR instantanés enregistrés (serveur).
-  useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.dyn_plan) setDynPlan(d.dyn_plan) }).catch(() => {}) }, [])
+  useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.plan) setPlan(d.plan); if (d.dyn_plan) setDynPlan(d.dyn_plan) }).catch(() => {}) }, [])
   const saveToHistory = () => setHistory(prev => {
     const entry: QrHistEntry = { type: qrType, url: url.trim(), ssid, wifiPass, wifiEnc, text: text.trim(), vc, phone, em, fg, bg, ecc, styleKey }
     const next = [entry, ...prev.filter(e => payload(e) !== data)].slice(0, 8)
@@ -188,6 +200,7 @@ export default function QrLinkPage() {
 
   async function download(ext: "png" | "svg") {
     if (!ready) return
+    if (staticBlocked) { setSaveMsg({ text: "Limite de QR statiques atteinte sur votre plan.", ok: false }); setTimeout(() => setSaveMsg(null), 4500); return }
     setBusy(ext)
     try {
       // Le QR statique téléchargé est enregistré via l'API, qui applique le quota du plan
@@ -245,6 +258,7 @@ export default function QrLinkPage() {
   // QR DYNAMIQUE (lien/texte/appel/email) : le QR encode qrowg.com/q/<code>, expirable (essai 30 j).
   async function createDynamic() {
     if (!ready || saveBusy) return
+    if (dynBlocked) { setSaveMsg({ text: `Limite de ${DYN_FREE_TRIALS_PER_MONTH} QR dynamiques gratuits atteinte ce mois-ci.`, ok: false }); setTimeout(() => setSaveMsg(null), 4500); return }
     setSaveBusy(true); setSaveMsg(null)
     try {
       const inputs = { type: qrType, url, ssid, wifiEnc, text, vc, phone, em }
@@ -395,11 +409,11 @@ export default function QrLinkPage() {
   // Boutons de téléchargement PNG/SVG (fichier statique). `primary` = mis en avant.
   const downloadRow = (primary: boolean) => (
     <div style={{ display: "flex", gap: 10 }}>
-      <Button variant={primary ? "primary" : "secondary"} size="lg" onClick={() => download("png")} loading={busy === "png"} disabled={!ready || busy !== null}
-        leftIcon={done ? <Check size={18} /> : <Download size={18} />} style={{ flex: 1 }}>
-        {done ? "Téléchargé" : "Télécharger PNG"}
+      <Button variant={primary ? "primary" : "secondary"} size="lg" onClick={() => download("png")} loading={busy === "png"} disabled={!ready || busy !== null || staticBlocked}
+        leftIcon={staticBlocked ? <Lock size={18} /> : done ? <Check size={18} /> : <Download size={18} />} style={{ flex: 1 }}>
+        {staticBlocked ? "Limite atteinte" : done ? "Téléchargé" : "Télécharger PNG"}
       </Button>
-      <Button variant="secondary" size="lg" onClick={() => download("svg")} loading={busy === "svg"} disabled={!ready || busy !== null}>
+      <Button variant="secondary" size="lg" onClick={() => download("svg")} loading={busy === "svg"} disabled={!ready || busy !== null || staticBlocked}>
         SVG
       </Button>
     </div>
@@ -598,8 +612,10 @@ export default function QrLinkPage() {
       <div style={{ position: "relative", borderRadius: 20, padding: "26px 18px", marginBottom: 14, overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.16)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
         <div style={{ background: bg, borderRadius: 20, padding: 20, boxShadow: "0 14px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, transition: "background .2s", maxWidth: "100%" }}>
           <div style={{ position: "relative", lineHeight: 0, borderRadius: 8, overflow: "hidden" }}>
-            <QRCanvas value={data || "https://qrowg.com"} size={210} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
-            {ready && <QrWatermark />}
+            <QRCanvas value={previewBlocked ? "https://qrowg.com" : (data || "https://qrowg.com")} size={210} fg={fg} bg={bg} style={qrStyle} ecc={effectiveEcc} />
+            {previewBlocked
+              ? <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(8,8,8,0.82)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)", color: "#F5F0E8", textAlign: "center", padding: 10 }}><Lock size={22} color={G} /><span style={{ fontSize: 11.5, fontWeight: 700, lineHeight: 1.3 }}>Limite atteinte</span></div>
+              : (ready && <QrWatermark />)}
           </div>
           {ready && previewLabel && (
             <p style={{ margin: 0, maxWidth: 210, color: fg, opacity: 0.85, fontSize: 10.5, fontWeight: 600, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", letterSpacing: 0.2 }}>{previewLabel}</p>
@@ -631,8 +647,8 @@ export default function QrLinkPage() {
           téléchargement en repli. Statique (WiFi/Contact) : téléchargement en avant, enregistrement en repli. */}
       <div style={{ ...card, marginBottom: hasSaved || history.length > 0 ? 4 : 14 }}>
         {dynamic ? (<>
-          <Button onClick={createDynamic} disabled={!ready || saveBusy} size="lg" leftIcon={<Zap size={17} />} style={{ width: "100%" }}>
-            {saveBusy ? "Création…" : "Créer le QR dynamique — essai 30 j"}
+          <Button onClick={createDynamic} disabled={!ready || saveBusy || dynBlocked} size="lg" leftIcon={dynBlocked ? <Lock size={17} /> : <Zap size={17} />} style={{ width: "100%" }}>
+            {dynBlocked ? `Limite de ${DYN_FREE_TRIALS_PER_MONTH} essais/mois atteinte` : saveBusy ? "Création…" : "Créer le QR dynamique — essai 30 j"}
           </Button>
           <p style={{ color: MUTED, fontSize: 11.5, margin: "9px 2px 0", lineHeight: 1.5 }}>
             Modifiable après impression + suivi des scans. Gratuit <strong style={{ color: "#FBBF24" }}>30 jours</strong> (2/mois), puis <Link href="/dashboard/qr-dynamique" style={{ color: G, fontWeight: 700, textDecoration: "none" }}>un abonnement</Link> pour rester actif.

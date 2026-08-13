@@ -9,6 +9,7 @@ import { Check, X as XIcon, Zap, Sparkles, Crown, ArrowLeft, Link2 } from "lucid
 import Link from "next/link"
 import { DYN_PAID_PLANS, DYN_TRIAL_DAYS, dynAnnualTotalLabel, dynMonthlyLabel, type DynPlanId } from "@/lib/dynamicPlans"
 import Particles from "@/components/Particles"
+import SubscribeButton from "@/components/SubscribeButton"
 
 const G = "#C9A84C"
 const MUTED = "#A8A190"
@@ -23,7 +24,6 @@ const PLAN_ICON: Record<DynPlanId, React.ReactNode> = {
 export default function QrDynamiquePage() {
   const [current, setCurrent] = useState<string>("none")
   const [annual, setAnnual] = useState(false)
-  const [loading, setLoading] = useState<string | null>(null)
   const [canceled, setCanceled] = useState(false)
 
   useEffect(() => {
@@ -36,21 +36,19 @@ export default function QrDynamiquePage() {
     })
   }, [])
 
-  async function subscribe(planId: DynPlanId) {
-    if (current === planId) return
-    setLoading(planId)
+  // Renvoie l'URL de paiement Stripe (product="dynamic") ; le SubscribeButton y
+  // redirige en fin d'animation. Throw -> le bouton se réinitialise proprement.
+  async function dynCheckoutUrl(planId: DynPlanId): Promise<string | void> {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = "/auth/login"; return }
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product: "dynamic", plan: planId, annual }),
-      })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-      else { setLoading(null); alert(data.error || "Impossible d'ouvrir le paiement.") }
-    } catch { setLoading(null) }
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product: "dynamic", plan: planId, annual }),
+    })
+    const data = await res.json()
+    if (!data.url) throw new Error(data.error || "Impossible d'ouvrir le paiement.")
+    return data.url as string
   }
 
   const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: 22 }
@@ -120,11 +118,24 @@ export default function QrDynamiquePage() {
                 {annual ? `soit ${dynAnnualTotalLabel(p.id)} € facturés à l'année` : "sans engagement, résiliable à tout moment"}
               </p>
 
-              <button onClick={() => subscribe(p.id)} disabled={isCurrent || loading !== null}
-                style={{ width: "100%", minHeight: 46, borderRadius: 12, border: highlight ? "none" : `1px solid ${G}55`, cursor: isCurrent ? "default" : "pointer", marginBottom: 18,
-                  background: isCurrent ? "rgba(255,255,255,0.05)" : highlight ? G : "transparent", color: isCurrent ? MUTED : highlight ? "#080808" : G, fontSize: 14, fontWeight: 700, opacity: loading && loading !== p.id ? 0.5 : 1, transition: "all .15s" }}>
-                {isCurrent ? "Palier actuel" : loading === p.id ? "Ouverture…" : `Choisir ${p.label}`}
-              </button>
+              {isCurrent ? (
+                <button disabled
+                  style={{ width: "100%", minHeight: 46, borderRadius: 12, border: `1px solid ${G}55`, cursor: "default", marginBottom: 18, background: "rgba(255,255,255,0.05)", color: MUTED, fontSize: 14, fontWeight: 700 }}>
+                  Palier actuel
+                </button>
+              ) : (
+                <div style={{ marginBottom: 18 }}>
+                  <SubscribeButton
+                    label={`Choisir ${p.label}`}
+                    accent={p.color}
+                    successLabel="Redirection vers le paiement…"
+                    minScanMs={1600}
+                    height={46}
+                    onSubscribe={() => dynCheckoutUrl(p.id)}
+                    onError={() => {}}
+                  />
+                </div>
+              )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                 {p.perks.map((perk, i) => (

@@ -82,6 +82,21 @@ export default function UpgradePage() {
     return data.url as string
   }
 
+  // URL de paiement pour l'offre SÉPARÉE « QR Dynamique » (product: "dynamic").
+  async function dynCheckoutUrl(planId: string): Promise<string | void> {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = "/auth/login"; return }
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product: "dynamic", plan: planId, annual, userId: user.id }),
+    })
+    const data = await res.json()
+    if (!data.url) throw new Error("URL de paiement manquante")
+    return data.url as string
+  }
+
   const G = useAccent(); const MUTED = "#8A8478"
 
   // Cette page est hors du layout dashboard : on applique l'accent au document
@@ -246,9 +261,15 @@ export default function UpgradePage() {
                       </div>
                     ))}
                   </div>
-                  <Link href="/dashboard/qr-dynamique" style={{ display: "block", textAlign: "center", padding: "11px", borderRadius: 11, textDecoration: "none", fontSize: 13.5, fontWeight: 700, background: highlight ? G : "transparent", color: highlight ? "#080808" : G, border: highlight ? "none" : `1px solid ${G}55` }}>
-                    Choisir {p.label}
-                  </Link>
+                  <SubscribeButton
+                    label={`Choisir ${p.label}`}
+                    accent={p.color}
+                    successLabel="Redirection vers le paiement…"
+                    minScanMs={1600}
+                    height={44}
+                    onSubscribe={() => dynCheckoutUrl(p.id)}
+                    onError={() => {}}
+                  />
                 </div>
               )
             })}

@@ -124,6 +124,7 @@ export const PLANS: Record<PlanId, Plan> = {
       { text: "Export PNG / JPG / PDF HD", included: true },
       { text: "Bibliothèque premium", included: true },
       { text: "Styles avancés + aperçus premium", included: true },
+      { text: "Accès API · 1 000 appels / mois", included: true },
       { text: "Support prioritaire", included: true },
     ],
   },
@@ -137,7 +138,7 @@ export const PLANS: Record<PlanId, Plan> = {
     badge: null,
     limits: { pages: null, views: null, qr: null, team: 5 },
     caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"] },
-    features: ["Pages illimitées", "Vues illimitées", "QR codes illimités", "Génération IA illimitée", "Équipe · 5 membres", "Marque blanche", "API (bientôt)"],
+    features: ["Pages illimitées", "Vues illimitées", "QR codes illimités", "Génération IA illimitée", "Équipe · 5 membres", "Marque blanche", "Accès API"],
     perks: [
       { text: "Pages illimitées", included: true },
       { text: "Vues illimitées", included: true },
@@ -151,7 +152,7 @@ export const PLANS: Record<PlanId, Plan> = {
       { text: "Génération IA illimitée + rapports", included: true },
       { text: "5 membres d'équipe", included: true },
       { text: "Marque blanche", included: true },
-      { text: "Accès API", included: true, soon: true },
+      { text: "Accès API · 10 000 appels / mois", included: true },
       { text: "Support 24/7 prioritaire", included: true },
     ],
   },
@@ -182,6 +183,8 @@ export const canAI = (id?: string | null): boolean => getPlan(id).caps.ai
 // true = le plan retire le branding "Créé avec QRowg" des pages publiques
 export const canRemoveBranding = (id?: string | null): boolean => getPlan(id).caps.removeBranding
 export const canPageIntro = (id?: string | null): boolean => getPlan(id).caps.pageIntro
+// Accès à l'API publique (clés qrk_ + endpoints /v1) : réservé Pro et Business.
+export const canApi = (id?: string | null): boolean => PLAN_RANK[getPlan(id).id] >= PLAN_RANK.pro
 export const canExport = (id: string | null | undefined, fmt: ExportFormat): boolean => getPlan(id).caps.exportFormats.includes(fmt)
 // Plan minimum requis pour une capacité (pour les messages d'upsell)
 export const minPlanFor = (cap: "printStudio" | "qrStudioAdvanced" | "ai"): PlanId => {
@@ -213,6 +216,6 @@ export const PLAN_COMPARISON: { feature: string; free: string; starter: string; 
   { feature: "Analytics", free: "De base", starter: "Standard", pro: "Avancés + export", business: "Avancés + export" },
   { feature: "Équipe", free: "—", starter: "—", pro: "—", business: "5 membres" },
   { feature: "Marque blanche", free: "—", starter: "—", pro: "—", business: "✓" },
-  { feature: "API", free: "—", starter: "—", pro: "—", business: "Bientôt" },
+  { feature: "API", free: "—", starter: "—", pro: "1 000 / mois", business: "10 000 / mois" },
   { feature: "Support", free: "Communauté", starter: "Standard", pro: "Prioritaire", business: "24/7 VIP" },
 ]

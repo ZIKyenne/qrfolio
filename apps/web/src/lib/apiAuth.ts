@@ -4,6 +4,7 @@
 import type { NextRequest } from "next/server"
 import { createHash } from "node:crypto"
 import { createAdminClient } from "@/lib/supabase/server"
+import { canApi } from "@/lib/plans"
 
 export type ApiAuth = { userId: string; keyId: string }
 
@@ -23,6 +24,11 @@ export async function authApiKey(req: NextRequest): Promise<ApiAuth | null> {
 
   if (!data || !data.is_active) return null
   if (data.expires_at && new Date(data.expires_at) < new Date()) return null
+
+  // L'accès API est réservé Pro+ : une clé reste inerte si le plan du propriétaire
+  // a expiré / été rétrogradé (ferme le trou d'un compte gratuit appelant /v1).
+  const { data: prof } = await admin.from("profiles").select("plan").eq("id", data.user_id).maybeSingle()
+  if (!canApi((prof as any)?.plan)) return null
 
   // Trace d'utilisation (fire-and-forget).
   admin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", data.id).then(() => {}, () => {})

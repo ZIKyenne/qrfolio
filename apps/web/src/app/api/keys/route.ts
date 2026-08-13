@@ -6,6 +6,14 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { randomBytes, createHash } from "node:crypto"
 import { rateLimit } from "@/lib/rateLimit"
+import { canApi } from "@/lib/plans"
+
+// Vérifie que l'utilisateur a un plan autorisant l'API (Pro+). Ferme le trou où un
+// compte gratuit pouvait créer une clé en appelant directement /api/keys.
+async function requireApiPlan(supabase: any, userId: string): Promise<boolean> {
+  const { data } = await supabase.from("profiles").select("plan").eq("id", userId).single()
+  return canApi(data?.plan)
+}
 
 // Plafond de clés actives par compte : borne le nombre de buckets de rate-limit
 // (chaque clé a son propre quota 120/min) pour empêcher un compte de contourner
@@ -25,6 +33,10 @@ export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+
+  if (!(await requireApiPlan(supabase, user.id))) {
+    return NextResponse.json({ error: "L'accès API nécessite le plan Pro ou Business.", upgrade: true }, { status: 403 })
+  }
 
   if (!(await rateLimit("apikey-create:" + user.id, 10, 3600_000))) {
     return NextResponse.json({ error: "Trop de créations de clés. Réessayez plus tard." }, { status: 429 })
@@ -55,6 +67,10 @@ export async function PATCH(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+
+  if (!(await requireApiPlan(supabase, user.id))) {
+    return NextResponse.json({ error: "L'accès API nécessite le plan Pro ou Business.", upgrade: true }, { status: 403 })
+  }
 
   if (!(await rateLimit("apikey-regen:" + user.id, 20, 3600_000))) {
     return NextResponse.json({ error: "Trop de régénérations. Réessayez plus tard." }, { status: 429 })

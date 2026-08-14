@@ -773,6 +773,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   // Sur un support ROND, le contenu doit tenir dans le CERCLE inscrit (≈ 0,707 × Ø) :
   // on impose une marge plancher (~15 %) pour ne jamais rogner le titre/QR/bouton au bord.
   const pad = Math.max(isRound ? unit * 0.15 : 0, unit * 0.09 * ePad)
+  const cornerInset = isRound ? unit * 0.15 : pad * 0.5   // repères de coin visibles même sur un rond (près du carré inscrit)
   const titleSize = unit * 0.11 * eTitle
   // Taille du QR pilotée par la PHYSIQUE (item.qrMm × facteur), convertie en px via l'échelle du support
   // (physW = largeur physique en mm que représente `w`). => aperçu, planche PDF et contrôle réfèrent LE MÊME mm.
@@ -845,7 +846,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     : frame === "double"
     ? <><div style={{ position: "absolute", inset: pad * 0.42, border: `1.5px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} /><div style={{ position: "absolute", inset: pad * 0.64, border: `1px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 5, opacity: 0.6, pointerEvents: "none" }} /></>
     : frame === "coins"
-    ? <><Corner p={pal.rule} pos={{ top: pad * 0.5, left: pad * 0.5 }} /><Corner p={pal.rule} pos={{ top: pad * 0.5, right: pad * 0.5 }} r /><Corner p={pal.rule} pos={{ bottom: pad * 0.5, left: pad * 0.5 }} b /><Corner p={pal.rule} pos={{ bottom: pad * 0.5, right: pad * 0.5 }} b r /></>
+    ? <><Corner p={pal.rule} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>
     : null
 
   let body: React.ReactNode
@@ -886,7 +887,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
       {layout.deco === "frame" && <div style={{ position: "absolute", inset: pad * 0.5, border: `2px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} />}
       {layout.deco === "footer" && <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: unit * 0.04, background: pal.band }} />}
       {layout.deco === "diagonal" && <div style={{ position: "absolute", top: -h * 0.3, right: -w * 0.2, width: w * 0.9, height: h * 0.5, background: pal.band, opacity: 0.16, transform: "rotate(-24deg)", pointerEvents: "none" }} />}
-      {layout.deco === "ornate" && <><Corner p={pal.rule} pos={{ top: pad * 0.5, left: pad * 0.5 }} /><Corner p={pal.rule} pos={{ top: pad * 0.5, right: pad * 0.5 }} r /><Corner p={pal.rule} pos={{ bottom: pad * 0.5, left: pad * 0.5 }} b /><Corner p={pal.rule} pos={{ bottom: pad * 0.5, right: pad * 0.5 }} b r /></>}
+      {layout.deco === "ornate" && <><Corner p={pal.rule} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>}
     </div>
   )
 }

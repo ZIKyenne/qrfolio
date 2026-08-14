@@ -253,14 +253,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <button onClick={() => exportQr("svg")} disabled={!ok || busy} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 14, fontWeight: 700, cursor: ok ? "pointer" : "default", opacity: ok ? 1 : 0.5 }}>SVG</button>
             </div>
             <button onClick={() => { setControl(false); setTimeout(() => window.print(), 180) }} disabled={!ok} style={{ width: "100%", marginTop: 10, minHeight: 46, borderRadius: 12, border: `1px solid ${C.gold}66`, background: "transparent", color: C.gold, fontSize: 14, fontWeight: 700, cursor: ok ? "pointer" : "default", opacity: ok ? 1 : 0.5 }}>Exporter la planche (PDF · taille réelle)</button>
-            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, fond perdu inclus).</p>
+            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe inclus"}).</p>
           </div>
         </div>
       )}
 
       {/* Planche d'impression — window.print() -> PDF à taille réelle (mm), fidèle à l'aperçu. */}
       <div className="ps-print-root" aria-hidden>
-        <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${pageDims(item).pageWmm}mm ${pageDims(item).pageHmm}mm;margin:0}}`}</style>
+        <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${mediaDims(item).mediaWmm}mm ${mediaDims(item).mediaHmm}mm;margin:0}}`}</style>
         <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} title={title} cta={item.cta} size={size} qrValue={qrValue} logo={logo} logoUrl={logoUrl} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
       </div>
     </div>
@@ -423,20 +423,45 @@ function pageDims(item: Item) {
   const trimW = item.shape === "round" ? item.hMm : item.hMm * item.ratio
   return { pageWmm: +(trimW + 2 * item.bleed).toFixed(1), pageHmm: +(item.hMm + 2 * item.bleed).toFixed(1) }
 }
+/* Marge blanche prépresse pour loger les traits de coupe (coupe droite uniquement ;
+   les supports ronds sont découpés à la forme -> pas de repères rectangulaires). */
+const CROP_MARGIN_MM = 4, CROP_LEN_MM = 3, CROP_STROKE_MM = 0.25
+function marksMargin(item: Item) { return item.shape === "round" ? 0 : CROP_MARGIN_MM }
+/* Dimensions du SUPPORT physique imprimé (planche + marge des traits de coupe) = format @page réel. */
+function mediaDims(item: Item) {
+  const { pageWmm, pageHmm } = pageDims(item)
+  const m = marksMargin(item)
+  return { mediaWmm: +(pageWmm + 2 * m).toFixed(1), mediaHmm: +(pageHmm + 2 * m).toFixed(1) }
+}
 /* Planche d'impression : le support à sa taille RÉELLE (mm) rendu en haute résolution puis
    remis à l'échelle physique — consommé par window.print() -> PDF prêt imprimeur (fidèle à l'aperçu). */
 function PrintSheet(props: Omit<React.ComponentProps<typeof SupportVisual>, "w" | "h">) {
   const { item } = props
   const { pageWmm, pageHmm } = pageDims(item)
+  const { mediaWmm, mediaHmm } = mediaDims(item)
+  const m = marksMargin(item)
   const long = 1600
   const bigW = item.ratio >= 1 ? long : Math.round(long * item.ratio)
   const bigH = item.shape === "round" ? bigW : Math.round(bigW / item.ratio)
   const scale = (pageWmm * 96 / 25.4) / bigW  // px haute-déf -> mm réels (1mm = 96/25.4 px CSS)
+  // Traits de coupe : au trait de rogne (trim), dans la marge blanche, sans toucher le fond perdu.
+  const L = CROP_LEN_MM, S = CROP_STROKE_MM
+  const tlx = m + item.bleed, tty = m + item.bleed
+  const trx = m + pageWmm - item.bleed, tby = m + pageHmm - item.bleed
+  const marks: { left: number; top: number; width: number; height: number }[] = m === 0 ? [] : [
+    { left: tlx, top: m - L, width: S, height: L }, { left: m - L, top: tty, width: L, height: S },           // haut-gauche
+    { left: trx, top: m - L, width: S, height: L }, { left: mediaWmm - m, top: tty, width: L, height: S },     // haut-droite
+    { left: tlx, top: mediaHmm - m, width: S, height: L }, { left: m - L, top: tby, width: L, height: S },     // bas-gauche
+    { left: trx, top: mediaHmm - m, width: S, height: L }, { left: mediaWmm - m, top: tby, width: L, height: S }, // bas-droite
+  ]
   return (
-    <div style={{ width: `${pageWmm}mm`, height: `${pageHmm}mm`, overflow: "hidden", background: props.pal.flat }}>
-      <div style={{ width: bigW, height: bigH, transformOrigin: "top left", transform: `scale(${scale})` }}>
-        <SupportVisual {...props} w={bigW} h={bigH} />
+    <div style={{ position: "relative", width: `${mediaWmm}mm`, height: `${mediaHmm}mm`, background: "#fff", overflow: "hidden" }}>
+      <div style={{ position: "absolute", left: `${m}mm`, top: `${m}mm`, width: `${pageWmm}mm`, height: `${pageHmm}mm`, overflow: "hidden", background: props.pal.flat }}>
+        <div style={{ width: bigW, height: bigH, transformOrigin: "top left", transform: `scale(${scale})` }}>
+          <SupportVisual {...props} w={bigW} h={bigH} />
+        </div>
       </div>
+      {marks.map((mk, i) => <div key={i} aria-hidden style={{ position: "absolute", background: "#000", left: `${mk.left}mm`, top: `${mk.top}mm`, width: `${mk.width}mm`, height: `${mk.height}mm` }} />)}
     </div>
   )
 }

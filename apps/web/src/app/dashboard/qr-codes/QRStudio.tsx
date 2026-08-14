@@ -24,7 +24,6 @@ import { BatchQrModal } from "./BatchQrModal"
 import type QRCodeStyling from "qr-code-styling"
 
 // Editeur libre (Fabric.js) : charge uniquement cote client (touche au DOM)
-const PrintStudio = dynamic(() => import("./PrintStudio"), { ssr: false })
 
 type QRCode = {
   id:               string
@@ -506,10 +505,6 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   const [suppOpenGroup, setSuppOpenGroup] = useState("Affiche")
   const [suppObjective, setSuppObjective] = useState("")
   const [suppTheme,   setSuppTheme]   = useState("auto")
-  // -- Editeur libre (PrintStudio / Fabric) -----------------------------
-  const [editorOpen,    setEditorOpen]    = useState(false)
-  const [editorQrUrl,   setEditorQrUrl]   = useState<string | null>(null)
-  const [editorLoading, setEditorLoading] = useState(false)
   const [suppTitle,   setSuppTitle]   = useState("")
   const [suppSubtitle,setSuppSubtitle]= useState("Scannez pour voir le menu")
   const [suppPhone,   setSuppPhone]   = useState("")
@@ -2373,48 +2368,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       )}
 
       {/* -- Modale UPGRADE (conversion) ---------------------------------------- */}
-      {/* -- Editeur libre (PrintStudio / Fabric) plein ecran ------------------ */}
-      {editorOpen && editorQrUrl && active && (
-        <PrintStudio
-          qrId={active.id}
-          qrDataUrl={editorQrUrl}
-          userPlan={userPlan}
-          onClose={() => setEditorOpen(false)}
-          onUpsell={(feature, plan) => setUpsell({ feature, plan })}
-          prefill={{
-            name: suppTitle || active.pages?.title || "",
-            phone: suppPhone,
-            website: suppWebsite,
-          }}
-          regenQr={async (opts, format = "png") => {
-            try {
-              const mergedStyle: QRStyleConfig = {
-                ...styleConf,
-                ...(opts.dotStyle ? { dotStyle: opts.dotStyle as typeof styleConf.dotStyle } : {}),
-                ...(opts.cornerStyle ? { cornerStyle: opts.cornerStyle as typeof styleConf.cornerStyle } : {}),
-                ...(opts.eyeColor !== undefined ? { eyeColor: opts.eyeColor } : {}),
-                ...(opts.margin !== undefined ? { margin: opts.margin } : {}),
-              }
-              const blob = await getQRBlob({
-                data: qrUrl, fg: opts.fg ?? fg, bg: opts.bg ?? bg,
-                ecc: opts.ecc ?? effectiveEcc,
-                style: mergedStyle,
-                size: 1000,
-              }, format === "svg" ? "svg" : "png")
-              if (!blob) return null
-              // SVG : on renvoie le markup brut (pour l'injecter en vectoriel dans une
-              // affiche) ; PNG : une data URL (pour l'image du canvas Fabric).
-              return format === "svg" ? await blob.text() : await blobToDataUrl(blob)
-            } catch { return null }
-          }}
-          qrInit={{
-            fg: fg || "#0A0A0A", bg: bg || "#FFFFFF", ecc: effectiveEcc,
-            dotStyle: styleConf.dotStyle, cornerStyle: styleConf.cornerStyle,
-            eyeColor: styleConf.eyeColor, hasLogo: !!styleConf.logoUrl, margin: styleConf.margin,
-            logoSize: styleConf.logoUrl ? (styleConf.logoSize ?? 18) : 0,
-          }}
-        />
-      )}
+      {/* L'ancien éditeur libre Fabric a été retiré (convergence) : « Ouvrir QR Print Studio »
+          redirige vers le Print Studio guidé /dashboard/print-studio (cf. docs/PRINT-STUDIO-CONVERGENCE.md). */}
 
       {upsell && (() => {
         const isBiz = upsell.plan === "business"
@@ -3843,10 +3798,10 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         {activeTab === "supports" && active && (
           <div className="qr-scroll" style={{ display:"flex", flexDirection:"column", flex:1, overflow:"auto", padding:"18px 16px", gap:14 }}>
             {/* CTA principal : ouvrir l'editeur QR Print Studio */}
-            <button type="button" onClick={openEditor} disabled={editorLoading}
-              style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:9, padding:"15px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:12, color:"#080808", fontSize:14, fontWeight:800, cursor:editorLoading?"wait":"pointer", boxShadow:"0 8px 26px color-mix(in srgb, var(--accent) 30%, transparent)", opacity:editorLoading?0.7:1 }}>
-              {editorLoading ? <Loader2 size={16} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Sparkles size={16}/>}
-              {editorLoading ? "Ouverture..." : "Ouvrir QR Print Studio"}
+            <button type="button" onClick={openEditor}
+              style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:9, padding:"15px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:12, color:"#080808", fontSize:14, fontWeight:800, cursor:"pointer", boxShadow:"0 8px 26px color-mix(in srgb, var(--accent) 30%, transparent)" }}>
+              <Sparkles size={16}/>
+              Ouvrir QR Print Studio
             </button>
             <p style={{ color:MUTED, fontSize:11.5, textAlign:"center" as const, margin:0, lineHeight:1.5 }}>
               Créez une affiche, un flyer, une carte ou un sticker prêt à imprimer.

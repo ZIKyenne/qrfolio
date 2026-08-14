@@ -108,8 +108,12 @@ déjà composé (on n'ouvre pas une page blanche).
       panneau adapté au type ; persistés. Barre d'ajout (texte + formes + icônes).
 - [x] **Tranche 3 (commit 3dda7dba)** : **aimantation au centre** du support (seuil 8px) avec guides dorés ;
       **calques** (Premier plan / Arrière-plan = réordonne le tableau) ; **centrage** exact H/V de l'élément sélectionné.
-- [ ] **QR** déplaçable/redimensionnable comme un élément (aujourd'hui via position/décalage bornés) — prochaine tranche.
-- [ ] Aligner/répartir MULTI-éléments (`alignDistribute` de l'ancien), annuler/refaire — confort avancé.
+- [x] **Tranche 4 (commit 01055044)** : **QR déplaçable librement** (« Position libre du QR ») — sort de la mise
+      en page, glissé à la souris (poignée dorée) avec aimantation/guides ; taille physique conservée (reste scannable) ; persisté.
+- [ ] Aligner/répartir MULTI-éléments (`alignDistribute` de l'ancien) + annuler/refaire — **confort avancé, optionnel**.
+
+**Studio libre = COMPLET pour l'essentiel** : ajouter/placer/aimanter/ordonner **textes + icônes + formes + QR**, borné au
+support prêt-imprimeur, rendu identique aperçu/planche, persisté. Reste seulement le confort avancé (aligner multi + undo/redo).
 - [ ] (Le canvas Fabric n'est finalement PAS nécessaire pour la 1re valeur : `FreeEl` + drag suffit et reste borné/robuste.)
 
 ### Phase 4 — Export pro unifié

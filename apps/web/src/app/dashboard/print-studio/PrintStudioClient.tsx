@@ -228,7 +228,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [saving, setSaving] = useState(false)
   const [saveName, setSaveName] = useState("")
   // Ma charte (logo + accent + police), au compte ; repli localStorage.
-  const [brandKit, setBrandKit] = useState<{ logo: string | null; accent: string; typo: string } | null>(null)
+  const [brandKit, setBrandKit] = useState<{ logo: string | null; accent: string; accent2: string; typo: string } | null>(null)
   const [brandRemote, setBrandRemote] = useState(false)
   // Modèles : d'abord le compte (Supabase, multi-appareils) ; repli localStorage si la table n'existe pas encore.
   useEffect(() => {
@@ -241,11 +241,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         else { try { const raw = localStorage.getItem("qrowg-print-presets"); if (raw) setSavedPresets(JSON.parse(raw)) } catch {} }
       })
     // Charte : peut renvoyer plusieurs lignes en équipe (une par membre) -> on prend la plus récente.
-    sb.from("print_brand_kit").select("logo, accent, typo").order("updated_at", { ascending: false }).limit(1).maybeSingle()
+    // Sélection avec accent2 (couleur secondaire) : si la colonne n'existe pas encore (migration non appliquée),
+    // la requête échoue → repli localStorage (aucune donnée perdue). Sinon, source de vérité = le compte.
+    sb.from("print_brand_kit").select("logo, accent, accent2, typo").order("updated_at", { ascending: false }).limit(1).maybeSingle()
       .then(({ data, error }) => {
         if (!alive) return
-        if (!error) { setBrandRemote(true); if (data) setBrandKit({ logo: (data as any).logo || null, accent: (data as any).accent || "auto", typo: (data as any).typo || "auto" }) }
-        else { try { const raw = localStorage.getItem("qrowg-print-brandkit"); if (raw) setBrandKit(JSON.parse(raw)) } catch {} }
+        if (!error) { setBrandRemote(true); if (data) setBrandKit({ logo: (data as any).logo || null, accent: (data as any).accent || "auto", accent2: (data as any).accent2 || "", typo: (data as any).typo || "auto" }) }
+        else { try { const raw = localStorage.getItem("qrowg-print-brandkit"); if (raw) { const k = JSON.parse(raw); setBrandKit({ accent2: "", ...k }) } } catch {} }
       })
     return () => { alive = false }
   }, [])
@@ -396,16 +398,23 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     } catch { setBgPhotos([]); setBgMsg("Recherche indisponible.") }
     finally { setBgLoading(false) }
   }
+  // La charte capture le LOOK courant : logo, couleur principale (accent), couleur secondaire (= couleur du bouton), police.
   async function saveBrandKit() {
-    const kit = { logo: logoUrl, accent, typo: eTypo }
+    const kit = { logo: logoUrl, accent, accent2: ctaColor || "", typo: eTypo }
     setBrandKit(kit)
-    if (brandRemote) { try { await createClient().from("print_brand_kit").upsert({ logo: logoUrl, accent, typo: eTypo, updated_at: new Date().toISOString() }, { onConflict: "user_id" }) } catch {} }
-    else { try { localStorage.setItem("qrowg-print-brandkit", JSON.stringify(kit)) } catch {} }
+    try { localStorage.setItem("qrowg-print-brandkit", JSON.stringify(kit)) } catch {}   // backup local systématique
+    if (brandRemote) {
+      // Tente avec accent2 ; si la colonne manque (migration non appliquée), replie sur les colonnes historiques.
+      const sb = createClient(), now = new Date().toISOString()
+      const { error } = await sb.from("print_brand_kit").upsert({ logo: logoUrl, accent, accent2: ctaColor || null, typo: eTypo, updated_at: now }, { onConflict: "user_id" })
+      if (error) { try { await sb.from("print_brand_kit").upsert({ logo: logoUrl, accent, typo: eTypo, updated_at: now }, { onConflict: "user_id" }) } catch {} }
+    }
   }
   function applyBrandKit() {
     if (!brandKit) return
     if (brandKit.logo) { setLogoUrl(brandKit.logo); setLogo("objet") }
     if (brandKit.accent) setAccent(brandKit.accent)
+    if (brandKit.accent2) setCtaColor(brandKit.accent2)   // couleur secondaire → bouton
     if (brandKit.typo) setETypo(brandKit.typo)
   }
   // ── Persistance d'un design PAR QR (colonne qr_codes.print_design) ──────────────
@@ -796,10 +805,19 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </div>
             <div>
               <p style={secLabel}>Ma charte</p>
+              {brandKit && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, padding: "6px 10px", borderRadius: 9, background: C.surfaceUp, border: `1px solid ${C.hairline}` }}>
+                  {brandKit.logo && <img src={brandKit.logo} alt="" style={{ width: 24, height: 24, borderRadius: 5, objectFit: "contain", background: "#fff", flexShrink: 0 }} />}
+                  <span title="Couleur principale" style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, border: `1px solid ${C.hairline}`, background: ACCENTS.find(a => a.id === brandKit!.accent)?.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)" }} />
+                  {brandKit.accent2 && <span title="Couleur secondaire (bouton)" style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, border: `1px solid ${C.hairline}`, background: brandKit.accent2 }} />}
+                  <span style={{ fontSize: 11, color: C.fgMuted, marginLeft: "auto", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{TYPOS.find(t => t.id === brandKit!.typo)?.label || "Du thème"}</span>
+                </div>
+              )}
               <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
                 {brandKit && <button onClick={applyBrandKit} style={chipStyle(false)}>Appliquer</button>}
-                <button onClick={saveBrandKit} style={{ ...chipStyle(false), whiteSpace: "nowrap" }}>{brandKit ? "Mettre à jour" : "Enregistrer (logo · accent · police)"}</button>
+                <button onClick={saveBrandKit} style={{ ...chipStyle(false), whiteSpace: "nowrap" }}>{brandKit ? "Mettre à jour la charte" : "Enregistrer ma charte (logo · couleurs · police)"}</button>
               </div>
+              <p style={{ margin: "6px 0 0", fontSize: 10.5, color: C.fgFaint }}>Capture le look courant — logo, couleur principale (accent), secondaire (bouton), police.</p>
             </div>
           </Panel>
 

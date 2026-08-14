@@ -559,7 +559,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       </div>
 
       {/* Barre d'action ancrée */}
-      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: `${C.surface}f2`, borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "12px 16px calc(12px + env(safe-area-inset-bottom))", zIndex: 30 }}>
+      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "12px 16px calc(12px + env(safe-area-inset-bottom))", zIndex: 30 }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
           <span style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "6px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> Prêt à imprimer</> : <><AlertTriangle size={14} /> Un réglage à corriger</>}</span>
           <Button variant="primary" onClick={() => setControl(true)}>Vérifier & exporter</Button>

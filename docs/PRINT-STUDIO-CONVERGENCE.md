@@ -76,12 +76,17 @@ déjà composé (on n'ouvre pas une page blanche).
 
 ## Roadmap phasée
 
-### Phase 1 — Trancher la duplication (rapide, décision produit)
-- [ ] **Décider le gating** : Guidé = gratuit ; Mode libre + exports pro (SVG/CMYK/PDF-pro) = **Pro** (reprend
-      le modèle de l'ancien). Le guidé reste gratuit et complet pour l'usage courant.
-- [ ] **Une seule entrée** : le bouton « Print Studio » des QR ouvre le **nouveau** (guidé), pré-chargé avec le
-      QR du code. Retirer/rediriger l'ancienne entrée BÊTA pour ne plus avoir deux outils.
-- [ ] **Corriger le bug de format** de `/api/print-design` (élargir `ALLOWED_FORMATS`) si on garde la persistance de l'ancien.
+### Décisions produit ACTÉES (2026-08-14)
+1. **Entrée unique tout de suite** — l'ancien BÊTA est redirigé vers le nouveau guidé maintenant (mode libre revient en Phase 3).
+2. **Tout gratuit** — Guidé + Studio libre + tous les exports gratuits (pas de gating Pro).
+3. **RGB haute-déf assumé** — pas de CMYK serveur ; le pré-vol AVERTIT sur le hors-gamut sans bloquer.
+
+### Phase 1 — Trancher la duplication ✅ FAIT (commit à suivre)
+- [x] **Une seule entrée** : le bouton « Ouvrir QR Print Studio » (depuis un QR) ouvre le **nouveau** guidé,
+      pré-chargé via `?qr=<short_code>` (QR présélectionné dans « Mes QR »). L'ancien éditeur Fabric n'est plus atteignable.
+- [x] **Gratuit** : plus de gating sur cette entrée.
+- [ ] **Bug de format** `/api/print-design` (`ALLOWED_FORMATS` legacy) : moot tant que l'ancien est débranché ;
+      à corriger en Phase 2 quand on rebranche la persistance sur le nouveau.
 
 ### Phase 2 — Persistance & éléments (valeur immédiate)
 - [ ] **Sauvegarder/rouvrir un design** de support (aujourd'hui le nouveau ne persiste que modèles/charte, pas la

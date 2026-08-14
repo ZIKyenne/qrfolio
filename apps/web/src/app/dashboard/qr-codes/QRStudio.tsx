@@ -1915,26 +1915,12 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
   }
 
-  // -- Ouvrir l'editeur libre (genere le vrai QR du code actif) ---------------
-  const openEditor = async () => {
-    if (!active || editorLoading) return
-    // Gating : QR Print Studio requiert au moins le plan Starter
-    if (!canPrintStudio(userPlan)) {
-      setUpsell({ feature: "QR Print Studio (éditeur d'imprimables)", plan: minPlanFor("printStudio") })
-      return
-    }
-    setEditorLoading(true)
-    try {
-      const qrBlob = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: renderStyle, size: 1000 }, "png")
-      if (!qrBlob) throw new Error("Generation du QR impossible")
-      const dataUrl = await blobToDataUrl(qrBlob)
-      setEditorQrUrl(dataUrl)
-      setEditorOpen(true)
-    } catch (e) {
-      toast.error("Impossible d'ouvrir l'editeur : " + (e as Error).message)
-    } finally {
-      setEditorLoading(false)
-    }
+  // -- Ouvrir le Print Studio (GUIDÉ, gratuit) — entrée unique, pré-chargé avec ce QR ---------------
+  // Convergence : l'ancien éditeur libre Fabric est remplacé par le nouveau Print Studio guidé
+  // (cf. docs/PRINT-STUDIO-CONVERGENCE.md). On passe le short_code pour présélectionner le QR.
+  const openEditor = () => {
+    if (!active) return
+    window.location.href = `/dashboard/print-studio?qr=${active.short_code}`
   }
 
   // -- Generer preview support -----------------------------------------------

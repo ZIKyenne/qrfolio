@@ -216,7 +216,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         list.push({ id: `i_${r.id}`, label: r.label || (r.kind ? `QR ${r.kind}` : "QR instantané"), url })
       }
       setMyQRs(list)
-      setQrPickId(prev => prev || (list[0]?.id ?? ""))
+      // Présélection depuis ?qr=<short_code> (ouverture depuis un QR code) : on cible ce QR précis.
+      let preferred = ""
+      try { const q = new URLSearchParams(window.location.search).get("qr"); if (q && list.some(x => x.id === `q_${q}`)) preferred = `q_${q}` } catch {}
+      setQrPickId(prev => prev || preferred || (list[0]?.id ?? ""))
     }).catch(() => { /* liste vide : on retombe sur l'import PNG, pas de crash */ })
     return () => { alive = false }
   }, [])

@@ -103,7 +103,9 @@ déjà composé (on n'ouvre pas une page blanche).
       déplaçables à la souris** (positions en fraction → mêmes coordonnées à l'aperçu 3D et à l'impression) ;
       panneau élément (texte/taille/couleur/alignement/graisse/suppression) ; rendus par `SupportVisual` (packshot +
       planche) et **persistés** (`captureDesign` v2). Pas de Fabric : `FreeEl[]` + drag React (léger, robuste).
-- [ ] **Éléments** : icônes (biblio de l'ancien), formes, badges, filets — mêmes `FreeEl` déplaçables.
+- [x] **Tranche 2 (commit 20844fd7)** : **icônes** (15 lucide non-marque) + **formes** (cercle/rrect/pilule/ligne)
+      libres, ajoutables/déplaçables ; rendu unifié `FreeElView` (texte/icône/forme) = une seule source éditeur+rendu ;
+      panneau adapté au type ; persistés. Barre d'ajout (texte + formes + icônes).
 - [ ] **QR** déplaçable/redimensionnable comme un élément (aujourd'hui piloté par position/décalage).
 - [ ] **Calques**, **aimantation/guides**, **aligner/répartir** (réutiliser `alignDistribute` de l'ancien), annuler/refaire.
 - [ ] (Le canvas Fabric n'est finalement PAS nécessaire pour la 1re valeur : `FreeEl` + drag suffit et reste borné/robuste.)

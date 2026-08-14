@@ -338,7 +338,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           <span style={{ fontSize: 13, fontWeight: 700, color: C.gold, letterSpacing: 0.3 }}>Print Studio</span>
         </header>
         <div style={{ maxWidth: 1040, margin: "0 auto" }}>
-          <style>{`.ps-card{transition:border-color .15s var(--mo-ease,ease), transform .15s var(--mo-ease,ease), background .15s}.ps-card:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);transform:translateY(-2px)}`}</style>
+          <style>{`.ps-card{transition:border-color .15s var(--mo-ease,ease), transform .15s var(--mo-ease,ease), background .15s}.ps-card:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);transform:translateY(-2px)}@media(min-width:720px){.ps-rail{flex-wrap:wrap!important;overflow:visible!important}.ps-rail-fade{display:none!important}}`}</style>
           <h1 style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: "clamp(24px,4vw,34px)", fontWeight: 600, letterSpacing: "-0.02em", margin: "10px 0 6px" }}>Choisissez un support</h1>
           <p style={{ color: C.fgMuted, fontSize: 14, margin: "0 0 18px" }}>Un objet réel, déjà réussi. Trois suffisent : à table, en vitrine, dans la main.</p>
 
@@ -397,35 +397,41 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Volets + action */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {/* Modèles « 1 clic » — applique une combinaison complète de réglages, live. */}
-          <div>
-            <p style={{ margin: "0 0 7px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.fgFaint }}>Modèles · 1 clic</p>
-            <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
-              {PRESETS.map(p => <button key={p.id} onClick={() => applyPreset(p)} style={chipStyle(activePreset === p.id)}>{p.label}</button>)}
+          {/* Styles rapides — modèles prêts, modèles perso, charte, regroupés au calme. */}
+          <div style={{ background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+            <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600, color: C.fg }}>Styles rapides</span>
+            <div>
+              <p style={secLabel}>Modèles prêts</p>
+              <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                {PRESETS.map(p => <button key={p.id} onClick={() => applyPreset(p)} style={chipStyle(activePreset === p.id)}>{p.label}</button>)}
+              </div>
             </div>
-            {/* Mes modèles — enregistrés sur ce navigateur */}
-            <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, marginTop: 7, alignItems: "center" }}>
-              {savedPresets.map(p => (
-                <span key={p.id} style={{ ...chipStyle(activeSavedId === p.id), padding: "0 4px 0 12px", gap: 2 }}>
-                  <button onClick={() => applyCfg(p.cfg)} style={{ background: "none", border: "none", color: "inherit", font: "inherit", fontWeight: "inherit", cursor: "pointer", padding: "8px 2px 8px 0" }}>{p.name}</button>
-                  <button onClick={() => deletePreset(p.id)} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 6px", opacity: 0.55, fontSize: 15, lineHeight: 1 }}>×</button>
-                </span>
-              ))}
-              {saving ? (
-                <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
-                  <input autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveCurrent(); if (e.key === "Escape") { setSaving(false); setSaveName("") } }} placeholder="Nom du modèle…" style={{ ...inputStyle, height: 38, width: 150 }} />
-                  <button onClick={saveCurrent} style={{ ...chipStyle(true), minHeight: 38 }}>OK</button>
-                  <button onClick={() => { setSaving(false); setSaveName("") }} aria-label="Annuler" style={{ ...chipStyle(false), minHeight: 38, padding: "0 12px" }}>×</button>
-                </span>
-              ) : (
-                <button onClick={() => setSaving(true)} style={{ ...chipStyle(false), minHeight: 38, whiteSpace: "nowrap", flexShrink: 0 }}>＋ Enregistrer ce style</button>
-              )}
+            <div>
+              <p style={secLabel}>Mes modèles</p>
+              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
+                {savedPresets.map(p => (
+                  <span key={p.id} style={{ ...chipStyle(activeSavedId === p.id), padding: "0 4px 0 12px", gap: 2 }}>
+                    <button onClick={() => applyCfg(p.cfg)} style={{ background: "none", border: "none", color: "inherit", font: "inherit", fontWeight: "inherit", cursor: "pointer", padding: "8px 2px 8px 0" }}>{p.name}</button>
+                    <button onClick={() => deletePreset(p.id)} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 8px", opacity: 0.6, fontSize: 15, lineHeight: 1 }}>×</button>
+                  </span>
+                ))}
+                {saving ? (
+                  <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                    <input autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveCurrent(); if (e.key === "Escape") { setSaving(false); setSaveName("") } }} placeholder="Nom du modèle…" style={{ ...inputStyle, height: 40, width: 160 }} />
+                    <button onClick={saveCurrent} style={{ ...chipStyle(true), minHeight: 40 }}>OK</button>
+                    <button onClick={() => { setSaving(false); setSaveName("") }} aria-label="Annuler" style={{ ...chipStyle(false), minHeight: 40, padding: "0 12px" }}>×</button>
+                  </span>
+                ) : (
+                  <button onClick={() => setSaving(true)} style={{ ...chipStyle(false), whiteSpace: "nowrap", flexShrink: 0 }}>＋ Enregistrer ce style</button>
+                )}
+              </div>
             </div>
-            {/* Ma charte : logo + accent + police mémorisés au compte, appliqués en 1 clic. */}
-            <div style={{ display: "flex", gap: 7, marginTop: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.fgFaint, marginRight: 2 }}>Ma charte</span>
-              {brandKit && <button onClick={applyBrandKit} style={{ ...chipStyle(false), minHeight: 38 }}>Appliquer</button>}
-              <button onClick={saveBrandKit} style={{ ...chipStyle(false), minHeight: 38, whiteSpace: "nowrap" }}>{brandKit ? "Mettre à jour" : "Enregistrer (logo · accent · police)"}</button>
+            <div>
+              <p style={secLabel}>Ma charte</p>
+              <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+                {brandKit && <button onClick={applyBrandKit} style={chipStyle(false)}>Appliquer</button>}
+                <button onClick={saveBrandKit} style={{ ...chipStyle(false), whiteSpace: "nowrap" }}>{brandKit ? "Mettre à jour" : "Enregistrer (logo · accent · police)"}</button>
+              </div>
             </div>
           </div>
 
@@ -649,17 +655,19 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 /* ─────────────────────────── sous-composants ─────────────────────────── */
 
 const inputStyle: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 48, background: "#0A0A0A", border: `1px solid ${C.hairline}`, borderRadius: 12, color: C.fg, fontSize: 16, padding: "0 14px", outline: "none" }
+// Libellé de section/champ unifié (casse normale, muted) — même convention que <Field>.
+const secLabel: React.CSSProperties = { margin: "0 0 8px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }
 
 function Rail({ label, value, options, onPick }: { label: string; value: string; options: string[]; onPick: (v: string) => void }) {
   return (
     <div style={{ marginTop: 12 }}>
       <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.fgFaint }}>{label}</p>
-      {/* fondu à droite = repère « ça défile » quand la liste dépasse (26 métiers) */}
+      {/* Desktop : les puces s'enroulent (tout visible). Étroit : défilement horizontal + fondu. */}
       <div style={{ position: "relative" }}>
-        <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+        <div className="ps-rail" style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
           {options.map(o => <button key={o} onClick={() => onPick(o)} style={chipStyle(value === o)}>{o}</button>)}
         </div>
-        <div aria-hidden style={{ position: "absolute", top: 0, right: 0, bottom: 4, width: 28, pointerEvents: "none", background: "linear-gradient(90deg, transparent, #080808)" }} />
+        <div aria-hidden className="ps-rail-fade" style={{ position: "absolute", top: 0, right: 0, bottom: 4, width: 28, pointerEvents: "none", background: "linear-gradient(90deg, transparent, #080808)" }} />
       </div>
     </div>
   )

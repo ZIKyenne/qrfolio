@@ -35,6 +35,20 @@ const FRAME_LABEL: Record<string, string> = { aucun: "sans cadre", filet: "filet
 // Mises en page adaptées aux supports RONDS (centrées/symétriques) : les autres (bandeau, affiche, colonnes…)
 // supposent un rectangle et se retrouvent rognées par le cercle.
 const ROUND_LAYOUTS = new Set(["centre", "qrgeant", "cadre", "orne"])
+// Une mise en page est-elle COMPATIBLE avec la forme/le ratio du support ?
+// - rond : uniquement les mises en page centrées.
+// - « colonnes/split » (QR À CÔTÉ du texte) : besoin de largeur (ratio ≥ 1.15) sinon le texte est écrasé/déborde.
+function layoutOk(id: string, item: Item): boolean {
+  if (item.shape === "round") return ROUND_LAYOUTS.has(id)
+  const l = LAYOUT_BY_ID[id]
+  if (!l) return false
+  if (l.content === "split") return item.ratio >= 1.15
+  return true
+}
+// Ramène une mise en page vers une compatible (fallback = centré).
+function fitLayout(id: string, item: Item): string {
+  return layoutOk(id, item) ? id : "centre"
+}
 // Couleurs d'accent (override de l'ambiance) : « auto » = laisse l'ambiance décider.
 const ACCENTS: { id: string; label: string; hex: string }[] = [
   { id: "auto", label: "Auto", hex: "" },
@@ -237,11 +251,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const ok = canExport(controls)
 
   function applyPreset(p: Preset) {
-    setStyleId(p.style); setLayoutId(p.layout); setAccent(p.accent); setBgFinish(p.bgFinish); setFrame(p.frame)
+    // La mise en page du modèle est ramenée à une compatible avec le support courant (ex. « colonnes » sur un portrait).
+    setStyleId(p.style); setLayoutId(item ? fitLayout(p.layout, item) : p.layout); setAccent(p.accent); setBgFinish(p.bgFinish); setFrame(p.frame)
     setTitleCase(p.titleCase); setTitleWeight(p.titleWeight); setQrBadge(p.qrBadge); setECorner(p.eCorner); setEAccent(p.eAccent); setEAlign(p.eAlign)
   }
   function applyCfg(c: Record<string, any>) {
-    if (c.styleId) setStyleId(c.styleId); if (c.layoutId) setLayoutId(c.layoutId); if (c.accent) setAccent(c.accent)
+    if (c.styleId) setStyleId(c.styleId); if (c.layoutId) setLayoutId(item ? fitLayout(c.layoutId, item) : c.layoutId); if (c.accent) setAccent(c.accent)
     if (c.bgFinish) setBgFinish(c.bgFinish); if (c.frame) setFrame(c.frame); if (c.titleCase) setTitleCase(c.titleCase)
     if (c.titleWeight) setTitleWeight(c.titleWeight); if (c.qrBadge) setQrBadge(c.qrBadge); if (c.qrPos) setQrPos(c.qrPos)
     if (c.eCorner) setECorner(c.eCorner); if (c.eAccent) setEAccent(c.eAccent); if (c.eTypo) setETypo(c.eTypo); if (c.eAlign) setEAlign(c.eAlign)
@@ -286,8 +301,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
   function switchSupport(id: string) {
     const it = ITEM_BY_ID[id]; if (!it) return
-    // Un layout rectangulaire (bandeau, affiche…) serait rogné sur un rond -> on recentre.
-    if (it.shape === "round" && !ROUND_LAYOUTS.has(layoutId)) setLayoutId("centre")
+    // La mise en page courante peut ne pas convenir au nouveau format (rond, ou colonnes sur un portrait) -> on recentre.
+    if (!layoutOk(layoutId, it)) setLayoutId(fitLayout(layoutId, it))
     setItemId(id); setDeclineOpen(false)
   }
 
@@ -513,7 +528,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 ))}
               </div>
             </Field>
-            <Field label="Mise en page"><RailInline value={layoutId} options={LAYOUTS.filter(l => item.shape !== "round" || ROUND_LAYOUTS.has(l.id)).map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
+            <Field label="Mise en page"><RailInline value={layoutId} options={LAYOUTS.filter(l => layoutOk(l.id, item)).map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
           </Panel>
 
           {/* Volet DESIGN — 100 % design (aucun réglage du QR : il est fourni tel quel) */}
@@ -762,7 +777,9 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const titleSize = unit * 0.11 * eTitle
   // Taille du QR pilotée par la PHYSIQUE (item.qrMm × facteur), convertie en px via l'échelle du support
   // (physW = largeur physique en mm que représente `w`). => aperçu, planche PDF et contrôle réfèrent LE MÊME mm.
-  const qrPx = Math.max(24, item.qrMm * size.factor * (w / physW))
+  // Garde-fou : le QR ne dépasse jamais la largeur (rect) ni le cercle inscrit (rond) — évite tout débordement.
+  const qrMax = isRound ? unit * 0.66 : unit * 0.86
+  const qrPx = Math.min(qrMax, Math.max(24, item.qrMm * size.factor * (w / physW)))
   const radiusEl = eCorner === "vif" ? 0 : eCorner === "rond" ? 999 : 10
 
   // Couleur d'accent : override d'ambiance (« auto » garde pal.band / pal.ctaBg).

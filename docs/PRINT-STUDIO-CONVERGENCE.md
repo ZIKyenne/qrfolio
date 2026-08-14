@@ -106,8 +106,10 @@ déjà composé (on n'ouvre pas une page blanche).
 - [x] **Tranche 2 (commit 20844fd7)** : **icônes** (15 lucide non-marque) + **formes** (cercle/rrect/pilule/ligne)
       libres, ajoutables/déplaçables ; rendu unifié `FreeElView` (texte/icône/forme) = une seule source éditeur+rendu ;
       panneau adapté au type ; persistés. Barre d'ajout (texte + formes + icônes).
-- [ ] **QR** déplaçable/redimensionnable comme un élément (aujourd'hui piloté par position/décalage).
-- [ ] **Calques**, **aimantation/guides**, **aligner/répartir** (réutiliser `alignDistribute` de l'ancien), annuler/refaire.
+- [x] **Tranche 3 (commit 3dda7dba)** : **aimantation au centre** du support (seuil 8px) avec guides dorés ;
+      **calques** (Premier plan / Arrière-plan = réordonne le tableau) ; **centrage** exact H/V de l'élément sélectionné.
+- [ ] **QR** déplaçable/redimensionnable comme un élément (aujourd'hui via position/décalage bornés) — prochaine tranche.
+- [ ] Aligner/répartir MULTI-éléments (`alignDistribute` de l'ancien), annuler/refaire — confort avancé.
 - [ ] (Le canvas Fabric n'est finalement PAS nécessaire pour la 1re valeur : `FreeEl` + drag suffit et reste borné/robuste.)
 
 ### Phase 4 — Export pro unifié

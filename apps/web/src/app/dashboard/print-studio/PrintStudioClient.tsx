@@ -28,7 +28,8 @@ function resolveLayoutId(itemLayout: string): string {
 }
 const PAD_MM = [0.7, 1, 1.35]      // multiplicateur d'air autour (ePad 0..2)
 const TITLE_MM = [0.82, 1, 1.2]    // multiplicateur de titre (eTitle 0..2)
-const FINISH_LABEL: Record<string, string> = { uni: "Uni", degrade: "Dégradé", grain: "Grain" }
+const FINISH_LABEL: Record<string, string> = { uni: "Uni", degrade: "Dégradé", grain: "Grain", rayures: "Rayures", quadrillage: "Quadrillage" }
+const FINISH_OPTS = [{ id: "uni", label: "Uni" }, { id: "degrade", label: "Dégradé" }, { id: "grain", label: "Grain" }, { id: "rayures", label: "Rayures" }, { id: "quadrillage", label: "Quadrillage" }]
 const FRAME_LABEL: Record<string, string> = { aucun: "sans cadre", filet: "filet", double: "double filet", coins: "coins ornés" }
 // Couleurs d'accent (override de l'ambiance) : « auto » = laisse l'ambiance décider.
 const ACCENTS: { id: string; label: string; hex: string }[] = [
@@ -49,6 +50,18 @@ function readableOn(hex: string): string {
   const L = (0.299 * parseInt(m[1], 16) + 0.587 * parseInt(m[2], 16) + 0.114 * parseInt(m[3], 16)) / 255
   return L > 0.6 ? "#0A0A0A" : "#FFFFFF"
 }
+// Modèles « 1 clic » : combinaisons de réglages prêtes (ambiance + mise en page + accent + fond + cadre + textes).
+type Preset = { id: string; label: string; style: string; layout: string; accent: string; bgFinish: string; frame: string; titleCase: string; titleWeight: string; qrBadge: string; eCorner: string; eAccent: string; eAlign: "left" | "center" | "right" }
+const PRESETS: Preset[] = [
+  { id: "epure", label: "Épuré", style: "minimal", layout: "centre", accent: "auto", bgFinish: "uni", frame: "aucun", titleCase: "normal", titleWeight: "normal", qrBadge: "carre", eCorner: "adouci", eAccent: "trait", eAlign: "center" },
+  { id: "luxe", label: "Luxe", style: "luxgold", layout: "cadre", accent: "or", bgFinish: "degrade", frame: "coins", titleCase: "upper", titleWeight: "normal", qrBadge: "cercle", eCorner: "adouci", eAccent: "plein", eAlign: "center" },
+  { id: "nuit", label: "Nuit", style: "premiumdark", layout: "centre", accent: "auto", bgFinish: "degrade", frame: "filet", titleCase: "normal", titleWeight: "normal", qrBadge: "carre", eCorner: "adouci", eAccent: "plein", eAlign: "center" },
+  { id: "pop", label: "Pop", style: "neon", layout: "bandeau", accent: "rose", bgFinish: "grain", frame: "aucun", titleCase: "upper", titleWeight: "gras", qrBadge: "carre", eCorner: "vif", eAccent: "plein", eAlign: "left" },
+  { id: "nature", label: "Nature", style: "sage", layout: "centre", accent: "vert", bgFinish: "uni", frame: "filet", titleCase: "normal", titleWeight: "normal", qrBadge: "carre", eCorner: "rond", eAccent: "plein", eAlign: "center" },
+  { id: "affiche", label: "Affiche", style: "sunset", layout: "affiche", accent: "corail", bgFinish: "degrade", frame: "aucun", titleCase: "upper", titleWeight: "gras", qrBadge: "carre", eCorner: "vif", eAccent: "plein", eAlign: "left" },
+  { id: "carte", label: "Carte", style: "modernblack", layout: "colonnes", accent: "auto", bgFinish: "uni", frame: "filet", titleCase: "normal", titleWeight: "normal", qrBadge: "carre", eCorner: "adouci", eAccent: "trait", eAlign: "left" },
+  { id: "edito", label: "Édito", style: "inkedit", layout: "diagonale", accent: "auto", bgFinish: "quadrillage", frame: "aucun", titleCase: "upper", titleWeight: "normal", qrBadge: "carre", eCorner: "vif", eAccent: "trait", eAlign: "left" },
+]
 
 export default function PrintStudioClient({ canAccess }: { canAccess: boolean }) {
   const [phase, setPhase] = useState<"library" | "studio">("library")
@@ -133,9 +146,15 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const qrValue = qrSource === "mine" ? (pickedQR?.url || "https://qrowg.com") : "https://qrowg.com"
   const qrImg = qrSource === "png" ? qrPng : null
   const qrReady = qrSource === "png" ? !!qrPng : !!pickedQR
+  const activePreset = PRESETS.find(p => p.style === styleId && p.layout === layoutId && p.accent === accent && p.bgFinish === bgFinish && p.frame === frame && p.titleCase === titleCase && p.titleWeight === titleWeight && p.qrBadge === qrBadge && p.eCorner === eCorner && p.eAccent === eAccent && p.eAlign === eAlign)?.id
   const ambiances = useMemo(() => ambiancesFor(metier), [metier])
   const controls = useMemo(() => item ? evaluateControls(item, style, size) : [], [item, style, size])
   const ok = canExport(controls)
+
+  function applyPreset(p: Preset) {
+    setStyleId(p.style); setLayoutId(p.layout); setAccent(p.accent); setBgFinish(p.bgFinish); setFrame(p.frame)
+    setTitleCase(p.titleCase); setTitleWeight(p.titleWeight); setQrBadge(p.qrBadge); setECorner(p.eCorner); setEAccent(p.eAccent); setEAlign(p.eAlign)
+  }
 
   function openItem(id: string) {
     const it = ITEM_BY_ID[id]; if (!it) return
@@ -239,6 +258,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Volets + action */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Modèles « 1 clic » — applique une combinaison complète de réglages, live. */}
+          <div>
+            <p style={{ margin: "0 0 7px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.fgFaint }}>Modèles · 1 clic</p>
+            <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
+              {PRESETS.map(p => <button key={p.id} onClick={() => applyPreset(p)} style={chipStyle(activePreset === p.id)}>{p.label}</button>)}
+            </div>
+          </div>
+
           {/* Volet QR — on RÉUTILISE un QR existant ou on importe un PNG. Aucune création. */}
           <Panel id="qr" title="Le QR" resume={qrSource === "png" ? (qrPng ? "PNG importé" : "importer un PNG") : (pickedQR ? pickedQR.label : "choisir un QR")} open={open} setOpen={setOpen}>
             <Seg value={qrSource} options={["mine", "png"]} labels={["Mes QR", "Importer un PNG"]} onPick={v => setQrSource(v as "mine" | "png")} />
@@ -315,7 +342,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
           {/* Volet DESIGN — 100 % design (aucun réglage du QR : il est fourni tel quel) */}
           <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen}>
-            <Field label="Fond"><Seg value={bgFinish} options={["uni", "degrade", "grain"]} onPick={setBgFinish} labels={["Uni", "Dégradé", "Grain"]} /></Field>
+            <Field label="Fond"><RailInline value={bgFinish} options={FINISH_OPTS} onPick={setBgFinish} /></Field>
             <Field label="Cadre"><Seg value={frame} options={["aucun", "filet", "double", "coins"]} onPick={setFrame} labels={["Aucun", "Filet", "Double", "Coins"]} /></Field>
             <Field label="Taille du titre"><Step value={eTitle} min={0} max={2} onChange={setETitle} labels={["plus petit", "normal", "plus grand"]} /></Field>
             <Field label="Air autour"><Step value={ePad} min={0} max={2} onChange={setEPad} labels={["serré", "normal", "large"]} /></Field>
@@ -503,10 +530,16 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const alignItems = eAlign === "left" ? "flex-start" : eAlign === "right" ? "flex-end" : "center"
   // Fini du fond : uni, dégradé (voile lumière→ombre) ou grain (trame de points fine). Composé sur pal.bg.
   const grainStep = Math.max(4, unit * 0.02)
+  const gridStep = Math.max(8, unit * 0.06)
+  const stripeStep = Math.max(6, unit * 0.05)
   const bgCss = bgFinish === "degrade"
     ? `linear-gradient(155deg, rgba(255,255,255,0.10), transparent 42%, rgba(0,0,0,0.16)), ${pal.bg}`
     : bgFinish === "grain"
     ? `radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1.5px) 0 0 / ${grainStep}px ${grainStep}px, ${pal.bg}`
+    : bgFinish === "rayures"
+    ? `repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 ${stripeStep * 0.5}px, transparent ${stripeStep * 0.5}px ${stripeStep}px), ${pal.bg}`
+    : bgFinish === "quadrillage"
+    ? `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / ${gridStep}px ${gridStep}px, linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / ${gridStep}px ${gridStep}px, ${pal.bg}`
     : pal.bg
   const base: React.CSSProperties = { width: w, height: h, boxSizing: "border-box", background: bgCss, color: pal.fg, borderRadius: isRound ? "50%" : (item.ratio >= 2 || item.ratio <= 0.5 ? 6 : 10), overflow: "hidden", position: "relative", display: "flex", padding: pad }
 

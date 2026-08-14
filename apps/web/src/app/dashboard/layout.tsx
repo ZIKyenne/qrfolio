@@ -25,6 +25,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/goals", icon: Target, label: "Objectifs" },
   { href: "/dashboard/leads", icon: Inbox, label: "Messages" },
   { href: "/dashboard/qr-codes", icon: QrCode, label: "QR Codes" },
+  { href: "/dashboard/print-studio", icon: Printer, label: "Print Studio" },
   { href: "/dashboard/qr-link", icon: Zap, label: "QR Dynamique" },
   { href: "/dashboard/team", icon: Users, label: "Équipe" },
   { href: "/dashboard/domains", icon: Globe, label: "Domaines" },

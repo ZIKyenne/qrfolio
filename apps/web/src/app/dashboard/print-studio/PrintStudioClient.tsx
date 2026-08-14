@@ -21,7 +21,7 @@ import {
   LAYOUT_BY_ID, LAYOUTS, STYLES, TYPOS, SIZES, MESSAGES, type Item, type Style,
 } from "./catalog"
 import { sceneLayers, paletteFromStyle, scaleFor, SCENES } from "./mockup"
-import { evaluateControls, canExport } from "./states"
+import { printPreflight, hexContrastRatio } from "../qr-codes/printPreflight"
 import { color as C, radius as R } from "./tokens"
 
 // item.layout est parfois une clé de contenu ('stack'), parfois un id de layout ('orne').
@@ -107,6 +107,19 @@ const ICON_CATS: { cat: string; items: { name: string; label: string }[] }[] = [
 const SHAPES: { id: string; label: string; g: string }[] = [
   { id: "circle", label: "Cercle", g: "●" }, { id: "rrect", label: "Rectangle", g: "▢" }, { id: "pill", label: "Pilule", g: "▬" }, { id: "line", label: "Ligne", g: "―" },
 ]
+// Safe-area des éléments libres : plus petite distance d'un élément au bord du support (mm).
+// Sert au pré-vol (mode Studio libre) — un élément au ras du bord = risque de rognage.
+function freeElsEdgeMm(els: FreeEl[], item: Item): number {
+  const wmm = item.shape === "round" ? item.hMm : item.hMm * item.ratio, hmm = item.hMm
+  let min = Infinity
+  for (const e of els) {
+    const wEl = e.kind === "icon" ? e.size : e.w
+    const hEl = e.kind === "shape" ? (e.h2 ?? 0.12) : e.size
+    const m = Math.min(e.x * wmm, (1 - (e.x + wEl)) * wmm, e.y * hmm, (1 - (e.y + hEl)) * hmm)
+    if (m < min) min = m
+  }
+  return min === Infinity ? item.margin : Math.max(0, +min.toFixed(1))
+}
 // Modèles « 1 clic » : combinaisons de réglages prêtes (ambiance + mise en page + accent + fond + cadre + textes).
 type Preset = { id: string; label: string; style: string; layout: string; accent: string; bgFinish: string; frame: string; titleCase: string; titleWeight: string; qrBadge: string; eCorner: string; eAccent: string; eAlign: "left" | "center" | "right" }
 const PRESETS: Preset[] = [
@@ -309,15 +322,24 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const ambiances = useMemo(() => ambiancesFor(metier), [metier])
   // Taille EFFECTIVE du QR = palier × curseur fin. Sert au rendu ET au contrôle (guard ≥ 20 mm honnête).
   const effSize = { ...size, factor: +(size.factor * qrScale).toFixed(3) }
-  const controls = useMemo(() => {
-    let base = item ? evaluateControls(item, style, effSize) : []
-    // Contrôles honnêtes : ce qu'on ne mesure pas réellement n'est pas affiché en vert.
-    if (qrSource === "png") base = base.map(c => c.cle === "contrast" ? { ...c, ok: true, gravite: "avertissement" as const, valeur: "PNG — à vérifier" } : c)
-    if (bgImage) base = base.map(c => c.cle === "textContrast" ? { ...c, ok: true, gravite: "avertissement" as const, valeur: "photo — à vérifier" } : c)
-    return base
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item, style, size, qrScale, qrSource, bgImage])
-  const ok = canExport(controls)
+  // Pré-vol impression (moteur pur `printPreflight`, testé) — mesures HONNÊTES du design courant.
+  // - Contraste : modules du QR vs son fond immédiat (pastille blanche). Sur photo SANS pastille : non mesurable (na).
+  // - Zone franche : le QR (marge intégrée) + pastille blanche la garantissent ; le vrai risque = QR posé sur une PHOTO sans pastille.
+  // - Safe-area : distance des éléments libres au bord (mode Studio libre).
+  const noBadgeOnPhoto = qrBadge === "aucune" && !!bgImage
+  const preflight = printPreflight({
+    qrSizeMm: item ? +(item.qrMm * effSize.factor).toFixed(1) : null,
+    contrastRatio: (qrSource === "png" || noBadgeOnPhoto) ? null : hexContrastRatio(style.qr, style.qrBg),
+    quietZoneMm: qrBadge === "aucune" ? (bgImage ? 1 : null) : 5,
+    logoPct: 0,
+    // Export vectoriel (QR + texte) = net à toute taille ; seule une PHOTO de fond est limitée par le DPI du support.
+    dpi: item ? (bgImage ? item.dpi : Math.max(300, item.dpi)) : null,
+    edgeMarginMm: item ? (freeEls.length ? freeElsEdgeMm(freeEls, item) : item.margin) : null,
+    isScreen: false,
+    cmykRiskyColors: null,
+  })
+  const hasFail = preflight.checks.some(c => c.status === "fail")
+  const ok = !hasFail
 
   function applyPreset(p: Preset) {
     // La mise en page du modèle est ramenée à une compatible avec le support courant (ex. « colonnes » sur un portrait).
@@ -543,6 +565,16 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       const blob = await getQRBlob(opts, ext)
       if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qrowg-${item.support}.${ext}`.replace(/\s+/g, "-").toLowerCase(); a.click(); URL.revokeObjectURL(a.href); setDone(true); setTimeout(() => setDone(false), 1800) }
     } finally { setBusy(false) }
+  }
+
+  // « Corriger » un contrôle de pré-vol : ferme le contrôle, ouvre le bon volet, applique un correctif sûr quand c'est net.
+  function fixCheck(id: string) {
+    setControl(false)
+    if (id === "contrast") setOpen("allure")                                  // changer l'ambiance (couleurs du QR)
+    else if (id === "qrsize") { setSizeId("grand"); setOpen("qr") }           // agrandir le QR
+    else if (id === "quiet") { setQrBadge(qrBadge === "aucune" ? "carre" : "cercle"); setOpen("qr") }  // pastille = zone franche
+    else if (id === "margin") { if (!freeEls.length) setOpen("details") }     // en libre : l'utilisateur écarte l'élément du bord
+    else setOpen("details")
   }
 
   // Dernières closures pour les raccourcis clavier (montés une seule fois plus haut).
@@ -877,25 +909,40 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Barre d'action ancrée */}
       <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "12px 16px calc(12px + env(safe-area-inset-bottom))", zIndex: 30 }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
-          <span style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "6px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> Prêt à imprimer</> : <><AlertTriangle size={14} /> Un réglage à corriger</>}</span>
+          <button onClick={() => setControl(true)} title="Voir la vérification" style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, cursor: "pointer", color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "6px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> Prêt à imprimer</> : <><AlertTriangle size={14} /> {preflight.checks.filter(c => c.status === "fail").length} à corriger</>}</button>
           <Button variant="primary" onClick={() => setControl(true)}>Vérifier & exporter</Button>
         </div>
       </div>
 
-      {/* Écran CONTRÔLE avant export */}
-      <Modal open={control} onClose={() => setControl(false)} title="Contrôle avant export" maxWidth={520}>
+      {/* Écran CONTRÔLE avant export — pré-vol noté + messages actionnables + « Corriger ». */}
+      <Modal open={control} onClose={() => setControl(false)} title="Vérification impression" maxWidth={520}>
+        {/* Bandeau score : étoiles + note honnête (ce qu'on ne mesure pas ne compte pas). */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, background: hasFail ? "var(--danger-bg)" : preflight.score >= 90 ? "var(--success-bg)" : C.surfaceUp, border: `1px solid ${hasFail ? "var(--danger-border)" : preflight.score >= 90 ? "color-mix(in srgb,var(--success) 30%,transparent)" : C.hairline}`, marginBottom: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: hasFail ? C.bad : preflight.score >= 90 ? C.ok : C.fg }}>{preflight.grade}</span>
+            <span style={{ fontSize: 11.5, color: C.fgMuted }}>{"★".repeat(preflight.stars)}{"☆".repeat(5 - preflight.stars)} · {preflight.score}/100{preflight.scanDistanceM ? ` · lisible ~${preflight.scanDistanceM} m` : ""}</span>
+          </div>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {controls.map(c => (
-            <div key={c.cle} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 11, background: C.surfaceUp, border: `1px solid ${c.ok ? "transparent" : (c.gravite === "bloquant" ? `${C.badA55}` : `${C.goldA55}`)}` }}>
-              <span style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.ok ? `${C.okA22}` : (c.gravite === "bloquant" ? `${C.badA22}` : `${C.goldA22}`), color: c.ok ? C.ok : (c.gravite === "bloquant" ? C.bad : C.gold) }}>{c.ok ? <Check size={12} /> : <AlertTriangle size={12} />}</span>
-              <span style={{ flex: 1, fontSize: 13, color: C.fg }}>{c.libelle}{!c.ok && c.gravite === "avertissement" && <span style={{ color: C.gold, fontSize: 11 }}> · avertissement</span>}</span>
-              <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, color: C.fgMuted }}>{c.valeur}</span>
-            </div>
-          ))}
+          {preflight.checks.filter(c => c.status !== "na").map(c => {
+            const col = c.status === "ok" ? C.ok : c.status === "warn" ? C.gold : C.bad
+            const bgA = c.status === "ok" ? C.okA22 : c.status === "warn" ? C.goldA22 : C.badA22
+            const canFix = c.status !== "ok" && ["contrast", "qrsize", "quiet", "margin"].includes(c.id)
+            return (
+              <div key={c.id} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 11, background: C.surfaceUp, border: `1px solid ${c.status === "ok" ? "transparent" : (c.status === "fail" ? C.badA55 : C.goldA55)}` }}>
+                <span style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, marginTop: 1, display: "flex", alignItems: "center", justifyContent: "center", background: bgA, color: col }}>{c.status === "ok" ? <Check size={12} /> : <AlertTriangle size={12} />}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.fg }}>{c.label}</span>
+                  <p style={{ margin: "2px 0 0", fontSize: 11.5, color: C.fgMuted, lineHeight: 1.35 }}>{c.detail}</p>
+                </div>
+                {canFix && <button onClick={() => fixCheck(c.id)} style={{ flexShrink: 0, alignSelf: "center", background: C.goldSoft, border: `1px solid ${C.goldA55}`, color: C.gold, cursor: "pointer", fontSize: 11.5, fontWeight: 700, borderRadius: 8, padding: "6px 10px" }}>Corriger</button>}
+              </div>
+            )
+          })}
         </div>
         {!qrReady && <p style={{ margin: "12px 0 0", fontSize: 12, color: C.gold, display: "inline-flex", alignItems: "center", gap: 6 }}><AlertTriangle size={13} /> Ajoutez d'abord votre QR (volet « Le QR »).</p>}
         <div style={{ marginTop: 14 }}>
-          <Button variant="primary" fullWidth disabled={!ok || !qrReady} leftIcon={<Download size={18} />} onClick={() => { setControl(false); setPrinting(true) }}>{ok ? "Exporter la planche (PDF · taille réelle)" : "Corrigez le réglage rouge"}</Button>
+          <Button variant="primary" fullWidth disabled={!ok || !qrReady} leftIcon={<Download size={18} />} onClick={() => { setControl(false); setPrinting(true) }}>{ok ? "Exporter la planche (PDF · taille réelle)" : "Corrigez les points rouges"}</Button>
         </div>
         <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe"}, texte + QR vectoriels).</p>
         {qrSource === "mine" && (

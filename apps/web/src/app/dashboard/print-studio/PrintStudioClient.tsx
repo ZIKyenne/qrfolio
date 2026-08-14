@@ -770,15 +770,17 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
   const unit = Math.min(w, h)
   const isRound = item.shape === "round"
-  // Sur un support ROND, le contenu doit tenir dans le CERCLE inscrit (≈ 0,707 × Ø) :
-  // on impose une marge plancher (~15 %) pour ne jamais rogner le titre/QR/bouton au bord.
+  // Réf. de taille du TEXTE = min(w,h), REHAUSSÉE sur les supports très hauts/étroits (marque-page 55×160)
+  // pour que le titre ne soit pas riquiqui à côté du QR (le QR, lui, reste piloté par sa taille physique).
+  const sizeRef = unit * (item.ratio < 0.6 ? Math.min(1.5, 0.6 / item.ratio) : 1)
+  // Sur un support ROND, le contenu doit tenir dans le CERCLE inscrit (≈ 0,707 × Ø) : marge plancher (~15 %).
   const pad = Math.max(isRound ? unit * 0.15 : 0, unit * 0.09 * ePad)
   const cornerInset = isRound ? unit * 0.15 : pad * 0.5   // repères de coin visibles même sur un rond (près du carré inscrit)
-  const titleSize = unit * 0.11 * eTitle
-  // Taille du QR pilotée par la PHYSIQUE (item.qrMm × facteur), convertie en px via l'échelle du support
-  // (physW = largeur physique en mm que représente `w`). => aperçu, planche PDF et contrôle réfèrent LE MÊME mm.
-  // Garde-fou : le QR ne dépasse jamais la largeur (rect) ni le cercle inscrit (rond) — évite tout débordement.
-  const qrMax = isRound ? unit * 0.66 : unit * 0.86
+  const titleSize = sizeRef * 0.11 * eTitle
+  // Taille du QR pilotée par la PHYSIQUE (item.qrMm × facteur), convertie en px via l'échelle du support.
+  // Garde-fou anti-débordement : rond = QR modeste (cercle inscrit + kicker retiré) ; « QR géant » = laisse la place
+  // au titre/bouton ; sinon borné à la largeur. Aperçu/planche/contrôle réfèrent toujours le MÊME mm hors garde-fou.
+  const qrMax = isRound ? unit * 0.44 : (layout.content === "qrbig" ? unit * 0.5 : unit * 0.86)
   const qrPx = Math.min(qrMax, Math.max(24, item.qrMm * size.factor * (w / physW)))
   const radiusEl = eCorner === "vif" ? 0 : eCorner === "rond" ? 999 : 10
 
@@ -798,9 +800,9 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const btnFg = ctaColor ? readableOn(ctaColor) : ctaFg
   const btnStroke = ctaColor || bandColor
   const clampTxt: React.CSSProperties = { maxWidth: "100%", overflowWrap: "anywhere" }
-  const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: unit * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: bandColor, ...clampTxt }}>{brand}</div>
+  const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: bandColor, ...clampTxt }}>{brand}</div>
   const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol, ...clampTxt }}>{shownTitle}</div>
-  const subtitleEl = subtitle.trim() ? <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt }}>{subtitle}</div> : null
+  const subtitleEl = subtitle.trim() ? <div style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt }}>{subtitle}</div> : null
   // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
   const qrInner = qrImg
     ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
@@ -815,7 +817,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   // Décalage fin du QR (curseurs X/Y) — n'affecte que le QR, pas le reste du bloc.
   const qrEl = (qrDx || qrDy) ? <div style={{ transform: `translate(${qrDx * 18}%, ${qrDy * 18}%)`, display: "inline-block" }}>{qrBadgeEl}</div> : qrBadgeEl
   const ctaEl = eAccent === "aucun" ? null : (
-    <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxSizing: "border-box",
+    <div style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxSizing: "border-box",
       ...(eAccent === "trait" ? { border: `2px solid ${btnStroke}`, color: btnStroke }
         : eAccent === "degrade" ? { background: `linear-gradient(135deg, ${shade(btnBg, 0.12)}, ${shade(btnBg, -0.28)})`, color: btnFg }
         : { background: btnBg, color: btnFg }) }}>{cta}</div>
@@ -848,7 +850,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     : frame === "double"
     ? <><div style={{ position: "absolute", inset: pad * 0.42, border: `1.5px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} /><div style={{ position: "absolute", inset: pad * 0.64, border: `1px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 5, opacity: 0.6, pointerEvents: "none" }} /></>
     : frame === "coins"
-    ? <><Corner p={pal.rule} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>
+    ? <><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>
     : null
 
   let body: React.ReactNode
@@ -868,11 +870,13 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   } else if (layout.content === "poster") {
     body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between", minWidth: 0 }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems, maxWidth: "100%" }}>{kickerEl}<div style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: titleCol, ...clampTxt }}>{shownTitle}</div>{subtitleEl}</div><div style={{ display: "flex", alignItems: "center", gap: pad, alignSelf: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
   } else { // stack / center — la position du QR se règle (haut / centre / bas)
+    // Sur un rond, on retire le kicker (marque) : le cercle inscrit ne tient pas kicker+titre+QR+bouton sans rogner.
+    const kick = isRound ? null : kickerEl
     const stackInner = qrPos === "haut"
-      ? <>{qrEl}{kickerEl}{titleEl}{subtitleEl}{ctaEl}</>
+      ? <>{qrEl}{kick}{titleEl}{subtitleEl}{ctaEl}</>
       : qrPos === "bas"
-      ? <>{kickerEl}{titleEl}{subtitleEl}{ctaEl}{qrEl}</>
-      : <>{kickerEl}{titleEl}{subtitleEl}{qrEl}{ctaEl}</>
+      ? <>{kick}{titleEl}{subtitleEl}{ctaEl}{qrEl}</>
+      : <>{kick}{titleEl}{subtitleEl}{qrEl}{ctaEl}</>
     body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "center", gap: unit * (isRound ? 0.032 : 0.045), textAlign: eAlign, minHeight: 0, overflow: "hidden" }}>{stackInner}</div>
   }
 
@@ -889,12 +893,13 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
       {layout.deco === "frame" && <div style={{ position: "absolute", inset: pad * 0.5, border: `2px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} />}
       {layout.deco === "footer" && <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: unit * 0.04, background: pal.band }} />}
       {layout.deco === "diagonal" && <div style={{ position: "absolute", top: -h * 0.3, right: -w * 0.2, width: w * 0.9, height: h * 0.5, background: pal.band, opacity: 0.16, transform: "rotate(-24deg)", pointerEvents: "none" }} />}
-      {layout.deco === "ornate" && <><Corner p={pal.rule} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>}
+      {layout.deco === "ornate" && <><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>}
     </div>
   )
 }
-function Corner({ p, pos, r, b }: { p: string; pos: React.CSSProperties; r?: boolean; b?: boolean }) {
-  return <span style={{ position: "absolute", width: 14, height: 14, ...(pos), borderTop: b ? "none" : `2px solid ${p}`, borderBottom: b ? `2px solid ${p}` : "none", borderLeft: r ? "none" : `2px solid ${p}`, borderRight: r ? `2px solid ${p}` : "none", pointerEvents: "none" }} />
+function Corner({ p, pos, r, b, s = 14 }: { p: string; pos: React.CSSProperties; r?: boolean; b?: boolean; s?: number }) {
+  const bw = `${Math.max(1.5, s * 0.16)}px solid ${p}`
+  return <span style={{ position: "absolute", width: s, height: s, ...(pos), borderTop: b ? "none" : bw, borderBottom: b ? bw : "none", borderLeft: r ? "none" : bw, borderRight: r ? bw : "none", pointerEvents: "none" }} />
 }
 
 /* Largeur physique du support (trim), en mm — sert d'échelle mm→px pour le QR. */

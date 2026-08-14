@@ -4,9 +4,10 @@
 // Bibliothèque -> aperçu packshot + 3 volets bornés -> contrôle avant export -> export.
 // Consomme les modules purs : catalog / mockup / states / tokens.
 
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions } from "../qr-codes/qrRender"
 import { normalizeUrl } from "../qr-link/qrLinkUtils"
@@ -55,8 +56,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [destUrl, setDestUrl] = useState("")   // lien réel encodé par le QR (sinon page QRowg)
+  const [destMode, setDestMode] = useState<"page" | "url">("url")  // pointer vers une page QRowg publiée ou un lien externe
+  const [myPages, setMyPages] = useState<{ slug: string; title: string }[]>([])
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const logoInput = useRef<HTMLInputElement>(null)
+
+  // Pages publiées de l'utilisateur (RLS = seulement les siennes / celles de son équipe) pour le sélecteur de destination.
+  useEffect(() => {
+    let alive = true
+    createClient().from("pages").select("slug,title,status").eq("status", "published").order("created_at", { ascending: false }).limit(50)
+      .then(({ data }) => { if (alive && data) setMyPages(data.filter(p => p.slug).map(p => ({ slug: p.slug as string, title: (p.title as string) || (p.slug as string) }))) })
+    return () => { alive = false }
+  }, [])
 
   const item = itemId ? ITEM_BY_ID[itemId] : null
   const style = STYLE_BY_ID[styleId] || STYLE_BY_ID.premiumdark
@@ -180,7 +191,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <input value={message} onChange={e => setMessage(e.target.value)} placeholder="Message libre…" style={inputStyle} />
             </Field>
             {dests.length > 0 && <Field label="Destination du scan"><Cycle value={dest} onPrev={() => setDestIdx(i => (i + dests.length - 1) % dests.length)} onNext={() => setDestIdx(i => (i + 1) % dests.length)} /></Field>}
-            <Field label="Lien du QR"><input value={destUrl} onChange={e => setDestUrl(e.target.value)} inputMode="url" placeholder="ex : monsite.fr — sinon page QRowg par défaut" style={inputStyle} /></Field>
+            <Field label="Lien du QR">
+              {myPages.length > 0 && <div style={{ marginBottom: 8 }}><Seg value={destMode} options={["page", "url"]} labels={["Ma page QRowg", "Lien externe"]} onPick={v => { setDestMode(v as "page" | "url"); if (v === "page") { const p = myPages[0]; setDestUrl(p ? `${window.location.origin}/${p.slug}` : "") } else setDestUrl("") }} /></div>}
+              {destMode === "page" && myPages.length > 0 ? (
+                <select value={destUrl} onChange={e => setDestUrl(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}>
+                  <option value="">— Choisir une page publiée —</option>
+                  {myPages.map(p => <option key={p.slug} value={`${window.location.origin}/${p.slug}`}>{p.title} · /{p.slug}</option>)}
+                </select>
+              ) : (
+                <input value={destUrl} onChange={e => setDestUrl(e.target.value)} inputMode="url" placeholder="ex : monsite.fr — sinon page QRowg par défaut" style={inputStyle} />
+              )}
+            </Field>
           </Panel>
 
           {/* Volet ALLURE */}

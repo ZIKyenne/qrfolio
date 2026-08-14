@@ -118,7 +118,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [blockY, setBlockY] = useState(0)              // placement vertical du bloc (curseur, -1..1)
   const [qrDx, setQrDx] = useState(0)                  // décalage fin du QR en X (-1..1)
   const [qrDy, setQrDy] = useState(0)                  // décalage fin du QR en Y (-1..1)
-  const [bgImage, setBgImage] = useState<string | null>(null)  // photo de fond optionnelle (data URL)
+  const [bgImage, setBgImage] = useState<string | null>(null)  // photo de fond optionnelle (data URL ou URL Unsplash)
+  const [bgSearch, setBgSearch] = useState("")                 // recherche de photos (Unsplash via /api/unsplash)
+  const [bgPhotos, setBgPhotos] = useState<{ id: string; thumb: string; regular: string; author: string }[]>([])
+  const [bgLoading, setBgLoading] = useState(false)
+  const [bgMsg, setBgMsg] = useState("")
+  const [bgCredit, setBgCredit] = useState("")
   const [titleColor, setTitleColor] = useState("")     // couleurs par élément ("" = auto/thème)
   const [subColor, setSubColor] = useState("")
   const [ctaColor, setCtaColor] = useState("")
@@ -270,7 +275,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   function resetDesign() {
     if (!item) return
     setStyleId(item.pal); setLayoutId(resolveLayoutId(item.layout)); setAccent("auto"); setBgFinish("uni"); setFrame("aucun")
-    setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null)
+    setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null); setBgCredit("")
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor("")
     setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center"); setETitle(1); setEPad(1)
   }
@@ -288,6 +293,19 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setSavedPresets(next)
     if (presetsRemote) createClient().from("print_presets").delete().eq("id", id).then(() => {})
     else persistPresets(next)
+  }
+  // Recherche de photos de fond (Unsplash via proxy serveur). Orientation calée sur le format du support.
+  async function searchPhotos() {
+    const q = bgSearch.trim() || "background"
+    setBgLoading(true); setBgMsg("")
+    try {
+      const orient = item ? (item.ratio < 0.9 ? "portrait" : item.ratio > 1.1 ? "landscape" : "squarish") : "squarish"
+      const r = await fetch(`/api/unsplash?q=${encodeURIComponent(q)}&orientation=${orient}`)
+      const d = await r.json().catch(() => ({}))
+      if (Array.isArray(d.photos) && d.photos.length) setBgPhotos(d.photos)
+      else { setBgPhotos([]); setBgMsg(d.error || "Aucune photo trouvée.") }
+    } catch { setBgPhotos([]); setBgMsg("Recherche indisponible.") }
+    finally { setBgLoading(false) }
   }
   async function saveBrandKit() {
     const kit = { logo: logoUrl, accent, typo: eTypo }
@@ -314,7 +332,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setItemId(id); setStyleId(it.pal); setLayoutId(resolveLayoutId(it.layout))
     setSizeId("moyen"); setBrandText(BRANDNAMES[0]); setSubtitle(""); setMessage(""); setCtaText(it.cta); setLogo("aucun")
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
-    setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null)
+    setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null); setBgCredit("")
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor(""); setAdvColor(false); setAdvQr(false)
     setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
   }
@@ -541,11 +559,24 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               {bgImage
                 ? <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 44, height: 44, borderRadius: 8, overflow: "hidden", flexShrink: 0, border: `1px solid ${C.hairline}`, backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-                    <span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Photo posée en fond — voile de lisibilité automatique.</span>
-                    <button onClick={() => setBgImage(null)} aria-label="Retirer la photo" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 40, height: 40, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
+                    <span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Photo en fond — voile de lisibilité auto.{bgCredit ? ` Photo : ${bgCredit} (Unsplash).` : ""}</span>
+                    <button onClick={() => { setBgImage(null); setBgCredit("") }} aria-label="Retirer la photo" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 40, height: 40, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
                   </div>
                 : <button onClick={() => bgInput.current?.click()} style={{ width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer une photo</button>}
-              <input ref={bgInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setBgImage(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+              <input ref={bgInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => { setBgImage(String(r.result)); setBgCredit("") }; r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+              {/* Recherche de photos (Unsplash) — orientation calée sur le support */}
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <input value={bgSearch} onChange={e => setBgSearch(e.target.value)} onKeyDown={e => { if (e.key === "Enter") searchPhotos() }} placeholder="Chercher une photo (café, nature…)" style={{ ...inputStyle, height: 42 }} />
+                <button onClick={searchPhotos} disabled={bgLoading} style={{ ...chipStyle(false), minHeight: 42, whiteSpace: "nowrap" }}>{bgLoading ? "…" : "Chercher"}</button>
+              </div>
+              {bgMsg && <p style={{ margin: "6px 0 0", fontSize: 11, color: C.fgFaint }}>{bgMsg}</p>}
+              {bgPhotos.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, marginTop: 8 }}>
+                  {bgPhotos.map(p => (
+                    <button key={p.id} className="ps-chip" onClick={() => { setBgImage(p.regular); setBgCredit(p.author || "") }} title={`Photo : ${p.author} · Unsplash`} style={{ aspectRatio: "1", borderRadius: 8, overflow: "hidden", border: `1px solid ${bgImage === p.regular ? C.gold : C.hairline}`, cursor: "pointer", backgroundImage: `url(${p.thumb})`, backgroundSize: "cover", backgroundPosition: "center", padding: 0 }} />
+                  ))}
+                </div>
+              )}
             </Field>
             <Field label="Cadre"><Seg value={frame} options={["aucun", "filet", "double", "coins"]} onPick={setFrame} labels={["Aucun", "Filet", "Double", "Coins"]} /></Field>
             <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.6} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>

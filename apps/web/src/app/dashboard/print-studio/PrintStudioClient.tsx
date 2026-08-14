@@ -44,6 +44,9 @@ function layoutOk(id: string, item: Item): boolean {
   const l = LAYOUT_BY_ID[id]
   if (!l) return false
   if (l.content === "split") return item.ratio >= 1.15
+  // « Affiche » (poster) suppose un GRAND support (A5+) : titre géant + QR + bouton côte à côte
+  // débordent sur une petite carte. Sur un petit support, le preset est ramené au centré.
+  if (l.content === "poster") return item.hMm >= 180
   return true
 }
 // Ramène une mise en page vers une compatible (fallback = centré).
@@ -135,9 +138,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [ctaColor, setCtaColor] = useState("")
   const [advColor, setAdvColor] = useState(false)      // repli des couleurs avancées
   const [advQr, setAdvQr] = useState(false)            // repli du décalage fin du QR
+  const [advText, setAdvText] = useState(false)        // repli des options de texte (casse/graisse/typo/alignement)
   const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
-  const [open, setOpen] = useState<string | null>(null)   // un seul volet ouvert
+  const [open, setOpen] = useState<string | null>("styles")   // un seul volet ouvert (styles à l'entrée)
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
   const [declineOpen, setDeclineOpen] = useState(false)    // sélecteur « décliner sur un autre support »
@@ -561,9 +565,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Volets + action */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {/* Styles rapides — modèles prêts, modèles perso, charte, regroupés au calme. */}
-          <div style={{ background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
-            <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600, color: C.fg }}>Styles rapides</span>
+          {/* Styles rapides — volet accordéon (comme les autres) : modèles prêts, modèles perso, charte. */}
+          <Panel id="styles" title="Styles rapides" resume={activePreset ? `Modèle : ${PRESETS.find(p => p.id === activePreset)?.label}` : "Modèles prêts · mes modèles · charte"} open={open} setOpen={setOpen}>
             <div>
               <p style={secLabel}>Modèles prêts</p>
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
@@ -597,7 +600,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <button onClick={saveBrandKit} style={{ ...chipStyle(false), whiteSpace: "nowrap" }}>{brandKit ? "Mettre à jour" : "Enregistrer (logo · accent · police)"}</button>
               </div>
             </div>
-          </div>
+          </Panel>
 
           {/* Volet QR — on RÉUTILISE un QR existant ou on importe un PNG. Aucune création. */}
           <Panel id="qr" title="Le QR" resume={qrSource === "png" ? (qrPng ? "PNG importé" : "importer un PNG") : (pickedQR ? pickedQR.label : "choisir un QR")} open={open} setOpen={setOpen}>
@@ -637,26 +640,25 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </>}
           </Panel>
 
-          {/* Volet TEXTE — tout est éditable librement */}
+          {/* Volet TEXTE — inputs d'abord (compact), suggestions contextuelles secondaires, mise en forme repliée. */}
           <Panel id="texte" title="Les textes" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen}>
             <Field label="Nom affiché">
               <input value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} />
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-                {BRANDNAMES.map(b => <Chip key={b} on={brand === b} onClick={() => setBrandText(b)}>{b}</Chip>)}
-              </div>
+              <SuggRow items={BRANDNAMES} active={brand} onPick={setBrandText} />
             </Field>
             <Field label="Titre">
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-                {messages.map(m => <Chip key={m} on={title === m} onClick={() => setMessage(m)}>{m}</Chip>)}
-              </div>
               <input value={message} onChange={e => setMessage(e.target.value)} placeholder="Titre principal…" style={inputStyle} />
+              {messages.length > 0 && <SuggRow items={messages} active={title} onPick={setMessage} />}
             </Field>
             <Field label="Sous-titre (optionnel)"><input value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Une ligne d'accroche…" style={inputStyle} /></Field>
             <Field label="Bouton"><input value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder={item.cta} style={inputStyle} /></Field>
-            <Field label="Casse du titre"><Seg value={titleCase} options={["normal", "upper"]} onPick={setTitleCase} labels={["Aa normal", "MAJUSCULES"]} /></Field>
-            <Field label="Graisse du titre"><Seg value={titleWeight} options={["fin", "normal", "gras"]} onPick={setTitleWeight} labels={["Fin", "Normal", "Gras"]} /></Field>
-            <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
-            <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={(v) => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
+            <button onClick={() => setAdvText(v => !v)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 12, padding: 0 }}>{advText ? "Masquer la mise en forme" : "Casse · graisse · typo · alignement →"}</button>
+            {advText && <>
+              <Field label="Casse du titre"><Seg value={titleCase} options={["normal", "upper"]} onPick={setTitleCase} labels={["Aa normal", "MAJUSCULES"]} /></Field>
+              <Field label="Graisse du titre"><Seg value={titleWeight} options={["fin", "normal", "gras"]} onPick={setTitleWeight} labels={["Fin", "Normal", "Gras"]} /></Field>
+              <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
+              <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={(v) => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
+            </>}
           </Panel>
 
           {/* Volet ALLURE */}
@@ -883,8 +885,16 @@ function Panel({ id, title, resume, open, setOpen, children }: { id: string; tit
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><p style={{ margin: "0 0 7px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }}>{label}</p>{children}</div>
 }
-function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button className="ps-chip" onClick={onClick} style={{ minHeight: 44, padding: "10px 14px", borderRadius: R.chip, cursor: "pointer", fontSize: 12.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fg }}>{children}</button>
+// Rangée de suggestions CONTEXTUELLES (secondaire, compacte) : petites puces sous un input.
+function SuggRow({ items, active, onPick }: { items: string[]; active: string; onPick: (v: string) => void }) {
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+      {items.map(m => {
+        const on = active === m
+        return <button key={m} className="ps-chip" onClick={() => onPick(m)} style={{ padding: "5px 10px", borderRadius: 8, cursor: "pointer", fontSize: 11.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fgMuted, whiteSpace: "nowrap" }}>{m}</button>
+      })}
+    </div>
+  )
 }
 function Seg({ value, options, onPick, labels }: { value: string; options: string[]; onPick: (v: string) => void; labels?: string[] }) {
   return (
@@ -1031,7 +1041,9 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   } else if (layout.content === "split") {
     body = <div style={{ flex: 1, display: "flex", alignItems: "center", gap: pad, minWidth: 0 }}><div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: unit * 0.035 }}>{kickerEl}{titleEl}{subtitleEl}{ctaEl}</div>{qrEl}</div>
   } else if (layout.content === "poster") {
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between", minWidth: 0 }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems, maxWidth: "100%" }}>{kickerEl}<div style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: titleCol, ...clampTxt }}>{shownTitle}</div>{subtitleEl}</div><div style={{ display: "flex", alignItems: "center", gap: pad, alignSelf: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
+    // Bloc bas (QR + bouton) : alignSelf stretch + flexWrap → si la largeur manque, le bouton passe SOUS le QR
+    // (jamais coupé au bord). Filet anti-débordement complémentaire au garde-fou layoutOk (poster = A5+).
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between", minWidth: 0 }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems, maxWidth: "100%" }}>{kickerEl}<div style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: titleCol, ...clampTxt }}>{shownTitle}</div>{subtitleEl}</div><div style={{ alignSelf: "stretch", display: "flex", flexWrap: "wrap", alignItems: "center", gap: pad, justifyContent: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
   } else { // stack / center — la position du QR se règle (haut / centre / bas)
     // Sur un rond, on retire le kicker (marque) : le cercle inscrit ne tient pas kicker+titre+QR+bouton sans rogner.
     const kick = isRound ? null : kickerEl

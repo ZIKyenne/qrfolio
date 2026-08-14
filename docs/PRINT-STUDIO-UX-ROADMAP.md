@@ -35,11 +35,9 @@ l'utilisateur, titres Fraunces, primitives `components/ui/`, hover/focus globaux
 ## Phase 2 — Écrans & polish (medium)
 
 - [x] **Rails de filtres : wrap sur desktop** (≥ 720px) ; scroll + fondu gardés uniquement en étroit.
-- [ ] **Colonne d'aperçu (studio)** : garder le packshot **grand et sticky** pendant qu'on scrolle les
-      panneaux (aujourd'hui il rétrécit).
-- [ ] **Écran upsell** (si un jour re-gaté) : rebâtir avec `Card` + `Button` (aujourd'hui bespoke system-ui).
-- [ ] **Focus-visible & transitions** sur chips/swatches (comme les cards) — passer les styles inline
-      concernés en petites classes CSS.
+- [x] **Colonne d'aperçu (studio)** : packshot plus grand (box 520) + colonne dominante (1.35fr), sticky au scroll.
+- [x] **Survol des puces** (`.ps-chip` : bordure accent au hover) en bibliothèque et studio.
+- [ ] **Écran upsell** (si un jour re-gaté) : rebâtir avec `Card` + `Button` — dormant (Print Studio est gratuit), basse priorité.
 
 ## Phase 3 — Refactor de fond (larger)
 

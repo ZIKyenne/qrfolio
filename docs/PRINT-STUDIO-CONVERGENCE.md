@@ -121,9 +121,23 @@ support prêt-imprimeur, rendu identique aperçu/planche, persisté. Reste seule
       **planche N-up** (déjà fait), **pré-vol CMYK/gamut** (moteur `printPreflight` existant).
 - [ ] Décision **CMYK réel** = brique serveur (Ghostscript/ICC) — hors navigateur (à ne pas simuler).
 
-### Phase 5 — Retrait de l'ancien
-- [ ] Une fois la parité atteinte (éléments + libre + export pro), **supprimer** `qr-codes/PrintStudio.tsx`
-      (le monolithe) et ses systèmes de modèles divergents.
+### Phase 5 — Retrait de l'ancien ✅ FAIT (commit 369e9cd8)
+- [x] **Monolithe `qr-codes/PrintStudio.tsx` (6304 l) SUPPRIMÉ** (−6355 lignes) : dynamic import, montage, état
+      editorOpen/editorQrUrl/editorLoading retirés ; bouton « Ouvrir QR Print Studio » simplifié (redirige au guidé).
+- Moteurs purs `printSupports`/`printPreflight`/`alignDistribute`/`qrScannability` conservés (réutilisables en P4).
+
+---
+
+## Bilan convergence (2026-08-14)
+
+**UN SEUL Print Studio** : le guidé (`/dashboard/print-studio`), gratuit, avec :
+- **Mode Guidé** (défaut) : support réel → volets → export prêt imprimeur. Infaillible.
+- **Mode Studio libre** (bouton « Édition libre ») : ajouter/placer/aimanter/ordonner **textes + icônes + formes + QR**,
+  borné au support, rendu identique aperçu/planche, **persisté par QR**.
+- Photos de fond (Unsplash), modèles/charte synchronisés au compte + équipe, décliner, planche multi + N-up, PDF vectoriel.
+
+**Reste OPTIONNEL** : Phase 4 (brancher le pré-vol gamut ; SVG QR-vectoriel + N-up déjà côté guidé) ; confort avancé
+(aligner/répartir multi-éléments, annuler/refaire). CMYK réel = décision serveur écartée (RGB haute-déf assumé).
 
 ---
 

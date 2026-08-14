@@ -142,6 +142,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [printing, setPrinting] = useState(false)         // la planche PDF n'est montée QUE pendant l'impression
+  const [designSaved, setDesignSaved] = useState(false)   // feedback « Enregistré »
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const logoInput = useRef<HTMLInputElement>(null)
   const bgInput = useRef<HTMLInputElement>(null)
@@ -182,6 +183,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     return () => { alive = false }
   }, [])
   // Montage à la demande de la planche PDF : on la monte, on laisse le QR se rendre, puis on imprime.
+  // Rouvrir un design enregistré : arrivée depuis un QR (?qr=) → on restaure sa composition si elle existe.
+  useEffect(() => {
+    let code = ""
+    try { code = new URLSearchParams(window.location.search).get("qr") || "" } catch {}
+    if (!code) return
+    let alive = true
+    fetch(`/api/print-design?short_code=${encodeURIComponent(code)}`)
+      .then(r => r.json()).then(d => { if (alive && d && d.design && typeof d.design === "object") restoreDesign(d.design) })
+      .catch(() => {})
+    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   useEffect(() => {
     if (!printing) return
     const t = setTimeout(() => { try { window.print() } catch {} }, 220)   // laisse le QR SVG se rendre
@@ -319,6 +332,41 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     if (brandKit.accent) setAccent(brandKit.accent)
     if (brandKit.typo) setETypo(brandKit.typo)
   }
+  // ── Persistance d'un design PAR QR (colonne qr_codes.print_design) ──────────────
+  // Le « code » de rattachement = le short_code du QR (via ?qr= à l'ouverture depuis un QR, ou le QR sélectionné).
+  const designCode = (() => {
+    try { const q = new URLSearchParams(window.location.search).get("qr"); if (q) return q } catch {}
+    if (qrSource === "mine" && pickedQR) { const m = pickedQR.url.match(/\/q\/([^/?#]+)/); return m?.[1] || "" }
+    return ""
+  })()
+  function captureDesign(): Record<string, any> {
+    return { v: 2, itemId, styleId, layoutId, sizeId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, qrScale, blockY, qrDx, qrDy, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, titleColor, subColor, ctaColor, logo, logoUrl, bgImage, bgCredit, brandText, subtitle, message, ctaText, qrSource, qrPickId, qrPng }
+  }
+  function restoreDesign(c: Record<string, any>) {
+    if (!c || typeof c !== "object") return
+    if (c.itemId && ITEM_BY_ID[c.itemId]) setItemId(c.itemId)
+    if (c.styleId) setStyleId(c.styleId); if (c.layoutId) setLayoutId(c.layoutId); if (c.sizeId) setSizeId(c.sizeId)
+    if (c.accent) setAccent(c.accent); if (c.bgFinish) setBgFinish(c.bgFinish); if (c.frame) setFrame(c.frame)
+    if (c.titleCase) setTitleCase(c.titleCase); if (c.titleWeight) setTitleWeight(c.titleWeight); if (c.qrBadge) setQrBadge(c.qrBadge)
+    if (c.qrPos) setQrPos(c.qrPos); if (c.eCorner) setECorner(c.eCorner); if (c.eAccent) setEAccent(c.eAccent)
+    if (c.eTypo) setETypo(c.eTypo); if (c.eAlign) setEAlign(c.eAlign)
+    if (typeof c.qrScale === "number") setQrScale(c.qrScale); if (typeof c.blockY === "number") setBlockY(c.blockY)
+    if (typeof c.qrDx === "number") setQrDx(c.qrDx); if (typeof c.qrDy === "number") setQrDy(c.qrDy)
+    if (typeof c.eTitle === "number") setETitle(c.eTitle); if (typeof c.ePad === "number") setEPad(c.ePad)
+    setTitleColor(c.titleColor || ""); setSubColor(c.subColor || ""); setCtaColor(c.ctaColor || "")
+    if (c.logo) setLogo(c.logo); setLogoUrl(c.logoUrl ?? null); setBgImage(c.bgImage ?? null); setBgCredit(c.bgCredit || "")
+    setBrandText(c.brandText || BRANDNAMES[0]); setSubtitle(c.subtitle || ""); setMessage(c.message || ""); setCtaText(c.ctaText || "")
+    if (c.qrSource) setQrSource(c.qrSource); if (c.qrPickId) setQrPickId(c.qrPickId); setQrPng(c.qrPng ?? null)
+    setPhase("studio")
+  }
+  async function saveDesign() {
+    if (!designCode) return
+    try {
+      await fetch("/api/print-design", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ short_code: designCode, design: captureDesign(), format: "a4" }) })
+      setDesignSaved(true); setTimeout(() => setDesignSaved(false), 1800)
+    } catch { /* silencieux : le design reste éditable */ }
+  }
+
   // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
   function switchSupport(id: string) {
     const it = ITEM_BY_ID[id]; if (!it) return
@@ -417,6 +465,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.goldSoft, border: `1px solid ${C.goldA55}`, color: C.gold, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Copy size={14} /> Décliner</button>
           <button onClick={() => { if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Layers size={14} /> Planche</button>
+          {designCode && <button onClick={saveDesign} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: designSaved ? C.goldSoft : "transparent", border: `1px solid ${designSaved ? C.gold : C.hairline}`, color: designSaved ? C.gold : C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}>{designSaved ? <Check size={14} /> : <ShieldCheck size={14} />} {designSaved ? "Enregistré" : "Enregistrer"}</button>}
           <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
         </div>
       </header>

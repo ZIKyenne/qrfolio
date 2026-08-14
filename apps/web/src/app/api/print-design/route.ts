@@ -27,27 +27,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Corps invalide" }, { status: 400 })
     }
 
-    const { qr_id, design, format } = body as {
+    const { qr_id, short_code, design, format } = body as {
       qr_id?: string
+      short_code?: string
       design?: unknown
       format?: string
     }
-    if (!qr_id) {
-      return NextResponse.json({ error: "qr_id requis" }, { status: 400 })
+    if (!qr_id && !short_code) {
+      return NextResponse.json({ error: "qr_id ou short_code requis" }, { status: 400 })
     }
 
     const safeFormat = ALLOWED_FORMATS.includes(format as any) ? format : "a4"
 
-    const { data, error } = await supabase
+    let q = supabase
       .from("qr_codes")
       .update({
         print_design: design ?? null,
         print_format: safeFormat,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", qr_id)
       .eq("user_id", user.id)
-      .select("id")
+    q = qr_id ? q.eq("id", qr_id) : q.eq("short_code", short_code as string)
+    const { data, error } = await q.select("id")
 
     if (error) {
       return serverError("print-design", error)
@@ -70,16 +71,17 @@ export async function GET(req: NextRequest) {
     }
 
     const qrId = req.nextUrl.searchParams.get("qr_id")
-    if (!qrId) {
-      return NextResponse.json({ error: "qr_id requis" }, { status: 400 })
+    const shortCode = req.nextUrl.searchParams.get("short_code")
+    if (!qrId && !shortCode) {
+      return NextResponse.json({ error: "qr_id ou short_code requis" }, { status: 400 })
     }
 
-    const { data, error } = await supabase
+    let sel = supabase
       .from("qr_codes")
       .select("print_design, print_format")
-      .eq("id", qrId)
       .eq("user_id", user.id)
-      .single()
+    sel = qrId ? sel.eq("id", qrId) : sel.eq("short_code", shortCode as string)
+    const { data, error } = await sel.maybeSingle()
 
     if (error) {
       return serverError("print-design", error)

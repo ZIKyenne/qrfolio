@@ -44,11 +44,11 @@ Chaque phase garde la règle : **on n'ajoute de la liberté que si elle reste tr
 ### P2 — Liberté maîtrisée (le cœur de la demande)
 - [x] Curseurs taille du titre / air / placement vertical.
 - [x] Plus de polices (12, réellement rendues).
-- [ ] **Placement fin du QR en X/Y** (poignée sur l'aperçu, pas seulement haut/centre/bas).
+- [x] **Placement fin du QR en X/Y** (curseurs de décalage, en plus de haut/centre/bas).
 - [x] **Curseur taille du QR** en complément des 3 paliers (garde-fou ≥ 20 mm honnête, mm affichés).
-- [ ] **Couleur par élément** (titre / sous-titre / bouton indépendants) — replié derrière « avancé ».
+- [x] **Couleur par élément** (titre / sous-titre / bouton indépendants) — replié derrière « avancé ».
 - [x] **Image de fond** : importer une photo comme fond du support (voile de lisibilité auto).
-- [ ] **Encore des polices** : self-héberger 3-4 familles display supplémentaires (condensée, manuscrite, géométrique) pour de vrais choix — pas des Google Fonts non chargées.
+- [ ] **Encore des polices** : self-héberger 3-4 familles display supplémentaires (condensée, manuscrite, géométrique). **Bloqué : nécessite les fichiers de police (woff2)** — à fournir, puis @font-face dans globals.css + entrées TYPOS.
 
 ### P3 — Décliner une campagne (fort levier)
 - [ ] **Dupliquer un support** vers un autre format en gardant tous les réglages (ex. carte → sticker → A5).

@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2, Plus,
+import { ArrowLeft, Lock, Unlock, Eye, EyeOff, ChevronUp, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2, Plus,
   Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap,
   Award, Sun, Moon, Leaf, Navigation, Home, Users, Utensils, Wine, Beer, Pizza, ShoppingBag, ShoppingCart,
   CreditCard, Percent, MessageCircle, ThumbsUp, Share2, Send, AtSign, Link2, QrCode, Smartphone, Calendar, Bell, Info, Scissors } from "lucide-react"
@@ -83,7 +83,13 @@ function shade(hex: string, amt: number): string {
 }
 // Élément LIBRE (mode « Studio libre ») : texte / icône / forme posé et déplacé n'importe où sur le support.
 // x/y/w/h2/size en FRACTION du support -> invariant à l'échelle (aperçu, planche PDF identiques).
-type FreeEl = { id: string; kind: "text" | "icon" | "shape"; x: number; y: number; w: number; h2?: number; size: number; color: string; align: "left" | "center" | "right"; weight: number; font: string; text: string; icon?: string; shape?: string; rot?: number; opacity?: number }
+type FreeEl = { id: string; kind: "text" | "icon" | "shape"; x: number; y: number; w: number; h2?: number; size: number; color: string; align: "left" | "center" | "right"; weight: number; font: string; text: string; icon?: string; shape?: string; rot?: number; opacity?: number; hidden?: boolean; locked?: boolean }
+// Libellé court d'un élément pour la liste des calques.
+function layerLabel(el: FreeEl): string {
+  if (el.kind === "text") return el.text.trim() ? (el.text.length > 22 ? el.text.slice(0, 22) + "…" : el.text) : "Texte"
+  if (el.kind === "icon") return el.icon || "Icône"
+  return el.shape === "line" ? "Ligne" : el.shape === "pill" ? "Pilule" : el.shape === "rrect" ? "Rectangle" : "Cercle"
+}
 // Bibliothèque d'icônes libres (lucide, NON-marque — lucide-react 1.17 n'a plus les logos ; cf [[lucide-icons-gotcha]]).
 // Le garde-fou check-jsx-imports + tsc valident leur existence au build.
 const ICON_LIB: Record<string, any> = {
@@ -528,11 +534,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setSelEl(nid)
   }
   function nudge(id: string, dx: number, dy: number) {
-    setFreeEls(els => els.map(e => e.id === id ? { ...e, x: Math.max(0, Math.min(1, e.x + dx)), y: Math.max(0, Math.min(1, e.y + dy)) } : e))
+    setFreeEls(els => els.map(e => e.id === id && !e.locked ? { ...e, x: Math.max(0, Math.min(1, e.x + dx)), y: Math.max(0, Math.min(1, e.y + dy)) } : e))
   }
   // Ordre des calques (l'ordre du tableau = z) : premier plan = fin, arrière-plan = début.
   function bringFront(id: string) { setFreeEls(els => { const e = els.find(x => x.id === id); return e ? [...els.filter(x => x.id !== id), e] : els }) }
   function sendBack(id: string) { setFreeEls(els => { const e = els.find(x => x.id === id); return e ? [e, ...els.filter(x => x.id !== id)] : els }) }
+  // Calques : l'ordre du tableau = z (0 = arrière, dernier = avant). « up » = vers l'avant, « down » = vers l'arrière.
+  function moveLayer(id: string, dir: "up" | "down") {
+    setFreeEls(els => { const i = els.findIndex(e => e.id === id); if (i < 0) return els; const j = dir === "up" ? i + 1 : i - 1; if (j < 0 || j >= els.length) return els; const next = els.slice(); const [it] = next.splice(i, 1); next.splice(j, 0, it); return next })
+  }
+  function toggleHide(id: string) { setFreeEls(els => els.map(e => e.id === id ? { ...e, hidden: !e.hidden } : e)) }
+  function toggleLock(id: string) { setFreeEls(els => els.map(e => e.id === id ? { ...e, locked: !e.locked } : e)) }
   function centerEl(id: string, axis: "x" | "y" | "both") { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...(axis !== "y" ? { x: 0.5 - e.w / 2 } : {}), ...(axis !== "x" ? { y: 0.5 - (e.kind === "shape" ? (e.h2 ?? 0.12) : e.size) / 2 } : {}) } : e)) }
 
   // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
@@ -641,6 +653,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // Planche = chaque format retenu, répété `campaignQty` fois (imposition N-up : N exemplaires par format).
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   const sel = freeEls.find(e => e.id === selEl)
+  const layBtn: React.CSSProperties = { width: 28, height: 28, borderRadius: 7, border: "none", background: "transparent", color: C.fgMuted, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }
   return (
     <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
       <Particles behind />
@@ -731,6 +744,26 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <button onClick={() => deleteEl(sel.id)} style={{ background: "none", border: "none", color: C.bad, cursor: "pointer", fontSize: 12, padding: 0, whiteSpace: "nowrap" }}>Supprimer</button>
               </div>
             </div>
+          )}
+
+          {/* Calques (mode Studio libre) — liste réordonnable des éléments : sélectionner, masquer, verrouiller, avant/arrière. */}
+          {libre && freeEls.length > 0 && (
+            <Panel id="calques" title="Calques" resume={`${freeEls.length} élément${freeEls.length > 1 ? "s" : ""}`} open={open} setOpen={setOpen}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[...freeEls].reverse().map(el => {
+                  const on = selEl === el.id
+                  return (
+                    <div key={el.id} style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", borderRadius: 9, background: on ? C.goldSoft : C.surfaceUp, border: `1px solid ${on ? C.goldA55 : C.hairline}` }}>
+                      <button onClick={() => setSelEl(el.id)} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", color: el.hidden ? C.fgFaint : (on ? C.gold : C.fg), cursor: "pointer", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: 0 }}>{layerLabel(el)}</button>
+                      <button onClick={() => toggleHide(el.id)} title={el.hidden ? "Afficher" : "Masquer"} aria-label={el.hidden ? "Afficher" : "Masquer"} style={{ ...layBtn, color: el.hidden ? C.gold : C.fgMuted }}>{el.hidden ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+                      <button onClick={() => toggleLock(el.id)} title={el.locked ? "Déverrouiller" : "Verrouiller"} aria-label={el.locked ? "Déverrouiller" : "Verrouiller"} style={{ ...layBtn, color: el.locked ? C.gold : C.fgMuted }}>{el.locked ? <Lock size={14} /> : <Unlock size={14} />}</button>
+                      <button onClick={() => moveLayer(el.id, "up")} title="Avancer" aria-label="Avancer" style={layBtn}><ChevronUp size={14} /></button>
+                      <button onClick={() => moveLayer(el.id, "down")} title="Reculer" aria-label="Reculer" style={layBtn}><ChevronDown size={14} /></button>
+                    </div>
+                  )
+                })}
+              </div>
+            </Panel>
           )}
 
           {/* Styles rapides — volet accordéon (comme les autres) : modèles prêts, modèles perso, charte. */}
@@ -1262,8 +1295,8 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
       {layout.deco === "ornate" && <><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>}
       {/* QR en position LIBRE (taille physique conservée -> reste scannable ; seule la position est libre). */}
       {qrFree && <div style={{ position: "absolute", left: `${(qrFx ?? 0.32) * 100}%`, top: `${(qrFy ?? 0.55) * 100}%`, zIndex: 3 }}>{qrBadgeEl}</div>}
-      {/* Éléments libres (mode Studio libre) — posés en fraction du support, rendus statiques ici. */}
-      {(freeEls ?? []).map(el => <FreeElView key={el.id} el={el} unit={unit} bodyFont={bodyFont} />)}
+      {/* Éléments libres (mode Studio libre) — posés en fraction du support, rendus statiques ici (masqués ignorés). */}
+      {(freeEls ?? []).filter(el => !el.hidden).map(el => <FreeElView key={el.id} el={el} unit={unit} bodyFont={bodyFont} />)}
     </div>
   )
 }
@@ -1459,6 +1492,7 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
   }
   function onDown(e: React.PointerEvent, el: FreeEl) {
     setSelEl(el.id)
+    if (el.locked) { e.stopPropagation(); return }   // verrouillé : sélectionnable mais pas déplaçable
     const wpx = (el.kind === "text" || el.kind === "shape") ? el.w * w : unit * el.size
     const hpx = el.kind === "shape" ? (el.h2 ?? 0.12) * h : el.kind === "text" ? unit * el.size * 1.2 : unit * el.size
     startDrag(e, el.id, el.x, el.y, wpx, hpx)
@@ -1482,7 +1516,7 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
       <SupportVisual {...design} item={item} freeEls={[]} physW={wmm} w={w} h={h} />
       {design.qrFree && <div onPointerDown={e => startDrag(e, "__qr__", design.qrFx ?? 0.32, design.qrFy ?? 0.55, qrFrac * w, qrFrac * w)}
         style={{ position: "absolute", left: `${(design.qrFx ?? 0.32) * 100}%`, top: `${(design.qrFy ?? 0.55) * 100}%`, width: qrFrac * w, height: qrFrac * w, cursor: "move", outline: `2px solid ${C.gold}`, outlineOffset: 2, zIndex: 7, touchAction: "none" }} title="Déplacer le QR" />}
-      {freeEls.map(el => <FreeElView key={el.id} el={el} unit={unit} bodyFont="Inter, system-ui, sans-serif" editable selected={selEl === el.id} onDown={onDown} />)}
+      {freeEls.filter(el => !el.hidden).map(el => <FreeElView key={el.id} el={el} unit={unit} bodyFont="Inter, system-ui, sans-serif" editable selected={selEl === el.id} onDown={onDown} />)}
       {guide.x && <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: C.gold, opacity: 0.75, pointerEvents: "none", zIndex: 6 }} />}
       {guide.y && <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: C.gold, opacity: 0.75, pointerEvents: "none", zIndex: 6 }} />}
     </div>

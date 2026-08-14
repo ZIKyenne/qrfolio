@@ -338,7 +338,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           <span style={{ fontSize: 13, fontWeight: 700, color: C.gold, letterSpacing: 0.3 }}>Print Studio</span>
         </header>
         <div style={{ maxWidth: 1040, margin: "0 auto" }}>
-          <style>{`.ps-card{transition:border-color .15s var(--mo-ease,ease), transform .15s var(--mo-ease,ease), background .15s}.ps-card:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);transform:translateY(-2px)}@media(min-width:720px){.ps-rail{flex-wrap:wrap!important;overflow:visible!important}.ps-rail-fade{display:none!important}}`}</style>
+          <style>{`.ps-card{transition:border-color .15s var(--mo-ease,ease), transform .15s var(--mo-ease,ease), background .15s}.ps-card:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);transform:translateY(-2px)}.ps-chip{transition:border-color .14s var(--mo-ease,ease),background .14s,color .14s}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}@media(min-width:720px){.ps-rail{flex-wrap:wrap!important;overflow:visible!important}.ps-rail-fade{display:none!important}}`}</style>
           <h1 style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: "clamp(24px,4vw,34px)", fontWeight: 600, letterSpacing: "-0.02em", margin: "10px 0 6px" }}>Choisissez un support</h1>
           <p style={{ color: C.fgMuted, fontSize: 14, margin: "0 0 18px" }}>Un objet réel, déjà réussi. Trois suffisent : à table, en vitrine, dans la main.</p>
 
@@ -385,8 +385,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         </div>
       </header>
 
-      <div className="ps-grid" style={{ maxWidth: 1180, margin: "0 auto", padding: "0 16px 120px", display: "grid", gap: 18, gridTemplateColumns: "1fr" }}>
-        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:1.2fr 1fr!important}.ps-aside{position:sticky;top:14px;align-self:start}}`}</style>
+      <div className="ps-grid" style={{ maxWidth: 1180, margin: "0 auto", padding: "0 16px 120px", display: "grid", gap: 22, gridTemplateColumns: "1fr" }}>
+        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:1.35fr 1fr!important}.ps-aside{position:sticky;top:14px;align-self:start}}.ps-chip{transition:border-color .14s var(--mo-ease,ease),background .14s,color .14s}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}`}</style>
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
@@ -403,7 +403,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <div>
               <p style={secLabel}>Modèles prêts</p>
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                {PRESETS.map(p => <button key={p.id} onClick={() => applyPreset(p)} style={chipStyle(activePreset === p.id)}>{p.label}</button>)}
+                {PRESETS.map(p => <button key={p.id} className="ps-chip" onClick={() => applyPreset(p)} style={chipStyle(activePreset === p.id)}>{p.label}</button>)}
               </div>
             </div>
             <div>
@@ -665,7 +665,7 @@ function Rail({ label, value, options, onPick }: { label: string; value: string;
       {/* Desktop : les puces s'enroulent (tout visible). Étroit : défilement horizontal + fondu. */}
       <div style={{ position: "relative" }}>
         <div className="ps-rail" style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
-          {options.map(o => <button key={o} onClick={() => onPick(o)} style={chipStyle(value === o)}>{o}</button>)}
+          {options.map(o => <button key={o} className="ps-chip" onClick={() => onPick(o)} style={chipStyle(value === o)}>{o}</button>)}
         </div>
         <div aria-hidden className="ps-rail-fade" style={{ position: "absolute", top: 0, right: 0, bottom: 4, width: 28, pointerEvents: "none", background: "linear-gradient(90deg, transparent, #080808)" }} />
       </div>
@@ -676,7 +676,7 @@ function RailInline({ value, options, onPick }: { value: string; options: { id: 
   return (
     <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
       {options.map(o => (
-        <button key={o.id} onClick={() => onPick(o.id)} style={{ ...chipStyle(value === o.id), flexDirection: "column", alignItems: "flex-start", minWidth: o.note ? 108 : undefined }}>
+        <button key={o.id} className="ps-chip" onClick={() => onPick(o.id)} style={{ ...chipStyle(value === o.id), flexDirection: "column", alignItems: "flex-start", minWidth: o.note ? 108 : undefined }}>
           <span>{o.label}</span>{o.note && <span style={{ fontSize: 9.5, color: value === o.id ? "#0A0A0A" : C.fgFaint }}>{o.note}</span>}
         </button>
       ))}
@@ -706,7 +706,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return <div><p style={{ margin: "0 0 7px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }}>{label}</p>{children}</div>
 }
 function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button onClick={onClick} style={{ minHeight: 44, padding: "10px 14px", borderRadius: R.chip, cursor: "pointer", fontSize: 12.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fg }}>{children}</button>
+  return <button className="ps-chip" onClick={onClick} style={{ minHeight: 44, padding: "10px 14px", borderRadius: R.chip, cursor: "pointer", fontSize: 12.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fg }}>{children}</button>
 }
 function Seg({ value, options, onPick, labels }: { value: string; options: string[]; onPick: (v: string) => void; labels?: string[] }) {
   return (
@@ -978,7 +978,7 @@ function MultiSheet({ items, design }: { items: Item[]; design: DesignProps }) {
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
 function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrDx: number; qrDy: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
   const { item, scene } = props
-  const box = 460
+  const box = 520
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])
   const wPx = item.shape === "round" ? hPx : hPx * item.ratio
   const clampedW = Math.min(wPx, box - 40)

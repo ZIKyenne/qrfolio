@@ -396,6 +396,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   }
   function updateEl(id: string, patch: Partial<FreeEl>) { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...patch } : e)) }
   function deleteEl(id: string) { setFreeEls(els => els.filter(e => e.id !== id)); setSelEl(s => (s === id ? null : s)) }
+  // Ordre des calques (l'ordre du tableau = z) : premier plan = fin, arrière-plan = début.
+  function bringFront(id: string) { setFreeEls(els => { const e = els.find(x => x.id === id); return e ? [...els.filter(x => x.id !== id), e] : els }) }
+  function sendBack(id: string) { setFreeEls(els => { const e = els.find(x => x.id === id); return e ? [e, ...els.filter(x => x.id !== id)] : els }) }
+  function centerEl(id: string, axis: "x" | "y" | "both") { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...(axis !== "y" ? { x: 0.5 - e.w / 2 } : {}), ...(axis !== "x" ? { y: 0.5 - (e.kind === "shape" ? (e.h2 ?? 0.12) : e.size) / 2 } : {}) } : e)) }
 
   // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
   function switchSupport(id: string) {
@@ -539,6 +543,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                   <div style={{ flex: 1 }}><Seg value={sel.align} options={["left", "center", "right"]} onPick={v => updateEl(sel.id, { align: v as any })} labels={["Gauche", "Centre", "Droite"]} /></div>
                   <div style={{ flex: 1 }}><Seg value={String(sel.weight)} options={["400", "700", "800"]} onPick={v => updateEl(sel.id, { weight: Number(v) })} labels={["Fin", "Gras", "Extra"]} /></div>
                 </div>}
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button onClick={() => centerEl(sel.id, "x")} style={{ ...chipStyle(false), fontSize: 11.5 }}>Centrer ↔</button>
+                  <button onClick={() => centerEl(sel.id, "y")} style={{ ...chipStyle(false), fontSize: 11.5 }}>Centrer ↕</button>
+                  <button onClick={() => bringFront(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Premier plan</button>
+                  <button onClick={() => sendBack(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Arrière-plan</button>
+                </div>
                 <button onClick={() => deleteEl(sel.id)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.bad, cursor: "pointer", fontSize: 12, padding: 0 }}>Supprimer cet élément</button>
               </div>
             )}
@@ -1169,7 +1179,8 @@ function FreeElView({ el, unit, bodyFont, editable, selected, onDown }: { el: Fr
    Positions en fraction du support -> l'aperçu packshot et la planche PDF les rendent au même endroit. */
 function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void }) {
   const ref = useRef<HTMLDivElement>(null)
-  const drag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number } | null>(null)
+  const drag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number; wpx: number; hpx: number } | null>(null)
+  const [guide, setGuide] = useState<{ x: boolean; y: boolean }>({ x: false, y: false })
   const box = 460
   const ratio = item.shape === "round" ? 1 : item.ratio
   const w = ratio >= 1 ? box : Math.round(box * ratio)
@@ -1178,20 +1189,29 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl }: { it
   const wmm = item.shape === "round" ? item.hMm : item.hMm * item.ratio
   function onDown(e: React.PointerEvent, el: FreeEl) {
     e.stopPropagation(); try { (e.target as HTMLElement).setPointerCapture(e.pointerId) } catch {}
-    setSelEl(el.id); drag.current = { id: el.id, sx: e.clientX, sy: e.clientY, ox: el.x, oy: el.y }
+    const wpx = (el.kind === "text" || el.kind === "shape") ? el.w * w : unit * el.size
+    const hpx = el.kind === "shape" ? (el.h2 ?? 0.12) * h : el.kind === "text" ? unit * el.size * 1.2 : unit * el.size
+    setSelEl(el.id); drag.current = { id: el.id, sx: e.clientX, sy: e.clientY, ox: el.x, oy: el.y, wpx, hpx }
   }
   function onMove(e: React.PointerEvent) {
     const d = drag.current, r = ref.current?.getBoundingClientRect(); if (!d || !r) return
-    const nx = Math.max(0, Math.min(1, d.ox + (e.clientX - d.sx) / r.width))
-    const ny = Math.max(0, Math.min(1, d.oy + (e.clientY - d.sy) / r.height))
+    let nx = Math.max(0, Math.min(1, d.ox + (e.clientX - d.sx) / r.width))
+    let ny = Math.max(0, Math.min(1, d.oy + (e.clientY - d.sy) / r.height))
+    const TH = 8  // aimantation au CENTRE du support (avec guide) — placement propre
+    let gx = false, gy = false
+    if (Math.abs(nx * r.width + d.wpx / 2 - r.width / 2) < TH) { nx = (r.width / 2 - d.wpx / 2) / r.width; gx = true }
+    if (Math.abs(ny * r.height + d.hpx / 2 - r.height / 2) < TH) { ny = (r.height / 2 - d.hpx / 2) / r.height; gy = true }
     setFreeEls(els => els.map(x => (x.id === d.id ? { ...x, x: nx, y: ny } : x)))
+    setGuide({ x: gx, y: gy })
   }
-  const onUp = () => { drag.current = null }
+  const onUp = () => { drag.current = null; setGuide({ x: false, y: false }) }
   return (
     <div ref={ref} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp} onPointerDown={() => setSelEl(null)}
       style={{ position: "relative", width: w, height: h, margin: "0 auto", borderRadius: item.shape === "round" ? "50%" : 12, overflow: "hidden", touchAction: "none", boxShadow: "0 14px 44px rgba(0,0,0,.55)" }}>
       <SupportVisual {...design} item={item} freeEls={[]} physW={wmm} w={w} h={h} />
       {freeEls.map(el => <FreeElView key={el.id} el={el} unit={unit} bodyFont="Inter, system-ui, sans-serif" editable selected={selEl === el.id} onDown={onDown} />)}
+      {guide.x && <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: C.gold, opacity: 0.75, pointerEvents: "none", zIndex: 6 }} />}
+      {guide.y && <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: C.gold, opacity: 0.75, pointerEvents: "none", zIndex: 6 }} />}
     </div>
   )
 }

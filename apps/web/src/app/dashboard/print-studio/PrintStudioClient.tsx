@@ -9,6 +9,7 @@ import Link from "next/link"
 import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, Sparkles, ChevronDown } from "lucide-react"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions } from "../qr-codes/qrRender"
+import { normalizeUrl } from "../qr-link/qrLinkUtils"
 import {
   METIERS, OBJECTIFS, BRANDNAMES, filterItems, ambiancesFor, ITEM_BY_ID, STYLE_BY_ID,
   LAYOUT_BY_ID, LAYOUTS, STYLES, TYPOS, SIZES, MESSAGES, OBJ, type Item, type Style,
@@ -53,6 +54,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
+  const [destUrl, setDestUrl] = useState("")   // lien réel encodé par le QR (sinon page QRowg)
 
   const item = itemId ? ITEM_BY_ID[itemId] : null
   const style = STYLE_BY_ID[styleId] || STYLE_BY_ID.premiumdark
@@ -63,6 +65,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const brand = BRANDNAMES[brandIdx % BRANDNAMES.length]
   const dest = dests.length ? dests[destIdx % dests.length] : ""
   const title = message.trim() || (messages[0] ?? item?.title ?? "")
+  const qrValue = destUrl.trim() ? normalizeUrl(destUrl) : "https://qrowg.com"
   const ambiances = useMemo(() => ambiancesFor(metier), [metier])
   const controls = useMemo(() => item ? evaluateControls(item, style, size) : [], [item, style, size])
   const ok = canExport(controls)
@@ -72,16 +75,16 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setItemId(id); setStyleId(it.pal); setLayoutId(resolveLayoutId(it.layout))
     setSizeId("moyen"); setBrandIdx(0); setMessage(""); setDestIdx(0); setLogo("aucun")
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
-    setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
+    setDestUrl(""); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
   }
 
-  async function exportPng() {
+  async function exportQr(ext: "png" | "svg") {
     if (!item || !ok || busy) return
     setBusy(true)
     try {
-      const opts: QROptions = { data: "https://qrowg.com", fg: style.qr, bg: style.qrBg, ecc: "M", style: { cornerStyle: CORNER_MAP[eCorner] }, size: 1024 }
-      const blob = await getQRBlob(opts, "png")
-      if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qrowg-${item.support}.png`.replace(/\s+/g, "-").toLowerCase(); a.click(); URL.revokeObjectURL(a.href); setDone(true); setTimeout(() => setDone(false), 1800) }
+      const opts: QROptions = { data: qrValue, fg: style.qr, bg: style.qrBg, ecc: "M", style: { cornerStyle: CORNER_MAP[eCorner] }, size: 1024 }
+      const blob = await getQRBlob(opts, ext)
+      if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qrowg-${item.support}.${ext}`.replace(/\s+/g, "-").toLowerCase(); a.click(); URL.revokeObjectURL(a.href); setDone(true); setTimeout(() => setDone(false), 1800) }
     } finally { setBusy(false) }
   }
 
@@ -157,9 +160,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
-          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size}
+          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue}
             brand={brand} title={title} cta={item.cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
-          <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · aperçu — le QR final encode votre destination</p>
+          <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {destUrl.trim() ? "le QR pointe vers votre lien" : "définissez le lien du QR dans « Ce qui est écrit »"}</p>
         </div>
 
         {/* Volets + action */}
@@ -174,6 +177,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <input value={message} onChange={e => setMessage(e.target.value)} placeholder="Message libre…" style={inputStyle} />
             </Field>
             {dests.length > 0 && <Field label="Destination du scan"><Cycle value={dest} onPrev={() => setDestIdx(i => (i + dests.length - 1) % dests.length)} onNext={() => setDestIdx(i => (i + 1) % dests.length)} /></Field>}
+            <Field label="Lien du QR"><input value={destUrl} onChange={e => setDestUrl(e.target.value)} inputMode="url" placeholder="ex : monsite.fr — sinon page QRowg par défaut" style={inputStyle} /></Field>
           </Panel>
 
           {/* Volet ALLURE */}
@@ -228,9 +232,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 </div>
               ))}
             </div>
-            <button onClick={exportPng} disabled={!ok || busy} style={{ width: "100%", marginTop: 14, minHeight: 50, borderRadius: 12, border: "none", cursor: ok ? "pointer" : "default", background: ok ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              {done ? <Check size={18} /> : <Download size={18} />} {busy ? "…" : done ? "Téléchargé" : ok ? "Exporter le QR (PNG)" : "Corrigez le réglage rouge"}
-            </button>
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              <button onClick={() => exportQr("png")} disabled={!ok || busy} style={{ flex: 1, minHeight: 50, borderRadius: 12, border: "none", cursor: ok ? "pointer" : "default", background: ok ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                {done ? <Check size={18} /> : <Download size={18} />} {busy ? "…" : done ? "Téléchargé" : ok ? "Exporter le QR (PNG)" : "Corrigez le réglage rouge"}
+              </button>
+              <button onClick={() => exportQr("svg")} disabled={!ok || busy} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 14, fontWeight: 700, cursor: ok ? "pointer" : "default", opacity: ok ? 1 : 0.5 }}>SVG</button>
+            </div>
             <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Export de la planche complète (PDF prêt imprimeur) — bientôt.</p>
           </div>
         </div>
@@ -327,8 +334,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, style, pal, layout, brand, title, cta, size, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; title: string; cta: string; size: { factor: number }; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; title: string; cta: string; size: { factor: number }; qrValue: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -341,7 +348,7 @@ function SupportVisual({ item, style, pal, layout, brand, title, cta, size, eCor
 
   const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: unit * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: pal.band }}>{brand}</div>
   const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: pal.titleWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: pal.fg }}>{title}</div>
-  const qrEl = <div style={{ background: pal.qrBg, padding: unit * 0.028, borderRadius: eCorner === "rond" ? 16 : 8, lineHeight: 0 }}><QRCanvas value="https://qrowg.com" size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} style={{ cornerStyle: CORNER_MAP[eCorner] }} ecc="M" /></div>
+  const qrEl = <div style={{ background: pal.qrBg, padding: unit * 0.028, borderRadius: eCorner === "rond" ? 16 : 8, lineHeight: 0 }}><QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} style={{ cornerStyle: CORNER_MAP[eCorner] }} ecc="M" /></div>
   const ctaEl = eAccent === "aucun" ? null : (
     <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, whiteSpace: "nowrap",
       ...(eAccent === "trait" ? { border: `2px solid ${pal.band}`, color: pal.band } : { background: pal.ctaBg, color: pal.ctaFg }) }}>{cta}</div>
@@ -384,7 +391,7 @@ function Corner({ p, pos, r, b }: { p: string; pos: React.CSSProperties; r?: boo
 }
 
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
-function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; brand: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
+function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; brand: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
   const { item, scene } = props
   const box = 380
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])

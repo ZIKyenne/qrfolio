@@ -10,7 +10,7 @@ import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, Chevro
 import { createClient } from "@/lib/supabase/client"
 import Particles from "@/components/Particles"
 import QRCanvas from "../qr-codes/QRCanvas"
-import { getQRBlob, type QROptions } from "../qr-codes/qrRender"
+import { getQRBlob, createQRSvg, type QROptions } from "../qr-codes/qrRender"
 import {
   METIERS, OBJECTIFS, BRANDNAMES, filterItems, ambiancesFor, ITEM_BY_ID, STYLE_BY_ID,
   LAYOUT_BY_ID, LAYOUTS, STYLES, TYPOS, SIZES, MESSAGES, type Item, type Style,
@@ -158,14 +158,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // Montage à la demande de la planche PDF : on la monte, on laisse le QR se rendre, puis on imprime.
   useEffect(() => {
     if (!printing) return
-    const t = setTimeout(() => { try { window.print() } catch {} }, 160)
+    const t = setTimeout(() => { try { window.print() } catch {} }, 220)   // laisse le QR SVG se rendre
     const after = () => setPrinting(false)
     window.addEventListener("afterprint", after)
     return () => { clearTimeout(t); window.removeEventListener("afterprint", after) }
   }, [printing])
   useEffect(() => {
     if (!multiPrinting) return
-    const t = setTimeout(() => { try { window.print() } catch {} }, 260)   // multi = plus de QR à rendre
+    const t = setTimeout(() => { try { window.print() } catch {} }, 340)   // multi = plus de QR SVG à rendre
     const after = () => setMultiPrinting(false)
     window.addEventListener("afterprint", after)
     return () => { clearTimeout(t); window.removeEventListener("afterprint", after) }
@@ -571,7 +571,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             {!qrReady && <p style={{ margin: "12px 0 0", fontSize: 12, color: C.gold, display: "inline-flex", alignItems: "center", gap: 6 }}><AlertTriangle size={13} /> Ajoutez d'abord votre QR (volet « Le QR »).</p>}
             {/* Livrable principal : la planche imprimable à taille réelle. */}
             <button onClick={() => { setControl(false); setPrinting(true) }} disabled={!ok || !qrReady} style={{ width: "100%", marginTop: 14, minHeight: 52, borderRadius: 12, border: "none", background: (ok && qrReady) ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, cursor: (ok && qrReady) ? "pointer" : "default", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Download size={18} /> {ok ? "Exporter la planche (PDF · taille réelle)" : "Corrigez le réglage rouge"}</button>
-            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe inclus"}).</p>
+            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe"}, texte + QR vectoriels).</p>
             {/* Option : ré-exporter le QR choisi seul (uniquement quand c'est un QR existant). */}
             {qrSource === "mine" && (
               <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
@@ -755,8 +755,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, physW, qrDx, qrDy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; physW: number; qrDx: number; qrDy: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, qrVector, physW, qrDx, qrDy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; qrVector?: boolean; physW: number; qrDx: number; qrDy: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -792,6 +792,8 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
     : qrStatic
     ? <FauxQR size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} />
+    : qrVector
+    ? <QRVector value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} />
     : <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} ecc="M" />
   const qrBadgeEl = qrBadge === "aucune"
     ? <div style={{ lineHeight: 0 }}>{qrInner}</div>
@@ -921,7 +923,7 @@ function PrintSheet(props: Omit<React.ComponentProps<typeof SupportVisual>, "w" 
     <div style={{ position: "relative", width: `${mediaWmm}mm`, height: `${mediaHmm}mm`, background: "#fff", overflow: "hidden" }}>
       <div style={{ position: "absolute", left: `${m}mm`, top: `${m}mm`, width: `${pageWmm}mm`, height: `${pageHmm}mm`, overflow: "hidden", background: props.pal.flat }}>
         <div style={{ width: bigW, height: bigH, transformOrigin: "top left", transform: `scale(${scale})` }}>
-          <SupportVisual {...props} physW={pageWmm} w={bigW} h={bigH} />
+          <SupportVisual {...props} qrVector physW={pageWmm} w={bigW} h={bigH} />
         </div>
       </div>
       {marks.map((mk, i) => <div key={i} aria-hidden style={{ position: "absolute", background: "#000", left: `${mk.left}mm`, top: `${mk.top}mm`, width: `${mk.width}mm`, height: `${mk.height}mm` }} />)}
@@ -940,7 +942,7 @@ function GangCell({ it, wmm, design }: { it: Item; wmm: number; design: DesignPr
   const scale = (wmm * 96 / 25.4) / bigW
   return (
     <div style={{ width: bigW, height: bigH, transformOrigin: "top left", transform: `scale(${scale})` }}>
-      <SupportVisual {...design} item={it} physW={wmm} w={bigW} h={bigH} />
+      <SupportVisual {...design} item={it} qrVector physW={wmm} w={bigW} h={bigH} />
     </div>
   )
 }
@@ -1020,6 +1022,16 @@ function FauxQR({ size, fg, bg }: { size: number; fg: string; bg: string }) {
       {finder({ bottom: cell * 0.4, left: cell * 0.4 })}
     </div>
   )
+}
+
+/* QR VECTORIEL (SVG natif qr-code-styling) — utilisé sur le chemin d'impression pour un PDF prêt imprimeur. */
+function QRVector({ value, size, fg, bg }: { value: string; size: number; fg: string; bg: string }) {
+  const holder = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const qr = createQRSvg({ data: value || "https://qrowg.com", fg, bg, ecc: "M", style: {}, size })
+    if (holder.current) { holder.current.innerHTML = ""; qr.append(holder.current) }
+  }, [value, size, fg, bg])
+  return <div ref={holder} style={{ width: size, height: size, lineHeight: 0 }} />
 }
 
 /* Mini-visuel pour la grille de bibliothèque : le VRAI support (mise en page + palette + QR),

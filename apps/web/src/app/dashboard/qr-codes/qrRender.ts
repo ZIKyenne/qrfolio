@@ -136,6 +136,11 @@ export function createQR(o: QROptions): QRCodeStyling {
   return new QRCodeStyling(buildOptions(o))
 }
 
+// Variante SVG (vectorielle) — pour un rendu net à l'impression (PDF prêt imprimeur).
+export function createQRSvg(o: QROptions): QRCodeStyling {
+  return new QRCodeStyling({ ...buildOptions(o), type: "svg" })
+}
+
 export function updateQR(qr: QRCodeStyling, o: QROptions): void {
   qr.update(buildOptions(o))
 }

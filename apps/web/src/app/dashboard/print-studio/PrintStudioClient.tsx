@@ -30,6 +30,9 @@ function resolveLayoutId(itemLayout: string): string {
 const FINISH_LABEL: Record<string, string> = { uni: "Uni", degrade: "Dégradé", grain: "Grain", rayures: "Rayures", quadrillage: "Quadrillage" }
 const FINISH_OPTS = [{ id: "uni", label: "Uni" }, { id: "degrade", label: "Dégradé" }, { id: "grain", label: "Grain" }, { id: "rayures", label: "Rayures" }, { id: "quadrillage", label: "Quadrillage" }]
 const FRAME_LABEL: Record<string, string> = { aucun: "sans cadre", filet: "filet", double: "double filet", coins: "coins ornés" }
+// Mises en page adaptées aux supports RONDS (centrées/symétriques) : les autres (bandeau, affiche, colonnes…)
+// supposent un rectangle et se retrouvent rognées par le cercle.
+const ROUND_LAYOUTS = new Set(["centre", "qrgeant", "cadre", "orne"])
 // Couleurs d'accent (override de l'ambiance) : « auto » = laisse l'ambiance décider.
 const ACCENTS: { id: string; label: string; hex: string }[] = [
   { id: "auto", label: "Auto", hex: "" },
@@ -104,6 +107,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [subColor, setSubColor] = useState("")
   const [ctaColor, setCtaColor] = useState("")
   const [advColor, setAdvColor] = useState(false)      // repli des couleurs avancées
+  const [advQr, setAdvQr] = useState(false)            // repli du décalage fin du QR
   const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
   const [open, setOpen] = useState<string | null>(null)   // un seul volet ouvert
@@ -221,12 +225,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // Taille EFFECTIVE du QR = palier × curseur fin. Sert au rendu ET au contrôle (guard ≥ 20 mm honnête).
   const effSize = { ...size, factor: +(size.factor * qrScale).toFixed(3) }
   const controls = useMemo(() => {
-    const base = item ? evaluateControls(item, style, effSize) : []
-    // Pour un PNG importé, le contraste du QR dépend de l'image (inconnu) : on n'affiche pas un vert trompeur.
-    if (qrSource !== "png") return base
-    return base.map(c => c.cle === "contrast" ? { ...c, ok: true, gravite: "avertissement" as const, valeur: "PNG — à vérifier" } : c)
+    let base = item ? evaluateControls(item, style, effSize) : []
+    // Contrôles honnêtes : ce qu'on ne mesure pas réellement n'est pas affiché en vert.
+    if (qrSource === "png") base = base.map(c => c.cle === "contrast" ? { ...c, ok: true, gravite: "avertissement" as const, valeur: "PNG — à vérifier" } : c)
+    if (bgImage) base = base.map(c => c.cle === "textContrast" ? { ...c, ok: true, gravite: "avertissement" as const, valeur: "photo — à vérifier" } : c)
+    return base
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item, style, size, qrScale, qrSource])
+  }, [item, style, size, qrScale, qrSource, bgImage])
   const ok = canExport(controls)
 
   function applyPreset(p: Preset) {
@@ -278,7 +283,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   }
   // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
   function switchSupport(id: string) {
-    if (!ITEM_BY_ID[id]) return
+    const it = ITEM_BY_ID[id]; if (!it) return
+    // Un layout rectangulaire (bandeau, affiche…) serait rogné sur un rond -> on recentre.
+    if (it.shape === "round" && !ROUND_LAYOUTS.has(layoutId)) setLayoutId("centre")
     setItemId(id); setDeclineOpen(false)
   }
 
@@ -288,7 +295,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setSizeId("moyen"); setBrandText(BRANDNAMES[0]); setSubtitle(""); setMessage(""); setCtaText(it.cta); setLogo("aucun")
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
     setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null)
-    setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor(""); setAdvColor(false)
+    setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor(""); setAdvColor(false); setAdvQr(false)
     setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
   }
 
@@ -454,9 +461,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <Field label="Taille du QR"><RailInline value={sizeId} options={SIZES.map(s => ({ id: s.id, label: s.label, note: s.note }))} onPick={setSizeId} /></Field>
             <Field label="Ajustement fin"><Range value={qrScale} min={0.7} max={1.5} step={0.05} onChange={setQrScale} hint={`${Math.round(qrScale * 100)} % · ${Math.round(item.qrMm * size.factor * qrScale)} mm`} /></Field>
             <Field label="Pastille"><Seg value={qrBadge} options={["carre", "cercle", "aucune"]} onPick={setQrBadge} labels={["Carré", "Cercle", "Aucune"]} /></Field>
-            <Field label="Position du QR (mise en page centrée)"><Seg value={qrPos} options={["haut", "centre", "bas"]} onPick={setQrPos} labels={["Haut", "Centre", "Bas"]} /></Field>
-            <Field label="Décalage fin du QR — horizontal"><Range value={qrDx} min={-1} max={1} step={0.1} onChange={setQrDx} hint={qrDx < -0.05 ? "← gauche" : qrDx > 0.05 ? "droite →" : "centré"} /></Field>
-            <Field label="Décalage fin du QR — vertical"><Range value={qrDy} min={-1} max={1} step={0.1} onChange={setQrDy} hint={qrDy < -0.05 ? "↑ haut" : qrDy > 0.05 ? "bas ↓" : "centré"} /></Field>
+            {layout.content === "stack" && <Field label="Position du QR"><Seg value={qrPos} options={["haut", "centre", "bas"]} onPick={setQrPos} labels={["Haut", "Centre", "Bas"]} /></Field>}
+            <button onClick={() => setAdvQr(v => !v)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 12, padding: 0 }}>{advQr ? "Masquer le décalage fin" : "Décalage fin du QR (avancé) →"}</button>
+            {advQr && <>
+              <Field label="Décalage horizontal"><Range value={qrDx} min={-1} max={1} step={0.1} onChange={setQrDx} hint={qrDx < -0.05 ? "← gauche" : qrDx > 0.05 ? "droite →" : "centré"} /></Field>
+              <Field label="Décalage vertical"><Range value={qrDy} min={-1} max={1} step={0.1} onChange={setQrDy} hint={qrDy < -0.05 ? "↑ haut" : qrDy > 0.05 ? "bas ↓" : "centré"} /></Field>
+            </>}
           </Panel>
 
           {/* Volet TEXTE — tout est éditable librement */}
@@ -494,13 +504,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <Field label="Couleur d'accent">
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {ACCENTS.map(a => (
-                  <button key={a.id} onClick={() => setAccent(a.id)} title={a.label} style={{ width: 40, height: 40, borderRadius: 10, cursor: "pointer", border: `2px solid ${accent === a.id ? C.gold : "transparent"}`, boxShadow: accent === a.id ? `0 0 0 2px ${C.gold}33` : "none", background: a.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)", position: "relative" }}>
+                  <button key={a.id} onClick={() => setAccent(a.id)} title={a.label} style={{ width: 44, height: 44, borderRadius: 11, cursor: "pointer", border: `2px solid ${accent === a.id ? C.gold : "transparent"}`, boxShadow: accent === a.id ? `0 0 0 2px ${C.gold}33` : "none", background: a.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)", position: "relative" }}>
                     {a.id === "auto" && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8.5, fontWeight: 800, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,.6)" }}>AUTO</span>}
                   </button>
                 ))}
               </div>
             </Field>
-            <Field label="Mise en page"><RailInline value={layoutId} options={LAYOUTS.map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
+            <Field label="Mise en page"><RailInline value={layoutId} options={LAYOUTS.filter(l => item.shape !== "round" || ROUND_LAYOUTS.has(l.id)).map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
           </Panel>
 
           {/* Volet DESIGN — 100 % design (aucun réglage du QR : il est fourni tel quel) */}
@@ -519,7 +529,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <Field label="Cadre"><Seg value={frame} options={["aucun", "filet", "double", "coins"]} onPick={setFrame} labels={["Aucun", "Filet", "Double", "Coins"]} /></Field>
             <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.6} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>
             <Field label="Air autour"><Range value={ePad} min={0.5} max={1.6} step={0.05} onChange={setEPad} hint={ePad < 0.85 ? "serré" : ePad > 1.2 ? "large" : "équilibré"} /></Field>
-            <Field label="Placement vertical"><Range value={blockY} min={-1} max={1} step={0.1} onChange={setBlockY} hint={blockY < -0.1 ? "vers le haut" : blockY > 0.1 ? "vers le bas" : "centré"} /></Field>
+            {layout.content !== "band" && <Field label="Placement vertical"><Range value={blockY} min={-1} max={1} step={0.1} onChange={setBlockY} hint={blockY < -0.1 ? "vers le haut" : blockY > 0.1 ? "vers le bas" : "centré"} /></Field>}
             <Field label="Arrondi"><Seg value={eCorner} options={["vif", "adouci", "rond"]} onPick={setECorner} labels={["Vif", "Adouci", "Rond"]} /></Field>
             <Field label="Style du bouton"><Seg value={eAccent} options={["plein", "degrade", "trait", "aucun"]} onPick={setEAccent} labels={["Plein", "Dégradé", "Trait", "Aucun"]} /></Field>
             <Field label="Logo de marque">
@@ -711,12 +721,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return <div><p style={{ margin: "0 0 7px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }}>{label}</p>{children}</div>
 }
 function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button onClick={onClick} style={{ minHeight: 40, padding: "8px 14px", borderRadius: R.chip, cursor: "pointer", fontSize: 12.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fg }}>{children}</button>
+  return <button onClick={onClick} style={{ minHeight: 44, padding: "10px 14px", borderRadius: R.chip, cursor: "pointer", fontSize: 12.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fg }}>{children}</button>
 }
 function Seg({ value, options, onPick, labels }: { value: string; options: string[]; onPick: (v: string) => void; labels?: string[] }) {
   return (
     <div style={{ display: "flex", gap: 4, background: C.surfaceUp, borderRadius: 11, padding: 3 }}>
-      {options.map((o, i) => <button key={o} onClick={() => onPick(o)} style={{ flex: 1, minHeight: 38, borderRadius: 8, border: "none", cursor: "pointer", background: value === o ? C.gold : "transparent", color: value === o ? "#0A0A0A" : C.fgMuted, fontSize: 12.5, fontWeight: value === o ? 800 : 600 }}>{labels ? labels[i] : o}</button>)}
+      {options.map((o, i) => <button key={o} onClick={() => onPick(o)} style={{ flex: 1, minHeight: 44, borderRadius: 8, border: "none", cursor: "pointer", background: value === o ? C.gold : "transparent", color: value === o ? "#0A0A0A" : C.fgMuted, fontSize: 12.5, fontWeight: value === o ? 800 : 600 }}>{labels ? labels[i] : o}</button>)}
     </div>
   )
 }
@@ -725,7 +735,7 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
   return (
     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
       <button onClick={() => onChange("")} style={{ ...chipStyle(value === ""), minHeight: 40 }}>Auto</button>
-      <label style={{ width: 40, height: 40, borderRadius: 10, border: `2px solid ${value ? C.gold : C.hairline}`, cursor: "pointer", position: "relative", flexShrink: 0, background: value || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)", overflow: "hidden" }}>
+      <label style={{ width: 44, height: 44, borderRadius: 11, border: `2px solid ${value ? C.gold : C.hairline}`, cursor: "pointer", position: "relative", flexShrink: 0, background: value || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)", overflow: "hidden" }}>
         <input type="color" value={value || "#C9A84C"} onChange={e => onChange(e.target.value)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", border: "none" }} />
       </label>
       {value && <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 11, color: C.fgMuted }}>{value}</span>}
@@ -735,16 +745,8 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
 function Range({ value, min, max, step, onChange, hint }: { value: number; min: number; max: number; step: number; onChange: (v: number) => void; hint?: string }) {
   return (
     <div>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: C.gold, height: 30, cursor: "pointer" }} />
+      <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: C.gold, height: 40, cursor: "pointer" }} />
       {hint && <div style={{ fontSize: 10.5, color: C.fgFaint, marginTop: -2 }}>{hint}</div>}
-    </div>
-  )
-}
-function Step({ value, min, max, onChange, labels }: { value: number; min: number; max: number; onChange: (v: number) => void; labels: string[] }) {
-  const opts = []; for (let i = min; i <= max; i++) opts.push(i)
-  return (
-    <div style={{ display: "flex", gap: 4, background: C.surfaceUp, borderRadius: 11, padding: 3 }}>
-      {opts.map(i => <button key={i} onClick={() => onChange(i)} style={{ flex: 1, minHeight: 38, borderRadius: 8, border: "none", cursor: "pointer", background: value === i ? C.gold : "transparent", color: value === i ? "#0A0A0A" : C.fgMuted, fontSize: 12, fontWeight: value === i ? 800 : 600 }}>{labels[i - min]}</button>)}
     </div>
   )
 }
@@ -767,13 +769,15 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
   const unit = Math.min(w, h)
-  const pad = unit * 0.09 * ePad
+  const isRound = item.shape === "round"
+  // Sur un support ROND, le contenu doit tenir dans le CERCLE inscrit (≈ 0,707 × Ø) :
+  // on impose une marge plancher (~15 %) pour ne jamais rogner le titre/QR/bouton au bord.
+  const pad = Math.max(isRound ? unit * 0.15 : 0, unit * 0.09 * ePad)
   const titleSize = unit * 0.11 * eTitle
   // Taille du QR pilotée par la PHYSIQUE (item.qrMm × facteur), convertie en px via l'échelle du support
   // (physW = largeur physique en mm que représente `w`). => aperçu, planche PDF et contrôle réfèrent LE MÊME mm.
   const qrPx = Math.max(24, item.qrMm * size.factor * (w / physW))
   const radiusEl = eCorner === "vif" ? 0 : eCorner === "rond" ? 999 : 10
-  const isRound = item.shape === "round"
 
   // Couleur d'accent : override d'ambiance (« auto » garde pal.band / pal.ctaBg).
   const accHex = ACCENTS.find(a => a.id === accent)?.hex || ""
@@ -790,9 +794,10 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const btnBg = ctaColor || ctaBg
   const btnFg = ctaColor ? readableOn(ctaColor) : ctaFg
   const btnStroke = ctaColor || bandColor
-  const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: unit * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: bandColor }}>{brand}</div>
-  const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol }}>{shownTitle}</div>
-  const subtitleEl = subtitle.trim() ? <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82 }}>{subtitle}</div> : null
+  const clampTxt: React.CSSProperties = { maxWidth: "100%", overflowWrap: "anywhere" }
+  const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: unit * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: bandColor, ...clampTxt }}>{brand}</div>
+  const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol, ...clampTxt }}>{shownTitle}</div>
+  const subtitleEl = subtitle.trim() ? <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt }}>{subtitle}</div> : null
   // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
   const qrInner = qrImg
     ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
@@ -807,7 +812,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   // Décalage fin du QR (curseurs X/Y) — n'affecte que le QR, pas le reste du bloc.
   const qrEl = (qrDx || qrDy) ? <div style={{ transform: `translate(${qrDx * 18}%, ${qrDy * 18}%)`, display: "inline-block" }}>{qrBadgeEl}</div> : qrBadgeEl
   const ctaEl = eAccent === "aucun" ? null : (
-    <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, whiteSpace: "nowrap",
+    <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxSizing: "border-box",
       ...(eAccent === "trait" ? { border: `2px solid ${btnStroke}`, color: btnStroke }
         : eAccent === "degrade" ? { background: `linear-gradient(135deg, ${shade(btnBg, 0.12)}, ${shade(btnBg, -0.28)})`, color: btnFg }
         : { background: btnBg, color: btnFg }) }}>{cta}</div>
@@ -852,18 +857,20 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
       </div>
     )
   } else if (layout.content === "qrbig") {
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * 0.045 }}><div style={{ fontFamily: titleFont, fontSize: titleSize * 0.7, fontWeight: effWeight as any, color: titleCol }}>{shownTitle}</div>{subtitleEl}<div style={{ transform: "scale(1.35)", margin: `${unit * 0.05}px 0` }}>{qrEl}</div>{ctaEl}</div>
+    // « QR géant » = layout centré sur le QR. La taille du QR reste PHYSIQUE (réglée par la taille/le curseur) :
+    // pas de scale CSS ici (ça gonflait le QR au-delà de qrMm et débordait). On rapproche juste les textes.
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * (isRound ? 0.028 : 0.04), minHeight: 0, overflow: "hidden" }}><div style={{ fontFamily: titleFont, fontSize: titleSize * 0.72, fontWeight: effWeight as any, color: titleCol, textAlign: "center", ...clampTxt }}>{shownTitle}</div>{subtitleEl}{qrEl}{ctaEl}</div>
   } else if (layout.content === "split") {
-    body = <div style={{ flex: 1, display: "flex", alignItems: "center", gap: pad }}><div style={{ flex: 1, display: "flex", flexDirection: "column", gap: unit * 0.035 }}>{kickerEl}{titleEl}{subtitleEl}{ctaEl}</div>{qrEl}</div>
+    body = <div style={{ flex: 1, display: "flex", alignItems: "center", gap: pad, minWidth: 0 }}><div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: unit * 0.035 }}>{kickerEl}{titleEl}{subtitleEl}{ctaEl}</div>{qrEl}</div>
   } else if (layout.content === "poster") {
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between" }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems }}>{kickerEl}<div style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: titleCol }}>{shownTitle}</div>{subtitleEl}</div><div style={{ display: "flex", alignItems: "center", gap: pad, alignSelf: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between", minWidth: 0 }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems, maxWidth: "100%" }}>{kickerEl}<div style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: titleCol, ...clampTxt }}>{shownTitle}</div>{subtitleEl}</div><div style={{ display: "flex", alignItems: "center", gap: pad, alignSelf: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
   } else { // stack / center — la position du QR se règle (haut / centre / bas)
     const stackInner = qrPos === "haut"
       ? <>{qrEl}{kickerEl}{titleEl}{subtitleEl}{ctaEl}</>
       : qrPos === "bas"
       ? <>{kickerEl}{titleEl}{subtitleEl}{ctaEl}{qrEl}</>
       : <>{kickerEl}{titleEl}{subtitleEl}{qrEl}{ctaEl}</>
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "center", gap: unit * 0.045, textAlign: eAlign }}>{stackInner}</div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "center", gap: unit * (isRound ? 0.032 : 0.045), textAlign: eAlign, minHeight: 0, overflow: "hidden" }}>{stackInner}</div>
   }
 
   // Placement vertical (curseur) : on décale le bloc de contenu — sauf le bandeau (absolu, plein cadre).
@@ -873,7 +880,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   return (
     <div style={base}>
       {placed}
-      {logo === "objet" && logoUrl && <img src={logoUrl} alt="" style={{ position: "absolute", top: pad, left: pad, width: unit * 0.14, height: unit * 0.14, objectFit: "contain", zIndex: 2 }} />}
+      {logo === "objet" && logoUrl && <img src={logoUrl} alt="" style={{ position: "absolute", top: isRound ? unit * 0.2 : pad, left: isRound ? unit * 0.2 : pad, width: unit * 0.14, height: unit * 0.14, objectFit: "contain", zIndex: 2 }} />}
       {frameEl}
       {/* décor optionnel (lié à la mise en page) */}
       {layout.deco === "frame" && <div style={{ position: "absolute", inset: pad * 0.5, border: `2px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} />}

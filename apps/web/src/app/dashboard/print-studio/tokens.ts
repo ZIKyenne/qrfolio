@@ -10,8 +10,8 @@ export const color = {
   hairline: 'rgba(255,255,255,.08)',
   // texte
   fg: '#eceef1',
-  fgMuted: 'rgba(236,238,241,.55)',
-  fgFaint: 'rgba(236,238,241,.32)',
+  fgMuted: 'rgba(236,238,241,.6)',
+  fgFaint: 'rgba(236,238,241,.44)',
   // accents
   gold: '#c9a84c',      // action principale, sélection, compteurs
   goldSoft: 'rgba(201,168,76,.14)',

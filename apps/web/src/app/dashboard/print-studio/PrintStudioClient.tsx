@@ -4,7 +4,7 @@
 // Bibliothèque -> aperçu packshot + 3 volets bornés -> contrôle avant export -> export.
 // Consomme les modules purs : catalog / mockup / states / tokens.
 
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react"
 import QRCanvas from "../qr-codes/QRCanvas"
@@ -55,6 +55,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [destUrl, setDestUrl] = useState("")   // lien réel encodé par le QR (sinon page QRowg)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const logoInput = useRef<HTMLInputElement>(null)
 
   const item = itemId ? ITEM_BY_ID[itemId] : null
   const style = STYLE_BY_ID[styleId] || STYLE_BY_ID.premiumdark
@@ -75,14 +77,15 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setItemId(id); setStyleId(it.pal); setLayoutId(resolveLayoutId(it.layout))
     setSizeId("moyen"); setBrandIdx(0); setMessage(""); setDestIdx(0); setLogo("aucun")
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
-    setDestUrl(""); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
+    setDestUrl(""); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
   }
 
   async function exportQr(ext: "png" | "svg") {
     if (!item || !ok || busy) return
     setBusy(true)
     try {
-      const opts: QROptions = { data: qrValue, fg: style.qr, bg: style.qrBg, ecc: "M", style: { cornerStyle: CORNER_MAP[eCorner] }, size: 1024 }
+      const withLogo = logo === "qr" && !!logoUrl
+      const opts: QROptions = { data: qrValue, fg: style.qr, bg: style.qrBg, ecc: withLogo ? "H" : "M", style: { cornerStyle: CORNER_MAP[eCorner], ...(withLogo ? { logoUrl: logoUrl!, logoSize: 22, logoShape: "rounded" as const, logoBg: "white" as const, logoPadding: 5 } : {}) }, size: 1024 }
       const blob = await getQRBlob(opts, ext)
       if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qrowg-${item.support}.${ext}`.replace(/\s+/g, "-").toLowerCase(); a.click(); URL.revokeObjectURL(a.href); setDone(true); setTimeout(() => setDone(false), 1800) }
     } finally { setBusy(false) }
@@ -160,7 +163,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
-          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue}
+          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue} logo={logo} logoUrl={logoUrl}
             brand={brand} title={title} cta={item.cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
           <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {destUrl.trim() ? "le QR pointe vers votre lien" : "définissez le lien du QR dans « Ce qui est écrit »"}</p>
         </div>
@@ -196,7 +199,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
           {/* Volet DÉTAILS */}
           <Panel id="details" title="Les détails" resume="logo · six réglages sans risque" open={open} setOpen={setOpen}>
-            <Field label="Logo"><Seg value={logo} options={["objet", "qr", "aucun"]} onPick={setLogo} /></Field>
+            <Field label="Logo">
+              <Seg value={logo} options={["objet", "qr", "aucun"]} onPick={setLogo} />
+              {logo !== "aucun" && (logoUrl
+                ? <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 8, background: "#fff", overflow: "hidden", flexShrink: 0, border: `1px solid ${C.hairline}` }}><img src={logoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
+                    <span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Logo ajouté{logo === "qr" ? " — correction d'erreur portée au max." : ""}</span>
+                    <button onClick={() => setLogoUrl(null)} aria-label="Retirer le logo" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 34, height: 34, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
+                  </div>
+                : <button onClick={() => logoInput.current?.click()} style={{ marginTop: 8, width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.gold}55`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Ajouter un logo</button>
+              )}
+              <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setLogoUrl(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+            </Field>
             <Field label="Titre"><Step value={eTitle} min={0} max={2} onChange={setETitle} labels={["plus petit", "normal", "plus grand"]} /></Field>
             <Field label="Air autour"><Step value={ePad} min={0} max={2} onChange={setEPad} labels={["serré", "normal", "large"]} /></Field>
             <Field label="Coins"><Seg value={eCorner} options={["vif", "adouci", "rond"]} onPick={setECorner} /></Field>
@@ -247,7 +261,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Planche d'impression — window.print() -> PDF à taille réelle (mm), fidèle à l'aperçu. */}
       <div className="ps-print-root" aria-hidden>
         <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${pageDims(item).pageWmm}mm ${pageDims(item).pageHmm}mm;margin:0}}`}</style>
-        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} title={title} cta={item.cta} size={size} qrValue={qrValue} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
+        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} title={title} cta={item.cta} size={size} qrValue={qrValue} logo={logo} logoUrl={logoUrl} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
       </div>
     </div>
   )
@@ -341,8 +355,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; title: string; cta: string; size: { factor: number }; qrValue: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, logo, logoUrl, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; title: string; cta: string; size: { factor: number }; qrValue: string; logo: string; logoUrl: string | null; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -355,7 +369,13 @@ function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, eC
 
   const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: unit * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: pal.band }}>{brand}</div>
   const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: pal.titleWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: pal.fg }}>{title}</div>
-  const qrEl = <div style={{ background: pal.qrBg, padding: unit * 0.028, borderRadius: eCorner === "rond" ? 16 : 8, lineHeight: 0 }}><QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} style={{ cornerStyle: CORNER_MAP[eCorner] }} ecc="M" /></div>
+  const qrLogo = logo === "qr" && !!logoUrl
+  const qrEl = (
+    <div style={{ background: pal.qrBg, padding: unit * 0.028, borderRadius: eCorner === "rond" ? 16 : 8, lineHeight: 0, position: "relative" }}>
+      <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} style={{ cornerStyle: CORNER_MAP[eCorner] }} ecc={qrLogo ? "H" : "M"} />
+      {qrLogo && <img src={logoUrl!} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: qrPx * 0.26, height: qrPx * 0.26, objectFit: "contain", background: "#fff", borderRadius: 5, padding: qrPx * 0.02, boxSizing: "border-box" }} />}
+    </div>
+  )
   const ctaEl = eAccent === "aucun" ? null : (
     <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, whiteSpace: "nowrap",
       ...(eAccent === "trait" ? { border: `2px solid ${pal.band}`, color: pal.band } : { background: pal.ctaBg, color: pal.ctaFg }) }}>{cta}</div>
@@ -385,6 +405,7 @@ function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, eC
   return (
     <div style={base}>
       {body}
+      {logo === "objet" && logoUrl && <img src={logoUrl} alt="" style={{ position: "absolute", top: pad, left: pad, width: unit * 0.14, height: unit * 0.14, objectFit: "contain", zIndex: 2 }} />}
       {/* décor optionnel */}
       {layout.deco === "frame" && <div style={{ position: "absolute", inset: pad * 0.5, border: `2px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} />}
       {layout.deco === "footer" && <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: unit * 0.04, background: pal.band }} />}
@@ -421,7 +442,7 @@ function PrintSheet(props: Omit<React.ComponentProps<typeof SupportVisual>, "w" 
 }
 
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
-function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; brand: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
+function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; logo: string; logoUrl: string | null; brand: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
   const { item, scene } = props
   const box = 380
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])

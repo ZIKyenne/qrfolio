@@ -6,7 +6,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, Sparkles, ChevronDown } from "lucide-react"
+import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions } from "../qr-codes/qrRender"
 import { normalizeUrl } from "../qr-link/qrLinkUtils"
@@ -238,10 +238,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               </button>
               <button onClick={() => exportQr("svg")} disabled={!ok || busy} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 14, fontWeight: 700, cursor: ok ? "pointer" : "default", opacity: ok ? 1 : 0.5 }}>SVG</button>
             </div>
-            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Export de la planche complète (PDF prêt imprimeur) — bientôt.</p>
+            <button onClick={() => { setControl(false); setTimeout(() => window.print(), 180) }} disabled={!ok} style={{ width: "100%", marginTop: 10, minHeight: 46, borderRadius: 12, border: `1px solid ${C.gold}66`, background: "transparent", color: C.gold, fontSize: 14, fontWeight: 700, cursor: ok ? "pointer" : "default", opacity: ok ? 1 : 0.5 }}>Exporter la planche (PDF · taille réelle)</button>
+            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, fond perdu inclus).</p>
           </div>
         </div>
       )}
+
+      {/* Planche d'impression — window.print() -> PDF à taille réelle (mm), fidèle à l'aperçu. */}
+      <div className="ps-print-root" aria-hidden>
+        <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${pageDims(item).pageWmm}mm ${pageDims(item).pageHmm}mm;margin:0}}`}</style>
+        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} title={title} cta={item.cta} size={size} qrValue={qrValue} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
+      </div>
     </div>
   )
 }
@@ -390,6 +397,29 @@ function Corner({ p, pos, r, b }: { p: string; pos: React.CSSProperties; r?: boo
   return <span style={{ position: "absolute", width: 14, height: 14, ...(pos), borderTop: b ? "none" : `2px solid ${p}`, borderBottom: b ? `2px solid ${p}` : "none", borderLeft: r ? "none" : `2px solid ${p}`, borderRight: r ? `2px solid ${p}` : "none", pointerEvents: "none" }} />
 }
 
+/* Dimensions physiques de la PLANCHE (trim + fond perdu), en mm. */
+function pageDims(item: Item) {
+  const trimW = item.shape === "round" ? item.hMm : item.hMm * item.ratio
+  return { pageWmm: +(trimW + 2 * item.bleed).toFixed(1), pageHmm: +(item.hMm + 2 * item.bleed).toFixed(1) }
+}
+/* Planche d'impression : le support à sa taille RÉELLE (mm) rendu en haute résolution puis
+   remis à l'échelle physique — consommé par window.print() -> PDF prêt imprimeur (fidèle à l'aperçu). */
+function PrintSheet(props: Omit<React.ComponentProps<typeof SupportVisual>, "w" | "h">) {
+  const { item } = props
+  const { pageWmm, pageHmm } = pageDims(item)
+  const long = 1600
+  const bigW = item.ratio >= 1 ? long : Math.round(long * item.ratio)
+  const bigH = item.shape === "round" ? bigW : Math.round(bigW / item.ratio)
+  const scale = (pageWmm * 96 / 25.4) / bigW  // px haute-déf -> mm réels (1mm = 96/25.4 px CSS)
+  return (
+    <div style={{ width: `${pageWmm}mm`, height: `${pageHmm}mm`, overflow: "hidden", background: props.pal.flat }}>
+      <div style={{ width: bigW, height: bigH, transformOrigin: "top left", transform: `scale(${scale})` }}>
+        <SupportVisual {...props} w={bigW} h={bigH} />
+      </div>
+    </div>
+  )
+}
+
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
 function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; brand: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
   const { item, scene } = props
@@ -427,7 +457,7 @@ function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pa
 /* Mini-visuel pour la grille de bibliothèque (support à plat, petit). */
 function MiniSupport({ item, style }: { item: Item; style: Style }) {
   const pal = paletteFromStyle(style)
-  const h = 72, w = item.shape === "round" ? 72 : Math.min(120, 72 * item.ratio)
+  const w = item.shape === "round" ? 72 : Math.min(120, 72 * item.ratio)
   return (
     <div style={{ width: w, height: item.shape === "round" ? 72 : Math.min(72, w / item.ratio), background: pal.bg, borderRadius: item.shape === "round" ? "50%" : 6, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 18px rgba(0,0,0,.4)" }}>
       <div style={{ width: "34%", aspectRatio: "1", background: pal.qrBg, borderRadius: 3, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1, padding: 2 }}>

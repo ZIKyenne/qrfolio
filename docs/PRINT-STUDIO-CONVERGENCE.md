@@ -88,12 +88,15 @@ déjà composé (on n'ouvre pas une page blanche).
 - [ ] **Bug de format** `/api/print-design` (`ALLOWED_FORMATS` legacy) : moot tant que l'ancien est débranché ;
       à corriger en Phase 2 quand on rebranche la persistance sur le nouveau.
 
-### Phase 2 — Persistance & éléments (valeur immédiate)
-- [ ] **Sauvegarder/rouvrir un design** de support (aujourd'hui le nouveau ne persiste que modèles/charte, pas la
-      composition complète). Réutiliser le stockage par-QR (`qr_codes.print_design`) corrigé.
-- [ ] Porter la **bibliothèque d'éléments** (formes/icônes/filets/badges/**composants métier**) comme blocs
-      ajoutables dans le guidé, dans les emplacements bornés (pas de canvas libre encore).
-- [ ] **Photos de fond** (upload + Unsplash + filtres) dans le volet « Le design ».
+### Phase 2 — Persistance & photos ✅ FAIT (commits b17b5743 + 5a7ad199)
+- [x] **Sauvegarder/rouvrir un design** par QR : `captureDesign`/`restoreDesign` (v2) ; bouton « Enregistrer »
+      (en-tête, si QR rattaché via `?qr=` ou « Mes QR ») ; restauration à l'ouverture depuis un QR. Route
+      `/api/print-design` étendue au `short_code`. Réutilise `qr_codes.print_design` (dégradé gracieux si absent).
+- [x] **Photos de fond Unsplash** : recherche (`/api/unsplash`, orientation calée sur le format) + grille + attribution ;
+      import local conservé ; voile de lisibilité auto.
+- [ ] **Filtres photo** (N&B/duotone/flou) : reporté (nécessite une couche photo dédiée avec `filter:`).
+- [ ] Porter la **bibliothèque d'éléments** (formes/icônes/badges/**composants métier**) → **déplacé en Phase 3**
+      (elle a besoin du canvas libre ; elle ne rentre pas dans les emplacements bornés du guidé).
 
 ### Phase 3 — Mode « Studio libre » borné (le gros morceau)
 - [ ] Canvas Fabric **dans le cadre du support** (dimensions réelles + fond perdu + marges + pré-vol live).

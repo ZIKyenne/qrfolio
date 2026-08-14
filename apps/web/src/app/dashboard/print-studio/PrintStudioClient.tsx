@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers,
+import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2,
   Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import Particles from "@/components/Particles"
@@ -156,12 +156,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [qrFree, setQrFree] = useState(false)             // QR en position LIBRE (déplaçable), sinon dans la mise en page
   const [qrFx, setQrFx] = useState(0.32)                  // position libre du QR (coin haut-gauche, fraction)
   const [qrFy, setQrFy] = useState(0.55)
+  const [zoom, setZoom] = useState(1)                     // zoom de l'éditeur à plat (Studio libre)
   const [libre, setLibre] = useState(false)               // mode « Studio libre » (édition à plat + éléments libres)
   const [freeEls, setFreeEls] = useState<FreeEl[]>([])    // éléments texte libres posés sur le support
   const [selEl, setSelEl] = useState<string | null>(null) // élément libre sélectionné
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const logoInput = useRef<HTMLInputElement>(null)
   const bgInput = useRef<HTMLInputElement>(null)
+  // Historique Annuler/Rétablir : snapshots du design complet, coalescés (une entrée par salve d'édition).
+  const undoRef = useRef<{ past: string[]; future: string[]; apply: boolean; last: string; t: any }>({ past: [], future: [], apply: false, last: "", t: null })
+  const [canUndo, setCanUndo] = useState(false)
+  const [canRedo, setCanRedo] = useState(false)
+  const kbd = useRef<any>({})   // dernières closures (raccourcis clavier montés une seule fois)
 
   // Source du QR : un QR EXISTANT de l'utilisateur, ou un PNG importé. AUCUNE création ici
   // (Print Studio n'est pas un concepteur de QR — il met en scène un QR déjà fait).
@@ -385,6 +391,68 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     } catch { /* silencieux : le design reste éditable */ }
   }
 
+  // ── Annuler / Rétablir (historique du design complet) ───────────────────────────
+  // Snapshot sérialisé du design courant (mêmes champs que captureDesign) — clé de l'historique.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const snap = useMemo(() => JSON.stringify(captureDesign()), [itemId, styleId, layoutId, sizeId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, qrScale, blockY, qrDx, qrDy, qrFree, qrFx, qrFy, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, titleColor, subColor, ctaColor, logo, logoUrl, bgImage, bgCredit, brandText, subtitle, message, ctaText, qrSource, qrPickId, qrPng, freeEls])
+  // Empile (débounce 350 ms) : une salve de réglages = une seule entrée d'historique.
+  useEffect(() => {
+    if (phase !== "studio") return
+    const u = undoRef.current
+    if (u.last === "") { u.last = snap; return }          // base à l'entrée du studio
+    if (snap === u.last) return
+    if (u.apply) { u.apply = false; u.last = snap; return } // changement dû à undo/redo → ne pas ré-empiler
+    clearTimeout(u.t)
+    const prev = u.last
+    u.t = setTimeout(() => {
+      u.past.push(prev); if (u.past.length > 30) u.past.shift()
+      u.future = []; u.last = snap
+      setCanUndo(true); setCanRedo(false)
+    }, 350)
+  }, [snap, phase])
+  function undo() {
+    const u = undoRef.current
+    if (!u.past.length) return
+    clearTimeout(u.t)
+    const prev = u.past.pop() as string
+    u.future.push(JSON.stringify(captureDesign())); if (u.future.length > 30) u.future.shift()
+    u.apply = true; u.last = prev
+    try { restoreDesign(JSON.parse(prev)) } catch {}
+    setCanUndo(u.past.length > 0); setCanRedo(true); setSelEl(null)
+  }
+  function redo() {
+    const u = undoRef.current
+    if (!u.future.length) return
+    clearTimeout(u.t)
+    const nxt = u.future.pop() as string
+    u.past.push(JSON.stringify(captureDesign())); if (u.past.length > 30) u.past.shift()
+    u.apply = true; u.last = nxt
+    try { restoreDesign(JSON.parse(nxt)) } catch {}
+    setCanUndo(true); setCanRedo(u.future.length > 0); setSelEl(null)
+  }
+  // Raccourcis clavier — montés une fois, lisent les dernières closures via `kbd`. On n'intercepte jamais la saisie.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const k = kbd.current
+      if (!k || k.phase !== "studio") return
+      const t = e.target as HTMLElement | null
+      const typing = !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)
+      const mod = e.ctrlKey || e.metaKey
+      if (mod && (e.key === "z" || e.key === "Z")) { e.preventDefault(); if (e.shiftKey) k.redo(); else k.undo(); return }
+      if (mod && (e.key === "y" || e.key === "Y")) { e.preventDefault(); k.redo(); return }
+      if (typing || !k.selEl) return
+      if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); k.deleteEl(k.selEl); return }
+      if (mod && (e.key === "d" || e.key === "D")) { e.preventDefault(); k.duplicateEl(k.selEl); return }
+      const step = e.shiftKey ? 0.02 : 0.005
+      if (e.key === "ArrowLeft") { e.preventDefault(); k.nudge(k.selEl, -step, 0) }
+      else if (e.key === "ArrowRight") { e.preventDefault(); k.nudge(k.selEl, step, 0) }
+      else if (e.key === "ArrowUp") { e.preventDefault(); k.nudge(k.selEl, 0, -step) }
+      else if (e.key === "ArrowDown") { e.preventDefault(); k.nudge(k.selEl, 0, step) }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
   // ── Éléments libres (mode Studio libre) ─────────────────────────────────────────
   function addFreeText() {
     const p = paletteFromStyle(style)
@@ -404,6 +472,16 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   }
   function updateEl(id: string, patch: Partial<FreeEl>) { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...patch } : e)) }
   function deleteEl(id: string) { setFreeEls(els => els.filter(e => e.id !== id)); setSelEl(s => (s === id ? null : s)) }
+  // Dupliquer un élément libre (léger décalage) et sélectionner la copie ; déplacer au clavier (flèches).
+  function duplicateEl(id: string) {
+    const e = freeEls.find(x => x.id === id); if (!e) return
+    const nid = `f_${Date.now()}`
+    setFreeEls(els => [...els, { ...e, id: nid, x: Math.min(0.92, e.x + 0.03), y: Math.min(0.92, e.y + 0.03) }])
+    setSelEl(nid)
+  }
+  function nudge(id: string, dx: number, dy: number) {
+    setFreeEls(els => els.map(e => e.id === id ? { ...e, x: Math.max(0, Math.min(1, e.x + dx)), y: Math.max(0, Math.min(1, e.y + dy)) } : e))
+  }
   // Ordre des calques (l'ordre du tableau = z) : premier plan = fin, arrière-plan = début.
   function bringFront(id: string) { setFreeEls(els => { const e = els.find(x => x.id === id); return e ? [...els.filter(x => x.id !== id), e] : els }) }
   function sendBack(id: string) { setFreeEls(els => { const e = els.find(x => x.id === id); return e ? [e, ...els.filter(x => x.id !== id)] : els }) }
@@ -426,6 +504,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor(""); setAdvColor(false); setAdvQr(false)
     setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false)
     setLibre(false); setFreeEls([]); setSelEl(null); setQrFree(false); setQrFx(0.32); setQrFy(0.55); setPhase("studio")
+    undoRef.current = { past: [], future: [], apply: false, last: "", t: null }; setCanUndo(false); setCanRedo(false)
   }
 
   // Ré-export du QR choisi, seul (source « Mes QR »). On réencode le lien du QR existant :
@@ -439,6 +518,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qrowg-${item.support}.${ext}`.replace(/\s+/g, "-").toLowerCase(); a.click(); URL.revokeObjectURL(a.href); setDone(true); setTimeout(() => setDone(false), 1800) }
     } finally { setBusy(false) }
   }
+
+  // Dernières closures pour les raccourcis clavier (montés une seule fois plus haut).
+  kbd.current = { phase, selEl, undo, redo, deleteEl, duplicateEl, nudge }
 
   // ── Upsell (free) ──────────────────────────────────────────────────────────
   if (!canAccess) {
@@ -507,6 +589,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       <header style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "inline-flex", gap: 4 }}>
+            <button onClick={undo} disabled={!canUndo} title="Annuler (Ctrl+Z)" aria-label="Annuler" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 34, height: 34, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 9, color: canUndo ? C.fg : C.fgFaint, cursor: canUndo ? "pointer" : "default", opacity: canUndo ? 1 : 0.5 }}><Undo2 size={15} /></button>
+            <button onClick={redo} disabled={!canRedo} title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 34, height: 34, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 9, color: canRedo ? C.fg : C.fgFaint, cursor: canRedo ? "pointer" : "default", opacity: canRedo ? 1 : 0.5 }}><Redo2 size={15} /></button>
+          </div>
           <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.goldSoft, border: `1px solid ${C.goldA55}`, color: C.gold, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Copy size={14} /> Décliner</button>
           <button onClick={() => { if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Layers size={14} /> Planche</button>
           {designCode && <button onClick={saveDesign} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: designSaved ? C.goldSoft : "transparent", border: `1px solid ${designSaved ? C.gold : C.hairline}`, color: designSaved ? C.gold : C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}>{designSaved ? <Check size={14} /> : <ShieldCheck size={14} />} {designSaved ? "Enregistré" : "Enregistrer"}</button>}
@@ -520,7 +606,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         {/* Aperçu packshot */}
         <div className="ps-aside">
           {libre
-            ? <FlatEditor item={item} design={designProps} freeEls={freeEls} setFreeEls={setFreeEls} selEl={selEl} setSelEl={setSelEl} onQrMove={(x, y) => { setQrFx(x); setQrFy(y) }} />
+            ? <>
+                <ZoomBar zoom={zoom} setZoom={setZoom} />
+                <div style={{ overflow: "auto", maxWidth: "100%", display: "flex", justifyContent: "center", padding: "4px 0" }}>
+                  <FlatEditor item={item} design={designProps} freeEls={freeEls} setFreeEls={setFreeEls} selEl={selEl} setSelEl={setSelEl} onQrMove={(x, y) => { setQrFx(x); setQrFy(y) }} box={Math.round(460 * zoom)} />
+                </div>
+              </>
             : <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} qrFree={qrFree} qrFx={qrFx} qrFy={qrFy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY} freeEls={freeEls}
                 brand={brand} subtitle={subtitle} title={title} cta={cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />}
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
@@ -554,10 +645,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <button onClick={() => centerEl(sel.id, "x")} style={{ ...chipStyle(false), fontSize: 11.5 }}>Centrer ↔</button>
                   <button onClick={() => centerEl(sel.id, "y")} style={{ ...chipStyle(false), fontSize: 11.5 }}>Centrer ↕</button>
+                  <button onClick={() => duplicateEl(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Dupliquer</button>
                   <button onClick={() => bringFront(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Premier plan</button>
                   <button onClick={() => sendBack(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Arrière-plan</button>
                 </div>
-                <button onClick={() => deleteEl(sel.id)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.bad, cursor: "pointer", fontSize: 12, padding: 0 }}>Supprimer cet élément</button>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <span style={{ fontSize: 10.5, color: C.fgFaint }}>Flèches : déplacer · Suppr : retirer · Ctrl+D : dupliquer</span>
+                  <button onClick={() => deleteEl(sel.id)} style={{ background: "none", border: "none", color: C.bad, cursor: "pointer", fontSize: 12, padding: 0, whiteSpace: "nowrap" }}>Supprimer</button>
+                </div>
               </div>
             )}
           </>}
@@ -1194,13 +1289,25 @@ function FreeElView({ el, unit, bodyFont, editable, selected, onDown }: { el: Fr
   return <div {...dp} style={{ ...base, width: `${el.w * 100}%`, fontSize: unit * el.size, color: el.color, textAlign: el.align, fontFamily: el.font || bodyFont, fontWeight: el.weight, lineHeight: 1.15, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{el.text}</div>
 }
 
+/* Barre de zoom de l'éditeur à plat : − / % / + / Ajuster. Discrète, ancrée au-dessus du support. */
+function ZoomBar({ zoom, setZoom }: { zoom: number; setZoom: (v: number | ((z: number) => number)) => void }) {
+  const btn: React.CSSProperties = { width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, cursor: "pointer", fontSize: 16, lineHeight: 1, display: "inline-flex", alignItems: "center", justifyContent: "center" }
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 6 }}>
+      <button onClick={() => setZoom(z => Math.max(0.5, +(z - 0.1).toFixed(2)))} title="Dézoomer" aria-label="Dézoomer" style={btn}>−</button>
+      <span style={{ minWidth: 46, textAlign: "center", fontSize: 12, fontWeight: 700, color: C.fgMuted, fontFamily: "ui-monospace, monospace" }}>{Math.round(zoom * 100)} %</span>
+      <button onClick={() => setZoom(z => Math.min(2, +(z + 0.1).toFixed(2)))} title="Zoomer" aria-label="Zoomer" style={btn}>+</button>
+      <button onClick={() => setZoom(1)} title="Ajuster à l'écran" style={{ ...btn, width: "auto", padding: "0 12px", fontSize: 12, fontWeight: 700 }}>Ajuster</button>
+    </div>
+  )
+}
+
 /* Éditeur À PLAT (mode Studio libre) : le support de face, éléments libres déplaçables à la souris.
    Positions en fraction du support -> l'aperçu packshot et la planche PDF les rendent au même endroit. */
-function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMove }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void; onQrMove: (x: number, y: number) => void }) {
+function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMove, box = 460 }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void; onQrMove: (x: number, y: number) => void; box?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number; wpx: number; hpx: number } | null>(null)
   const [guide, setGuide] = useState<{ x: boolean; y: boolean }>({ x: false, y: false })
-  const box = 460
   const ratio = item.shape === "round" ? 1 : item.ratio
   const w = ratio >= 1 ? box : Math.round(box * ratio)
   const h = ratio >= 1 ? Math.round(box / ratio) : box

@@ -45,9 +45,9 @@ Chaque phase garde la règle : **on n'ajoute de la liberté que si elle reste tr
 - [x] Curseurs taille du titre / air / placement vertical.
 - [x] Plus de polices (12, réellement rendues).
 - [ ] **Placement fin du QR en X/Y** (poignée sur l'aperçu, pas seulement haut/centre/bas).
-- [ ] **Curseur taille du QR** en complément des 3 paliers (avec garde-fou ≥ 20 mm).
+- [x] **Curseur taille du QR** en complément des 3 paliers (garde-fou ≥ 20 mm honnête, mm affichés).
 - [ ] **Couleur par élément** (titre / sous-titre / bouton indépendants) — replié derrière « avancé ».
-- [ ] **Image de fond** : importer une photo/texture comme fond du support (avec voile lisibilité auto).
+- [x] **Image de fond** : importer une photo comme fond du support (voile de lisibilité auto).
 - [ ] **Encore des polices** : self-héberger 3-4 familles display supplémentaires (condensée, manuscrite, géométrique) pour de vrais choix — pas des Google Fonts non chargées.
 
 ### P3 — Décliner une campagne (fort levier)

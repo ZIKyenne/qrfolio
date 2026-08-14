@@ -98,11 +98,15 @@ déjà composé (on n'ouvre pas une page blanche).
 - [ ] Porter la **bibliothèque d'éléments** (formes/icônes/badges/**composants métier**) → **déplacé en Phase 3**
       (elle a besoin du canvas libre ; elle ne rentre pas dans les emplacements bornés du guidé).
 
-### Phase 3 — Mode « Studio libre » borné (le gros morceau)
-- [ ] Canvas Fabric **dans le cadre du support** (dimensions réelles + fond perdu + marges + pré-vol live).
-- [ ] Reprendre : aimantation/guides, **aligner/répartir**, **calques**, **annuler/refaire**, zoom/pan, tactile —
-      en réutilisant les moteurs purs de l'ancien.
-- [ ] Passage Guidé → Libre en un clic (le design guidé devient le point de départ éditable).
+### Phase 3 — Mode « Studio libre » borné (le gros morceau, en tranches)
+- [x] **Tranche 1 (commit a57b226f)** : bouton « Édition libre » → vue du support **À PLAT** ; **textes libres
+      déplaçables à la souris** (positions en fraction → mêmes coordonnées à l'aperçu 3D et à l'impression) ;
+      panneau élément (texte/taille/couleur/alignement/graisse/suppression) ; rendus par `SupportVisual` (packshot +
+      planche) et **persistés** (`captureDesign` v2). Pas de Fabric : `FreeEl[]` + drag React (léger, robuste).
+- [ ] **Éléments** : icônes (biblio de l'ancien), formes, badges, filets — mêmes `FreeEl` déplaçables.
+- [ ] **QR** déplaçable/redimensionnable comme un élément (aujourd'hui piloté par position/décalage).
+- [ ] **Calques**, **aimantation/guides**, **aligner/répartir** (réutiliser `alignDistribute` de l'ancien), annuler/refaire.
+- [ ] (Le canvas Fabric n'est finalement PAS nécessaire pour la 1re valeur : `FreeEl` + drag suffit et reste borné/robuste.)
 
 ### Phase 4 — Export pro unifié
 - [ ] Fusionner le pipeline d'export : PDF fond perdu + traits de coupe (déjà fait côté guidé), **SVG QR-vectoriel**,

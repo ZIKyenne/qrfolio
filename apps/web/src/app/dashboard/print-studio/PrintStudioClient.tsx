@@ -1479,7 +1479,7 @@ function ZoomBar({ zoom, setZoom }: { zoom: number; setZoom: (v: number | ((z: n
 function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMove, box = 460 }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void; onQrMove: (x: number, y: number) => void; box?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number; wpx: number; hpx: number } | null>(null)
-  const [guide, setGuide] = useState<{ x: boolean; y: boolean }>({ x: false, y: false })
+  const [guide, setGuide] = useState<{ x: number | null; y: number | null }>({ x: null, y: null })
   const ratio = item.shape === "round" ? 1 : item.ratio
   const w = ratio >= 1 ? box : Math.round(box * ratio)
   const h = ratio >= 1 ? Math.round(box / ratio) : box
@@ -1499,26 +1499,38 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
   }
   function onMove(e: React.PointerEvent) {
     const d = drag.current, r = ref.current?.getBoundingClientRect(); if (!d || !r) return
-    let nx = Math.max(0, Math.min(1, d.ox + (e.clientX - d.sx) / r.width))
-    let ny = Math.max(0, Math.min(1, d.oy + (e.clientY - d.sy) / r.height))
-    const TH = 8  // aimantation au CENTRE du support (avec guide) — placement propre
-    let gx = false, gy = false
-    if (Math.abs(nx * r.width + d.wpx / 2 - r.width / 2) < TH) { nx = (r.width / 2 - d.wpx / 2) / r.width; gx = true }
-    if (Math.abs(ny * r.height + d.hpx / 2 - r.height / 2) < TH) { ny = (r.height / 2 - d.hpx / 2) / r.height; gy = true }
+    const clamp = (v: number) => Math.max(0, Math.min(1, v))
+    let nx = clamp(d.ox + (e.clientX - d.sx) / r.width)
+    let ny = clamp(d.oy + (e.clientY - d.sy) / r.height)
+    const TH = 7  // aimantation (px) : centre du support, marges de sécurité, et CENTRE des autres éléments (guides dorés).
+    const mX = (item.margin / wmm) * w, mY = (item.margin / item.hMm) * h
+    const xc = [w / 2, mX, w - mX], yc = [h / 2, mY, h - mY]
+    for (const el of freeEls) {
+      if (el.hidden || el.id === d.id) continue
+      const ewp = (el.kind === "text" || el.kind === "shape") ? el.w * w : unit * el.size
+      const ehp = el.kind === "shape" ? (el.h2 ?? 0.12) * h : el.kind === "text" ? unit * el.size * 1.2 : unit * el.size
+      xc.push(el.x * w + ewp / 2); yc.push(el.y * h + ehp / 2)
+    }
+    let cx = nx * w + d.wpx / 2, cy = ny * h + d.hpx / 2
+    let gx: number | null = null, gy: number | null = null
+    for (const c of xc) if (Math.abs(cx - c) < TH) { nx = clamp((c - d.wpx / 2) / w); cx = c; gx = c; break }
+    for (const c of yc) if (Math.abs(cy - c) < TH) { ny = clamp((c - d.hpx / 2) / h); cy = c; gy = c; break }
     if (d.id === "__qr__") onQrMove(nx, ny)
     else setFreeEls(els => els.map(x => (x.id === d.id ? { ...x, x: nx, y: ny } : x)))
     setGuide({ x: gx, y: gy })
   }
-  const onUp = () => { drag.current = null; setGuide({ x: false, y: false }) }
+  const onUp = () => { drag.current = null; setGuide({ x: null, y: null }) }
   return (
     <div ref={ref} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp} onPointerDown={() => setSelEl(null)}
       style={{ position: "relative", width: w, height: h, margin: "0 auto", borderRadius: item.shape === "round" ? "50%" : 12, overflow: "hidden", touchAction: "none", boxShadow: "0 14px 44px rgba(0,0,0,.55)" }}>
       <SupportVisual {...design} item={item} freeEls={[]} physW={wmm} w={w} h={h} />
+      {/* Zone de sécurité (marge d'impression) — repère discret : rien d'important au-delà. */}
+      <div style={{ position: "absolute", left: (item.margin / wmm) * w, top: (item.margin / item.hMm) * h, right: (item.margin / wmm) * w, bottom: (item.margin / item.hMm) * h, border: `1px dashed ${C.goldA33}`, borderRadius: item.shape === "round" ? "50%" : 6, pointerEvents: "none", zIndex: 1 }} />
       {design.qrFree && <div onPointerDown={e => startDrag(e, "__qr__", design.qrFx ?? 0.32, design.qrFy ?? 0.55, qrFrac * w, qrFrac * w)}
         style={{ position: "absolute", left: `${(design.qrFx ?? 0.32) * 100}%`, top: `${(design.qrFy ?? 0.55) * 100}%`, width: qrFrac * w, height: qrFrac * w, cursor: "move", outline: `2px solid ${C.gold}`, outlineOffset: 2, zIndex: 7, touchAction: "none" }} title="Déplacer le QR" />}
       {freeEls.filter(el => !el.hidden).map(el => <FreeElView key={el.id} el={el} unit={unit} bodyFont="Inter, system-ui, sans-serif" editable selected={selEl === el.id} onDown={onDown} />)}
-      {guide.x && <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: C.gold, opacity: 0.75, pointerEvents: "none", zIndex: 6 }} />}
-      {guide.y && <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: C.gold, opacity: 0.75, pointerEvents: "none", zIndex: 6 }} />}
+      {guide.x != null && <div style={{ position: "absolute", left: guide.x, top: 0, bottom: 0, width: 1, background: C.gold, opacity: 0.85, pointerEvents: "none", zIndex: 6 }} />}
+      {guide.y != null && <div style={{ position: "absolute", top: guide.y, left: 0, right: 0, height: 1, background: C.gold, opacity: 0.85, pointerEvents: "none", zIndex: 6 }} />}
     </div>
   )
 }

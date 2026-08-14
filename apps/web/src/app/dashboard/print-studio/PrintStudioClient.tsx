@@ -314,9 +314,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // ── Upsell (free) ──────────────────────────────────────────────────────────
   if (!canAccess) {
     return (
-      <div style={{ minHeight: "100dvh", background: C.bg, color: C.fg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ minHeight: "100dvh", background: C.bg, color: C.fg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "Inter, system-ui, sans-serif" }}>
         <div style={{ maxWidth: 400, textAlign: "center" }}>
-          <div style={{ width: 54, height: 54, borderRadius: 16, background: C.goldSoft, border: `1px solid ${C.gold}55`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Lock size={22} color={C.gold} /></div>
+          <div style={{ width: 54, height: 54, borderRadius: 16, background: C.goldSoft, border: `1px solid ${C.goldA55}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Lock size={22} color={C.gold} /></div>
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 8px" }}>Print Studio</h1>
           <p style={{ color: C.fgMuted, fontSize: 14.5, lineHeight: 1.6, margin: "0 0 20px" }}>Concevez des supports imprimables prêts à poser — stickers, chevalets, affiches, cartes — avec votre QR. Inclus dès le plan Starter.</p>
           <Link href="/upgrade" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.gold, color: "#0A0A0A", fontWeight: 800, fontSize: 14, padding: "12px 24px", borderRadius: 12, textDecoration: "none" }}>Voir les plans →</Link>
@@ -328,16 +328,16 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // ── Bibliothèque ─────────────────────────────────────────────────────────────
   if (phase === "library" || !item) {
     const items = filterItems(metier, objectif)
-    const skel = [{ w: 92, h: 92, r: "50%" }, { w: 132, h: 92, r: 12 }, { w: 82, h: 116, r: 12 }]
     return (
-      <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "system-ui, sans-serif", padding: "0 16px 40px" }}>
+      <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif", padding: "0 16px 40px" }}>
         <Particles behind />
         <header style={{ maxWidth: 1040, margin: "0 auto", padding: "18px 0 8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/dashboard/qr-codes" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: C.fgMuted, textDecoration: "none", fontSize: 13 }}><ArrowLeft size={16} /> QR codes</Link>
           <span style={{ fontSize: 13, fontWeight: 700, color: C.gold, letterSpacing: 0.3 }}>Print Studio</span>
         </header>
         <div style={{ maxWidth: 1040, margin: "0 auto" }}>
-          <h1 style={{ fontSize: "clamp(24px,4vw,34px)", fontWeight: 700, letterSpacing: "-0.02em", margin: "10px 0 6px" }}>Choisissez un support</h1>
+          <style>{`.ps-card{transition:border-color .15s var(--mo-ease,ease), transform .15s var(--mo-ease,ease), background .15s}.ps-card:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);transform:translateY(-2px)}`}</style>
+          <h1 style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: "clamp(24px,4vw,34px)", fontWeight: 600, letterSpacing: "-0.02em", margin: "10px 0 6px" }}>Choisissez un support</h1>
           <p style={{ color: C.fgMuted, fontSize: 14, margin: "0 0 18px" }}>Un objet réel, déjà réussi. Trois suffisent : à table, en vitrine, dans la main.</p>
 
           {/* Filtres métier × objectif */}
@@ -347,7 +347,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           {/* Grille d'objets */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, marginTop: 18 }}>
             {items.map(it => (
-              <button key={it.id} onClick={() => openItem(it.id)} style={{ textAlign: "left", background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, padding: 12, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 10 }}>
+              <button key={it.id} className="ps-card" onClick={() => openItem(it.id)} style={{ textAlign: "left", background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, padding: 12, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ height: 122, borderRadius: 10, background: `radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   <MiniSupport item={it} style={STYLE_BY_ID[it.pal]} />
                 </div>
@@ -359,11 +359,6 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             ))}
           </div>
           {items.length === 0 && <p style={{ color: C.fgMuted, fontSize: 13, marginTop: 20 }}>Aucun support pour ce filtre. <button onClick={() => { setMetier("Tout"); setObjectif("Tout") }} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 13 }}>Tout afficher</button></p>}
-
-          {/* squelettes (état chargement, décoratif) */}
-          <div aria-hidden style={{ display: "flex", gap: 10, marginTop: 24, opacity: 0.25 }}>
-            {skel.map((s, i) => <div key={i} style={{ width: s.w, height: s.h, borderRadius: s.r as any, background: C.surfaceUp }} />)}
-          </div>
         </div>
       </div>
     )
@@ -377,12 +372,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // Planche = chaque format retenu, répété `campaignQty` fois (imposition N-up : N exemplaires par format).
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   return (
-    <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "system-ui, sans-serif" }}>
+    <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
       <Particles behind />
       <header style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.goldSoft, border: `1px solid ${C.gold}55`, color: C.gold, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Copy size={14} /> Décliner</button>
+          <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.goldSoft, border: `1px solid ${C.goldA55}`, color: C.gold, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Copy size={14} /> Décliner</button>
           <button onClick={() => { if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Layers size={14} /> Planche</button>
           <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
         </div>
@@ -454,7 +449,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                   <button onClick={() => setQrPng(null)} aria-label="Retirer le QR" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 34, height: 34, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
                 </div>
               ) : (
-                <button onClick={() => qrPngInput.current?.click()} style={{ marginTop: 10, width: "100%", minHeight: 44, borderRadius: 11, border: `1.5px dashed ${C.gold}55`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer un PNG</button>
+                <button onClick={() => qrPngInput.current?.click()} style={{ marginTop: 10, width: "100%", minHeight: 44, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer un PNG</button>
               )
             )}
             <input ref={qrPngInput} type="file" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
@@ -504,7 +499,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <Field label="Couleur d'accent">
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {ACCENTS.map(a => (
-                  <button key={a.id} onClick={() => setAccent(a.id)} title={a.label} style={{ width: 44, height: 44, borderRadius: 11, cursor: "pointer", border: `2px solid ${accent === a.id ? C.gold : "transparent"}`, boxShadow: accent === a.id ? `0 0 0 2px ${C.gold}33` : "none", background: a.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)", position: "relative" }}>
+                  <button key={a.id} onClick={() => setAccent(a.id)} title={a.label} style={{ width: 44, height: 44, borderRadius: 11, cursor: "pointer", border: `2px solid ${accent === a.id ? C.gold : "transparent"}`, boxShadow: accent === a.id ? `0 0 0 2px ${C.goldA33}` : "none", background: a.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)", position: "relative" }}>
                     {a.id === "auto" && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8.5, fontWeight: 800, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,.6)" }}>AUTO</span>}
                   </button>
                 ))}
@@ -523,7 +518,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                     <span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Photo posée en fond — voile de lisibilité automatique.</span>
                     <button onClick={() => setBgImage(null)} aria-label="Retirer la photo" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 40, height: 40, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
                   </div>
-                : <button onClick={() => bgInput.current?.click()} style={{ width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.gold}55`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer une photo</button>}
+                : <button onClick={() => bgInput.current?.click()} style={{ width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer une photo</button>}
               <input ref={bgInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setBgImage(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
             </Field>
             <Field label="Cadre"><Seg value={frame} options={["aucun", "filet", "double", "coins"]} onPick={setFrame} labels={["Aucun", "Filet", "Double", "Coins"]} /></Field>
@@ -540,7 +535,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                     <span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Logo posé dans le coin du support.</span>
                     <button onClick={() => setLogoUrl(null)} aria-label="Retirer le logo" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 34, height: 34, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
                   </div>
-                : <button onClick={() => logoInput.current?.click()} style={{ marginTop: 8, width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.gold}55`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Ajouter un logo</button>
+                : <button onClick={() => logoInput.current?.click()} style={{ marginTop: 8, width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Ajouter un logo</button>
               )}
               <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setLogoUrl(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
             </Field>
@@ -568,13 +563,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         <div onClick={() => setControl(false)} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 0 }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, background: C.surface, borderRadius: "20px 20px 0 0", border: `1px solid ${C.hairline}`, padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", maxHeight: "86vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Contrôle avant export</p>
+              <p style={{ margin: 0, fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600 }}>Contrôle avant export</p>
               <button onClick={() => setControl(false)} style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer" }}><X size={18} /></button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {controls.map(c => (
-                <div key={c.cle} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 11, background: C.surfaceUp, border: `1px solid ${c.ok ? "transparent" : (c.gravite === "bloquant" ? `${C.bad}55` : `${C.gold}55`)}` }}>
-                  <span style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.ok ? `${C.ok}22` : (c.gravite === "bloquant" ? `${C.bad}22` : `${C.gold}22`), color: c.ok ? C.ok : (c.gravite === "bloquant" ? C.bad : C.gold) }}>{c.ok ? <Check size={12} /> : <AlertTriangle size={12} />}</span>
+                <div key={c.cle} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 11, background: C.surfaceUp, border: `1px solid ${c.ok ? "transparent" : (c.gravite === "bloquant" ? `${C.badA55}` : `${C.goldA55}`)}` }}>
+                  <span style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.ok ? `${C.okA22}` : (c.gravite === "bloquant" ? `${C.badA22}` : `${C.goldA22}`), color: c.ok ? C.ok : (c.gravite === "bloquant" ? C.bad : C.gold) }}>{c.ok ? <Check size={12} /> : <AlertTriangle size={12} />}</span>
                   <span style={{ flex: 1, fontSize: 13 }}>{c.libelle}{!c.ok && c.gravite === "avertissement" && <span style={{ color: C.gold, fontSize: 11 }}> · avertissement</span>}</span>
                   <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, color: C.fgMuted }}>{c.valeur}</span>
                 </div>
@@ -600,13 +595,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         <div onClick={() => setDeclineOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 720, background: C.surface, borderRadius: "20px 20px 0 0", border: `1px solid ${C.hairline}`, padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", maxHeight: "86vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-              <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Décliner sur un autre support</p>
+              <p style={{ margin: 0, fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600 }}>Décliner sur un autre support</p>
               <button onClick={() => setDeclineOpen(false)} style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer" }}><X size={18} /></button>
             </div>
             <p style={{ margin: "0 0 14px", fontSize: 12.5, color: C.fgMuted }}>Le design, les textes et le QR sont conservés — même campagne, autre format.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
               {filterItems("Tout", "Tout").map(it => (
-                <button key={it.id} onClick={() => switchSupport(it.id)} style={{ textAlign: "left", background: it.id === item.id ? C.goldSoft : C.surfaceUp, border: `1px solid ${it.id === item.id ? `${C.gold}88` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
+                <button key={it.id} onClick={() => switchSupport(it.id)} style={{ textAlign: "left", background: it.id === item.id ? C.goldSoft : C.surfaceUp, border: `1px solid ${it.id === item.id ? `${C.goldA88}` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={{ height: 96, borderRadius: 9, background: "radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                     <MiniSupport item={it} style={style} />
                   </div>
@@ -626,7 +621,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         <div onClick={() => setCampaignOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 720, background: C.surface, borderRadius: "20px 20px 0 0", border: `1px solid ${C.hairline}`, padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", maxHeight: "86vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-              <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Planche multi-supports</p>
+              <p style={{ margin: 0, fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600 }}>Planche multi-supports</p>
               <button onClick={() => setCampaignOpen(false)} style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer" }}><X size={18} /></button>
             </div>
             <p style={{ margin: "0 0 14px", fontSize: 12.5, color: C.fgMuted }}>Cochez les formats à imprimer ensemble (même design, mêmes textes, même QR). Une seule feuille, à découper.</p>
@@ -634,7 +629,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               {filterItems("Tout", "Tout").map(it => {
                 const on = campaign.includes(it.id)
                 return (
-                  <button key={it.id} onClick={() => setCampaign(cur => on ? cur.filter(x => x !== it.id) : [...cur, it.id])} style={{ position: "relative", textAlign: "left", background: on ? C.goldSoft : C.surfaceUp, border: `1px solid ${on ? `${C.gold}88` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <button key={it.id} onClick={() => setCampaign(cur => on ? cur.filter(x => x !== it.id) : [...cur, it.id])} style={{ position: "relative", textAlign: "left", background: on ? C.goldSoft : C.surfaceUp, border: `1px solid ${on ? `${C.goldA88}` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
                     {on && <span style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: C.gold, color: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}><Check size={13} /></span>}
                     <div style={{ height: 96, borderRadius: 9, background: "radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                       <MiniSupport item={it} style={style} />
@@ -671,7 +666,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
 /* ─────────────────────────── sous-composants ─────────────────────────── */
 
-const inputStyle: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 42, background: "#0A0B0D", border: `1px solid ${C.hairline}`, borderRadius: 11, color: C.fg, fontSize: 14, padding: "0 12px", outline: "none" }
+const inputStyle: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 48, background: "#0A0A0A", border: `1px solid ${C.hairline}`, borderRadius: 12, color: C.fg, fontSize: 16, padding: "0 14px", outline: "none" }
 
 function Rail({ label, value, options, onPick }: { label: string; value: string; options: string[]; onPick: (v: string) => void }) {
   return (
@@ -682,7 +677,7 @@ function Rail({ label, value, options, onPick }: { label: string; value: string;
         <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
           {options.map(o => <button key={o} onClick={() => onPick(o)} style={chipStyle(value === o)}>{o}</button>)}
         </div>
-        <div aria-hidden style={{ position: "absolute", top: 0, right: 0, bottom: 4, width: 28, pointerEvents: "none", background: "linear-gradient(90deg, transparent, #070707)" }} />
+        <div aria-hidden style={{ position: "absolute", top: 0, right: 0, bottom: 4, width: 28, pointerEvents: "none", background: "linear-gradient(90deg, transparent, #080808)" }} />
       </div>
     </div>
   )
@@ -708,7 +703,7 @@ function Panel({ id, title, resume, open, setOpen, children }: { id: string; tit
     <div style={{ background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, overflow: "hidden" }}>
       <button onClick={() => setOpen(isOpen ? null : id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", background: "none", border: "none", cursor: "pointer", color: C.fg, textAlign: "left" }}>
         <span style={{ flex: 1 }}>
-          <span style={{ display: "block", fontSize: 14.5, fontWeight: 700 }}>{title}</span>
+          <span style={{ display: "block", fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600 }}>{title}</span>
           {!isOpen && <span style={{ display: "block", fontSize: 11.5, color: C.fgMuted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{resume}</span>}
         </span>
         <ChevronDown size={18} color={C.fgMuted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
@@ -1027,13 +1022,20 @@ function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pa
 /* Faux QR décoratif (100 % CSS, zéro moteur) — pour les vignettes : on ne veut PAS instancier
    16 moteurs qr-code-styling sur la grille (ça faisait ramer/planter mobile). Non scannable, assumé. */
 function FauxQR({ size, fg, bg }: { size: number; fg: string; bg: string }) {
-  const cell = Math.max(2, Math.round(size / 11))
-  const finder = (pos: React.CSSProperties) => <span style={{ position: "absolute", width: cell * 3, height: cell * 3, border: `${Math.max(1, Math.round(cell * 0.7))}px solid ${fg}`, ...pos }} />
+  const cell = Math.max(3, Math.round(size / 9))
+  // Vrais « repères » de coin (carré plein → trou → point) pour que ça se lise comme un QR, pas un damier.
+  const finder = (pos: React.CSSProperties) => (
+    <span style={{ position: "absolute", width: cell * 2.6, height: cell * 2.6, background: fg, display: "flex", alignItems: "center", justifyContent: "center", ...pos }}>
+      <span style={{ width: "56%", height: "56%", background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ width: "50%", height: "50%", background: fg }} />
+      </span>
+    </span>
+  )
   return (
-    <div style={{ width: size, height: size, background: bg, position: "relative", overflow: "hidden", backgroundImage: `radial-gradient(${fg} 38%, transparent 42%)`, backgroundSize: `${cell}px ${cell}px` }}>
-      {finder({ top: cell * 0.4, left: cell * 0.4 })}
-      {finder({ top: cell * 0.4, right: cell * 0.4 })}
-      {finder({ bottom: cell * 0.4, left: cell * 0.4 })}
+    <div style={{ width: size, height: size, background: bg, position: "relative", overflow: "hidden", borderRadius: Math.max(2, size * 0.04), backgroundImage: `radial-gradient(${fg} 44%, transparent 47%)`, backgroundSize: `${cell}px ${cell}px`, backgroundPosition: `${cell / 2}px ${cell / 2}px` }}>
+      {finder({ top: cell * 0.5, left: cell * 0.5 })}
+      {finder({ top: cell * 0.5, right: cell * 0.5 })}
+      {finder({ bottom: cell * 0.5, left: cell * 0.5 })}
     </div>
   )
 }

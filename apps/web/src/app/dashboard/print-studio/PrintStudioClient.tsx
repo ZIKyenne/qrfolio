@@ -8,12 +8,12 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import Particles from "@/components/Particles"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, type QROptions } from "../qr-codes/qrRender"
-import { normalizeUrl } from "../qr-link/qrLinkUtils"
 import {
   METIERS, OBJECTIFS, BRANDNAMES, filterItems, ambiancesFor, ITEM_BY_ID, STYLE_BY_ID,
-  LAYOUT_BY_ID, LAYOUTS, STYLES, TYPOS, SIZES, MESSAGES, OBJ, type Item, type Style,
+  LAYOUT_BY_ID, LAYOUTS, STYLES, TYPOS, SIZES, MESSAGES, type Item, type Style,
 } from "./catalog"
 import { sceneLayers, paletteFromStyle, scaleFor, SCENES } from "./mockup"
 import { evaluateControls, canExport } from "./states"
@@ -26,9 +26,10 @@ function resolveLayoutId(itemLayout: string): string {
   const byContent = LAYOUTS.find(l => l.content === itemLayout)
   return byContent ? byContent.id : "centre"
 }
-const CORNER_MAP: Record<string, "square" | "rounded" | "circle"> = { vif: "square", adouci: "rounded", rond: "circle" }
 const PAD_MM = [0.7, 1, 1.35]      // multiplicateur d'air autour (ePad 0..2)
 const TITLE_MM = [0.82, 1, 1.2]    // multiplicateur de titre (eTitle 0..2)
+const FINISH_LABEL: Record<string, string> = { uni: "Uni", degrade: "Dégradé", grain: "Grain" }
+const FRAME_LABEL: Record<string, string> = { aucun: "sans cadre", filet: "filet", double: "double filet", coins: "coins ornés" }
 
 export default function PrintStudioClient({ canAccess }: { canAccess: boolean }) {
   const [phase, setPhase] = useState<"library" | "studio">("library")
@@ -42,30 +43,56 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [sizeId, setSizeId] = useState("moyen")
   const [brandIdx, setBrandIdx] = useState(0)
   const [message, setMessage] = useState("")
-  const [destIdx, setDestIdx] = useState(0)
-  const [logo, setLogo] = useState("aucun")
+  const [logo, setLogo] = useState("aucun")            // logo de marque sur l'OBJET (jamais sur le QR)
   const [eTitle, setETitle] = useState(1)
   const [ePad, setEPad] = useState(1)
-  const [eCorner, setECorner] = useState("adouci")
+  const [eCorner, setECorner] = useState("adouci")     // arrondi des éléments du support (pas le QR)
   const [eAccent, setEAccent] = useState("plein")
   const [eTypo, setETypo] = useState("auto")
   const [eAlign, setEAlign] = useState<"left" | "center" | "right">("center")
+  const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
+  const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
   const [open, setOpen] = useState<string | null>(null)   // un seul volet ouvert
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
-  const [destUrl, setDestUrl] = useState("")   // lien réel encodé par le QR (sinon page QRowg)
-  const [destMode, setDestMode] = useState<"page" | "url">("url")  // pointer vers une page QRowg publiée ou un lien externe
-  const [myPages, setMyPages] = useState<{ slug: string; title: string }[]>([])
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const logoInput = useRef<HTMLInputElement>(null)
 
-  // Pages publiées de l'utilisateur (RLS = seulement les siennes / celles de son équipe) pour le sélecteur de destination.
+  // Source du QR : un QR EXISTANT de l'utilisateur, ou un PNG importé. AUCUNE création ici
+  // (Print Studio n'est pas un concepteur de QR — il met en scène un QR déjà fait).
+  const [qrSource, setQrSource] = useState<"mine" | "png">("mine")
+  const [qrPickId, setQrPickId] = useState("")
+  const [qrPng, setQrPng] = useState<string | null>(null)
+  const [myQRs, setMyQRs] = useState<{ id: string; label: string; url: string }[]>([])
+  const qrPngInput = useRef<HTMLInputElement>(null)
+
+  // QR existants de l'utilisateur (codes statiques liés à une page + QR instantanés dynamiques/statiques).
+  // RLS scope automatiquement. Le QR imprimé encode /q/<short_code> (redirigeable) ou le payload direct.
   useEffect(() => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
     let alive = true
-    createClient().from("pages").select("slug,title,status").eq("status", "published").order("created_at", { ascending: false }).limit(50)
-      .then(({ data }) => { if (alive && data) setMyPages(data.filter(p => p.slug).map(p => ({ slug: p.slug as string, title: (p.title as string) || (p.slug as string) }))) })
+    const sb = createClient()
+    Promise.all([
+      sb.from("qr_codes").select("short_code, pages(title, slug)").order("created_at", { ascending: false }).limit(60),
+      sb.from("instant_qrs").select("id, label, kind, payload, dynamic, short_code").order("created_at", { ascending: false }).limit(60),
+    ]).then(([a, b]) => {
+      if (!alive) return
+      const list: { id: string; label: string; url: string }[] = []
+      for (const r of ((a.data || []) as any[])) {
+        if (!r.short_code) continue
+        const pg = Array.isArray(r.pages) ? r.pages[0] : r.pages
+        list.push({ id: `q_${r.short_code}`, label: pg?.title || pg?.slug || "QR code", url: `${appUrl}/q/${r.short_code}` })
+      }
+      for (const r of ((b.data || []) as any[])) {
+        const url = r.dynamic && r.short_code ? `${appUrl}/q/${r.short_code}` : (r.payload || "")
+        if (!url) continue
+        list.push({ id: `i_${r.id}`, label: r.label || (r.kind ? `QR ${r.kind}` : "QR instantané"), url })
+      }
+      setMyQRs(list)
+      setQrPickId(prev => prev || (list[0]?.id ?? ""))
+    })
     return () => { alive = false }
   }, [])
 
@@ -74,11 +101,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const layout = LAYOUT_BY_ID[layoutId] || LAYOUT_BY_ID.centre
   const size = SIZES.find(s => s.id === sizeId) || SIZES[1]
   const messages = item ? (MESSAGES[item.id] || []) : []
-  const dests = item ? (OBJ[item.id] || []) : []
   const brand = BRANDNAMES[brandIdx % BRANDNAMES.length]
-  const dest = dests.length ? dests[destIdx % dests.length] : ""
   const title = message.trim() || (messages[0] ?? item?.title ?? "")
-  const qrValue = destUrl.trim() ? normalizeUrl(destUrl) : "https://qrowg.com"
+  const pickedQR = myQRs.find(q => q.id === qrPickId)
+  const qrValue = qrSource === "mine" ? (pickedQR?.url || "https://qrowg.com") : "https://qrowg.com"
+  const qrImg = qrSource === "png" ? qrPng : null
+  const qrReady = qrSource === "png" ? !!qrPng : !!pickedQR
   const ambiances = useMemo(() => ambiancesFor(metier), [metier])
   const controls = useMemo(() => item ? evaluateControls(item, style, size) : [], [item, style, size])
   const ok = canExport(controls)
@@ -86,17 +114,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   function openItem(id: string) {
     const it = ITEM_BY_ID[id]; if (!it) return
     setItemId(id); setStyleId(it.pal); setLayoutId(resolveLayoutId(it.layout))
-    setSizeId("moyen"); setBrandIdx(0); setMessage(""); setDestIdx(0); setLogo("aucun")
+    setSizeId("moyen"); setBrandIdx(0); setMessage(""); setLogo("aucun")
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
-    setDestUrl(""); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
+    setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
   }
 
+  // Ré-export du QR choisi, seul (source « Mes QR »). On réencode le lien du QR existant :
+  // aucune création de destination — c'est le même code, juste au format fichier.
   async function exportQr(ext: "png" | "svg") {
-    if (!item || !ok || busy) return
+    if (!item || !ok || busy || qrSource !== "mine") return
     setBusy(true)
     try {
-      const withLogo = logo === "qr" && !!logoUrl
-      const opts: QROptions = { data: qrValue, fg: style.qr, bg: style.qrBg, ecc: withLogo ? "H" : "M", style: { cornerStyle: CORNER_MAP[eCorner], ...(withLogo ? { logoUrl: logoUrl!, logoSize: 22, logoShape: "rounded" as const, logoBg: "white" as const, logoPadding: 5 } : {}) }, size: 1024 }
+      const opts: QROptions = { data: qrValue, fg: style.qr, bg: style.qrBg, ecc: "M", style: {}, size: 1024 }
       const blob = await getQRBlob(opts, ext)
       if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qrowg-${item.support}.${ext}`.replace(/\s+/g, "-").toLowerCase(); a.click(); URL.revokeObjectURL(a.href); setDone(true); setTimeout(() => setDone(false), 1800) }
     } finally { setBusy(false) }
@@ -121,7 +150,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     const items = filterItems(metier, objectif)
     const skel = [{ w: 92, h: 92, r: "50%" }, { w: 132, h: 92, r: 12 }, { w: 82, h: 116, r: 12 }]
     return (
-      <div style={{ minHeight: "100dvh", background: C.bg, color: C.fg, fontFamily: "system-ui, sans-serif", padding: "0 16px 40px" }}>
+      <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "system-ui, sans-serif", padding: "0 16px 40px" }}>
+        <Particles behind />
         <header style={{ maxWidth: 1040, margin: "0 auto", padding: "18px 0 8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/dashboard/qr-codes" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: C.fgMuted, textDecoration: "none", fontSize: 13 }}><ArrowLeft size={16} /> QR codes</Link>
           <span style={{ fontSize: 13, fontWeight: 700, color: C.gold, letterSpacing: 0.3 }}>Print Studio</span>
@@ -138,7 +168,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, marginTop: 18 }}>
             {items.map(it => (
               <button key={it.id} onClick={() => openItem(it.id)} style={{ textAlign: "left", background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, padding: 12, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ height: 92, borderRadius: 10, background: `radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                <div style={{ height: 122, borderRadius: 10, background: `radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   <MiniSupport item={it} style={STYLE_BY_ID[it.pal]} />
                 </div>
                 <div>
@@ -163,7 +193,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const scene = sceneLayers(item.scene, metier === "Tout" ? null : metier)
   const pal = paletteFromStyle(style)
   return (
-    <div style={{ minHeight: "100dvh", background: C.bg, color: C.fg, fontFamily: "system-ui, sans-serif" }}>
+    <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "system-ui, sans-serif" }}>
+      <Particles behind />
       <header style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
@@ -174,13 +205,41 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
-          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue} logo={logo} logoUrl={logoUrl}
+          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue} qrImg={qrImg} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame}
             brand={brand} title={title} cta={item.cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
-          <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {destUrl.trim() ? "le QR pointe vers votre lien" : "définissez le lien du QR dans « Ce qui est écrit »"}</p>
+          <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>
         </div>
 
         {/* Volets + action */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Volet QR — on RÉUTILISE un QR existant ou on importe un PNG. Aucune création. */}
+          <Panel id="qr" title="Le QR" resume={qrSource === "png" ? (qrPng ? "PNG importé" : "importer un PNG") : (pickedQR ? pickedQR.label : "choisir un QR")} open={open} setOpen={setOpen}>
+            <Seg value={qrSource} options={["mine", "png"]} labels={["Mes QR", "Importer un PNG"]} onPick={v => setQrSource(v as "mine" | "png")} />
+            {qrSource === "mine" ? (
+              myQRs.length > 0 ? (
+                <Field label="Votre QR code">
+                  <select value={qrPickId} onChange={e => setQrPickId(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}>
+                    {myQRs.map(q => <option key={q.id} value={q.id}>{q.label}</option>)}
+                  </select>
+                  <p style={{ margin: "8px 0 0", fontSize: 11, color: C.fgFaint, lineHeight: 1.45 }}>On met en scène ce QR existant — il reste pilotable depuis vos QR codes (destination modifiable) même après impression.</p>
+                </Field>
+              ) : (
+                <p style={{ fontSize: 12.5, color: C.fgMuted, lineHeight: 1.5, margin: "10px 0 0" }}>Vous n'avez pas encore de QR. <Link href="/dashboard/qr-codes" style={{ color: C.gold }}>Créez-en un</Link>, ou importez un PNG ci-dessus.</p>
+              )
+            ) : (
+              qrPng ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 8, background: "#fff", overflow: "hidden", flexShrink: 0, border: `1px solid ${C.hairline}` }}><img src={qrPng} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
+                  <span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>QR importé — placé tel quel sur le support.</span>
+                  <button onClick={() => setQrPng(null)} aria-label="Retirer le QR" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 34, height: 34, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
+                </div>
+              ) : (
+                <button onClick={() => qrPngInput.current?.click()} style={{ marginTop: 10, width: "100%", minHeight: 44, borderRadius: 11, border: `1.5px dashed ${C.gold}55`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer un PNG</button>
+              )
+            )}
+            <input ref={qrPngInput} type="file" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+          </Panel>
+
           {/* Volet TEXTE */}
           <Panel id="texte" title="Ce qui est écrit" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen}>
             <Field label="Nom affiché"><Cycle value={brand} onPrev={() => setBrandIdx(i => (i + BRANDNAMES.length - 1) % BRANDNAMES.length)} onNext={() => setBrandIdx(i => (i + 1) % BRANDNAMES.length)} /></Field>
@@ -189,18 +248,6 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 {messages.map(m => <Chip key={m} on={title === m} onClick={() => setMessage(m)}>{m}</Chip>)}
               </div>
               <input value={message} onChange={e => setMessage(e.target.value)} placeholder="Message libre…" style={inputStyle} />
-            </Field>
-            {dests.length > 0 && <Field label="Destination du scan"><Cycle value={dest} onPrev={() => setDestIdx(i => (i + dests.length - 1) % dests.length)} onNext={() => setDestIdx(i => (i + 1) % dests.length)} /></Field>}
-            <Field label="Lien du QR">
-              {myPages.length > 0 && <div style={{ marginBottom: 8 }}><Seg value={destMode} options={["page", "url"]} labels={["Ma page QRowg", "Lien externe"]} onPick={v => { setDestMode(v as "page" | "url"); if (v === "page") { const p = myPages[0]; setDestUrl(p ? `${window.location.origin}/${p.slug}` : "") } else setDestUrl("") }} /></div>}
-              {destMode === "page" && myPages.length > 0 ? (
-                <select value={destUrl} onChange={e => setDestUrl(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}>
-                  <option value="">— Choisir une page publiée —</option>
-                  {myPages.map(p => <option key={p.slug} value={`${window.location.origin}/${p.slug}`}>{p.title} · /{p.slug}</option>)}
-                </select>
-              ) : (
-                <input value={destUrl} onChange={e => setDestUrl(e.target.value)} inputMode="url" placeholder="ex : monsite.fr — sinon page QRowg par défaut" style={inputStyle} />
-              )}
             </Field>
           </Panel>
 
@@ -218,26 +265,28 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <Field label="Taille du QR"><RailInline value={sizeId} options={SIZES.map(s => ({ id: s.id, label: s.label, note: s.note }))} onPick={setSizeId} /></Field>
           </Panel>
 
-          {/* Volet DÉTAILS */}
-          <Panel id="details" title="Les détails" resume="logo · six réglages sans risque" open={open} setOpen={setOpen}>
-            <Field label="Logo">
-              <Seg value={logo} options={["objet", "qr", "aucun"]} onPick={setLogo} />
-              {logo !== "aucun" && (logoUrl
+          {/* Volet DÉTAILS — 100 % design (aucun réglage du QR : il est fourni tel quel) */}
+          <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen}>
+            <Field label="Fond"><Seg value={bgFinish} options={["uni", "degrade", "grain"]} onPick={setBgFinish} labels={["Uni", "Dégradé", "Grain"]} /></Field>
+            <Field label="Cadre"><Seg value={frame} options={["aucun", "filet", "double", "coins"]} onPick={setFrame} labels={["Aucun", "Filet", "Double", "Coins"]} /></Field>
+            <Field label="Titre"><Step value={eTitle} min={0} max={2} onChange={setETitle} labels={["plus petit", "normal", "plus grand"]} /></Field>
+            <Field label="Air autour"><Step value={ePad} min={0} max={2} onChange={setEPad} labels={["serré", "normal", "large"]} /></Field>
+            <Field label="Arrondi"><Seg value={eCorner} options={["vif", "adouci", "rond"]} onPick={setECorner} labels={["Vif", "Adouci", "Rond"]} /></Field>
+            <Field label="Accent"><Seg value={eAccent} options={["plein", "trait", "aucun"]} onPick={setEAccent} labels={["Plein", "Trait", "Aucun"]} /></Field>
+            <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
+            <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={(v) => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
+            <Field label="Logo de marque">
+              <Seg value={logo} options={["objet", "aucun"]} onPick={setLogo} labels={["Sur l'objet", "Aucun"]} />
+              {logo === "objet" && (logoUrl
                 ? <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
                     <div style={{ width: 40, height: 40, borderRadius: 8, background: "#fff", overflow: "hidden", flexShrink: 0, border: `1px solid ${C.hairline}` }}><img src={logoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
-                    <span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Logo ajouté{logo === "qr" ? " — correction d'erreur portée au max." : ""}</span>
+                    <span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Logo posé dans le coin du support.</span>
                     <button onClick={() => setLogoUrl(null)} aria-label="Retirer le logo" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 34, height: 34, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
                   </div>
                 : <button onClick={() => logoInput.current?.click()} style={{ marginTop: 8, width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.gold}55`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Ajouter un logo</button>
               )}
               <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setLogoUrl(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
             </Field>
-            <Field label="Titre"><Step value={eTitle} min={0} max={2} onChange={setETitle} labels={["plus petit", "normal", "plus grand"]} /></Field>
-            <Field label="Air autour"><Step value={ePad} min={0} max={2} onChange={setEPad} labels={["serré", "normal", "large"]} /></Field>
-            <Field label="Coins"><Seg value={eCorner} options={["vif", "adouci", "rond"]} onPick={setECorner} /></Field>
-            <Field label="Accent"><Seg value={eAccent} options={["plein", "trait", "aucun"]} onPick={setEAccent} /></Field>
-            <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
-            <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={(v) => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
           </Panel>
         </div>
       </div>
@@ -267,14 +316,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 </div>
               ))}
             </div>
-            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-              <button onClick={() => exportQr("png")} disabled={!ok || busy} style={{ flex: 1, minHeight: 50, borderRadius: 12, border: "none", cursor: ok ? "pointer" : "default", background: ok ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                {done ? <Check size={18} /> : <Download size={18} />} {busy ? "…" : done ? "Téléchargé" : ok ? "Exporter le QR (PNG)" : "Corrigez le réglage rouge"}
-              </button>
-              <button onClick={() => exportQr("svg")} disabled={!ok || busy} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 14, fontWeight: 700, cursor: ok ? "pointer" : "default", opacity: ok ? 1 : 0.5 }}>SVG</button>
-            </div>
-            <button onClick={() => { setControl(false); setTimeout(() => window.print(), 180) }} disabled={!ok} style={{ width: "100%", marginTop: 10, minHeight: 46, borderRadius: 12, border: `1px solid ${C.gold}66`, background: "transparent", color: C.gold, fontSize: 14, fontWeight: 700, cursor: ok ? "pointer" : "default", opacity: ok ? 1 : 0.5 }}>Exporter la planche (PDF · taille réelle)</button>
+            {!qrReady && <p style={{ margin: "12px 0 0", fontSize: 12, color: C.gold, display: "inline-flex", alignItems: "center", gap: 6 }}><AlertTriangle size={13} /> Ajoutez d'abord votre QR (volet « Le QR »).</p>}
+            {/* Livrable principal : la planche imprimable à taille réelle. */}
+            <button onClick={() => { setControl(false); setTimeout(() => window.print(), 180) }} disabled={!ok || !qrReady} style={{ width: "100%", marginTop: 14, minHeight: 52, borderRadius: 12, border: "none", background: (ok && qrReady) ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, cursor: (ok && qrReady) ? "pointer" : "default", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Download size={18} /> {ok ? "Exporter la planche (PDF · taille réelle)" : "Corrigez le réglage rouge"}</button>
             <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe inclus"}).</p>
+            {/* Option : ré-exporter le QR choisi seul (uniquement quand c'est un QR existant). */}
+            {qrSource === "mine" && (
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                <button onClick={() => exportQr("png")} disabled={!ok || !qrReady || busy} style={{ flex: 1, minHeight: 46, borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 13.5, fontWeight: 700, cursor: (ok && qrReady) ? "pointer" : "default", opacity: (ok && qrReady) ? 1 : 0.5, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{done ? <Check size={16} /> : <Download size={16} />} {busy ? "…" : done ? "Téléchargé" : "QR seul (PNG)"}</button>
+                <button onClick={() => exportQr("svg")} disabled={!ok || !qrReady || busy} style={{ minHeight: 46, padding: "0 18px", borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 13.5, fontWeight: 700, cursor: (ok && qrReady) ? "pointer" : "default", opacity: (ok && qrReady) ? 1 : 0.5 }}>SVG</button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -282,7 +334,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Planche d'impression — window.print() -> PDF à taille réelle (mm), fidèle à l'aperçu. */}
       <div className="ps-print-root" aria-hidden>
         <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${mediaDims(item).mediaWmm}mm ${mediaDims(item).mediaHmm}mm;margin:0}}`}</style>
-        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} title={title} cta={item.cta} size={size} qrValue={qrValue} logo={logo} logoUrl={logoUrl} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
+        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} title={title} cta={item.cta} size={size} qrValue={qrValue} qrImg={qrImg} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
       </div>
     </div>
   )
@@ -376,8 +428,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, logo, logoUrl, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; title: string; cta: string; size: { factor: number }; qrValue: string; logo: string; logoUrl: string | null; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, qrImg, logo, logoUrl, bgFinish, frame, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; logo: string; logoUrl: string | null; bgFinish: string; frame: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -390,11 +442,12 @@ function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, lo
 
   const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: unit * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: pal.band }}>{brand}</div>
   const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: pal.titleWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: pal.fg }}>{title}</div>
-  const qrLogo = logo === "qr" && !!logoUrl
+  // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
   const qrEl = (
-    <div style={{ background: pal.qrBg, padding: unit * 0.028, borderRadius: eCorner === "rond" ? 16 : 8, lineHeight: 0, position: "relative" }}>
-      <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} style={{ cornerStyle: CORNER_MAP[eCorner] }} ecc={qrLogo ? "H" : "M"} />
-      {qrLogo && <img src={logoUrl!} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: qrPx * 0.26, height: qrPx * 0.26, objectFit: "contain", background: "#fff", borderRadius: 5, padding: qrPx * 0.02, boxSizing: "border-box" }} />}
+    <div style={{ background: pal.qrBg, padding: unit * 0.028, borderRadius: eCorner === "rond" ? 16 : 8, lineHeight: 0 }}>
+      {qrImg
+        ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
+        : <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} ecc="M" />}
     </div>
   )
   const ctaEl = eAccent === "aucun" ? null : (
@@ -403,7 +456,23 @@ function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, lo
   )
 
   const alignItems = eAlign === "left" ? "flex-start" : eAlign === "right" ? "flex-end" : "center"
-  const base: React.CSSProperties = { width: w, height: h, boxSizing: "border-box", background: pal.bg, color: pal.fg, borderRadius: isRound ? "50%" : (item.ratio >= 2 || item.ratio <= 0.5 ? 6 : 10), overflow: "hidden", position: "relative", display: "flex", padding: pad }
+  // Fini du fond : uni, dégradé (voile lumière→ombre) ou grain (trame de points fine). Composé sur pal.bg.
+  const grainStep = Math.max(4, unit * 0.02)
+  const bgCss = bgFinish === "degrade"
+    ? `linear-gradient(155deg, rgba(255,255,255,0.10), transparent 42%, rgba(0,0,0,0.16)), ${pal.bg}`
+    : bgFinish === "grain"
+    ? `radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1.5px) 0 0 / ${grainStep}px ${grainStep}px, ${pal.bg}`
+    : pal.bg
+  const base: React.CSSProperties = { width: w, height: h, boxSizing: "border-box", background: bgCss, color: pal.fg, borderRadius: isRound ? "50%" : (item.ratio >= 2 || item.ratio <= 0.5 ? 6 : 10), overflow: "hidden", position: "relative", display: "flex", padding: pad }
+
+  // Cadre décoratif INDÉPENDANT de la mise en page (aucun / filet / double filet / coins ornés).
+  const frameEl = frame === "filet"
+    ? <div style={{ position: "absolute", inset: pad * 0.5, border: `1.5px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} />
+    : frame === "double"
+    ? <><div style={{ position: "absolute", inset: pad * 0.42, border: `1.5px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} /><div style={{ position: "absolute", inset: pad * 0.64, border: `1px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 5, opacity: 0.6, pointerEvents: "none" }} /></>
+    : frame === "coins"
+    ? <><Corner p={pal.rule} pos={{ top: pad * 0.5, left: pad * 0.5 }} /><Corner p={pal.rule} pos={{ top: pad * 0.5, right: pad * 0.5 }} r /><Corner p={pal.rule} pos={{ bottom: pad * 0.5, left: pad * 0.5 }} b /><Corner p={pal.rule} pos={{ bottom: pad * 0.5, right: pad * 0.5 }} b r /></>
+    : null
 
   let body: React.ReactNode
   if (layout.content === "band") {
@@ -427,7 +496,8 @@ function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, lo
     <div style={base}>
       {body}
       {logo === "objet" && logoUrl && <img src={logoUrl} alt="" style={{ position: "absolute", top: pad, left: pad, width: unit * 0.14, height: unit * 0.14, objectFit: "contain", zIndex: 2 }} />}
-      {/* décor optionnel */}
+      {frameEl}
+      {/* décor optionnel (lié à la mise en page) */}
       {layout.deco === "frame" && <div style={{ position: "absolute", inset: pad * 0.5, border: `2px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} />}
       {layout.deco === "footer" && <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: unit * 0.04, background: pal.band }} />}
       {layout.deco === "diagonal" && <div style={{ position: "absolute", top: -h * 0.3, right: -w * 0.2, width: w * 0.9, height: h * 0.5, background: pal.band, opacity: 0.16, transform: "rotate(-24deg)", pointerEvents: "none" }} />}
@@ -488,9 +558,9 @@ function PrintSheet(props: Omit<React.ComponentProps<typeof SupportVisual>, "w" 
 }
 
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
-function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; logo: string; logoUrl: string | null; brand: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
+function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; logo: string; logoUrl: string | null; bgFinish: string; frame: string; brand: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
   const { item, scene } = props
-  const box = 380
+  const box = 460
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])
   const wPx = item.shape === "round" ? hPx : hPx * item.ratio
   const clampedW = Math.min(wPx, box - 40)
@@ -521,14 +591,19 @@ function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pa
   )
 }
 
-/* Mini-visuel pour la grille de bibliothèque (support à plat, petit). */
+/* Mini-visuel pour la grille de bibliothèque : le VRAI support (mise en page + palette + QR),
+   rendu grand puis mis à l'échelle et centré dans la vignette — lisible d'un coup d'œil. */
 function MiniSupport({ item, style }: { item: Item; style: Style }) {
   const pal = paletteFromStyle(style)
-  const w = item.shape === "round" ? 72 : Math.min(120, 72 * item.ratio)
+  const layout = LAYOUT_BY_ID[resolveLayoutId(item.layout)] || LAYOUT_BY_ID.centre
+  const BW = 152, BH = 120                          // zone d'aperçu de la vignette
+  const baseW = item.shape === "round" ? 220 : (item.ratio >= 1 ? 220 : Math.round(220 * item.ratio))
+  const baseH = item.shape === "round" ? 220 : Math.round(baseW / item.ratio)
+  const scale = Math.min((BW - 22) / baseW, (BH - 20) / baseH)
   return (
-    <div style={{ width: w, height: item.shape === "round" ? 72 : Math.min(72, w / item.ratio), background: pal.bg, borderRadius: item.shape === "round" ? "50%" : 6, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 18px rgba(0,0,0,.4)" }}>
-      <div style={{ width: "34%", aspectRatio: "1", background: pal.qrBg, borderRadius: 3, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1, padding: 2 }}>
-        {Array.from({ length: 9 }).map((_, i) => <span key={i} style={{ background: i % 2 === 0 ? pal.ink : "transparent", borderRadius: 0.5 }} />)}
+    <div style={{ width: BW, height: BH, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+      <div style={{ width: baseW, height: baseH, transform: `scale(${scale})`, transformOrigin: "center", filter: "drop-shadow(0 10px 22px rgba(0,0,0,.55))" }}>
+        <SupportVisual item={item} style={style} pal={pal} layout={layout} brand={BRANDNAMES[0]} title={MESSAGES[item.id]?.[0] || item.title} cta={item.cta} size={{ factor: 1 }} qrValue="https://qrowg.com" qrImg={null} logo="aucun" logoUrl={null} bgFinish="uni" frame="aucun" eCorner="adouci" eAccent="plein" eTypo="auto" eAlign="center" eTitle={1} ePad={1} w={baseW} h={baseH} />
       </div>
     </div>
   )

@@ -2,7 +2,6 @@
 // L'UI guidée « objets, pas outils » vit dans PrintStudioClient (îlot client).
 import { redirect } from "next/navigation"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
-import { canPrintStudio } from "@/lib/plans"
 import PrintStudioClient from "./PrintStudioClient"
 
 export const metadata = { title: "Print Studio" }
@@ -12,8 +11,7 @@ export default async function PrintStudioPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect("/auth/login?redirect=/dashboard/print-studio")
 
-  const { data: prof } = await supabase.from("profiles").select("plan").eq("id", user.id).single()
-  const plan = (prof?.plan as string) ?? "free"
-
-  return <PrintStudioClient canAccess={canPrintStudio(plan)} />
+  // Print Studio est GRATUIT pour tous les plans (il n'y a plus de création de QR :
+  // on réutilise ses propres QR existants ou on importe un PNG — aucune facturation).
+  return <PrintStudioClient canAccess />
 }

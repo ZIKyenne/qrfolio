@@ -104,6 +104,12 @@ const MET_AMB: Record<string, string[]> = {
   'Photographe': ['nuit', 'epure', 'dore'],
   'Tatoueur': ['nuit', 'vif', 'epure'],
   'Pharmacie': ['marin', 'epure', 'naturel'],
+  'Café': ['chaleureux', 'dore', 'epure'],
+  'Boucherie': ['chaleureux', 'naturel', 'vif'],
+  'Traiteur': ['chaleureux', 'naturel', 'dore'],
+  'Spa': ['pastel', 'naturel', 'epure'],
+  'Bijouterie': ['dore', 'nuit', 'epure'],
+  'Garage': ['nuit', 'marin', 'epure'],
 }
 
 // mise en page : content = corps du visuel, deco = ornement optionnel
@@ -121,42 +127,42 @@ const LAYOUTS: Layout[] = [
 
 // objet -> métiers concernés
 const MET: Record<string, string[]> = {
-  i1: ['Restaurant', 'Bar', 'Boulangerie', 'Hôtel'],
-  i2: ['Restaurant', 'Bar', 'Hôtel', 'Événement'],
-  i3: ['Boutique', 'Coiffeur', 'Beauté', 'Boulangerie', 'Restaurant'],
-  i4: ['Hôtel', 'Bar', 'Restaurant', 'Coiffeur'],
-  i5: ['Boutique', 'Artisan', 'Boulangerie', 'Coiffeur'],
-  i6: ['Freelance', 'Artisan', 'Immobilier', 'Coach', 'Beauté'],
-  i7: ['Événement', 'Immobilier', 'Boutique', 'Coach'],
-  i8: ['Événement', 'Boutique', 'Restaurant', 'Immobilier'],
-  i9: ['Boutique', 'Coach', 'Freelance', 'Hôtel'],
-  i10: ['Bar', 'Caviste', 'Restaurant', 'Food truck'],
-  i11: ['Restaurant', 'Hôtel', 'Bar', 'Food truck'],
-  i12: ['Caviste', 'Artisan', 'Fleuriste', 'Boulangerie'],
-  i13: ['Boulangerie', 'Coiffeur', 'Boutique', 'Beauté', 'Food truck'],
-  i14: ['Événement', 'Salle de sport', 'Immobilier', 'Photographe'],
-  i15: ['Salle de sport', 'Photographe', 'Tatoueur', 'Événement'],
-  i16: ['Pharmacie', 'Boutique', 'Salle de sport', 'Coiffeur'],
+  i1: ['Restaurant', 'Café', 'Bar', 'Boulangerie', 'Traiteur', 'Hôtel'],
+  i2: ['Restaurant', 'Café', 'Bar', 'Traiteur', 'Hôtel', 'Événement'],
+  i3: ['Boutique', 'Café', 'Coiffeur', 'Beauté', 'Spa', 'Bijouterie', 'Boulangerie', 'Restaurant'],
+  i4: ['Hôtel', 'Café', 'Bar', 'Restaurant', 'Coiffeur', 'Spa'],
+  i5: ['Boutique', 'Artisan', 'Boulangerie', 'Boucherie', 'Coiffeur', 'Garage'],
+  i6: ['Freelance', 'Artisan', 'Immobilier', 'Coach', 'Beauté', 'Café', 'Spa', 'Garage', 'Bijouterie'],
+  i7: ['Événement', 'Immobilier', 'Boutique', 'Coach', 'Traiteur'],
+  i8: ['Événement', 'Boutique', 'Restaurant', 'Immobilier', 'Traiteur'],
+  i9: ['Boutique', 'Coach', 'Freelance', 'Hôtel', 'Garage', 'Bijouterie'],
+  i10: ['Bar', 'Caviste', 'Restaurant', 'Café', 'Food truck'],
+  i11: ['Restaurant', 'Café', 'Hôtel', 'Bar', 'Traiteur', 'Boucherie', 'Food truck'],
+  i12: ['Caviste', 'Artisan', 'Fleuriste', 'Boulangerie', 'Boucherie'],
+  i13: ['Boulangerie', 'Café', 'Coiffeur', 'Boutique', 'Beauté', 'Spa', 'Boucherie', 'Food truck'],
+  i14: ['Événement', 'Salle de sport', 'Immobilier', 'Photographe', 'Traiteur', 'Bijouterie'],
+  i15: ['Salle de sport', 'Photographe', 'Tatoueur', 'Spa', 'Événement'],
+  i16: ['Pharmacie', 'Boutique', 'Salle de sport', 'Coiffeur', 'Spa', 'Garage', 'Boucherie'],
 }
 
 // objet -> objectifs couverts
 const OBJ: Record<string, string[]> = {
-  i1: ['Menu', 'Avis', 'Réseaux'],
-  i2: ['Menu', 'Réservation', 'Avis'],
-  i3: ['Avis', 'Réseaux', 'Horaires'],
-  i4: ['Wifi', 'Menu', 'Horaires'],
+  i1: ['Menu', 'Commander', 'Avis', 'Réseaux', 'Site web'],
+  i2: ['Menu', 'Commander', 'Réservation', 'Avis', 'Localisation'],
+  i3: ['Avis', 'Réseaux', 'Site web', 'Horaires'],
+  i4: ['Wifi', 'Menu', 'Horaires', 'Localisation'],
   i5: ['Paiement', 'Fidélité', 'Avis'],
-  i6: ['Contact', 'Réseaux', 'Réservation'],
-  i7: ['Promo', 'Réservation', 'Contact'],
-  i8: ['Promo', 'Réseaux', 'Menu'],
-  i9: ['Fidélité', 'Réseaux', 'Contact'],
-  i10: ['Menu', 'Promo', 'Réseaux'],
-  i11: ['Menu', 'Horaires', 'Avis'],
-  i12: ['Contact', 'Promo', 'Réseaux'],
+  i6: ['Contact', 'Réseaux', 'Site web', 'Réservation'],
+  i7: ['Promo', 'Réservation', 'Contact', 'Site web'],
+  i8: ['Promo', 'Réseaux', 'Menu', 'Localisation'],
+  i9: ['Fidélité', 'Réseaux', 'Site web', 'Contact'],
+  i10: ['Menu', 'Commander', 'Promo', 'Réseaux'],
+  i11: ['Menu', 'Commander', 'Horaires', 'Avis'],
+  i12: ['Contact', 'Promo', 'Réseaux', 'Site web'],
   i13: ['Fidélité', 'Promo', 'Contact'],
-  i14: ['Promo', 'Contact', 'Réservation'],
-  i15: ['Promo', 'Réseaux', 'Réservation'],
-  i16: ['Horaires', 'Avis', 'Contact'],
+  i14: ['Promo', 'Contact', 'Réservation', 'Localisation'],
+  i15: ['Promo', 'Réseaux', 'Réservation', 'Site web'],
+  i16: ['Horaires', 'Avis', 'Contact', 'Localisation'],
 }
 
 // Les 16 objets. hMm = hauteur réelle en mm (sert à l'échelle du rendu),
@@ -210,9 +216,9 @@ const SIZES: Size[] = [
 
 export const BRANDNAMES = ['Café Lune', 'Maison Petit', 'Studio Nord', 'Le Comptoir 12']
 
-export const METIERS = ['Tout', 'Restaurant', 'Bar', 'Boulangerie', 'Food truck', 'Caviste', 'Coiffeur', 'Beauté', 'Tatoueur', 'Boutique', 'Fleuriste', 'Pharmacie', 'Hôtel', 'Artisan', 'Coach', 'Salle de sport', 'Immobilier', 'Freelance', 'Photographe', 'Événement']
+export const METIERS = ['Tout', 'Restaurant', 'Café', 'Bar', 'Boulangerie', 'Boucherie', 'Traiteur', 'Food truck', 'Caviste', 'Coiffeur', 'Beauté', 'Spa', 'Tatoueur', 'Boutique', 'Bijouterie', 'Fleuriste', 'Pharmacie', 'Hôtel', 'Artisan', 'Garage', 'Coach', 'Salle de sport', 'Immobilier', 'Freelance', 'Photographe', 'Événement']
 
-export const OBJECTIFS = ['Tout', 'Menu', 'Avis', 'Wifi', 'Réseaux', 'Paiement', 'Réservation', 'Promo', 'Contact', 'Fidélité', 'Horaires']
+export const OBJECTIFS = ['Tout', 'Menu', 'Commander', 'Avis', 'Wifi', 'Réseaux', 'Site web', 'Paiement', 'Réservation', 'Promo', 'Contact', 'Fidélité', 'Localisation', 'Horaires']
 
 export { STYLES, TYPOS, AMBIANCES, MET_AMB, LAYOUTS, MET, OBJ, ITEMS, MESSAGES, SIZES }
 

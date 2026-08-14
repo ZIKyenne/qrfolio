@@ -27,9 +27,9 @@ describe("catalogue — intégrité (comptes exacts)", () => {
       expect(STYLE_BY_ID[it.pal], `pal ${it.pal}`).toBeDefined()
     }
   })
-  it("20 métiers, 11 objectifs, 4 marques ; 5 scènes, 12 métiers de scène", () => {
-    expect(METIERS).toHaveLength(20)
-    expect(OBJECTIFS).toHaveLength(11)
+  it("26 métiers, 14 objectifs, 4 marques ; 5 scènes, 12 métiers de scène", () => {
+    expect(METIERS).toHaveLength(26)
+    expect(OBJECTIFS).toHaveLength(14)
     expect(BRANDNAMES).toHaveLength(4)
     expect(Object.keys(SCENES)).toHaveLength(5)
     expect(Object.keys(TRADES)).toHaveLength(12)

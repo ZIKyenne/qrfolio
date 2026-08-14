@@ -9,7 +9,7 @@ import Link from "next/link"
 import { ArrowLeft, Lock, Unlock, Eye, EyeOff, ChevronUp, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2, Plus,
   Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap,
   Award, Sun, Moon, Leaf, Navigation, Home, Users, Utensils, Wine, Beer, Pizza, ShoppingBag, ShoppingCart,
-  CreditCard, Percent, MessageCircle, ThumbsUp, Share2, Send, AtSign, Link2, QrCode, Smartphone, Calendar, Bell, Info, Scissors } from "lucide-react"
+  CreditCard, Percent, MessageCircle, ThumbsUp, Share2, Send, AtSign, Link2, QrCode, Smartphone, Calendar, Bell, Info, Scissors, ArrowDown } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import Particles from "@/components/Particles"
 import { Modal } from "@/components/ui/Modal"
@@ -98,7 +98,7 @@ const ICON_LIB: Record<string, any> = {
   Coffee, Utensils, Wine, Beer, Pizza,
   ShoppingBag, ShoppingCart, CreditCard, Percent, Tag, Gift,
   Camera, Music, MessageCircle, ThumbsUp, Share2, Send, AtSign, Link2,
-  Wifi, QrCode, Smartphone, Zap, Calendar, Bell, Info, Scissors,
+  Wifi, QrCode, Smartphone, Zap, Calendar, Bell, Info, Scissors, ArrowDown,
 }
 // Bibliothèque d'icônes ORGANISÉE (catégories + libellés FR pour la recherche du « + Ajouter »).
 const ICON_CATS: { cat: string; items: { name: string; label: string }[] }[] = [
@@ -126,6 +126,20 @@ function freeElsEdgeMm(els: FreeEl[], item: Item): number {
   }
   return min === Infinity ? item.margin : Math.max(0, +min.toFixed(1))
 }
+// Compositions prêtes (§13) : des GROUPES d'éléments finis, posés en un clic autour du QR (près du haut du support,
+// pour ne pas recouvrir le QR au centre). Positions en fraction ; couleurs dérivées du thème courant à l'ajout.
+type Palette = ReturnType<typeof paletteFromStyle>
+function cT(x: number, y: number, w: number, size: number, text: string, weight: number, color: string, align: "left" | "center" | "right" = "center"): Omit<FreeEl, "id"> { return { kind: "text", x, y, w, size, color, align, weight, font: "", text } }
+function cI(x: number, y: number, size: number, icon: string, color: string): Omit<FreeEl, "id"> { return { kind: "icon", x, y, w: size, h2: size, size, color, align: "center", weight: 700, font: "", text: "", icon } }
+function cS(x: number, y: number, w: number, h2: number, shape: string, color: string): Omit<FreeEl, "id"> { return { kind: "shape", x, y, w, h2, size: 0.06, color, align: "center", weight: 700, font: "", text: "", shape } }
+const COMPOSITIONS: { id: string; label: string; hint: string; build: (p: Palette) => Omit<FreeEl, "id">[] }[] = [
+  { id: "scannez", label: "Scannez ici", hint: "flèche + accroche", build: p => [cT(0.2, 0.06, 0.6, 0.07, "Scannez ici", 800, p.fg), cI(0.44, 0.18, 0.12, "ArrowDown", p.band)] },
+  { id: "avis", label: "Votre avis", hint: "5 étoiles + texte", build: p => [...[0, 1, 2, 3, 4].map(i => cI(0.18 + i * 0.13, 0.08, 0.08, "Star", p.band)), cT(0.15, 0.2, 0.7, 0.055, "Votre avis compte", 700, p.fg)] },
+  { id: "wifi", label: "Wi-Fi gratuit", hint: "icône + réseau", build: p => [cI(0.43, 0.06, 0.14, "Wifi", p.band), cT(0.15, 0.24, 0.7, 0.07, "Wi-Fi gratuit", 800, p.fg), cT(0.15, 0.34, 0.7, 0.04, "Réseau : ________", 500, p.fg)] },
+  { id: "suivre", label: "Suivez-nous", hint: "@ + identifiant", build: p => [cI(0.34, 0.06, 0.1, "AtSign", p.band), cT(0.15, 0.19, 0.7, 0.065, "Suivez-nous", 800, p.fg), cT(0.15, 0.28, 0.7, 0.045, "@votrecompte", 600, p.band)] },
+  { id: "reserver", label: "Réservez", hint: "bouton + infos", build: p => [cS(0.28, 0.08, 0.44, 0.1, "pill", p.band), cT(0.28, 0.1, 0.44, 0.055, "Réservez", 800, p.bandFg), cT(0.2, 0.23, 0.6, 0.04, "Sur place ou en ligne", 500, p.fg)] },
+  { id: "fidelite", label: "Fidélité", hint: "tampons + points", build: p => [cT(0.2, 0.06, 0.6, 0.065, "Vos points", 800, p.fg), ...[0, 1, 2, 3, 4].map(i => cS(0.18 + i * 0.13, 0.18, 0.08, 0.08, "circle", p.band))] },
+]
 // Modèles « 1 clic » : combinaisons de réglages prêtes (ambiance + mise en page + accent + fond + cadre + textes).
 type Preset = { id: string; label: string; style: string; layout: string; accent: string; bgFinish: string; frame: string; titleCase: string; titleWeight: string; qrBadge: string; eCorner: string; eAccent: string; eAlign: "left" | "center" | "right" }
 const PRESETS: Preset[] = [
@@ -532,6 +546,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     const p = paletteFromStyle(style); const id = `f_${Date.now()}`
     setFreeEls(els => [...els, { id, kind: "shape", x: 0.35, y: 0.4, w: 0.3, h2: shape === "line" ? 0.015 : 0.2, size: 0.06, color: p.band, align: "center", weight: 700, font: "", text: "", shape }])
     setSelEl(id); setLibre(true)
+  }
+  // Compositions prêtes : ajoute un GROUPE d'éléments finis (ids uniques) dérivés du thème courant.
+  function addComposition(cid: string) {
+    const c = COMPOSITIONS.find(x => x.id === cid); if (!c) return
+    const p = paletteFromStyle(style), base = Date.now()
+    const parts: FreeEl[] = c.build(p).map((part, i) => ({ ...part, id: `f_${base}_${i}` }))
+    setFreeEls(els => [...els, ...parts])
+    setSelEl(parts[0]?.id ?? null); setLibre(true)
   }
   function updateEl(id: string, patch: Partial<FreeEl>) { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...patch } : e)) }
   function deleteEl(id: string) { setFreeEls(els => els.filter(e => e.id !== id)); setSelEl(s => (s === id ? null : s)) }
@@ -1057,6 +1079,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Bibliothèque d'éléments « + Ajouter » : formes + icônes catégorisées + recherche. */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Ajouter un élément" maxWidth={560}>
         <AddLibrary query={addSearch} setQuery={setAddSearch}
+          onComp={(id) => { addComposition(id); setAddOpen(false) }}
           onText={() => { addFreeText(); setAddOpen(false) }}
           onShape={(s) => { addFreeShape(s); setAddOpen(false) }}
           onIcon={(n) => { addFreeIcon(n); setAddOpen(false) }} />
@@ -1459,18 +1482,20 @@ function PresetThumb({ preset, item, on, onClick }: { preset: Preset; item: Item
 
 /* Bibliothèque d'éléments « + Ajouter » : Texte + Formes + Icônes catégorisées, avec recherche FR.
    Ne montre pas 40 boutons en vrac — sections claires + filtre. Sur choix : ajoute l'élément et ferme. */
-function AddLibrary({ query, setQuery, onText, onShape, onIcon }: { query: string; setQuery: (v: string) => void; onText: () => void; onShape: (id: string) => void; onIcon: (name: string) => void }) {
+function AddLibrary({ query, setQuery, onComp, onText, onShape, onIcon }: { query: string; setQuery: (v: string) => void; onComp: (id: string) => void; onText: () => void; onShape: (id: string) => void; onIcon: (name: string) => void }) {
   const q = query.trim().toLowerCase()
+  const comps = q ? COMPOSITIONS.filter(c => c.label.toLowerCase().includes(q) || c.hint.toLowerCase().includes(q)) : COMPOSITIONS
   const shownShapes = q ? SHAPES.filter(s => s.label.toLowerCase().includes(q)) : SHAPES
   const cats = ICON_CATS.map(c => ({ cat: c.cat, items: q ? c.items.filter(i => i.label.toLowerCase().includes(q) || i.name.toLowerCase().includes(q)) : c.items })).filter(c => c.items.length)
   const showText = !q || "texte".includes(q) || "text".includes(q)
-  const empty = !showText && !shownShapes.length && !cats.length
+  const empty = !comps.length && !showText && !shownShapes.length && !cats.length
   const gridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(74px,1fr))", gap: 8 }
   const tile: React.CSSProperties = { display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "10px 6px", borderRadius: 10, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, cursor: "pointer", fontSize: 10.5, minHeight: 62 }
   const secLbl: React.CSSProperties = { margin: "0 0 8px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: C.fgFaint }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher (café, wifi, promo…)" style={{ ...inputStyle, height: 44 }} />
+      <input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher (avis, wifi, réserver…)" style={{ ...inputStyle, height: 44 }} />
+      {comps.length > 0 && <div><p style={secLbl}>Compositions prêtes</p><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(132px,1fr))", gap: 8 }}>{comps.map(c => <button key={c.id} className="ps-chip" onClick={() => onComp(c.id)} style={{ ...tile, flexDirection: "row", alignItems: "flex-start", justifyContent: "flex-start", textAlign: "left", minHeight: 0, padding: "10px 12px" }}><span style={{ display: "flex", flexDirection: "column", gap: 2 }}><span style={{ fontSize: 12.5, fontWeight: 700 }}>{c.label}</span><span style={{ fontSize: 10.5, color: C.fgFaint }}>{c.hint}</span></span></button>)}</div></div>}
       {showText && <div><p style={secLbl}>Texte</p><div style={gridStyle}><button className="ps-chip" onClick={onText} style={tile}><span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>T</span>Texte</button></div></div>}
       {shownShapes.length > 0 && <div><p style={secLbl}>Formes</p><div style={gridStyle}>{shownShapes.map(s => <button key={s.id} className="ps-chip" onClick={() => onShape(s.id)} style={tile}><span style={{ fontSize: 18, lineHeight: 1 }}>{s.g}</span>{s.label}</button>)}</div></div>}
       {cats.map(c => <div key={c.cat}><p style={secLbl}>{c.cat}</p><div style={gridStyle}>{c.items.map(i => { const Ico = ICON_LIB[i.name]; return <button key={i.name} className="ps-chip" onClick={() => onIcon(i.name)} style={tile}>{Ico ? <Ico size={20} /> : null}{i.label}</button> })}</div></div>)}

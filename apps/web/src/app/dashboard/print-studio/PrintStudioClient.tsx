@@ -540,8 +540,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, logo, logoUrl, bgFinish, frame, accent, titleCase, titleWeight, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; logo: string; logoUrl: string | null; bgFinish: string; frame: string; accent: string; titleCase: string; titleWeight: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, logo, logoUrl, bgFinish, frame, accent, titleCase, titleWeight, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; logo: string; logoUrl: string | null; bgFinish: string; frame: string; accent: string; titleCase: string; titleWeight: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -567,6 +567,8 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
   const qrInner = qrImg
     ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
+    : qrStatic
+    ? <FauxQR size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} />
     : <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} ecc="M" />
   const qrEl = qrBadge === "aucune"
     ? <div style={{ lineHeight: 0 }}>{qrInner}</div>
@@ -725,6 +727,20 @@ function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pa
   )
 }
 
+/* Faux QR décoratif (100 % CSS, zéro moteur) — pour les vignettes : on ne veut PAS instancier
+   16 moteurs qr-code-styling sur la grille (ça faisait ramer/planter mobile). Non scannable, assumé. */
+function FauxQR({ size, fg, bg }: { size: number; fg: string; bg: string }) {
+  const cell = Math.max(2, Math.round(size / 11))
+  const finder = (pos: React.CSSProperties) => <span style={{ position: "absolute", width: cell * 3, height: cell * 3, border: `${Math.max(1, Math.round(cell * 0.7))}px solid ${fg}`, ...pos }} />
+  return (
+    <div style={{ width: size, height: size, background: bg, position: "relative", overflow: "hidden", backgroundImage: `radial-gradient(${fg} 38%, transparent 42%)`, backgroundSize: `${cell}px ${cell}px` }}>
+      {finder({ top: cell * 0.4, left: cell * 0.4 })}
+      {finder({ top: cell * 0.4, right: cell * 0.4 })}
+      {finder({ bottom: cell * 0.4, left: cell * 0.4 })}
+    </div>
+  )
+}
+
 /* Mini-visuel pour la grille de bibliothèque : le VRAI support (mise en page + palette + QR),
    rendu grand puis mis à l'échelle et centré dans la vignette — lisible d'un coup d'œil. */
 function MiniSupport({ item, style }: { item: Item; style: Style }) {
@@ -737,7 +753,7 @@ function MiniSupport({ item, style }: { item: Item; style: Style }) {
   return (
     <div style={{ width: BW, height: BH, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
       <div style={{ width: baseW, height: baseH, transform: `scale(${scale})`, transformOrigin: "center", filter: "drop-shadow(0 10px 22px rgba(0,0,0,.55))" }}>
-        <SupportVisual item={item} style={style} pal={pal} layout={layout} brand={BRANDNAMES[0]} subtitle="" title={MESSAGES[item.id]?.[0] || item.title} cta={item.cta} size={{ factor: 1 }} qrValue="https://qrowg.com" qrImg={null} qrBadge="carre" qrPos="centre" logo="aucun" logoUrl={null} bgFinish="uni" frame="aucun" accent="auto" titleCase="normal" titleWeight="normal" eCorner="adouci" eAccent="plein" eTypo="auto" eAlign="center" eTitle={1} ePad={1} w={baseW} h={baseH} />
+        <SupportVisual item={item} style={style} pal={pal} layout={layout} brand={BRANDNAMES[0]} subtitle="" title={MESSAGES[item.id]?.[0] || item.title} cta={item.cta} size={{ factor: 1 }} qrValue="https://qrowg.com" qrImg={null} qrBadge="carre" qrPos="centre" qrStatic logo="aucun" logoUrl={null} bgFinish="uni" frame="aucun" accent="auto" titleCase="normal" titleWeight="normal" eCorner="adouci" eAccent="plein" eTypo="auto" eAlign="center" eTitle={1} ePad={1} w={baseW} h={baseH} />
       </div>
     </div>
   )

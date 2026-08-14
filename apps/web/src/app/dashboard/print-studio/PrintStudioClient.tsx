@@ -6,8 +6,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2,
-  Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap } from "lucide-react"
+import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2, Plus,
+  Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap,
+  Award, Sun, Moon, Leaf, Navigation, Home, Users, Utensils, Wine, Beer, Pizza, ShoppingBag, ShoppingCart,
+  CreditCard, Percent, MessageCircle, ThumbsUp, Share2, Send, AtSign, Link2, QrCode, Smartphone, Calendar, Bell, Info, Scissors } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import Particles from "@/components/Particles"
 import { Modal } from "@/components/ui/Modal"
@@ -82,8 +84,29 @@ function shade(hex: string, amt: number): string {
 // Élément LIBRE (mode « Studio libre ») : texte / icône / forme posé et déplacé n'importe où sur le support.
 // x/y/w/h2/size en FRACTION du support -> invariant à l'échelle (aperçu, planche PDF identiques).
 type FreeEl = { id: string; kind: "text" | "icon" | "shape"; x: number; y: number; w: number; h2?: number; size: number; color: string; align: "left" | "center" | "right"; weight: number; font: string; text: string; icon?: string; shape?: string; rot?: number; opacity?: number }
-// Bibliothèque d'icônes libres (lucide, non-marque). Le garde-fou check-jsx-imports valide leur existence au build.
-const ICON_LIB: Record<string, any> = { Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap }
+// Bibliothèque d'icônes libres (lucide, NON-marque — lucide-react 1.17 n'a plus les logos ; cf [[lucide-icons-gotcha]]).
+// Le garde-fou check-jsx-imports + tsc valident leur existence au build.
+const ICON_LIB: Record<string, any> = {
+  Star, Heart, Sparkles, Award, Sun, Moon, Leaf,
+  Phone, Mail, MapPin, Navigation, Globe, Clock, Home, Users,
+  Coffee, Utensils, Wine, Beer, Pizza,
+  ShoppingBag, ShoppingCart, CreditCard, Percent, Tag, Gift,
+  Camera, Music, MessageCircle, ThumbsUp, Share2, Send, AtSign, Link2,
+  Wifi, QrCode, Smartphone, Zap, Calendar, Bell, Info, Scissors,
+}
+// Bibliothèque d'icônes ORGANISÉE (catégories + libellés FR pour la recherche du « + Ajouter »).
+const ICON_CATS: { cat: string; items: { name: string; label: string }[] }[] = [
+  { cat: "Général", items: [{ name: "Star", label: "Étoile" }, { name: "Heart", label: "Cœur" }, { name: "Sparkles", label: "Éclat" }, { name: "Award", label: "Récompense" }, { name: "Sun", label: "Soleil" }, { name: "Moon", label: "Lune" }, { name: "Leaf", label: "Feuille" }] },
+  { cat: "Contact", items: [{ name: "Phone", label: "Téléphone" }, { name: "Mail", label: "Email" }, { name: "MapPin", label: "Adresse" }, { name: "Navigation", label: "Itinéraire" }, { name: "Globe", label: "Site web" }, { name: "Clock", label: "Horaires" }, { name: "Home", label: "Accueil" }, { name: "Users", label: "Équipe" }] },
+  { cat: "Restaurant", items: [{ name: "Coffee", label: "Café" }, { name: "Utensils", label: "Couverts" }, { name: "Wine", label: "Vin" }, { name: "Beer", label: "Bière" }, { name: "Pizza", label: "Pizza" }] },
+  { cat: "Commerce", items: [{ name: "ShoppingBag", label: "Sac" }, { name: "ShoppingCart", label: "Panier" }, { name: "CreditCard", label: "Paiement" }, { name: "Percent", label: "Promo" }, { name: "Tag", label: "Étiquette" }, { name: "Gift", label: "Cadeau" }] },
+  { cat: "Réseaux", items: [{ name: "Camera", label: "Photo" }, { name: "Music", label: "Musique" }, { name: "MessageCircle", label: "Message" }, { name: "ThumbsUp", label: "J'aime" }, { name: "Share2", label: "Partager" }, { name: "Send", label: "Envoyer" }, { name: "AtSign", label: "Mention" }, { name: "Link2", label: "Lien" }] },
+  { cat: "Fonctionnel", items: [{ name: "Wifi", label: "Wifi" }, { name: "QrCode", label: "QR" }, { name: "Smartphone", label: "Mobile" }, { name: "Zap", label: "Éclair" }, { name: "Calendar", label: "Agenda" }, { name: "Bell", label: "Cloche" }, { name: "Info", label: "Info" }, { name: "Scissors", label: "Coupe" }] },
+]
+// Formes libres (avec libellé FR pour la recherche du « + Ajouter »).
+const SHAPES: { id: string; label: string; g: string }[] = [
+  { id: "circle", label: "Cercle", g: "●" }, { id: "rrect", label: "Rectangle", g: "▢" }, { id: "pill", label: "Pilule", g: "▬" }, { id: "line", label: "Ligne", g: "―" },
+]
 // Modèles « 1 clic » : combinaisons de réglages prêtes (ambiance + mise en page + accent + fond + cadre + textes).
 type Preset = { id: string; label: string; style: string; layout: string; accent: string; bgFinish: string; frame: string; titleCase: string; titleWeight: string; qrBadge: string; eCorner: string; eAccent: string; eAlign: "left" | "center" | "right" }
 const PRESETS: Preset[] = [
@@ -158,6 +181,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [qrFx, setQrFx] = useState(0.32)                  // position libre du QR (coin haut-gauche, fraction)
   const [qrFy, setQrFy] = useState(0.55)
   const [zoom, setZoom] = useState(1)                     // zoom de l'éditeur à plat (Studio libre)
+  const [addOpen, setAddOpen] = useState(false)           // bibliothèque « + Ajouter » (formes/icônes catégorisées)
+  const [addSearch, setAddSearch] = useState("")          // recherche dans la bibliothèque d'éléments
   const [libre, setLibre] = useState(false)               // mode « Studio libre » (édition à plat + éléments libres)
   const [freeEls, setFreeEls] = useState<FreeEl[]>([])    // éléments texte libres posés sur le support
   const [selEl, setSelEl] = useState<string | null>(null) // élément libre sélectionné
@@ -621,10 +646,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           {!libre && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>}
           {libre && <>
             <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Ajoutez, puis glissez pour placer. Tout apparaît sur l'aperçu et à l'impression.</p>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
               <button onClick={addFreeText} style={chipStyle(false)}>＋ Texte</button>
-              {[["circle", "●"], ["rrect", "▢"], ["pill", "▬"], ["line", "―"]].map(([s, g]) => <button key={s} onClick={() => addFreeShape(s)} style={chipStyle(false)} title={`Forme : ${s}`}>{g}</button>)}
-              {Object.keys(ICON_LIB).map(n => { const Ico = ICON_LIB[n]; return <button key={n} onClick={() => addFreeIcon(n)} title={n} style={{ ...chipStyle(false), padding: "9px", minWidth: 40 }}><Ico size={16} /></button> })}
+              <button onClick={() => { setAddSearch(""); setAddOpen(true) }} style={chipStyle(true)}><Plus size={14} style={{ marginRight: 4, verticalAlign: "-2px" }} />Ajouter</button>
             </div>
             {sel && <p style={{ textAlign: "center", color: C.gold, fontSize: 11, margin: "10px 0 0" }}>Élément sélectionné — réglages dans le panneau à droite.</p>}
           </>}
@@ -681,8 +705,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           <Panel id="styles" title="Styles rapides" resume={activePreset ? `Modèle : ${PRESETS.find(p => p.id === activePreset)?.label}` : "Modèles prêts · mes modèles · charte"} open={open} setOpen={setOpen}>
             <div>
               <p style={secLabel}>Modèles prêts</p>
-              <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                {PRESETS.map(p => <button key={p.id} className="ps-chip" onClick={() => applyPreset(p)} style={chipStyle(activePreset === p.id)}>{p.label}</button>)}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(72px,1fr))", gap: 8 }}>
+                {PRESETS.map(p => <PresetThumb key={p.id} preset={p} item={item} on={activePreset === p.id} onClick={() => applyPreset(p)} />)}
               </div>
             </div>
             <div>
@@ -931,6 +955,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "10px 0 0" }}>Une feuille auto-dimensionnée, chaque exemplaire à sa taille réelle avec repère de découpe (idéal cartes/stickers en série).</p>
         </Modal>
       )}
+
+      {/* Bibliothèque d'éléments « + Ajouter » : formes + icônes catégorisées + recherche. */}
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Ajouter un élément" maxWidth={560}>
+        <AddLibrary query={addSearch} setQuery={setAddSearch}
+          onText={() => { addFreeText(); setAddOpen(false) }}
+          onShape={(s) => { addFreeShape(s); setAddOpen(false) }}
+          onIcon={(n) => { addFreeIcon(n); setAddOpen(false) }} />
+      </Modal>
 
       {/* Rendu de la PLANCHE multi-supports — monté seulement pendant l'impression. */}
       {multiPrinting && <MultiSheet items={campaignItems} design={designProps} />}
@@ -1305,6 +1337,48 @@ function FreeElView({ el, unit, bodyFont, editable, selected, onDown }: { el: Fr
     return <div {...dp} style={{ ...base, width: `${el.w * 100}%`, height: `${(el.h2 ?? 0.12) * 100}%`, background: el.color, borderRadius: br }} />
   }
   return <div {...dp} style={{ ...base, width: `${el.w * 100}%`, fontSize: unit * el.size, color: el.color, textAlign: el.align, fontFamily: el.font || bodyFont, fontWeight: el.weight, lineHeight: 1.15, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{el.text}</div>
+}
+
+/* Vignette de modèle « 1 clic » : aperçu représentatif LÉGER (palette + casse/alignement + accent + faux QR).
+   Pas un rendu lourd du support complet — juste assez pour VOIR la personnalité du modèle d'un coup d'œil. */
+function PresetThumb({ preset, item, on, onClick }: { preset: Preset; item: Item; on: boolean; onClick: () => void }) {
+  const s = STYLE_BY_ID[preset.style] || STYLE_BY_ID.premiumdark
+  const pal = paletteFromStyle(s)
+  const accHex = ACCENTS.find(a => a.id === preset.accent)?.hex || pal.band
+  const align = preset.eAlign === "left" ? "flex-start" : preset.eAlign === "right" ? "flex-end" : "center"
+  const titleTxt = preset.titleCase === "upper" ? "TITRE" : "Titre"
+  return (
+    <button onClick={onClick} title={preset.label} style={{ borderRadius: 12, overflow: "hidden", border: `2px solid ${on ? C.gold : "transparent"}`, background: "none", padding: 0, cursor: "pointer" }}>
+      <div style={{ height: 72, background: pal.bg, display: "flex", flexDirection: "column", alignItems: align, justifyContent: "center", gap: 5, padding: 8 }}>
+        <span style={{ fontFamily: pal.titleFont, fontSize: 11, fontWeight: 700, color: pal.fg, lineHeight: 1, letterSpacing: pal.titleLs }}>{titleTxt}</span>
+        <FauxQR size={22} fg={pal.ink} bg={pal.qrBg} />
+        <span style={{ width: 26, height: 6, borderRadius: preset.eCorner === "rond" ? 999 : 2, background: accHex }} />
+      </div>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: on ? C.gold : C.fgMuted, padding: "4px 6px", background: C.surface, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>{preset.label}</div>
+    </button>
+  )
+}
+
+/* Bibliothèque d'éléments « + Ajouter » : Texte + Formes + Icônes catégorisées, avec recherche FR.
+   Ne montre pas 40 boutons en vrac — sections claires + filtre. Sur choix : ajoute l'élément et ferme. */
+function AddLibrary({ query, setQuery, onText, onShape, onIcon }: { query: string; setQuery: (v: string) => void; onText: () => void; onShape: (id: string) => void; onIcon: (name: string) => void }) {
+  const q = query.trim().toLowerCase()
+  const shownShapes = q ? SHAPES.filter(s => s.label.toLowerCase().includes(q)) : SHAPES
+  const cats = ICON_CATS.map(c => ({ cat: c.cat, items: q ? c.items.filter(i => i.label.toLowerCase().includes(q) || i.name.toLowerCase().includes(q)) : c.items })).filter(c => c.items.length)
+  const showText = !q || "texte".includes(q) || "text".includes(q)
+  const empty = !showText && !shownShapes.length && !cats.length
+  const gridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(74px,1fr))", gap: 8 }
+  const tile: React.CSSProperties = { display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "10px 6px", borderRadius: 10, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, cursor: "pointer", fontSize: 10.5, minHeight: 62 }
+  const secLbl: React.CSSProperties = { margin: "0 0 8px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: C.fgFaint }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher (café, wifi, promo…)" style={{ ...inputStyle, height: 44 }} />
+      {showText && <div><p style={secLbl}>Texte</p><div style={gridStyle}><button className="ps-chip" onClick={onText} style={tile}><span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>T</span>Texte</button></div></div>}
+      {shownShapes.length > 0 && <div><p style={secLbl}>Formes</p><div style={gridStyle}>{shownShapes.map(s => <button key={s.id} className="ps-chip" onClick={() => onShape(s.id)} style={tile}><span style={{ fontSize: 18, lineHeight: 1 }}>{s.g}</span>{s.label}</button>)}</div></div>}
+      {cats.map(c => <div key={c.cat}><p style={secLbl}>{c.cat}</p><div style={gridStyle}>{c.items.map(i => { const Ico = ICON_LIB[i.name]; return <button key={i.name} className="ps-chip" onClick={() => onIcon(i.name)} style={tile}>{Ico ? <Ico size={20} /> : null}{i.label}</button> })}</div></div>)}
+      {empty && <p style={{ color: C.fgMuted, fontSize: 13, textAlign: "center", padding: "12px 0" }}>Aucun élément pour « {query} ».</p>}
+    </div>
+  )
 }
 
 /* Barre de zoom de l'éditeur à plat : − / % / + / Ajuster. Discrète, ancrée au-dessus du support. */

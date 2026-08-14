@@ -9,6 +9,8 @@ import Link from "next/link"
 import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import Particles from "@/components/Particles"
+import { Modal } from "@/components/ui/Modal"
+import { Button } from "@/components/ui/Button"
 import QRCanvas from "../qr-codes/QRCanvas"
 import { getQRBlob, createQRSvg, type QROptions } from "../qr-codes/qrRender"
 import {
@@ -553,103 +555,83 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Barre d'action ancrée */}
       <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: `${C.surface}f2`, borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "12px 16px calc(12px + env(safe-area-inset-bottom))", zIndex: 30 }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
-          <span style={{ marginRight: "auto", fontSize: 12, color: ok ? C.ok : C.bad, display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> Prêt à imprimer</> : <><AlertTriangle size={14} /> Un réglage à corriger</>}</span>
-          <button onClick={() => setControl(true)} style={{ background: C.gold, color: "#0A0A0A", fontWeight: 800, fontSize: 14, padding: "12px 24px", borderRadius: 12, border: "none", cursor: "pointer" }}>Vérifier & exporter</button>
+          <span style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "6px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> Prêt à imprimer</> : <><AlertTriangle size={14} /> Un réglage à corriger</>}</span>
+          <Button variant="primary" onClick={() => setControl(true)}>Vérifier & exporter</Button>
         </div>
       </div>
 
       {/* Écran CONTRÔLE avant export */}
-      {control && (
-        <div onClick={() => setControl(false)} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 0 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, background: C.surface, borderRadius: "20px 20px 0 0", border: `1px solid ${C.hairline}`, padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", maxHeight: "86vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <p style={{ margin: 0, fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600 }}>Contrôle avant export</p>
-              <button onClick={() => setControl(false)} style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer" }}><X size={18} /></button>
+      <Modal open={control} onClose={() => setControl(false)} title="Contrôle avant export" maxWidth={520}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {controls.map(c => (
+            <div key={c.cle} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 11, background: C.surfaceUp, border: `1px solid ${c.ok ? "transparent" : (c.gravite === "bloquant" ? `${C.badA55}` : `${C.goldA55}`)}` }}>
+              <span style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.ok ? `${C.okA22}` : (c.gravite === "bloquant" ? `${C.badA22}` : `${C.goldA22}`), color: c.ok ? C.ok : (c.gravite === "bloquant" ? C.bad : C.gold) }}>{c.ok ? <Check size={12} /> : <AlertTriangle size={12} />}</span>
+              <span style={{ flex: 1, fontSize: 13, color: C.fg }}>{c.libelle}{!c.ok && c.gravite === "avertissement" && <span style={{ color: C.gold, fontSize: 11 }}> · avertissement</span>}</span>
+              <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, color: C.fgMuted }}>{c.valeur}</span>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {controls.map(c => (
-                <div key={c.cle} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 11, background: C.surfaceUp, border: `1px solid ${c.ok ? "transparent" : (c.gravite === "bloquant" ? `${C.badA55}` : `${C.goldA55}`)}` }}>
-                  <span style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: c.ok ? `${C.okA22}` : (c.gravite === "bloquant" ? `${C.badA22}` : `${C.goldA22}`), color: c.ok ? C.ok : (c.gravite === "bloquant" ? C.bad : C.gold) }}>{c.ok ? <Check size={12} /> : <AlertTriangle size={12} />}</span>
-                  <span style={{ flex: 1, fontSize: 13 }}>{c.libelle}{!c.ok && c.gravite === "avertissement" && <span style={{ color: C.gold, fontSize: 11 }}> · avertissement</span>}</span>
-                  <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, color: C.fgMuted }}>{c.valeur}</span>
-                </div>
-              ))}
-            </div>
-            {!qrReady && <p style={{ margin: "12px 0 0", fontSize: 12, color: C.gold, display: "inline-flex", alignItems: "center", gap: 6 }}><AlertTriangle size={13} /> Ajoutez d'abord votre QR (volet « Le QR »).</p>}
-            {/* Livrable principal : la planche imprimable à taille réelle. */}
-            <button onClick={() => { setControl(false); setPrinting(true) }} disabled={!ok || !qrReady} style={{ width: "100%", marginTop: 14, minHeight: 52, borderRadius: 12, border: "none", background: (ok && qrReady) ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, cursor: (ok && qrReady) ? "pointer" : "default", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Download size={18} /> {ok ? "Exporter la planche (PDF · taille réelle)" : "Corrigez le réglage rouge"}</button>
-            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe"}, texte + QR vectoriels).</p>
-            {/* Option : ré-exporter le QR choisi seul (uniquement quand c'est un QR existant). */}
-            {qrSource === "mine" && (
-              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-                <button onClick={() => exportQr("png")} disabled={!ok || !qrReady || busy} style={{ flex: 1, minHeight: 46, borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 13.5, fontWeight: 700, cursor: (ok && qrReady) ? "pointer" : "default", opacity: (ok && qrReady) ? 1 : 0.5, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{done ? <Check size={16} /> : <Download size={16} />} {busy ? "…" : done ? "Téléchargé" : "QR seul (PNG)"}</button>
-                <button onClick={() => exportQr("svg")} disabled={!ok || !qrReady || busy} style={{ minHeight: 46, padding: "0 18px", borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 13.5, fontWeight: 700, cursor: (ok && qrReady) ? "pointer" : "default", opacity: (ok && qrReady) ? 1 : 0.5 }}>SVG</button>
-              </div>
-            )}
-          </div>
+          ))}
         </div>
-      )}
+        {!qrReady && <p style={{ margin: "12px 0 0", fontSize: 12, color: C.gold, display: "inline-flex", alignItems: "center", gap: 6 }}><AlertTriangle size={13} /> Ajoutez d'abord votre QR (volet « Le QR »).</p>}
+        <div style={{ marginTop: 14 }}>
+          <Button variant="primary" fullWidth disabled={!ok || !qrReady} leftIcon={<Download size={18} />} onClick={() => { setControl(false); setPrinting(true) }}>{ok ? "Exporter la planche (PDF · taille réelle)" : "Corrigez le réglage rouge"}</Button>
+        </div>
+        <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe"}, texte + QR vectoriels).</p>
+        {qrSource === "mine" && (
+          <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+            <Button variant="secondary" fullWidth disabled={!ok || !qrReady || busy} leftIcon={done ? <Check size={16} /> : <Download size={16} />} onClick={() => exportQr("png")}>{busy ? "…" : done ? "Téléchargé" : "QR seul (PNG)"}</Button>
+            <Button variant="secondary" disabled={!ok || !qrReady || busy} onClick={() => exportQr("svg")}>SVG</Button>
+          </div>
+        )}
+      </Modal>
 
       {/* Décliner : choisir un autre support en gardant tout le design + textes + QR. */}
       {declineOpen && (
-        <div onClick={() => setDeclineOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 720, background: C.surface, borderRadius: "20px 20px 0 0", border: `1px solid ${C.hairline}`, padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", maxHeight: "86vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-              <p style={{ margin: 0, fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600 }}>Décliner sur un autre support</p>
-              <button onClick={() => setDeclineOpen(false)} style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer" }}><X size={18} /></button>
-            </div>
-            <p style={{ margin: "0 0 14px", fontSize: 12.5, color: C.fgMuted }}>Le design, les textes et le QR sont conservés — même campagne, autre format.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
-              {filterItems("Tout", "Tout").map(it => (
-                <button key={it.id} onClick={() => switchSupport(it.id)} style={{ textAlign: "left", background: it.id === item.id ? C.goldSoft : C.surfaceUp, border: `1px solid ${it.id === item.id ? `${C.goldA88}` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div style={{ height: 96, borderRadius: 9, background: "radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                    <MiniSupport item={it} style={style} />
-                  </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700 }}>{it.name}{it.id === item.id && <span style={{ color: C.gold }}> ·  actuel</span>}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: 10.5, color: C.fgFaint, fontFamily: "ui-monospace, monospace" }}>{it.size}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
+        <Modal open={declineOpen} onClose={() => setDeclineOpen(false)} title="Décliner sur un autre support" maxWidth={720}>
+          <p style={{ margin: "0 0 14px", fontSize: 12.5, color: C.fgMuted }}>Le design, les textes et le QR sont conservés — même campagne, autre format.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
+            {filterItems("Tout", "Tout").map(it => (
+              <button key={it.id} className="ps-card" onClick={() => switchSupport(it.id)} style={{ textAlign: "left", background: it.id === item.id ? C.goldSoft : C.surfaceUp, border: `1px solid ${it.id === item.id ? `${C.goldA88}` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ height: 96, borderRadius: 9, background: "radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                  <MiniSupport item={it} style={style} />
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: C.fg }}>{it.name}{it.id === item.id && <span style={{ color: C.gold }}> · actuel</span>}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 10.5, color: C.fgFaint, fontFamily: "ui-monospace, monospace" }}>{it.size}</p>
+                </div>
+              </button>
+            ))}
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* Planche multi-supports : choisir plusieurs formats, tous avec le MÊME design. */}
       {campaignOpen && (
-        <div onClick={() => setCampaignOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 720, background: C.surface, borderRadius: "20px 20px 0 0", border: `1px solid ${C.hairline}`, padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", maxHeight: "86vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-              <p style={{ margin: 0, fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600 }}>Planche multi-supports</p>
-              <button onClick={() => setCampaignOpen(false)} style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer" }}><X size={18} /></button>
-            </div>
-            <p style={{ margin: "0 0 14px", fontSize: 12.5, color: C.fgMuted }}>Cochez les formats à imprimer ensemble (même design, mêmes textes, même QR). Une seule feuille, à découper.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
-              {filterItems("Tout", "Tout").map(it => {
-                const on = campaign.includes(it.id)
-                return (
-                  <button key={it.id} onClick={() => setCampaign(cur => on ? cur.filter(x => x !== it.id) : [...cur, it.id])} style={{ position: "relative", textAlign: "left", background: on ? C.goldSoft : C.surfaceUp, border: `1px solid ${on ? `${C.goldA88}` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
-                    {on && <span style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: C.gold, color: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}><Check size={13} /></span>}
-                    <div style={{ height: 96, borderRadius: 9, background: "radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                      <MiniSupport item={it} style={style} />
-                    </div>
-                    <div>
-                      <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700 }}>{it.name}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: 10.5, color: C.fgFaint, fontFamily: "ui-monospace, monospace" }}>{it.size}</p>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-            <div style={{ marginTop: 14 }}>
-              <p style={{ margin: "0 0 6px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }}>Exemplaires par format · {campaignQty}</p>
-              <Range value={campaignQty} min={1} max={24} step={1} onChange={v => setCampaignQty(Math.round(v))} hint={`${(campaign.length || 1) * campaignQty} vignette${(campaign.length || 1) * campaignQty > 1 ? "s" : ""} au total`} />
-            </div>
-            <button onClick={() => { if (campaign.length) { setCampaignOpen(false); setMultiPrinting(true) } }} disabled={!campaign.length} style={{ width: "100%", marginTop: 8, minHeight: 52, borderRadius: 12, border: "none", background: campaign.length ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, cursor: campaign.length ? "pointer" : "default", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Download size={18} /> Exporter la planche ({campaign.length} format{campaign.length > 1 ? "s" : ""}{campaignQty > 1 ? ` × ${campaignQty}` : ""})</button>
-            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Une feuille auto-dimensionnée, chaque exemplaire à sa taille réelle avec repère de découpe (idéal cartes/stickers en série).</p>
+        <Modal open={campaignOpen} onClose={() => setCampaignOpen(false)} title="Planche multi-supports" maxWidth={720}
+          footer={<Button variant="primary" fullWidth disabled={!campaign.length} leftIcon={<Download size={18} />} onClick={() => { if (campaign.length) { setCampaignOpen(false); setMultiPrinting(true) } }}>Exporter la planche ({campaign.length} format{campaign.length > 1 ? "s" : ""}{campaignQty > 1 ? ` × ${campaignQty}` : ""})</Button>}>
+          <p style={{ margin: "0 0 14px", fontSize: 12.5, color: C.fgMuted }}>Cochez les formats à imprimer ensemble (même design, mêmes textes, même QR). Une seule feuille, à découper.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
+            {filterItems("Tout", "Tout").map(it => {
+              const on = campaign.includes(it.id)
+              return (
+                <button key={it.id} className="ps-card" onClick={() => setCampaign(cur => on ? cur.filter(x => x !== it.id) : [...cur, it.id])} style={{ position: "relative", textAlign: "left", background: on ? C.goldSoft : C.surfaceUp, border: `1px solid ${on ? `${C.goldA88}` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
+                  {on && <span style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: C.gold, color: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}><Check size={13} /></span>}
+                  <div style={{ height: 96, borderRadius: 9, background: "radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    <MiniSupport item={it} style={style} />
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: C.fg }}>{it.name}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: 10.5, color: C.fgFaint, fontFamily: "ui-monospace, monospace" }}>{it.size}</p>
+                  </div>
+                </button>
+              )
+            })}
           </div>
-        </div>
+          <div style={{ marginTop: 14 }}>
+            <p style={{ margin: "0 0 6px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }}>Exemplaires par format · {campaignQty}</p>
+            <Range value={campaignQty} min={1} max={24} step={1} onChange={v => setCampaignQty(Math.round(v))} hint={`${(campaign.length || 1) * campaignQty} vignette${(campaign.length || 1) * campaignQty > 1 ? "s" : ""} au total`} />
+          </div>
+          <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "10px 0 0" }}>Une feuille auto-dimensionnée, chaque exemplaire à sa taille réelle avec repère de découpe (idéal cartes/stickers en série).</p>
+        </Modal>
       )}
 
       {/* Rendu de la PLANCHE multi-supports — monté seulement pendant l'impression. */}

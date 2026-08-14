@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react"
+import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import Particles from "@/components/Particles"
 import QRCanvas from "../qr-codes/QRCanvas"
@@ -109,6 +109,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [open, setOpen] = useState<string | null>(null)   // un seul volet ouvert
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
+  const [declineOpen, setDeclineOpen] = useState(false)    // sélecteur « décliner sur un autre support »
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [printing, setPrinting] = useState(false)         // la planche PDF n'est montée QUE pendant l'impression
@@ -220,6 +221,11 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     persistPresets([...savedPresets, { id: `sv_${Date.now()}`, name, cfg: currentCfg }])
     setSaving(false); setSaveName("")
   }
+  // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
+  function switchSupport(id: string) {
+    if (!ITEM_BY_ID[id]) return
+    setItemId(id); setDeclineOpen(false)
+  }
 
   function openItem(id: string) {
     const it = ITEM_BY_ID[id]; if (!it) return
@@ -309,7 +315,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       <Particles behind />
       <header style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13 }}><ArrowLeft size={16} /> Bibliothèque</button>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.goldSoft, border: `1px solid ${C.gold}55`, color: C.gold, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Copy size={14} /> Décliner</button>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
+        </div>
       </header>
 
       <div className="ps-grid" style={{ maxWidth: 1180, margin: "0 auto", padding: "0 16px 120px", display: "grid", gap: 18, gridTemplateColumns: "1fr" }}>
@@ -506,6 +515,32 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <button onClick={() => exportQr("svg")} disabled={!ok || !qrReady || busy} style={{ minHeight: 46, padding: "0 18px", borderRadius: 12, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, fontSize: 13.5, fontWeight: 700, cursor: (ok && qrReady) ? "pointer" : "default", opacity: (ok && qrReady) ? 1 : 0.5 }}>SVG</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Décliner : choisir un autre support en gardant tout le design + textes + QR. */}
+      {declineOpen && (
+        <div onClick={() => setDeclineOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 720, background: C.surface, borderRadius: "20px 20px 0 0", border: `1px solid ${C.hairline}`, padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", maxHeight: "86vh", overflowY: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Décliner sur un autre support</p>
+              <button onClick={() => setDeclineOpen(false)} style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer" }}><X size={18} /></button>
+            </div>
+            <p style={{ margin: "0 0 14px", fontSize: 12.5, color: C.fgMuted }}>Le design, les textes et le QR sont conservés — même campagne, autre format.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
+              {filterItems("Tout", "Tout").map(it => (
+                <button key={it.id} onClick={() => switchSupport(it.id)} style={{ textAlign: "left", background: it.id === item.id ? C.goldSoft : C.surfaceUp, border: `1px solid ${it.id === item.id ? `${C.gold}88` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ height: 96, borderRadius: 9, background: "radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    <MiniSupport item={it} style={style} />
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700 }}>{it.name}{it.id === item.id && <span style={{ color: C.gold }}> ·  actuel</span>}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: 10.5, color: C.fgFaint, fontFamily: "ui-monospace, monospace" }}>{it.size}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

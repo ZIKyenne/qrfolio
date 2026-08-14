@@ -56,9 +56,10 @@ Chaque phase garde la règle : **on n'ajoute de la liberté que si elle reste tr
 - [ ] **Export SVG vectoriel** de la planche entière (pas seulement le QR), pour les imprimeurs.
 
 ### P4 — Marque & modèles (cohérence)
-- [ ] **Brand kit** : mémoriser logo + couleurs + police au niveau du **compte** (pas juste localStorage).
-- [ ] **Modèles synchronisés** : passer les modèles personnels de localStorage à une table Supabase (retrouvés sur tous les appareils, partagés en équipe).
-- [ ] **Appliquer la charte** en 1 clic à n'importe quel support.
+- [x] **Brand kit** : logo + accent + police mémorisés au **compte** (table `print_brand_kit`, repli localStorage).
+- [x] **Modèles synchronisés** : modèles personnels en base Supabase (`print_presets`), multi-appareils, repli localStorage.
+- [x] **Appliquer la charte** en 1 clic (« Ma charte » → Appliquer).
+- [ ] *Reste* : partage des modèles/charte au niveau **équipe** (aujourd'hui : par utilisateur).
 
 ### P5 — Sortie pro (qualité imprimeur)
 - [ ] **CMYK / profils colorimétriques** pour l'impression offset.

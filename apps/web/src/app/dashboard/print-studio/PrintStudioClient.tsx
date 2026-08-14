@@ -30,6 +30,25 @@ const PAD_MM = [0.7, 1, 1.35]      // multiplicateur d'air autour (ePad 0..2)
 const TITLE_MM = [0.82, 1, 1.2]    // multiplicateur de titre (eTitle 0..2)
 const FINISH_LABEL: Record<string, string> = { uni: "Uni", degrade: "Dégradé", grain: "Grain" }
 const FRAME_LABEL: Record<string, string> = { aucun: "sans cadre", filet: "filet", double: "double filet", coins: "coins ornés" }
+// Couleurs d'accent (override de l'ambiance) : « auto » = laisse l'ambiance décider.
+const ACCENTS: { id: string; label: string; hex: string }[] = [
+  { id: "auto", label: "Auto", hex: "" },
+  { id: "or", label: "Or", hex: "#C9A84C" },
+  { id: "rouge", label: "Rouge", hex: "#D4483B" },
+  { id: "corail", label: "Corail", hex: "#E5735B" },
+  { id: "vert", label: "Vert", hex: "#3E9E6E" },
+  { id: "bleu", label: "Bleu", hex: "#3B6FD4" },
+  { id: "violet", label: "Violet", hex: "#7A5CD4" },
+  { id: "rose", label: "Rose", hex: "#D45C9E" },
+]
+const TITLE_WEIGHT: Record<string, number> = { fin: 400, normal: 0, gras: 800 } // 0 = graisse de l'ambiance
+// Encre lisible (noir/blanc) sur une couleur donnée — pour le libellé du bouton accentué.
+function readableOn(hex: string): string {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  if (!m) return "#0A0A0A"
+  const L = (0.299 * parseInt(m[1], 16) + 0.587 * parseInt(m[2], 16) + 0.114 * parseInt(m[3], 16)) / 255
+  return L > 0.6 ? "#0A0A0A" : "#FFFFFF"
+}
 
 export default function PrintStudioClient({ canAccess }: { canAccess: boolean }) {
   const [phase, setPhase] = useState<"library" | "studio">("library")
@@ -41,8 +60,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [styleId, setStyleId] = useState("premiumdark")
   const [layoutId, setLayoutId] = useState("centre")
   const [sizeId, setSizeId] = useState("moyen")
-  const [brandIdx, setBrandIdx] = useState(0)
-  const [message, setMessage] = useState("")
+  const [brandText, setBrandText] = useState(BRANDNAMES[0])   // nom affiché (libre)
+  const [subtitle, setSubtitle] = useState("")               // accroche / sous-titre optionnel
+  const [message, setMessage] = useState("")                 // titre principal
+  const [ctaText, setCtaText] = useState("")                 // libellé du bouton
   const [logo, setLogo] = useState("aucun")            // logo de marque sur l'OBJET (jamais sur le QR)
   const [eTitle, setETitle] = useState(1)
   const [ePad, setEPad] = useState(1)
@@ -50,6 +71,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [eAccent, setEAccent] = useState("plein")
   const [eTypo, setETypo] = useState("auto")
   const [eAlign, setEAlign] = useState<"left" | "center" | "right">("center")
+  const [accent, setAccent] = useState("auto")         // couleur d'accent (override d'ambiance)
+  const [titleCase, setTitleCase] = useState("normal") // casse du titre : Aa / MAJUSCULES
+  const [titleWeight, setTitleWeight] = useState("normal") // graisse du titre : fin / normal / gras
+  const [qrBadge, setQrBadge] = useState("carre")      // pastille derrière le QR : carré / cercle / aucune
   const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
   const [open, setOpen] = useState<string | null>(null)   // un seul volet ouvert
@@ -101,8 +126,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const layout = LAYOUT_BY_ID[layoutId] || LAYOUT_BY_ID.centre
   const size = SIZES.find(s => s.id === sizeId) || SIZES[1]
   const messages = item ? (MESSAGES[item.id] || []) : []
-  const brand = BRANDNAMES[brandIdx % BRANDNAMES.length]
+  const brand = brandText.trim() || BRANDNAMES[0]
   const title = message.trim() || (messages[0] ?? item?.title ?? "")
+  const cta = ctaText.trim() || item?.cta || ""
   const pickedQR = myQRs.find(q => q.id === qrPickId)
   const qrValue = qrSource === "mine" ? (pickedQR?.url || "https://qrowg.com") : "https://qrowg.com"
   const qrImg = qrSource === "png" ? qrPng : null
@@ -114,8 +140,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   function openItem(id: string) {
     const it = ITEM_BY_ID[id]; if (!it) return
     setItemId(id); setStyleId(it.pal); setLayoutId(resolveLayoutId(it.layout))
-    setSizeId("moyen"); setBrandIdx(0); setMessage(""); setLogo("aucun")
+    setSizeId("moyen"); setBrandText(BRANDNAMES[0]); setSubtitle(""); setMessage(""); setCtaText(it.cta); setLogo("aucun")
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
+    setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre")
     setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
   }
 
@@ -205,8 +232,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
-          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue} qrImg={qrImg} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame}
-            brand={brand} title={title} cta={item.cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
+          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight}
+            brand={brand} subtitle={subtitle} title={title} cta={cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
           <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>
         </div>
 
@@ -238,21 +265,34 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               )
             )}
             <input ref={qrPngInput} type="file" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+            <Field label="Taille du QR"><RailInline value={sizeId} options={SIZES.map(s => ({ id: s.id, label: s.label, note: s.note }))} onPick={setSizeId} /></Field>
+            <Field label="Pastille"><Seg value={qrBadge} options={["carre", "cercle", "aucune"]} onPick={setQrBadge} labels={["Carré", "Cercle", "Aucune"]} /></Field>
           </Panel>
 
-          {/* Volet TEXTE */}
-          <Panel id="texte" title="Ce qui est écrit" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen}>
-            <Field label="Nom affiché"><Cycle value={brand} onPrev={() => setBrandIdx(i => (i + BRANDNAMES.length - 1) % BRANDNAMES.length)} onNext={() => setBrandIdx(i => (i + 1) % BRANDNAMES.length)} /></Field>
-            <Field label="Message">
+          {/* Volet TEXTE — tout est éditable librement */}
+          <Panel id="texte" title="Les textes" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen}>
+            <Field label="Nom affiché">
+              <input value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                {BRANDNAMES.map(b => <Chip key={b} on={brand === b} onClick={() => setBrandText(b)}>{b}</Chip>)}
+              </div>
+            </Field>
+            <Field label="Titre">
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                 {messages.map(m => <Chip key={m} on={title === m} onClick={() => setMessage(m)}>{m}</Chip>)}
               </div>
-              <input value={message} onChange={e => setMessage(e.target.value)} placeholder="Message libre…" style={inputStyle} />
+              <input value={message} onChange={e => setMessage(e.target.value)} placeholder="Titre principal…" style={inputStyle} />
             </Field>
+            <Field label="Sous-titre (optionnel)"><input value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Une ligne d'accroche…" style={inputStyle} /></Field>
+            <Field label="Bouton"><input value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder={item.cta} style={inputStyle} /></Field>
+            <Field label="Casse du titre"><Seg value={titleCase} options={["normal", "upper"]} onPick={setTitleCase} labels={["Aa normal", "MAJUSCULES"]} /></Field>
+            <Field label="Graisse du titre"><Seg value={titleWeight} options={["fin", "normal", "gras"]} onPick={setTitleWeight} labels={["Fin", "Normal", "Gras"]} /></Field>
+            <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
+            <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={(v) => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
           </Panel>
 
           {/* Volet ALLURE */}
-          <Panel id="allure" title="L'allure" resume={`${style.label} · ${layout.label} · QR ${size.label.toLowerCase()}`} open={open} setOpen={setOpen}>
+          <Panel id="allure" title="L'allure" resume={`${style.label} · ${ACCENTS.find(a => a.id === accent)?.label ?? "Auto"} · ${layout.label}`} open={open} setOpen={setOpen}>
             <Field label="Ambiance">
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
                 {(showAllColors ? STYLES : ambiances.map(a => STYLE_BY_ID[a.rep])).map(s => (
@@ -261,20 +301,26 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               </div>
               <button onClick={() => setShowAllColors(v => !v)} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 12, marginTop: 8, padding: 0 }}>{showAllColors ? "Voir les ambiances" : `Voir les ${STYLES.length} coloris détaillés`}</button>
             </Field>
+            <Field label="Couleur d'accent">
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {ACCENTS.map(a => (
+                  <button key={a.id} onClick={() => setAccent(a.id)} title={a.label} style={{ width: 34, height: 34, borderRadius: 9, cursor: "pointer", border: `2px solid ${accent === a.id ? C.gold : "transparent"}`, boxShadow: accent === a.id ? `0 0 0 2px ${C.gold}33` : "none", background: a.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)", position: "relative" }}>
+                    {a.id === "auto" && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8.5, fontWeight: 800, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,.6)" }}>AUTO</span>}
+                  </button>
+                ))}
+              </div>
+            </Field>
             <Field label="Mise en page"><RailInline value={layoutId} options={LAYOUTS.map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
-            <Field label="Taille du QR"><RailInline value={sizeId} options={SIZES.map(s => ({ id: s.id, label: s.label, note: s.note }))} onPick={setSizeId} /></Field>
           </Panel>
 
-          {/* Volet DÉTAILS — 100 % design (aucun réglage du QR : il est fourni tel quel) */}
+          {/* Volet DESIGN — 100 % design (aucun réglage du QR : il est fourni tel quel) */}
           <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen}>
             <Field label="Fond"><Seg value={bgFinish} options={["uni", "degrade", "grain"]} onPick={setBgFinish} labels={["Uni", "Dégradé", "Grain"]} /></Field>
             <Field label="Cadre"><Seg value={frame} options={["aucun", "filet", "double", "coins"]} onPick={setFrame} labels={["Aucun", "Filet", "Double", "Coins"]} /></Field>
-            <Field label="Titre"><Step value={eTitle} min={0} max={2} onChange={setETitle} labels={["plus petit", "normal", "plus grand"]} /></Field>
+            <Field label="Taille du titre"><Step value={eTitle} min={0} max={2} onChange={setETitle} labels={["plus petit", "normal", "plus grand"]} /></Field>
             <Field label="Air autour"><Step value={ePad} min={0} max={2} onChange={setEPad} labels={["serré", "normal", "large"]} /></Field>
             <Field label="Arrondi"><Seg value={eCorner} options={["vif", "adouci", "rond"]} onPick={setECorner} labels={["Vif", "Adouci", "Rond"]} /></Field>
-            <Field label="Accent"><Seg value={eAccent} options={["plein", "trait", "aucun"]} onPick={setEAccent} labels={["Plein", "Trait", "Aucun"]} /></Field>
-            <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
-            <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={(v) => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
+            <Field label="Style du bouton"><Seg value={eAccent} options={["plein", "trait", "aucun"]} onPick={setEAccent} labels={["Plein", "Trait", "Aucun"]} /></Field>
             <Field label="Logo de marque">
               <Seg value={logo} options={["objet", "aucun"]} onPick={setLogo} labels={["Sur l'objet", "Aucun"]} />
               {logo === "objet" && (logoUrl
@@ -334,7 +380,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Planche d'impression — window.print() -> PDF à taille réelle (mm), fidèle à l'aperçu. */}
       <div className="ps-print-root" aria-hidden>
         <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${mediaDims(item).mediaWmm}mm ${mediaDims(item).mediaHmm}mm;margin:0}}`}</style>
-        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} title={title} cta={item.cta} size={size} qrValue={qrValue} qrImg={qrImg} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
+        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} subtitle={subtitle} title={title} cta={cta} size={size} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
       </div>
     </div>
   )
@@ -387,16 +433,6 @@ function Panel({ id, title, resume, open, setOpen, children }: { id: string; tit
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><p style={{ margin: "0 0 7px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }}>{label}</p>{children}</div>
 }
-function Cycle({ value, onPrev, onNext }: { value: string; onPrev: () => void; onNext: () => void }) {
-  const btn: React.CSSProperties = { width: 40, minHeight: 42, borderRadius: 10, border: `1px solid ${C.hairline}`, background: C.surfaceUp, color: C.fg, cursor: "pointer", fontSize: 16, flexShrink: 0 }
-  return (
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <button onClick={onPrev} style={btn} aria-label="Précédent">‹</button>
-      <span style={{ flex: 1, textAlign: "center", fontSize: 14, fontWeight: 600, padding: "0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span>
-      <button onClick={onNext} style={btn} aria-label="Suivant">›</button>
-    </div>
-  )
-}
 function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return <button onClick={onClick} style={{ minHeight: 36, padding: "6px 12px", borderRadius: R.chip, cursor: "pointer", fontSize: 12.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fg }}>{children}</button>
 }
@@ -428,8 +464,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, qrImg, logo, logoUrl, bgFinish, frame, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; logo: string; logoUrl: string | null; bgFinish: string; frame: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, logo, logoUrl, bgFinish, frame, accent, titleCase, titleWeight, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; logo: string; logoUrl: string | null; bgFinish: string; frame: string; accent: string; titleCase: string; titleWeight: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -440,19 +476,28 @@ function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, qr
   const radiusEl = eCorner === "vif" ? 0 : eCorner === "rond" ? 999 : 10
   const isRound = item.shape === "round"
 
-  const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: unit * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: pal.band }}>{brand}</div>
-  const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: pal.titleWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: pal.fg }}>{title}</div>
+  // Couleur d'accent : override d'ambiance (« auto » garde pal.band / pal.ctaBg).
+  const accHex = ACCENTS.find(a => a.id === accent)?.hex || ""
+  const bandColor = accHex || pal.band
+  const bandFg = accHex ? readableOn(accHex) : pal.bandFg
+  const ctaBg = accHex || pal.ctaBg
+  const ctaFg = accHex ? readableOn(accHex) : pal.ctaFg
+  const effWeight = TITLE_WEIGHT[titleWeight] || Number(pal.titleWeight) || 500
+  const shownTitle = titleCase === "upper" ? title.toUpperCase() : title
+
+  const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: unit * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: bandColor }}>{brand}</div>
+  const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: pal.fg }}>{shownTitle}</div>
+  const subtitleEl = subtitle.trim() ? <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 500, lineHeight: 1.25, color: pal.fg, opacity: 0.82 }}>{subtitle}</div> : null
   // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
-  const qrEl = (
-    <div style={{ background: pal.qrBg, padding: unit * 0.028, borderRadius: eCorner === "rond" ? 16 : 8, lineHeight: 0 }}>
-      {qrImg
-        ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
-        : <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} ecc="M" />}
-    </div>
-  )
+  const qrInner = qrImg
+    ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
+    : <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} ecc="M" />
+  const qrEl = qrBadge === "aucune"
+    ? <div style={{ lineHeight: 0 }}>{qrInner}</div>
+    : <div style={{ background: pal.qrBg, padding: unit * (qrBadge === "cercle" ? 0.05 : 0.028), borderRadius: qrBadge === "cercle" ? "50%" : (eCorner === "rond" ? 16 : eCorner === "vif" ? 2 : 8), lineHeight: 0, display: "inline-block" }}>{qrInner}</div>
   const ctaEl = eAccent === "aucun" ? null : (
     <div style={{ fontFamily: bodyFont, fontSize: unit * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, whiteSpace: "nowrap",
-      ...(eAccent === "trait" ? { border: `2px solid ${pal.band}`, color: pal.band } : { background: pal.ctaBg, color: pal.ctaFg }) }}>{cta}</div>
+      ...(eAccent === "trait" ? { border: `2px solid ${bandColor}`, color: bandColor } : { background: ctaBg, color: ctaFg }) }}>{cta}</div>
   )
 
   const alignItems = eAlign === "left" ? "flex-start" : eAlign === "right" ? "flex-end" : "center"
@@ -478,18 +523,18 @@ function SupportVisual({ item, pal, layout, brand, title, cta, size, qrValue, qr
   if (layout.content === "band") {
     body = (
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
-        <div style={{ background: pal.band, color: pal.bandFg, padding: `${pad * 0.7}px ${pad}px`, fontFamily: titleFont, fontSize: titleSize * 0.86, fontWeight: pal.titleWeight as any }}>{title}</div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * 0.05, padding: pad }}>{qrEl}{ctaEl}</div>
+        <div style={{ background: bandColor, color: bandFg, padding: `${pad * 0.7}px ${pad}px`, fontFamily: titleFont, fontSize: titleSize * 0.86, fontWeight: effWeight as any }}>{shownTitle}</div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * 0.05, padding: pad }}>{subtitleEl}{qrEl}{ctaEl}</div>
       </div>
     )
   } else if (layout.content === "qrbig") {
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * 0.05 }}><div style={{ fontFamily: titleFont, fontSize: titleSize * 0.7, color: pal.fg }}>{title}</div><div style={{ transform: "scale(1.35)" }}>{qrEl}</div>{ctaEl}</div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * 0.045 }}><div style={{ fontFamily: titleFont, fontSize: titleSize * 0.7, fontWeight: effWeight as any, color: pal.fg }}>{shownTitle}</div>{subtitleEl}<div style={{ transform: "scale(1.35)", margin: `${unit * 0.05}px 0` }}>{qrEl}</div>{ctaEl}</div>
   } else if (layout.content === "split") {
-    body = <div style={{ flex: 1, display: "flex", alignItems: "center", gap: pad }}><div style={{ flex: 1, display: "flex", flexDirection: "column", gap: unit * 0.04 }}>{kickerEl}{titleEl}{ctaEl}</div>{qrEl}</div>
+    body = <div style={{ flex: 1, display: "flex", alignItems: "center", gap: pad }}><div style={{ flex: 1, display: "flex", flexDirection: "column", gap: unit * 0.035 }}>{kickerEl}{titleEl}{subtitleEl}{ctaEl}</div>{qrEl}</div>
   } else if (layout.content === "poster") {
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between" }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems }}>{kickerEl}<div style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: pal.titleWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: pal.fg }}>{title}</div></div><div style={{ display: "flex", alignItems: "center", gap: pad, alignSelf: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between" }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems }}>{kickerEl}<div style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: pal.fg }}>{shownTitle}</div>{subtitleEl}</div><div style={{ display: "flex", alignItems: "center", gap: pad, alignSelf: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
   } else { // stack / center
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "center", gap: unit * 0.05, textAlign: eAlign }}>{kickerEl}{titleEl}{qrEl}{ctaEl}</div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "center", gap: unit * 0.045, textAlign: eAlign }}>{kickerEl}{titleEl}{subtitleEl}{qrEl}{ctaEl}</div>
   }
 
   return (
@@ -558,7 +603,7 @@ function PrintSheet(props: Omit<React.ComponentProps<typeof SupportVisual>, "w" 
 }
 
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
-function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; logo: string; logoUrl: string | null; bgFinish: string; frame: string; brand: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
+function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; logo: string; logoUrl: string | null; bgFinish: string; frame: string; accent: string; titleCase: string; titleWeight: string; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
   const { item, scene } = props
   const box = 460
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])
@@ -603,7 +648,7 @@ function MiniSupport({ item, style }: { item: Item; style: Style }) {
   return (
     <div style={{ width: BW, height: BH, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
       <div style={{ width: baseW, height: baseH, transform: `scale(${scale})`, transformOrigin: "center", filter: "drop-shadow(0 10px 22px rgba(0,0,0,.55))" }}>
-        <SupportVisual item={item} style={style} pal={pal} layout={layout} brand={BRANDNAMES[0]} title={MESSAGES[item.id]?.[0] || item.title} cta={item.cta} size={{ factor: 1 }} qrValue="https://qrowg.com" qrImg={null} logo="aucun" logoUrl={null} bgFinish="uni" frame="aucun" eCorner="adouci" eAccent="plein" eTypo="auto" eAlign="center" eTitle={1} ePad={1} w={baseW} h={baseH} />
+        <SupportVisual item={item} style={style} pal={pal} layout={layout} brand={BRANDNAMES[0]} subtitle="" title={MESSAGES[item.id]?.[0] || item.title} cta={item.cta} size={{ factor: 1 }} qrValue="https://qrowg.com" qrImg={null} qrBadge="carre" logo="aucun" logoUrl={null} bgFinish="uni" frame="aucun" accent="auto" titleCase="normal" titleWeight="normal" eCorner="adouci" eAccent="plein" eTypo="auto" eAlign="center" eTitle={1} ePad={1} w={baseW} h={baseH} />
       </div>
     </div>
   )

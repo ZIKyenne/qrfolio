@@ -39,13 +39,22 @@ l'utilisateur, titres Fraunces, primitives `components/ui/`, hover/focus globaux
 - [x] **Survol des puces** (`.ps-chip` : bordure accent au hover) en bibliothèque et studio.
 - [ ] **Écran upsell** (si un jour re-gaté) : rebâtir avec `Card` + `Button` — dormant (Print Studio est gratuit), basse priorité.
 
-## Phase 3 — Refactor de fond (larger)
+## Phase 3 — Verrouillage anti-dérive ✅ FAIT (commit 1ab98fed)
 
-- [ ] **Adopter les primitives partagées** (`Card`, `Button`, `Modal`, `Tabs`, `Input`, `Switch`) et réduire
-      `tokens.ts` aux seules préoccupations Print-Studio (fond perdu, échelle mm, scènes mockup) → plus de
-      duplication couleur/type/espace, donc **impossible de dériver** à nouveau du design system.
-- [ ] **Consommer réellement les échelles** `type` / `space` de `tokens.ts` (ou les supprimer) : aujourd'hui
-      le code code en dur `13.5 / 12.5 / 11.5…` et des gaps ad hoc → demi-points qui dérivent.
+- [x] **`tokens.ts` verrouillé sur le design system** : les couleurs référencent les variables CSS de l'app
+      (`var(--bg/surface/ink/muted/accent/success/danger)`) au lieu de hex dupliqués → **impossible de dériver**,
+      et l'accent suit l'utilisateur. Dernière concat `${C.surface}f2` remplacée par un `color-mix` var-based.
+- [x] **Échelles mortes supprimées** de `tokens.ts` (`space`/`type`/`font`/`motion`/`breakpoints`/default) :
+      déclarées mais jamais consommées. `tokens.ts` = couleurs + rayons uniquement.
+- [ ] *(Optionnel, basse priorité)* Adopter aussi `Card`/`Input`/`Tabs` en remplacement du `Panel` (accordéon),
+      de `inputStyle` (déjà aligné 48/16) et de `Seg`. Churn élevé, **gain visuel nul** (les couleurs sont déjà
+      var-based) → à ne faire que si on refond ces composants pour une autre raison.
+
+---
+
+**Bilan** : Phases 0→3 faites. Le Print Studio est aligné sur le design system (palette/accent/police/primitives
+`Modal`+`Button`/hiérarchie/hover/aperçu) et **verrouillé anti-dérive** (tokens en `var(--*)`). Reste uniquement de
+l'optionnel très basse priorité (upsell dormant, adoption des dernières primitives).
 
 ## Ordre conseillé
 

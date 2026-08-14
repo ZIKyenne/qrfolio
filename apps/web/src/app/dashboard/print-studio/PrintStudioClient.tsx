@@ -112,6 +112,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [declineOpen, setDeclineOpen] = useState(false)    // sélecteur « décliner sur un autre support »
   const [campaignOpen, setCampaignOpen] = useState(false)  // sélecteur « planche multi-supports »
   const [campaign, setCampaign] = useState<string[]>([])   // supports retenus pour la planche
+  const [campaignQty, setCampaignQty] = useState(1)        // exemplaires par format (imposition N-up)
   const [multiPrinting, setMultiPrinting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -366,7 +367,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const pal = paletteFromStyle(style)
   // Tous les réglages de DESIGN partagés (sans `item`/`physW`/`w`/`h`) — réutilisés pour la planche multi-supports.
   const designProps = { style, pal, layout, size: effSize, qrValue, qrImg, qrBadge, qrPos, qrDx, qrDy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, brand, subtitle, title, cta, eCorner, eAccent, eTypo, eAlign, eTitle, ePad }
-  const campaignItems = (campaign.length ? campaign : [item.id]).map(id => ITEM_BY_ID[id]).filter(Boolean)
+  // Planche = chaque format retenu, répété `campaignQty` fois (imposition N-up : N exemplaires par format).
+  const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   return (
     <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "system-ui, sans-serif" }}>
       <Particles behind />
@@ -635,8 +637,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 )
               })}
             </div>
-            <button onClick={() => { if (campaign.length) { setCampaignOpen(false); setMultiPrinting(true) } }} disabled={!campaign.length} style={{ width: "100%", marginTop: 16, minHeight: 52, borderRadius: 12, border: "none", background: campaign.length ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, cursor: campaign.length ? "pointer" : "default", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Download size={18} /> Exporter la planche ({campaign.length} format{campaign.length > 1 ? "s" : ""})</button>
-            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Une feuille auto-dimensionnée, chaque support à sa taille réelle avec repère de découpe.</p>
+            <div style={{ marginTop: 14 }}>
+              <p style={{ margin: "0 0 6px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }}>Exemplaires par format · {campaignQty}</p>
+              <Range value={campaignQty} min={1} max={24} step={1} onChange={v => setCampaignQty(Math.round(v))} hint={`${(campaign.length || 1) * campaignQty} vignette${(campaign.length || 1) * campaignQty > 1 ? "s" : ""} au total`} />
+            </div>
+            <button onClick={() => { if (campaign.length) { setCampaignOpen(false); setMultiPrinting(true) } }} disabled={!campaign.length} style={{ width: "100%", marginTop: 8, minHeight: 52, borderRadius: 12, border: "none", background: campaign.length ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, cursor: campaign.length ? "pointer" : "default", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Download size={18} /> Exporter la planche ({campaign.length} format{campaign.length > 1 ? "s" : ""}{campaignQty > 1 ? ` × ${campaignQty}` : ""})</button>
+            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Une feuille auto-dimensionnée, chaque exemplaire à sa taille réelle avec repère de découpe (idéal cartes/stickers en série).</p>
           </div>
         </div>
       )}
@@ -966,8 +972,8 @@ function MultiSheet({ items, design }: { items: Item[]; design: DesignProps }) {
     <div className="ps-print-root" aria-hidden>
       <style>{css}</style>
       <div style={{ position: "relative", width: `${pageW}mm`, height: `${pageH}mm`, background: "#fff" }}>
-        {placed.map(({ it, x, y, w, h }) => (
-          <div key={it.id} style={{ position: "absolute", left: `${MARGIN + x}mm`, top: `${MARGIN + y}mm`, width: `${w}mm`, height: `${h}mm`, overflow: "hidden", border: "0.2mm dashed rgba(0,0,0,0.45)", borderRadius: it.shape === "round" ? "50%" : 0 }}>
+        {placed.map(({ it, x, y, w, h }, i) => (
+          <div key={i} style={{ position: "absolute", left: `${MARGIN + x}mm`, top: `${MARGIN + y}mm`, width: `${w}mm`, height: `${h}mm`, overflow: "hidden", border: "0.2mm dashed rgba(0,0,0,0.45)", borderRadius: it.shape === "round" ? "50%" : 0 }}>
             <GangCell it={it} wmm={w} design={design} />
           </div>
         ))}

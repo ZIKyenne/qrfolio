@@ -51,7 +51,7 @@ Chaque phase garde la règle : **on n'ajoute de la liberté que si elle reste tr
 - [ ] **Encore des polices** : self-héberger 3-4 familles display supplémentaires (condensée, manuscrite, géométrique). **Bloqué : nécessite les fichiers de police (woff2)** — à fournir, puis @font-face dans globals.css + entrées TYPOS.
 
 ### P3 — Décliner une campagne (fort levier)
-- [ ] **Dupliquer un support** vers un autre format en gardant tous les réglages (ex. carte → sticker → A5).
+- [x] **Dupliquer un support** vers un autre format en gardant tous les réglages (bouton « Décliner »).
 - [ ] **Planche multi-supports** : exporter plusieurs déclinaisons d'un coup (une même campagne sur 3 objets).
 - [ ] **Export SVG vectoriel** de la planche entière (pas seulement le QR), pour les imprimeurs.
 

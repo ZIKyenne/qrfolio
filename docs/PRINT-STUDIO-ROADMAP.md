@@ -59,7 +59,7 @@ Chaque phase garde la règle : **on n'ajoute de la liberté que si elle reste tr
 - [x] **Brand kit** : logo + accent + police mémorisés au **compte** (table `print_brand_kit`, repli localStorage).
 - [x] **Modèles synchronisés** : modèles personnels en base Supabase (`print_presets`), multi-appareils, repli localStorage.
 - [x] **Appliquer la charte** en 1 clic (« Ma charte » → Appliquer).
-- [ ] *Reste* : partage des modèles/charte au niveau **équipe** (aujourd'hui : par utilisateur).
+- [x] **Partage équipe** des modèles et de la charte (RLS additive `can_read_owner`/`can_write_owner`).
 
 ### P5 — Sortie pro (qualité imprimeur)
 - [ ] **CMYK / profils colorimétriques** pour l'impression offset.

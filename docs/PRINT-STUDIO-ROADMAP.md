@@ -52,7 +52,7 @@ Chaque phase garde la règle : **on n'ajoute de la liberté que si elle reste tr
 
 ### P3 — Décliner une campagne (fort levier)
 - [x] **Dupliquer un support** vers un autre format en gardant tous les réglages (bouton « Décliner »).
-- [ ] **Planche multi-supports** : exporter plusieurs déclinaisons d'un coup (une même campagne sur 3 objets).
+- [x] **Planche multi-supports** : bouton « Planche » → une feuille auto-dimensionnée, N formats à leur taille réelle avec repère de découpe. *(QA d'impression réelle à faire.)*
 - [ ] **Export SVG vectoriel** de la planche entière (pas seulement le QR), pour les imprimeurs.
 
 ### P4 — Marque & modèles (cohérence)

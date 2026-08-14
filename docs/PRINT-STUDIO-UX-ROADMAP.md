@@ -21,24 +21,20 @@ l'utilisateur, titres Fraunces, primitives `components/ui/`, hover/focus globaux
 - [x] **Champs** 48 px / 16 px (cohérence + évite le zoom iOS) ; **squelette fantôme** supprimé.
 - [x] **Vignettes** : survol (lift + accent) + faux-QR avec vrais repères de coin.
 
-## Phase 1 — Primitives & hiérarchie (medium)
+## Phase 1 — Primitives & hiérarchie ✅ FAIT (commits 8285a4ed + 089eabfe)
 
-- [ ] **Modales via `components/ui/Modal`** : les 3 bottom-sheets (contrôle / décliner / planche) sont
-      réécrites à la main (pas de focus-trap, pas d'Échap, pas de scroll-lock). Les remplacer par la
-      primitive `Modal` (ou lui ajouter un `variant="sheet"` pour garder l'affordance mobile). Gain a11y + cohérence.
-- [ ] **CTA principaux via `Button variant="primary"`** : « Vérifier & exporter », « Exporter la planche »,
-      etc. sont des boutons or inline → ils ratent le dégradé + glow au survol de l'app. Utiliser la primitive.
-- [ ] **Dé-clutter du haut du studio** : « Modèles · 1 clic » + « Mes modèles » + « Ma charte » = 3 rails
-      empilés sans conteneur. Les regrouper dans un seul `Panel`/`Card` « Styles rapides ».
-- [ ] **Unifier les libellés** : deux systèmes cohabitent (labels MAJUSCULES espacés vs `Field` en casse
-      normale). Garder la convention app (`.ui-field-label`, casse normale) ; réserver les MAJUSCULES aux vrais séparateurs.
-- [ ] **Pastille de statut** « Prêt à imprimer / Un réglage à corriger » : en faire une vraie pastille
-      `--success-bg` / `--danger-bg` (aujourd'hui texte nu).
+- [x] **Modales via `components/ui/Modal`** : les 3 modales (contrôle / décliner / planche) utilisent la
+      primitive → focus-trap, Échap, scroll-lock, restauration du focus, animation `mo-pop-in`.
+- [x] **CTA principaux via `Button`** : « Vérifier & exporter », « Exporter la planche », « QR seul PNG/SVG »
+      (variants primary/secondary → dégradé + glow au survol).
+- [x] **Dé-clutter du haut** : « Modèles prêts » + « Mes modèles » + « Ma charte » regroupés dans un seul
+      conteneur « Styles rapides » (titre Fraunces).
+- [x] **Libellés unifiés** : `secLabel` en casse normale/muted (comme `<Field>`), fini le mélange MAJUSCULES.
+- [x] **Pastille de statut** « Prêt à imprimer / Un réglage à corriger » → vraie pastille `--success-bg`/`--danger-bg`.
 
 ## Phase 2 — Écrans & polish (medium)
 
-- [ ] **Rails de filtres : wrap sur desktop** (≥ ~720px) au lieu du scroll horizontal (26 métiers) ; garder
-      le scroll uniquement en étroit.
+- [x] **Rails de filtres : wrap sur desktop** (≥ 720px) ; scroll + fondu gardés uniquement en étroit.
 - [ ] **Colonne d'aperçu (studio)** : garder le packshot **grand et sticky** pendant qu'on scrolle les
       panneaux (aujourd'hui il rétrécit).
 - [ ] **Écran upsell** (si un jour re-gaté) : rebâtir avec `Card` + `Button` (aujourd'hui bespoke system-ui).

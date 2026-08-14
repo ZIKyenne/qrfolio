@@ -114,6 +114,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [myQRs, setMyQRs] = useState<{ id: string; label: string; url: string }[]>([])
   const qrPngInput = useRef<HTMLInputElement>(null)
 
+  // Modèles personnels (enregistrés sur CE navigateur — localStorage, aucune donnée serveur).
+  const [savedPresets, setSavedPresets] = useState<{ id: string; name: string; cfg: Record<string, any> }[]>([])
+  const [saving, setSaving] = useState(false)
+  const [saveName, setSaveName] = useState("")
+  useEffect(() => { try { const raw = localStorage.getItem("qrowg-print-presets"); if (raw) setSavedPresets(JSON.parse(raw)) } catch {} }, [])
+  function persistPresets(next: { id: string; name: string; cfg: Record<string, any> }[]) { setSavedPresets(next); try { localStorage.setItem("qrowg-print-presets", JSON.stringify(next)) } catch {} }
+
   // QR existants de l'utilisateur (codes statiques liés à une page + QR instantanés dynamiques/statiques).
   // RLS scope automatiquement. Le QR imprimé encode /q/<short_code> (redirigeable) ou le payload direct.
   useEffect(() => {
@@ -155,6 +162,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const qrImg = qrSource === "png" ? qrPng : null
   const qrReady = qrSource === "png" ? !!qrPng : !!pickedQR
   const activePreset = PRESETS.find(p => p.style === styleId && p.layout === layoutId && p.accent === accent && p.bgFinish === bgFinish && p.frame === frame && p.titleCase === titleCase && p.titleWeight === titleWeight && p.qrBadge === qrBadge && p.eCorner === eCorner && p.eAccent === eAccent && p.eAlign === eAlign)?.id
+  // Config de DESIGN capturable pour un modèle personnel (ni QR ni textes — c'est un « look »).
+  const currentCfg: Record<string, any> = { styleId, layoutId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, eCorner, eAccent, eTypo, eAlign, eTitle, ePad }
+  const activeSavedId = savedPresets.find(p => Object.keys(currentCfg).every(k => p.cfg[k] === currentCfg[k]))?.id
   const ambiances = useMemo(() => ambiancesFor(metier), [metier])
   const controls = useMemo(() => item ? evaluateControls(item, style, size) : [], [item, style, size])
   const ok = canExport(controls)
@@ -162,6 +172,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   function applyPreset(p: Preset) {
     setStyleId(p.style); setLayoutId(p.layout); setAccent(p.accent); setBgFinish(p.bgFinish); setFrame(p.frame)
     setTitleCase(p.titleCase); setTitleWeight(p.titleWeight); setQrBadge(p.qrBadge); setECorner(p.eCorner); setEAccent(p.eAccent); setEAlign(p.eAlign)
+  }
+  function applyCfg(c: Record<string, any>) {
+    if (c.styleId) setStyleId(c.styleId); if (c.layoutId) setLayoutId(c.layoutId); if (c.accent) setAccent(c.accent)
+    if (c.bgFinish) setBgFinish(c.bgFinish); if (c.frame) setFrame(c.frame); if (c.titleCase) setTitleCase(c.titleCase)
+    if (c.titleWeight) setTitleWeight(c.titleWeight); if (c.qrBadge) setQrBadge(c.qrBadge); if (c.qrPos) setQrPos(c.qrPos)
+    if (c.eCorner) setECorner(c.eCorner); if (c.eAccent) setEAccent(c.eAccent); if (c.eTypo) setETypo(c.eTypo); if (c.eAlign) setEAlign(c.eAlign)
+    if (typeof c.eTitle === "number") setETitle(c.eTitle); if (typeof c.ePad === "number") setEPad(c.ePad)
+  }
+  function saveCurrent() {
+    const name = saveName.trim() || `Mon style ${savedPresets.length + 1}`
+    persistPresets([...savedPresets, { id: `sv_${Date.now()}`, name, cfg: currentCfg }])
+    setSaving(false); setSaveName("")
   }
 
   function openItem(id: string) {
@@ -271,6 +293,24 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <p style={{ margin: "0 0 7px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.fgFaint }}>Modèles · 1 clic</p>
             <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
               {PRESETS.map(p => <button key={p.id} onClick={() => applyPreset(p)} style={chipStyle(activePreset === p.id)}>{p.label}</button>)}
+            </div>
+            {/* Mes modèles — enregistrés sur ce navigateur */}
+            <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, marginTop: 7, alignItems: "center" }}>
+              {savedPresets.map(p => (
+                <span key={p.id} style={{ ...chipStyle(activeSavedId === p.id), padding: "0 4px 0 12px", gap: 2 }}>
+                  <button onClick={() => applyCfg(p.cfg)} style={{ background: "none", border: "none", color: "inherit", font: "inherit", fontWeight: "inherit", cursor: "pointer", padding: "8px 2px 8px 0" }}>{p.name}</button>
+                  <button onClick={() => persistPresets(savedPresets.filter(x => x.id !== p.id))} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 6px", opacity: 0.55, fontSize: 15, lineHeight: 1 }}>×</button>
+                </span>
+              ))}
+              {saving ? (
+                <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                  <input autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveCurrent(); if (e.key === "Escape") { setSaving(false); setSaveName("") } }} placeholder="Nom du modèle…" style={{ ...inputStyle, height: 38, width: 150 }} />
+                  <button onClick={saveCurrent} style={{ ...chipStyle(true), minHeight: 38 }}>OK</button>
+                  <button onClick={() => { setSaving(false); setSaveName("") }} aria-label="Annuler" style={{ ...chipStyle(false), minHeight: 38, padding: "0 12px" }}>×</button>
+                </span>
+              ) : (
+                <button onClick={() => setSaving(true)} style={{ ...chipStyle(false), minHeight: 38, whiteSpace: "nowrap", flexShrink: 0 }}>＋ Enregistrer ce style</button>
+              )}
             </div>
           </div>
 

@@ -81,7 +81,7 @@ function shade(hex: string, amt: number): string {
 }
 // Élément LIBRE (mode « Studio libre ») : texte / icône / forme posé et déplacé n'importe où sur le support.
 // x/y/w/h2/size en FRACTION du support -> invariant à l'échelle (aperçu, planche PDF identiques).
-type FreeEl = { id: string; kind: "text" | "icon" | "shape"; x: number; y: number; w: number; h2?: number; size: number; color: string; align: "left" | "center" | "right"; weight: number; font: string; text: string; icon?: string; shape?: string }
+type FreeEl = { id: string; kind: "text" | "icon" | "shape"; x: number; y: number; w: number; h2?: number; size: number; color: string; align: "left" | "center" | "right"; weight: number; font: string; text: string; icon?: string; shape?: string; rot?: number; opacity?: number }
 // Bibliothèque d'icônes libres (lucide, non-marque). Le garde-fou check-jsx-imports valide leur existence au build.
 const ICON_LIB: Record<string, any> = { Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap }
 // Modèles « 1 clic » : combinaisons de réglages prêtes (ambiance + mise en page + accent + fond + cadre + textes).
@@ -139,6 +139,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [advColor, setAdvColor] = useState(false)      // repli des couleurs avancées
   const [advQr, setAdvQr] = useState(false)            // repli du décalage fin du QR
   const [advText, setAdvText] = useState(false)        // repli des options de texte (casse/graisse/typo/alignement)
+  const [advSel, setAdvSel] = useState(false)          // repli des réglages avancés de l'élément sélectionné (X/Y/rotation/opacité)
   const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
   const [open, setOpen] = useState<string | null>("styles")   // un seul volet ouvert (styles à l'entrée)
@@ -625,41 +626,57 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               {[["circle", "●"], ["rrect", "▢"], ["pill", "▬"], ["line", "―"]].map(([s, g]) => <button key={s} onClick={() => addFreeShape(s)} style={chipStyle(false)} title={`Forme : ${s}`}>{g}</button>)}
               {Object.keys(ICON_LIB).map(n => { const Ico = ICON_LIB[n]; return <button key={n} onClick={() => addFreeIcon(n)} title={n} style={{ ...chipStyle(false), padding: "9px", minWidth: 40 }}><Ico size={16} /></button> })}
             </div>
-            {sel && (
-              <div style={{ marginTop: 10, background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-                {sel.kind === "text" && <input value={sel.text} onChange={e => updateEl(sel.id, { text: e.target.value })} placeholder="Texte…" style={inputStyle} />}
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={secLabel}>{sel.kind === "shape" ? "Largeur" : "Taille"}</p>
-                    {sel.kind === "shape"
-                      ? <Range value={sel.w} min={0.05} max={0.9} step={0.01} onChange={v => updateEl(sel.id, { w: v })} />
-                      : <Range value={sel.size} min={0.03} max={0.2} step={0.005} onChange={v => updateEl(sel.id, { size: v })} />}
-                  </div>
-                  <label title="Couleur" style={{ width: 44, height: 44, borderRadius: 11, border: `1px solid ${C.hairline}`, overflow: "hidden", position: "relative", flexShrink: 0, background: sel.color, cursor: "pointer" }}><input type="color" value={sel.color} onChange={e => updateEl(sel.id, { color: e.target.value })} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", border: "none" }} /></label>
-                </div>
-                {sel.kind === "shape" && <div><p style={secLabel}>Hauteur</p><Range value={sel.h2 ?? 0.12} min={0.01} max={0.9} step={0.01} onChange={v => updateEl(sel.id, { h2: v })} /></div>}
-                {sel.kind === "text" && <div style={{ display: "flex", gap: 8 }}>
-                  <div style={{ flex: 1 }}><Seg value={sel.align} options={["left", "center", "right"]} onPick={v => updateEl(sel.id, { align: v as any })} labels={["Gauche", "Centre", "Droite"]} /></div>
-                  <div style={{ flex: 1 }}><Seg value={String(sel.weight)} options={["400", "700", "800"]} onPick={v => updateEl(sel.id, { weight: Number(v) })} labels={["Fin", "Gras", "Extra"]} /></div>
-                </div>}
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  <button onClick={() => centerEl(sel.id, "x")} style={{ ...chipStyle(false), fontSize: 11.5 }}>Centrer ↔</button>
-                  <button onClick={() => centerEl(sel.id, "y")} style={{ ...chipStyle(false), fontSize: 11.5 }}>Centrer ↕</button>
-                  <button onClick={() => duplicateEl(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Dupliquer</button>
-                  <button onClick={() => bringFront(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Premier plan</button>
-                  <button onClick={() => sendBack(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Arrière-plan</button>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                  <span style={{ fontSize: 10.5, color: C.fgFaint }}>Flèches : déplacer · Suppr : retirer · Ctrl+D : dupliquer</span>
-                  <button onClick={() => deleteEl(sel.id)} style={{ background: "none", border: "none", color: C.bad, cursor: "pointer", fontSize: 12, padding: 0, whiteSpace: "nowrap" }}>Supprimer</button>
-                </div>
-              </div>
-            )}
+            {sel && <p style={{ textAlign: "center", color: C.gold, fontSize: 11, margin: "10px 0 0" }}>Élément sélectionné — réglages dans le panneau à droite.</p>}
           </>}
         </div>
 
         {/* Volets + action */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Inspecteur CONTEXTUEL : un élément libre sélectionné → ses propriétés (essentiel d'abord, avancé au besoin). */}
+          {sel && (
+            <div style={{ background: C.surface, border: `1px solid ${C.gold}`, borderRadius: R.card, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600, color: C.fg }}>{sel.kind === "text" ? "Texte" : sel.kind === "icon" ? "Icône" : "Forme"}</span>
+                <button onClick={() => setSelEl(null)} aria-label="Désélectionner" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
+              </div>
+              {sel.kind === "text" && <input value={sel.text} onChange={e => updateEl(sel.id, { text: e.target.value })} placeholder="Texte…" style={inputStyle} />}
+              <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
+                <div style={{ flex: 1 }}>
+                  <p style={secLabel}>{sel.kind === "shape" ? "Largeur" : "Taille"}</p>
+                  {sel.kind === "shape"
+                    ? <Range value={sel.w} min={0.05} max={0.9} step={0.01} onChange={v => updateEl(sel.id, { w: v })} />
+                    : <Range value={sel.size} min={0.03} max={0.2} step={0.005} onChange={v => updateEl(sel.id, { size: v })} />}
+                </div>
+                <label title="Couleur" style={{ width: 44, height: 44, borderRadius: 11, border: `1px solid ${C.hairline}`, overflow: "hidden", position: "relative", flexShrink: 0, background: sel.color, cursor: "pointer" }}><input type="color" value={sel.color} onChange={e => updateEl(sel.id, { color: e.target.value })} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", border: "none" }} /></label>
+              </div>
+              {sel.kind === "shape" && <div><p style={secLabel}>Hauteur</p><Range value={sel.h2 ?? 0.12} min={0.01} max={0.9} step={0.01} onChange={v => updateEl(sel.id, { h2: v })} /></div>}
+              {sel.kind === "text" && <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ flex: 1 }}><Seg value={sel.align} options={["left", "center", "right"]} onPick={v => updateEl(sel.id, { align: v as any })} labels={["Gauche", "Centre", "Droite"]} /></div>
+                <div style={{ flex: 1 }}><Seg value={String(sel.weight)} options={["400", "700", "800"]} onPick={v => updateEl(sel.id, { weight: Number(v) })} labels={["Fin", "Gras", "Extra"]} /></div>
+              </div>}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <button onClick={() => centerEl(sel.id, "x")} style={{ ...chipStyle(false), fontSize: 11.5 }}>Centrer ↔</button>
+                <button onClick={() => centerEl(sel.id, "y")} style={{ ...chipStyle(false), fontSize: 11.5 }}>Centrer ↕</button>
+                <button onClick={() => duplicateEl(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Dupliquer</button>
+                <button onClick={() => bringFront(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Premier plan</button>
+                <button onClick={() => sendBack(sel.id)} style={{ ...chipStyle(false), fontSize: 11.5 }}>Arrière-plan</button>
+              </div>
+              <button onClick={() => setAdvSel(v => !v)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 12, padding: 0 }}>{advSel ? "Masquer les réglages avancés" : "Réglages avancés (position · rotation · opacité) →"}</button>
+              {advSel && <>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ flex: 1 }}><p style={secLabel}>Position X</p><Range value={sel.x} min={0} max={1} step={0.01} onChange={v => updateEl(sel.id, { x: v })} hint={`${Math.round(sel.x * 100)} %`} /></div>
+                  <div style={{ flex: 1 }}><p style={secLabel}>Position Y</p><Range value={sel.y} min={0} max={1} step={0.01} onChange={v => updateEl(sel.id, { y: v })} hint={`${Math.round(sel.y * 100)} %`} /></div>
+                </div>
+                <div><p style={secLabel}>Rotation</p><Range value={sel.rot ?? 0} min={-180} max={180} step={1} onChange={v => updateEl(sel.id, { rot: v })} hint={`${Math.round(sel.rot ?? 0)}°`} /></div>
+                <div><p style={secLabel}>Opacité</p><Range value={sel.opacity ?? 1} min={0.1} max={1} step={0.05} onChange={v => updateEl(sel.id, { opacity: v })} hint={`${Math.round((sel.opacity ?? 1) * 100)} %`} /></div>
+              </>}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                <span style={{ fontSize: 10.5, color: C.fgFaint }}>Flèches : déplacer · Suppr · Ctrl+D</span>
+                <button onClick={() => deleteEl(sel.id)} style={{ background: "none", border: "none", color: C.bad, cursor: "pointer", fontSize: 12, padding: 0, whiteSpace: "nowrap" }}>Supprimer</button>
+              </div>
+            </div>
+          )}
+
           {/* Styles rapides — volet accordéon (comme les autres) : modèles prêts, modèles perso, charte. */}
           <Panel id="styles" title="Styles rapides" resume={activePreset ? `Modèle : ${PRESETS.find(p => p.id === activePreset)?.label}` : "Modèles prêts · mes modèles · charte"} open={open} setOpen={setOpen}>
             <div>
@@ -1275,6 +1292,7 @@ function MultiSheet({ items, design }: { items: Item[]; design: DesignProps }) {
    sinon statique (aperçu packshot + planche). Une seule source -> pas de dérive entre édition et rendu. */
 function FreeElView({ el, unit, bodyFont, editable, selected, onDown }: { el: FreeEl; unit: number; bodyFont: string; editable?: boolean; selected?: boolean; onDown?: (e: React.PointerEvent, el: FreeEl) => void }) {
   const base: React.CSSProperties = { position: "absolute", left: `${el.x * 100}%`, top: `${el.y * 100}%`,
+    ...(el.rot ? { transform: `rotate(${el.rot}deg)`, transformOrigin: "top left" } : {}), ...(el.opacity != null ? { opacity: el.opacity } : {}),
     ...(editable ? { cursor: "move", userSelect: "none", outline: selected ? `2px solid ${C.gold}` : "1px dashed rgba(255,255,255,.35)", outlineOffset: 2, zIndex: 5 } : { pointerEvents: "none", zIndex: 4 }) }
   const dp = editable && onDown ? { onPointerDown: (e: React.PointerEvent) => onDown(e, el) } : {}
   if (el.kind === "icon") {

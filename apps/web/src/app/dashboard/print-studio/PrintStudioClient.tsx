@@ -133,14 +133,24 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [presetsRemote, setPresetsRemote] = useState(false)   // true = table print_presets dispo (compte) ; false = localStorage
   const [saving, setSaving] = useState(false)
   const [saveName, setSaveName] = useState("")
+  // Ma charte (logo + accent + police), au compte ; repli localStorage.
+  const [brandKit, setBrandKit] = useState<{ logo: string | null; accent: string; typo: string } | null>(null)
+  const [brandRemote, setBrandRemote] = useState(false)
   // Modèles : d'abord le compte (Supabase, multi-appareils) ; repli localStorage si la table n'existe pas encore.
   useEffect(() => {
     let alive = true
-    createClient().from("print_presets").select("id, name, cfg").order("created_at", { ascending: false })
+    const sb = createClient()
+    sb.from("print_presets").select("id, name, cfg").order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!alive) return
         if (!error && data) { setSavedPresets(data.map((r: any) => ({ id: r.id, name: r.name, cfg: r.cfg || {} }))); setPresetsRemote(true) }
         else { try { const raw = localStorage.getItem("qrowg-print-presets"); if (raw) setSavedPresets(JSON.parse(raw)) } catch {} }
+      })
+    sb.from("print_brand_kit").select("logo, accent, typo").maybeSingle()
+      .then(({ data, error }) => {
+        if (!alive) return
+        if (!error) { setBrandRemote(true); if (data) setBrandKit({ logo: (data as any).logo || null, accent: (data as any).accent || "auto", typo: (data as any).typo || "auto" }) }
+        else { try { const raw = localStorage.getItem("qrowg-print-brandkit"); if (raw) setBrandKit(JSON.parse(raw)) } catch {} }
       })
     return () => { alive = false }
   }, [])
@@ -251,6 +261,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setSavedPresets(next)
     if (presetsRemote) createClient().from("print_presets").delete().eq("id", id).then(() => {})
     else persistPresets(next)
+  }
+  async function saveBrandKit() {
+    const kit = { logo: logoUrl, accent, typo: eTypo }
+    setBrandKit(kit)
+    if (brandRemote) { try { await createClient().from("print_brand_kit").upsert({ logo: logoUrl, accent, typo: eTypo, updated_at: new Date().toISOString() }, { onConflict: "user_id" }) } catch {} }
+    else { try { localStorage.setItem("qrowg-print-brandkit", JSON.stringify(kit)) } catch {} }
+  }
+  function applyBrandKit() {
+    if (!brandKit) return
+    if (brandKit.logo) { setLogoUrl(brandKit.logo); setLogo("objet") }
+    if (brandKit.accent) setAccent(brandKit.accent)
+    if (brandKit.typo) setETypo(brandKit.typo)
   }
   // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
   function switchSupport(id: string) {
@@ -391,6 +413,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               ) : (
                 <button onClick={() => setSaving(true)} style={{ ...chipStyle(false), minHeight: 38, whiteSpace: "nowrap", flexShrink: 0 }}>＋ Enregistrer ce style</button>
               )}
+            </div>
+            {/* Ma charte : logo + accent + police mémorisés au compte, appliqués en 1 clic. */}
+            <div style={{ display: "flex", gap: 7, marginTop: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.fgFaint, marginRight: 2 }}>Ma charte</span>
+              {brandKit && <button onClick={applyBrandKit} style={{ ...chipStyle(false), minHeight: 38 }}>Appliquer</button>}
+              <button onClick={saveBrandKit} style={{ ...chipStyle(false), minHeight: 38, whiteSpace: "nowrap" }}>{brandKit ? "Mettre à jour" : "Enregistrer (logo · accent · police)"}</button>
             </div>
           </div>
 

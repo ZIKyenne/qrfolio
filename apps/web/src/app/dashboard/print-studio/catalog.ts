@@ -57,14 +57,21 @@ const STYLES: Style[] = [
   { id: 'guide', label: 'Guide Étapes', bg: '#F3F0E9', ink: '#2A2419', accent: '#3FA796', title: 'Lora', body: 'Raleway', qr: '#0A0A0A', qrBg: '#FFFFFF' },
 ]
 
+// Polices RÉELLEMENT rendues : self-hostées (Fraunces / Inter / DM Sans / JetBrains Mono, cf. globals.css)
+// + familles système présentes quasi partout. On évite les Google Fonts non chargées (rendu silencieusement cassé).
 const TYPOS: Typo[] = [
   { id: 'auto', label: 'Du thème', t: null, b: null },
-  { id: 'serif', label: 'Serif chic', t: 'Fraunces', b: 'Montserrat' },
-  { id: 'edito', label: 'Éditorial', t: 'Playfair Display', b: 'Montserrat' },
-  { id: 'affiche', label: 'Affiche', t: 'Bebas Neue', b: 'Poppins' },
-  { id: 'moderne', label: 'Moderne', t: 'Montserrat', b: 'Montserrat' },
-  { id: 'doux', label: 'Doux', t: 'Lora', b: 'Raleway' },
-  { id: 'net', label: 'Net', t: 'Raleway', b: 'Poppins' },
+  { id: 'serifchic', label: 'Serif chic', t: 'Fraunces', b: 'DM Sans' },
+  { id: 'editorial', label: 'Éditorial', t: 'Georgia', b: 'Inter' },
+  { id: 'affiche', label: 'Affiche', t: 'Impact', b: 'Arial' },
+  { id: 'elegant', label: 'Élégant', t: 'Palatino Linotype', b: 'Inter' },
+  { id: 'classique', label: 'Classique', t: 'Times New Roman', b: 'Georgia' },
+  { id: 'moderne', label: 'Moderne', t: 'Inter', b: 'Inter' },
+  { id: 'doux', label: 'Doux', t: 'Georgia', b: 'DM Sans' },
+  { id: 'techno', label: 'Techno', t: 'JetBrains Mono', b: 'Inter' },
+  { id: 'net', label: 'Net', t: 'Trebuchet MS', b: 'Verdana' },
+  { id: 'machine', label: 'Machine', t: 'Courier New', b: 'Inter' },
+  { id: 'naturel', label: 'Naturel', t: 'Garamond', b: 'Inter' },
 ]
 
 const AMBIANCES: Ambiance[] = [

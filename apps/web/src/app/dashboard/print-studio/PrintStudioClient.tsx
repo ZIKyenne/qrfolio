@@ -26,8 +26,7 @@ function resolveLayoutId(itemLayout: string): string {
   const byContent = LAYOUTS.find(l => l.content === itemLayout)
   return byContent ? byContent.id : "centre"
 }
-const PAD_MM = [0.7, 1, 1.35]      // multiplicateur d'air autour (ePad 0..2)
-const TITLE_MM = [0.82, 1, 1.2]    // multiplicateur de titre (eTitle 0..2)
+// eTitle / ePad sont des MULTIPLICATEURS continus (curseurs), 1 = valeur nominale.
 const FINISH_LABEL: Record<string, string> = { uni: "Uni", degrade: "Dégradé", grain: "Grain", rayures: "Rayures", quadrillage: "Quadrillage" }
 const FINISH_OPTS = [{ id: "uni", label: "Uni" }, { id: "degrade", label: "Dégradé" }, { id: "grain", label: "Grain" }, { id: "rayures", label: "Rayures" }, { id: "quadrillage", label: "Quadrillage" }]
 const FRAME_LABEL: Record<string, string> = { aucun: "sans cadre", filet: "filet", double: "double filet", coins: "coins ornés" }
@@ -96,6 +95,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [titleWeight, setTitleWeight] = useState("normal") // graisse du titre : fin / normal / gras
   const [qrBadge, setQrBadge] = useState("carre")      // pastille derrière le QR : carré / cercle / aucune
   const [qrPos, setQrPos] = useState("centre")         // position verticale du QR (mise en page centrée)
+  const [blockY, setBlockY] = useState(0)              // placement vertical du bloc (curseur, -1..1)
   const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
   const [open, setOpen] = useState<string | null>(null)   // un seul volet ouvert
@@ -163,7 +163,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const qrReady = qrSource === "png" ? !!qrPng : !!pickedQR
   const activePreset = PRESETS.find(p => p.style === styleId && p.layout === layoutId && p.accent === accent && p.bgFinish === bgFinish && p.frame === frame && p.titleCase === titleCase && p.titleWeight === titleWeight && p.qrBadge === qrBadge && p.eCorner === eCorner && p.eAccent === eAccent && p.eAlign === eAlign)?.id
   // Config de DESIGN capturable pour un modèle personnel (ni QR ni textes — c'est un « look »).
-  const currentCfg: Record<string, any> = { styleId, layoutId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, eCorner, eAccent, eTypo, eAlign, eTitle, ePad }
+  const currentCfg: Record<string, any> = { styleId, layoutId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad }
   const activeSavedId = savedPresets.find(p => Object.keys(currentCfg).every(k => p.cfg[k] === currentCfg[k]))?.id
   const ambiances = useMemo(() => ambiancesFor(metier), [metier])
   const controls = useMemo(() => item ? evaluateControls(item, style, size) : [], [item, style, size])
@@ -178,7 +178,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     if (c.bgFinish) setBgFinish(c.bgFinish); if (c.frame) setFrame(c.frame); if (c.titleCase) setTitleCase(c.titleCase)
     if (c.titleWeight) setTitleWeight(c.titleWeight); if (c.qrBadge) setQrBadge(c.qrBadge); if (c.qrPos) setQrPos(c.qrPos)
     if (c.eCorner) setECorner(c.eCorner); if (c.eAccent) setEAccent(c.eAccent); if (c.eTypo) setETypo(c.eTypo); if (c.eAlign) setEAlign(c.eAlign)
-    if (typeof c.eTitle === "number") setETitle(c.eTitle); if (typeof c.ePad === "number") setEPad(c.ePad)
+    if (typeof c.eTitle === "number") setETitle(c.eTitle); if (typeof c.ePad === "number") setEPad(c.ePad); if (typeof c.blockY === "number") setBlockY(c.blockY)
+  }
+  function resetDesign() {
+    if (!item) return
+    setStyleId(item.pal); setLayoutId(resolveLayoutId(item.layout)); setAccent("auto"); setBgFinish("uni"); setFrame("aucun")
+    setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setBlockY(0)
+    setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center"); setETitle(1); setEPad(1)
   }
   function saveCurrent() {
     const name = saveName.trim() || `Mon style ${savedPresets.length + 1}`
@@ -191,7 +197,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setItemId(id); setStyleId(it.pal); setLayoutId(resolveLayoutId(it.layout))
     setSizeId("moyen"); setBrandText(BRANDNAMES[0]); setSubtitle(""); setMessage(""); setCtaText(it.cta); setLogo("aucun")
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
-    setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre")
+    setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setBlockY(0)
     setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
   }
 
@@ -281,7 +287,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
-          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight}
+          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={size} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} blockY={blockY}
             brand={brand} subtitle={subtitle} title={title} cta={cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
           <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>
         </div>
@@ -393,8 +399,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen}>
             <Field label="Fond"><RailInline value={bgFinish} options={FINISH_OPTS} onPick={setBgFinish} /></Field>
             <Field label="Cadre"><Seg value={frame} options={["aucun", "filet", "double", "coins"]} onPick={setFrame} labels={["Aucun", "Filet", "Double", "Coins"]} /></Field>
-            <Field label="Taille du titre"><Step value={eTitle} min={0} max={2} onChange={setETitle} labels={["plus petit", "normal", "plus grand"]} /></Field>
-            <Field label="Air autour"><Step value={ePad} min={0} max={2} onChange={setEPad} labels={["serré", "normal", "large"]} /></Field>
+            <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.6} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>
+            <Field label="Air autour"><Range value={ePad} min={0.5} max={1.6} step={0.05} onChange={setEPad} hint={ePad < 0.85 ? "serré" : ePad > 1.2 ? "large" : "équilibré"} /></Field>
+            <Field label="Placement vertical"><Range value={blockY} min={-1} max={1} step={0.1} onChange={setBlockY} hint={blockY < -0.1 ? "vers le haut" : blockY > 0.1 ? "vers le bas" : "centré"} /></Field>
             <Field label="Arrondi"><Seg value={eCorner} options={["vif", "adouci", "rond"]} onPick={setECorner} labels={["Vif", "Adouci", "Rond"]} /></Field>
             <Field label="Style du bouton"><Seg value={eAccent} options={["plein", "degrade", "trait", "aucun"]} onPick={setEAccent} labels={["Plein", "Dégradé", "Trait", "Aucun"]} /></Field>
             <Field label="Logo de marque">
@@ -409,6 +416,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               )}
               <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setLogoUrl(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
             </Field>
+            <button onClick={resetDesign} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 12, padding: 0, textDecoration: "underline" }}>Réinitialiser le design</button>
           </Panel>
         </div>
       </div>
@@ -456,7 +464,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Planche d'impression — window.print() -> PDF à taille réelle (mm), fidèle à l'aperçu. */}
       <div className="ps-print-root" aria-hidden>
         <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${mediaDims(item).mediaWmm}mm ${mediaDims(item).mediaHmm}mm;margin:0}}`}</style>
-        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} subtitle={subtitle} title={title} cta={cta} size={size} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
+        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} subtitle={subtitle} title={title} cta={cta} size={size} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} blockY={blockY} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
       </div>
     </div>
   )
@@ -519,6 +527,14 @@ function Seg({ value, options, onPick, labels }: { value: string; options: strin
     </div>
   )
 }
+function Range({ value, min, max, step, onChange, hint }: { value: number; min: number; max: number; step: number; onChange: (v: number) => void; hint?: string }) {
+  return (
+    <div>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: C.gold, height: 30, cursor: "pointer" }} />
+      {hint && <div style={{ fontSize: 10.5, color: C.fgFaint, marginTop: -2 }}>{hint}</div>}
+    </div>
+  )
+}
 function Step({ value, min, max, onChange, labels }: { value: number; min: number; max: number; onChange: (v: number) => void; labels: string[] }) {
   const opts = []; for (let i = min; i <= max; i++) opts.push(i)
   return (
@@ -540,14 +556,14 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, logo, logoUrl, bgFinish, frame, accent, titleCase, titleWeight, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; logo: string; logoUrl: string | null; bgFinish: string; frame: string; accent: string; titleCase: string; titleWeight: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, logo, logoUrl, bgFinish, frame, accent, titleCase, titleWeight, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; logo: string; logoUrl: string | null; bgFinish: string; frame: string; accent: string; titleCase: string; titleWeight: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
   const unit = Math.min(w, h)
-  const pad = unit * 0.09 * PAD_MM[ePad]
-  const titleSize = unit * 0.11 * TITLE_MM[eTitle]
+  const pad = unit * 0.09 * ePad
+  const titleSize = unit * 0.11 * eTitle
   const qrPx = Math.max(28, unit * 0.34 * (size.factor / 1))
   const radiusEl = eCorner === "vif" ? 0 : eCorner === "rond" ? 999 : 10
   const isRound = item.shape === "round"
@@ -628,9 +644,13 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "center", gap: unit * 0.045, textAlign: eAlign }}>{stackInner}</div>
   }
 
+  // Placement vertical (curseur) : on décale le bloc de contenu — sauf le bandeau (absolu, plein cadre).
+  const placed = layout.content === "band"
+    ? body
+    : <div style={{ flex: 1, display: "flex", minWidth: 0, transform: blockY ? `translateY(${blockY * 12}%)` : undefined }}>{body}</div>
   return (
     <div style={base}>
-      {body}
+      {placed}
       {logo === "objet" && logoUrl && <img src={logoUrl} alt="" style={{ position: "absolute", top: pad, left: pad, width: unit * 0.14, height: unit * 0.14, objectFit: "contain", zIndex: 2 }} />}
       {frameEl}
       {/* décor optionnel (lié à la mise en page) */}
@@ -694,7 +714,7 @@ function PrintSheet(props: Omit<React.ComponentProps<typeof SupportVisual>, "w" 
 }
 
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
-function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; logo: string; logoUrl: string | null; bgFinish: string; frame: string; accent: string; titleCase: string; titleWeight: string; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
+function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; logo: string; logoUrl: string | null; bgFinish: string; frame: string; accent: string; titleCase: string; titleWeight: string; blockY: number; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
   const { item, scene } = props
   const box = 460
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])
@@ -753,7 +773,7 @@ function MiniSupport({ item, style }: { item: Item; style: Style }) {
   return (
     <div style={{ width: BW, height: BH, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
       <div style={{ width: baseW, height: baseH, transform: `scale(${scale})`, transformOrigin: "center", filter: "drop-shadow(0 10px 22px rgba(0,0,0,.55))" }}>
-        <SupportVisual item={item} style={style} pal={pal} layout={layout} brand={BRANDNAMES[0]} subtitle="" title={MESSAGES[item.id]?.[0] || item.title} cta={item.cta} size={{ factor: 1 }} qrValue="https://qrowg.com" qrImg={null} qrBadge="carre" qrPos="centre" qrStatic logo="aucun" logoUrl={null} bgFinish="uni" frame="aucun" accent="auto" titleCase="normal" titleWeight="normal" eCorner="adouci" eAccent="plein" eTypo="auto" eAlign="center" eTitle={1} ePad={1} w={baseW} h={baseH} />
+        <SupportVisual item={item} style={style} pal={pal} layout={layout} brand={BRANDNAMES[0]} subtitle="" title={MESSAGES[item.id]?.[0] || item.title} cta={item.cta} size={{ factor: 1 }} qrValue="https://qrowg.com" qrImg={null} qrBadge="carre" qrPos="centre" qrStatic logo="aucun" logoUrl={null} bgFinish="uni" frame="aucun" accent="auto" titleCase="normal" titleWeight="normal" blockY={0} eCorner="adouci" eAccent="plein" eTypo="auto" eAlign="center" eTitle={1} ePad={1} w={baseW} h={baseH} />
       </div>
     </div>
   )

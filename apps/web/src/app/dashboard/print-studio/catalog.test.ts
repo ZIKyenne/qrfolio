@@ -8,9 +8,9 @@ import { evaluateControls, canExport, LIGNE_DE_CONTROLE, VOLETS, ECRANS } from "
 
 // ── Intégrité : « ne supprime pas d'élément / paramètre » ─────────────────────
 describe("catalogue — intégrité (comptes exacts)", () => {
-  it("29 styles, 7 typos, 8 ambiances, 9 mises en page, 3 tailles", () => {
+  it("29 styles, 12 typos, 8 ambiances, 9 mises en page, 3 tailles", () => {
     expect(STYLES).toHaveLength(29)
-    expect(TYPOS).toHaveLength(7)
+    expect(TYPOS).toHaveLength(12)
     expect(AMBIANCES).toHaveLength(8)
     expect(LAYOUTS).toHaveLength(9)
     expect(SIZES).toHaveLength(3)

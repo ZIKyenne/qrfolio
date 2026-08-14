@@ -53,7 +53,7 @@ Chaque phase garde la règle : **on n'ajoute de la liberté que si elle reste tr
 ### P3 — Décliner une campagne (fort levier)
 - [x] **Dupliquer un support** vers un autre format en gardant tous les réglages (bouton « Décliner »).
 - [x] **Planche multi-supports** : bouton « Planche » → une feuille auto-dimensionnée, N formats à leur taille réelle avec repère de découpe. *(QA d'impression réelle à faire.)*
-- [ ] **Export SVG vectoriel** de la planche entière (pas seulement le QR), pour les imprimeurs.
+- [x] **Sortie vectorielle** : le PDF d'impression (planche simple ET multi) rend **texte + QR en vectoriel** (QR SVG natif) → prêt imprimeur. *(Un `.svg` autonome de l'artwork complet = écarté : renderer SVG parallèle = risque de dérive ; le PDF navigateur couvre le besoin. Seule une photo de fond reste raster, par nature.)*
 
 ### P4 — Marque & modèles (cohérence)
 - [x] **Brand kit** : logo + accent + police mémorisés au **compte** (table `print_brand_kit`, repli localStorage).

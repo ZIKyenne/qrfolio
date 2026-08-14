@@ -699,7 +699,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </div>
           {!libre && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>}
           {libre && <>
-            <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Ajoutez, puis glissez pour placer. Tout apparaît sur l'aperçu et à l'impression.</p>
+            <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Glissez pour placer · double-clic pour écrire · coin doré pour redimensionner.</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
               <button onClick={addFreeText} style={chipStyle(false)}>＋ Texte</button>
               <button onClick={() => { setAddSearch(""); setAddOpen(true) }} style={chipStyle(true)}><Plus size={14} style={{ marginRight: 4, verticalAlign: "-2px" }} />Ajouter</button>
@@ -1420,11 +1420,11 @@ function MultiSheet({ items, design }: { items: Item[]; design: DesignProps }) {
 
 /* Rendu unifié d'un élément libre (texte / icône / forme). editable=true -> déplaçable (éditeur à plat),
    sinon statique (aperçu packshot + planche). Une seule source -> pas de dérive entre édition et rendu. */
-function FreeElView({ el, unit, bodyFont, editable, selected, onDown }: { el: FreeEl; unit: number; bodyFont: string; editable?: boolean; selected?: boolean; onDown?: (e: React.PointerEvent, el: FreeEl) => void }) {
+function FreeElView({ el, unit, bodyFont, editable, selected, onDown, onEdit }: { el: FreeEl; unit: number; bodyFont: string; editable?: boolean; selected?: boolean; onDown?: (e: React.PointerEvent, el: FreeEl) => void; onEdit?: (el: FreeEl) => void }) {
   const base: React.CSSProperties = { position: "absolute", left: `${el.x * 100}%`, top: `${el.y * 100}%`,
     ...(el.rot ? { transform: `rotate(${el.rot}deg)`, transformOrigin: "top left" } : {}), ...(el.opacity != null ? { opacity: el.opacity } : {}),
     ...(editable ? { cursor: "move", userSelect: "none", outline: selected ? `2px solid ${C.gold}` : "1px dashed rgba(255,255,255,.35)", outlineOffset: 2, zIndex: 5 } : { pointerEvents: "none", zIndex: 4 }) }
-  const dp = editable && onDown ? { onPointerDown: (e: React.PointerEvent) => onDown(e, el) } : {}
+  const dp = editable && onDown ? { onPointerDown: (e: React.PointerEvent) => onDown(e, el), ...(onEdit ? { onDoubleClick: () => onEdit(el) } : {}) } : {}
   if (el.kind === "icon") {
     const Ico = ICON_LIB[el.icon || "Star"] || ICON_LIB.Star
     return <div {...dp} style={{ ...base, lineHeight: 0 }}><Ico size={Math.round(unit * el.size)} color={el.color} /></div>
@@ -1497,6 +1497,8 @@ function ZoomBar({ zoom, setZoom }: { zoom: number; setZoom: (v: number | ((z: n
 function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMove, box = 460 }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void; onQrMove: (x: number, y: number) => void; box?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number; wpx: number; hpx: number } | null>(null)
+  const rez = useRef<{ id: string; sx: number; sy: number; sw: number; sh: number; ss: number; kind: string } | null>(null)   // redimensionnement en cours
+  const [editingId, setEditingId] = useState<string | null>(null)   // texte en édition INLINE (double-clic)
   const [guide, setGuide] = useState<{ x: number | null; y: number | null }>({ x: null, y: null })
   const ratio = item.shape === "round" ? 1 : item.ratio
   const w = ratio >= 1 ? box : Math.round(box * ratio)
@@ -1516,7 +1518,22 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
     startDrag(e, el.id, el.x, el.y, wpx, hpx)
   }
   function onMove(e: React.PointerEvent) {
-    const d = drag.current, r = ref.current?.getBoundingClientRect(); if (!d || !r) return
+    const r = ref.current?.getBoundingClientRect(); if (!r) return
+    const cl = (v: number, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v))
+    // Redimensionnement (poignée coin bas-droite) prioritaire sur le déplacement.
+    const z = rez.current
+    if (z) {
+      const dx = (e.clientX - z.sx) / r.width, dy = (e.clientY - z.sy) / r.height
+      setFreeEls(els => els.map(x => {
+        if (x.id !== z.id) return x
+        if (z.kind === "shape") return { ...x, w: cl(z.sw + dx, 0.03, 1), h2: cl(z.sh + dy, 0.01, 1) }
+        if (z.kind === "icon") return { ...x, size: cl(z.ss + (dx + dy) / 2, 0.03, 0.6) }
+        const dd = (dx + dy) / 2   // texte : police + largeur suivent le glissement (uniforme)
+        return { ...x, size: cl(z.ss + dd, 0.02, 0.4), w: cl(z.sw + dd * 2, 0.05, 1) }
+      }))
+      return
+    }
+    const d = drag.current; if (!d) return
     const clamp = (v: number) => Math.max(0, Math.min(1, v))
     let nx = clamp(d.ox + (e.clientX - d.sx) / r.width)
     let ny = clamp(d.oy + (e.clientY - d.sy) / r.height)
@@ -1537,7 +1554,7 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
     else setFreeEls(els => els.map(x => (x.id === d.id ? { ...x, x: nx, y: ny } : x)))
     setGuide({ x: gx, y: gy })
   }
-  const onUp = () => { drag.current = null; setGuide({ x: null, y: null }) }
+  const onUp = () => { drag.current = null; rez.current = null; setGuide({ x: null, y: null }) }
   return (
     <div ref={ref} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp} onPointerDown={() => setSelEl(null)}
       style={{ position: "relative", width: w, height: h, margin: "0 auto", borderRadius: item.shape === "round" ? "50%" : 12, overflow: "hidden", touchAction: "none", boxShadow: "0 14px 44px rgba(0,0,0,.55)" }}>
@@ -1546,7 +1563,28 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
       <div style={{ position: "absolute", left: (item.margin / wmm) * w, top: (item.margin / item.hMm) * h, right: (item.margin / wmm) * w, bottom: (item.margin / item.hMm) * h, border: `1px dashed ${C.goldA33}`, borderRadius: item.shape === "round" ? "50%" : 6, pointerEvents: "none", zIndex: 1 }} />
       {design.qrFree && <div onPointerDown={e => startDrag(e, "__qr__", design.qrFx ?? 0.32, design.qrFy ?? 0.55, qrFrac * w, qrFrac * w)}
         style={{ position: "absolute", left: `${(design.qrFx ?? 0.32) * 100}%`, top: `${(design.qrFy ?? 0.55) * 100}%`, width: qrFrac * w, height: qrFrac * w, cursor: "move", outline: `2px solid ${C.gold}`, outlineOffset: 2, zIndex: 7, touchAction: "none" }} title="Déplacer le QR" />}
-      {freeEls.filter(el => !el.hidden).map(el => <FreeElView key={el.id} el={el} unit={unit} bodyFont="Inter, system-ui, sans-serif" editable selected={selEl === el.id} onDown={onDown} />)}
+      {freeEls.filter(el => !el.hidden).map(el => {
+        // Édition INLINE : un textarea calé sur le texte (mêmes police/taille/couleur/largeur) — WYSIWYG.
+        if (editingId === el.id && el.kind === "text") {
+          return <textarea key={el.id} autoFocus value={el.text}
+            onChange={e => setFreeEls(els => els.map(x => x.id === el.id ? { ...x, text: e.target.value } : x))}
+            onBlur={() => setEditingId(null)}
+            onKeyDown={e => { if (e.key === "Escape") e.currentTarget.blur() }}
+            onPointerDown={e => e.stopPropagation()}
+            rows={Math.max(1, el.text.split("\n").length)}
+            style={{ position: "absolute", left: `${el.x * 100}%`, top: `${el.y * 100}%`, width: `${el.w * 100}%`, fontSize: unit * el.size, color: el.color, textAlign: el.align, fontFamily: el.font || "Inter, system-ui, sans-serif", fontWeight: el.weight, lineHeight: 1.15, background: "rgba(0,0,0,0.18)", border: `1px solid ${C.gold}`, outline: "none", resize: "none", overflow: "hidden", padding: 0, margin: 0, zIndex: 8, boxSizing: "border-box", transform: el.rot ? `rotate(${el.rot}deg)` : undefined, transformOrigin: "top left", opacity: el.opacity ?? 1 }} />
+        }
+        return <FreeElView key={el.id} el={el} unit={unit} bodyFont="Inter, system-ui, sans-serif" editable selected={selEl === el.id} onDown={onDown} onEdit={() => { if (!el.locked) setEditingId(el.id) }} />
+      })}
+      {/* Poignée de redimensionnement (coin bas-droite de l'élément sélectionné). */}
+      {(() => {
+        const s = freeEls.find(e => e.id === selEl)
+        if (!s || s.hidden || s.locked || editingId === s.id) return null
+        const wpx = (s.kind === "text" || s.kind === "shape") ? s.w * w : unit * s.size
+        const hpx = s.kind === "shape" ? (s.h2 ?? 0.12) * h : s.kind === "text" ? unit * s.size * 1.2 : unit * s.size
+        return <div title="Redimensionner" onPointerDown={e => { e.stopPropagation(); try { (e.target as HTMLElement).setPointerCapture(e.pointerId) } catch {} rez.current = { id: s.id, sx: e.clientX, sy: e.clientY, sw: s.w, sh: s.h2 ?? 0.12, ss: s.size, kind: s.kind } }}
+          style={{ position: "absolute", left: s.x * w + wpx - 7, top: s.y * h + hpx - 7, width: 14, height: 14, borderRadius: 4, background: C.gold, border: "2px solid #0A0A0A", cursor: "nwse-resize", zIndex: 9, touchAction: "none" }} />
+      })()}
       {guide.x != null && <div style={{ position: "absolute", left: guide.x, top: 0, bottom: 0, width: 1, background: C.gold, opacity: 0.85, pointerEvents: "none", zIndex: 6 }} />}
       {guide.y != null && <div style={{ position: "absolute", top: guide.y, left: 0, right: 0, height: 1, background: C.gold, opacity: 0.85, pointerEvents: "none", zIndex: 6 }} />}
     </div>

@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy } from "lucide-react"
+import { ArrowLeft, Lock, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import Particles from "@/components/Particles"
 import QRCanvas from "../qr-codes/QRCanvas"
@@ -110,6 +110,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
   const [declineOpen, setDeclineOpen] = useState(false)    // sélecteur « décliner sur un autre support »
+  const [campaignOpen, setCampaignOpen] = useState(false)  // sélecteur « planche multi-supports »
+  const [campaign, setCampaign] = useState<string[]>([])   // supports retenus pour la planche
+  const [multiPrinting, setMultiPrinting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [printing, setPrinting] = useState(false)         // la planche PDF n'est montée QUE pendant l'impression
@@ -138,6 +141,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     window.addEventListener("afterprint", after)
     return () => { clearTimeout(t); window.removeEventListener("afterprint", after) }
   }, [printing])
+  useEffect(() => {
+    if (!multiPrinting) return
+    const t = setTimeout(() => { try { window.print() } catch {} }, 260)   // multi = plus de QR à rendre
+    const after = () => setMultiPrinting(false)
+    window.addEventListener("afterprint", after)
+    return () => { clearTimeout(t); window.removeEventListener("afterprint", after) }
+  }, [multiPrinting])
   function persistPresets(next: { id: string; name: string; cfg: Record<string, any> }[]) { setSavedPresets(next); try { localStorage.setItem("qrowg-print-presets", JSON.stringify(next)) } catch {} }
 
   // QR existants de l'utilisateur (codes statiques liés à une page + QR instantanés dynamiques/statiques).
@@ -310,6 +320,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // ── Studio (aperçu + volets + action) ─────────────────────────────────────────
   const scene = sceneLayers(item.scene, metier === "Tout" ? null : metier)
   const pal = paletteFromStyle(style)
+  // Tous les réglages de DESIGN partagés (sans `item`/`physW`/`w`/`h`) — réutilisés pour la planche multi-supports.
+  const designProps = { style, pal, layout, size: effSize, qrValue, qrImg, qrBadge, qrPos, qrDx, qrDy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, brand, subtitle, title, cta, eCorner, eAccent, eTypo, eAlign, eTitle, ePad }
+  const campaignItems = (campaign.length ? campaign : [item.id]).map(id => ITEM_BY_ID[id]).filter(Boolean)
   return (
     <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "system-ui, sans-serif" }}>
       <Particles behind />
@@ -317,6 +330,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.goldSoft, border: `1px solid ${C.gold}55`, color: C.gold, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Copy size={14} /> Décliner</button>
+          <button onClick={() => { if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 14px" }}><Layers size={14} /> Planche</button>
           <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
         </div>
       </header>
@@ -544,6 +558,41 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </div>
         </div>
       )}
+
+      {/* Planche multi-supports : choisir plusieurs formats, tous avec le MÊME design. */}
+      {campaignOpen && (
+        <div onClick={() => setCampaignOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 720, background: C.surface, borderRadius: "20px 20px 0 0", border: `1px solid ${C.hairline}`, padding: "18px 18px calc(18px + env(safe-area-inset-bottom))", maxHeight: "86vh", overflowY: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Planche multi-supports</p>
+              <button onClick={() => setCampaignOpen(false)} style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer" }}><X size={18} /></button>
+            </div>
+            <p style={{ margin: "0 0 14px", fontSize: 12.5, color: C.fgMuted }}>Cochez les formats à imprimer ensemble (même design, mêmes textes, même QR). Une seule feuille, à découper.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
+              {filterItems("Tout", "Tout").map(it => {
+                const on = campaign.includes(it.id)
+                return (
+                  <button key={it.id} onClick={() => setCampaign(cur => on ? cur.filter(x => x !== it.id) : [...cur, it.id])} style={{ position: "relative", textAlign: "left", background: on ? C.goldSoft : C.surfaceUp, border: `1px solid ${on ? `${C.gold}88` : C.hairline}`, borderRadius: R.card, padding: 10, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 8 }}>
+                    {on && <span style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: C.gold, color: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}><Check size={13} /></span>}
+                    <div style={{ height: 96, borderRadius: 9, background: "radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                      <MiniSupport item={it} style={style} />
+                    </div>
+                    <div>
+                      <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700 }}>{it.name}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: 10.5, color: C.fgFaint, fontFamily: "ui-monospace, monospace" }}>{it.size}</p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+            <button onClick={() => { if (campaign.length) { setCampaignOpen(false); setMultiPrinting(true) } }} disabled={!campaign.length} style={{ width: "100%", marginTop: 16, minHeight: 52, borderRadius: 12, border: "none", background: campaign.length ? C.gold : "rgba(201,168,76,0.3)", color: "#0A0A0A", fontSize: 15, fontWeight: 800, cursor: campaign.length ? "pointer" : "default", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Download size={18} /> Exporter la planche ({campaign.length} format{campaign.length > 1 ? "s" : ""})</button>
+            <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Une feuille auto-dimensionnée, chaque support à sa taille réelle avec repère de découpe.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Rendu de la PLANCHE multi-supports — monté seulement pendant l'impression. */}
+      {multiPrinting && <MultiSheet items={campaignItems} design={designProps} />}
 
       {/* Planche d'impression — montée UNIQUEMENT pendant l'impression (évite un 2e moteur QR en fond). */}
       {printing && <div className="ps-print-root" aria-hidden>
@@ -826,6 +875,51 @@ function PrintSheet(props: Omit<React.ComponentProps<typeof SupportVisual>, "w" 
         </div>
       </div>
       {marks.map((mk, i) => <div key={i} aria-hidden style={{ position: "absolute", background: "#000", left: `${mk.left}mm`, top: `${mk.top}mm`, width: `${mk.width}mm`, height: `${mk.height}mm` }} />)}
+    </div>
+  )
+}
+
+// Tous les réglages de design partagés (sans ce qui dépend du support/rendu).
+type DesignProps = Omit<React.ComponentProps<typeof SupportVisual>, "item" | "physW" | "w" | "h" | "qrStatic">
+
+/* Une case de la planche multi-supports : le support à sa taille TRIM réelle (mm), haute-déf puis mis à l'échelle. */
+function GangCell({ it, wmm, design }: { it: Item; wmm: number; design: DesignProps }) {
+  const long = 1100
+  const bigW = it.ratio >= 1 ? long : Math.round(long * it.ratio)
+  const bigH = it.shape === "round" ? bigW : Math.round(bigW / it.ratio)
+  const scale = (wmm * 96 / 25.4) / bigW
+  return (
+    <div style={{ width: bigW, height: bigH, transformOrigin: "top left", transform: `scale(${scale})` }}>
+      <SupportVisual {...design} item={it} physW={wmm} w={bigW} h={bigH} />
+    </div>
+  )
+}
+
+/* Planche multi-supports : une seule feuille auto-dimensionnée, supports rangés en étagères (mm réels),
+   chacun avec un repère de découpe. Même mécanisme fixe que la planche simple (une page => fiable). */
+function MultiSheet({ items, design }: { items: Item[]; design: DesignProps }) {
+  const GAP = 8, MARGIN = 10, MAXW = 380   // MAXW ~ largeur A3
+  let x = 0, y = 0, rowH = 0, totalW = 0
+  const placed: { it: Item; x: number; y: number; w: number; h: number }[] = []
+  for (const it of items) {
+    const w = trimWidthMm(it), h = it.hMm
+    if (x > 0 && x + GAP + w > MAXW) { totalW = Math.max(totalW, x - GAP); y += rowH + GAP; x = 0; rowH = 0 }
+    placed.push({ it, x, y, w, h })
+    x += w + GAP; rowH = Math.max(rowH, h)
+  }
+  totalW = Math.max(totalW, x - GAP)
+  const pageW = +(totalW + 2 * MARGIN).toFixed(1), pageH = +(y + rowH + 2 * MARGIN).toFixed(1)
+  const css = `@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${pageW}mm ${pageH}mm;margin:0}}`
+  return (
+    <div className="ps-print-root" aria-hidden>
+      <style>{css}</style>
+      <div style={{ position: "relative", width: `${pageW}mm`, height: `${pageH}mm`, background: "#fff" }}>
+        {placed.map(({ it, x, y, w, h }) => (
+          <div key={it.id} style={{ position: "absolute", left: `${MARGIN + x}mm`, top: `${MARGIN + y}mm`, width: `${w}mm`, height: `${h}mm`, overflow: "hidden", border: "0.2mm dashed rgba(0,0,0,0.45)", borderRadius: it.shape === "round" ? "50%" : 0 }}>
+            <GangCell it={it} wmm={w} design={design} />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

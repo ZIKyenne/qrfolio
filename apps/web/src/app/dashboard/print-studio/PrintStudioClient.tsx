@@ -75,6 +75,9 @@ function shade(hex: string, amt: number): string {
   const adj = (c: number) => Math.max(0, Math.min(255, Math.round(amt < 0 ? c * (1 + amt) : c + (255 - c) * amt)))
   return `#${[1, 2, 3].map(i => adj(parseInt(m[i], 16)).toString(16).padStart(2, "0")).join("")}`
 }
+// Élément LIBRE (mode « Studio libre ») : un texte posé/déplacé n'importe où sur le support.
+// x/y/w/size en FRACTION du support -> invariant à l'échelle (aperçu, planche PDF, vignette identiques).
+type FreeEl = { id: string; kind: "text"; x: number; y: number; w: number; size: number; color: string; align: "left" | "center" | "right"; weight: number; font: string; text: string }
 // Modèles « 1 clic » : combinaisons de réglages prêtes (ambiance + mise en page + accent + fond + cadre + textes).
 type Preset = { id: string; label: string; style: string; layout: string; accent: string; bgFinish: string; frame: string; titleCase: string; titleWeight: string; qrBadge: string; eCorner: string; eAccent: string; eAlign: "left" | "center" | "right" }
 const PRESETS: Preset[] = [
@@ -143,6 +146,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [done, setDone] = useState(false)
   const [printing, setPrinting] = useState(false)         // la planche PDF n'est montée QUE pendant l'impression
   const [designSaved, setDesignSaved] = useState(false)   // feedback « Enregistré »
+  const [libre, setLibre] = useState(false)               // mode « Studio libre » (édition à plat + éléments libres)
+  const [freeEls, setFreeEls] = useState<FreeEl[]>([])    // éléments texte libres posés sur le support
+  const [selEl, setSelEl] = useState<string | null>(null) // élément libre sélectionné
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const logoInput = useRef<HTMLInputElement>(null)
   const bgInput = useRef<HTMLInputElement>(null)
@@ -340,7 +346,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     return ""
   })()
   function captureDesign(): Record<string, any> {
-    return { v: 2, itemId, styleId, layoutId, sizeId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, qrScale, blockY, qrDx, qrDy, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, titleColor, subColor, ctaColor, logo, logoUrl, bgImage, bgCredit, brandText, subtitle, message, ctaText, qrSource, qrPickId, qrPng }
+    return { v: 2, itemId, styleId, layoutId, sizeId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, qrScale, blockY, qrDx, qrDy, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, titleColor, subColor, ctaColor, logo, logoUrl, bgImage, bgCredit, brandText, subtitle, message, ctaText, qrSource, qrPickId, qrPng, freeEls }
   }
   function restoreDesign(c: Record<string, any>) {
     if (!c || typeof c !== "object") return
@@ -357,6 +363,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     if (c.logo) setLogo(c.logo); setLogoUrl(c.logoUrl ?? null); setBgImage(c.bgImage ?? null); setBgCredit(c.bgCredit || "")
     setBrandText(c.brandText || BRANDNAMES[0]); setSubtitle(c.subtitle || ""); setMessage(c.message || ""); setCtaText(c.ctaText || "")
     if (c.qrSource) setQrSource(c.qrSource); if (c.qrPickId) setQrPickId(c.qrPickId); setQrPng(c.qrPng ?? null)
+    setFreeEls(Array.isArray(c.freeEls) ? c.freeEls : [])
     setPhase("studio")
   }
   async function saveDesign() {
@@ -366,6 +373,16 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       setDesignSaved(true); setTimeout(() => setDesignSaved(false), 1800)
     } catch { /* silencieux : le design reste éditable */ }
   }
+
+  // ── Éléments libres (mode Studio libre) ─────────────────────────────────────────
+  function addFreeText() {
+    const p = paletteFromStyle(style)
+    const id = `f_${Date.now()}`
+    setFreeEls(els => [...els, { id, kind: "text", x: 0.28, y: 0.44, w: 0.44, size: 0.06, color: p.fg, align: "center", weight: 700, font: "", text: "Votre texte" }])
+    setSelEl(id); setLibre(true)
+  }
+  function updateEl(id: string, patch: Partial<FreeEl>) { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...patch } : e)) }
+  function deleteEl(id: string) { setFreeEls(els => els.filter(e => e.id !== id)); setSelEl(s => (s === id ? null : s)) }
 
   // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
   function switchSupport(id: string) {
@@ -382,7 +399,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
     setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null); setBgCredit("")
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor(""); setAdvColor(false); setAdvQr(false)
-    setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false); setPhase("studio")
+    setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false)
+    setLibre(false); setFreeEls([]); setSelEl(null); setPhase("studio")
   }
 
   // Ré-export du QR choisi, seul (source « Mes QR »). On réencode le lien du QR existant :
@@ -454,9 +472,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const scene = sceneLayers(item.scene, metier === "Tout" ? null : metier)
   const pal = paletteFromStyle(style)
   // Tous les réglages de DESIGN partagés (sans `item`/`physW`/`w`/`h`) — réutilisés pour la planche multi-supports.
-  const designProps = { style, pal, layout, size: effSize, qrValue, qrImg, qrBadge, qrPos, qrDx, qrDy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, brand, subtitle, title, cta, eCorner, eAccent, eTypo, eAlign, eTitle, ePad }
+  const designProps = { style, pal, layout, size: effSize, qrValue, qrImg, qrBadge, qrPos, qrDx, qrDy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, brand, subtitle, title, cta, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, freeEls }
   // Planche = chaque format retenu, répété `campaignQty` fois (imposition N-up : N exemplaires par format).
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
+  const sel = freeEls.find(e => e.id === selEl)
   return (
     <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
       <Particles behind />
@@ -475,9 +494,30 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
-          <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY}
-            brand={brand} subtitle={subtitle} title={title} cta={cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
-          <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>
+          {libre
+            ? <FlatEditor item={item} design={designProps} freeEls={freeEls} setFreeEls={setFreeEls} selEl={selEl} setSelEl={setSelEl} />
+            : <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY} freeEls={freeEls}
+                brand={brand} subtitle={subtitle} title={title} cta={cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />}
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
+            <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>
+            {libre && <button onClick={addFreeText} style={chipStyle(false)}>＋ Ajouter un texte</button>}
+          </div>
+          {!libre && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>}
+          {libre && <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Glissez un texte pour le placer. Il apparaît sur l'aperçu et à l'impression.</p>}
+          {libre && sel && (
+            <div style={{ marginTop: 10, background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+              <input value={sel.text} onChange={e => updateEl(sel.id, { text: e.target.value })} placeholder="Texte…" style={inputStyle} />
+              <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
+                <div style={{ flex: 1 }}><p style={secLabel}>Taille</p><Range value={sel.size} min={0.03} max={0.16} step={0.005} onChange={v => updateEl(sel.id, { size: v })} /></div>
+                <label title="Couleur" style={{ width: 44, height: 44, borderRadius: 11, border: `1px solid ${C.hairline}`, overflow: "hidden", position: "relative", flexShrink: 0, background: sel.color, cursor: "pointer" }}><input type="color" value={sel.color} onChange={e => updateEl(sel.id, { color: e.target.value })} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", border: "none" }} /></label>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ flex: 1 }}><Seg value={sel.align} options={["left", "center", "right"]} onPick={v => updateEl(sel.id, { align: v as any })} labels={["Gauche", "Centre", "Droite"]} /></div>
+                <div style={{ flex: 1 }}><Seg value={String(sel.weight)} options={["400", "700", "800"]} onPick={v => updateEl(sel.id, { weight: Number(v) })} labels={["Fin", "Gras", "Extra"]} /></div>
+              </div>
+              <button onClick={() => deleteEl(sel.id)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.bad, cursor: "pointer", fontSize: 12, padding: 0 }}>Supprimer cet élément</button>
+            </div>
+          )}
         </div>
 
         {/* Volets + action */}
@@ -744,7 +784,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Planche d'impression — montée UNIQUEMENT pendant l'impression (évite un 2e moteur QR en fond). */}
       {printing && <div className="ps-print-root" aria-hidden>
         <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${mediaDims(item).mediaWmm}mm ${mediaDims(item).mediaHmm}mm;margin:0}}`}</style>
-        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} subtitle={subtitle} title={title} cta={cta} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
+        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} subtitle={subtitle} title={title} cta={cta} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY} freeEls={freeEls} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
       </div>}
     </div>
   )
@@ -846,8 +886,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, qrVector, physW, qrDx, qrDy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; qrVector?: boolean; physW: number; qrDx: number; qrDy: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, qrVector, physW, qrDx, qrDy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, freeEls, w, h }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; qrVector?: boolean; physW: number; qrDx: number; qrDy: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[]; w: number; h: number }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -977,6 +1017,10 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
       {layout.deco === "footer" && <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: unit * 0.04, background: pal.band }} />}
       {layout.deco === "diagonal" && <div style={{ position: "absolute", top: -h * 0.3, right: -w * 0.2, width: w * 0.9, height: h * 0.5, background: pal.band, opacity: 0.16, transform: "rotate(-24deg)", pointerEvents: "none" }} />}
       {layout.deco === "ornate" && <><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>}
+      {/* Éléments libres (mode Studio libre) — posés en fraction du support, rendus par-dessus (statiques ici). */}
+      {(freeEls ?? []).map(el => (
+        <div key={el.id} style={{ position: "absolute", left: `${el.x * 100}%`, top: `${el.y * 100}%`, width: `${el.w * 100}%`, fontSize: unit * el.size, color: el.color, textAlign: el.align, fontFamily: el.font || bodyFont, fontWeight: el.weight, lineHeight: 1.15, whiteSpace: "pre-wrap", overflowWrap: "anywhere", zIndex: 4, pointerEvents: "none" }}>{el.text}</div>
+      ))}
     </div>
   )
 }
@@ -1080,8 +1124,42 @@ function MultiSheet({ items, design }: { items: Item[]; design: DesignProps }) {
   )
 }
 
+/* Éditeur À PLAT (mode Studio libre) : le support de face, éléments libres déplaçables à la souris.
+   Positions en fraction du support -> l'aperçu packshot et la planche PDF les rendent au même endroit. */
+function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number } | null>(null)
+  const box = 460
+  const ratio = item.shape === "round" ? 1 : item.ratio
+  const w = ratio >= 1 ? box : Math.round(box * ratio)
+  const h = ratio >= 1 ? Math.round(box / ratio) : box
+  const unit = Math.min(w, h)
+  const wmm = item.shape === "round" ? item.hMm : item.hMm * item.ratio
+  function onDown(e: React.PointerEvent, el: FreeEl) {
+    e.stopPropagation(); try { (e.target as HTMLElement).setPointerCapture(e.pointerId) } catch {}
+    setSelEl(el.id); drag.current = { id: el.id, sx: e.clientX, sy: e.clientY, ox: el.x, oy: el.y }
+  }
+  function onMove(e: React.PointerEvent) {
+    const d = drag.current, r = ref.current?.getBoundingClientRect(); if (!d || !r) return
+    const nx = Math.max(0, Math.min(1, d.ox + (e.clientX - d.sx) / r.width))
+    const ny = Math.max(0, Math.min(1, d.oy + (e.clientY - d.sy) / r.height))
+    setFreeEls(els => els.map(x => (x.id === d.id ? { ...x, x: nx, y: ny } : x)))
+  }
+  const onUp = () => { drag.current = null }
+  return (
+    <div ref={ref} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp} onPointerDown={() => setSelEl(null)}
+      style={{ position: "relative", width: w, height: h, margin: "0 auto", borderRadius: item.shape === "round" ? "50%" : 12, overflow: "hidden", touchAction: "none", boxShadow: "0 14px 44px rgba(0,0,0,.55)" }}>
+      <SupportVisual {...design} item={item} freeEls={[]} physW={wmm} w={w} h={h} />
+      {freeEls.map(el => (
+        <div key={el.id} onPointerDown={e => onDown(e, el)}
+          style={{ position: "absolute", left: `${el.x * 100}%`, top: `${el.y * 100}%`, width: `${el.w * 100}%`, fontSize: unit * el.size, color: el.color, textAlign: el.align, fontWeight: el.weight, lineHeight: 1.15, whiteSpace: "pre-wrap", overflowWrap: "anywhere", cursor: "move", userSelect: "none", outline: selEl === el.id ? `2px solid ${C.gold}` : "1px dashed rgba(255,255,255,.35)", outlineOffset: 2, zIndex: 5 }}>{el.text}</div>
+      ))}
+    </div>
+  )
+}
+
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
-function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrDx: number; qrDy: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number }) {
+function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrDx: number; qrDy: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[] }) {
   const { item, scene } = props
   const box = 520
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])

@@ -62,9 +62,10 @@ Chaque phase garde la règle : **on n'ajoute de la liberté que si elle reste tr
 - [x] **Partage équipe** des modèles et de la charte (RLS additive `can_read_owner`/`can_write_owner`).
 
 ### P5 — Sortie pro (qualité imprimeur)
-- [ ] **CMYK / profils colorimétriques** pour l'impression offset.
-- [ ] **Gabarits imprimeur** (repères, mentions techniques, préréglages par imprimeur courant).
-- [ ] **Commande d'impression** intégrée (optionnel, partenaire) : du design au colis sans quitter l'app.
+- [x] **Imposition N-up** : répéter chaque format ×N sur la planche (série de cartes/stickers à découper).
+- [ ] **CMYK / profils colorimétriques** pour l'offset. *Note : non fiable en pur navigateur (le PDF `window.print` est RGB) — nécessiterait une conversion serveur (Ghostscript/ICC) ; à ne PAS simuler côté client (ce serait trompeur).*
+- [ ] **Gabarits imprimeur** (repères de repérage, barre colorimétrique, mentions techniques).
+- [ ] **Commande d'impression** intégrée (partenaire) : décision produit/commerciale, pas un chantier code pur.
 
 ### Dette technique
 - [ ] **Unifier** avec l'ancien `PrintStudio.tsx` Fabric (le retirer une fois la parité atteinte).

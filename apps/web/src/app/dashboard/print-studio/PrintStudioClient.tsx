@@ -130,9 +130,20 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
   // Modèles personnels (enregistrés sur CE navigateur — localStorage, aucune donnée serveur).
   const [savedPresets, setSavedPresets] = useState<{ id: string; name: string; cfg: Record<string, any> }[]>([])
+  const [presetsRemote, setPresetsRemote] = useState(false)   // true = table print_presets dispo (compte) ; false = localStorage
   const [saving, setSaving] = useState(false)
   const [saveName, setSaveName] = useState("")
-  useEffect(() => { try { const raw = localStorage.getItem("qrowg-print-presets"); if (raw) setSavedPresets(JSON.parse(raw)) } catch {} }, [])
+  // Modèles : d'abord le compte (Supabase, multi-appareils) ; repli localStorage si la table n'existe pas encore.
+  useEffect(() => {
+    let alive = true
+    createClient().from("print_presets").select("id, name, cfg").order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (!alive) return
+        if (!error && data) { setSavedPresets(data.map((r: any) => ({ id: r.id, name: r.name, cfg: r.cfg || {} }))); setPresetsRemote(true) }
+        else { try { const raw = localStorage.getItem("qrowg-print-presets"); if (raw) setSavedPresets(JSON.parse(raw)) } catch {} }
+      })
+    return () => { alive = false }
+  }, [])
   // Montage à la demande de la planche PDF : on la monte, on laisse le QR se rendre, puis on imprime.
   useEffect(() => {
     if (!printing) return
@@ -226,10 +237,20 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor("")
     setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center"); setETitle(1); setEPad(1)
   }
-  function saveCurrent() {
+  async function saveCurrent() {
     const name = saveName.trim() || `Mon style ${savedPresets.length + 1}`
-    persistPresets([...savedPresets, { id: `sv_${Date.now()}`, name, cfg: currentCfg }])
     setSaving(false); setSaveName("")
+    if (presetsRemote) {
+      const { data, error } = await createClient().from("print_presets").insert({ name, cfg: currentCfg }).select("id, name, cfg").single()
+      if (!error && data) { setSavedPresets(p => [{ id: (data as any).id, name: (data as any).name, cfg: (data as any).cfg || {} }, ...p]); return }
+    }
+    persistPresets([...savedPresets, { id: `sv_${Date.now()}`, name, cfg: currentCfg }])
+  }
+  function deletePreset(id: string) {
+    const next = savedPresets.filter(x => x.id !== id)
+    setSavedPresets(next)
+    if (presetsRemote) createClient().from("print_presets").delete().eq("id", id).then(() => {})
+    else persistPresets(next)
   }
   // Décliner : on change de support en GARDANT tout (design + textes + QR). Rien n'est réinitialisé.
   function switchSupport(id: string) {
@@ -358,7 +379,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               {savedPresets.map(p => (
                 <span key={p.id} style={{ ...chipStyle(activeSavedId === p.id), padding: "0 4px 0 12px", gap: 2 }}>
                   <button onClick={() => applyCfg(p.cfg)} style={{ background: "none", border: "none", color: "inherit", font: "inherit", fontWeight: "inherit", cursor: "pointer", padding: "8px 2px 8px 0" }}>{p.name}</button>
-                  <button onClick={() => persistPresets(savedPresets.filter(x => x.id !== p.id))} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 6px", opacity: 0.55, fontSize: 15, lineHeight: 1 }}>×</button>
+                  <button onClick={() => deletePreset(p.id)} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 6px", opacity: 0.55, fontSize: 15, lineHeight: 1 }}>×</button>
                 </span>
               ))}
               {saving ? (

@@ -146,7 +146,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         if (!error && data) { setSavedPresets(data.map((r: any) => ({ id: r.id, name: r.name, cfg: r.cfg || {} }))); setPresetsRemote(true) }
         else { try { const raw = localStorage.getItem("qrowg-print-presets"); if (raw) setSavedPresets(JSON.parse(raw)) } catch {} }
       })
-    sb.from("print_brand_kit").select("logo, accent, typo").maybeSingle()
+    // Charte : peut renvoyer plusieurs lignes en équipe (une par membre) -> on prend la plus récente.
+    sb.from("print_brand_kit").select("logo, accent, typo").order("updated_at", { ascending: false }).limit(1).maybeSingle()
       .then(({ data, error }) => {
         if (!alive) return
         if (!error) { setBrandRemote(true); if (data) setBrandKit({ logo: (data as any).logo || null, accent: (data as any).accent || "auto", typo: (data as any).typo || "auto" }) }

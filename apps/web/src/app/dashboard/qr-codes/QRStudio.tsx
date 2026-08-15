@@ -2722,7 +2722,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         borderRight:  h==="right"  ? "2px solid color-mix(in srgb, var(--accent) 70%, transparent)" : "none",
                       }}/>
                     ))}
-                    <div ref={canvasRef} data-qr-container style={{ display:"flex", width:isMobile?"min(220px, 58vw)":"min(46vh, 360px)", height:isMobile?"min(220px, 58vw)":"min(46vh, 360px)", alignItems:"center", justifyContent:"center" }}/>
+                    <div ref={canvasRef} data-qr-container style={{ display:"flex", width:isMobile?"min(220px, 58vw)":"min(42vh, 320px)", height:isMobile?"min(220px, 58vw)":"min(42vh, 320px)", alignItems:"center", justifyContent:"center" }}/>
                     {/* Hover overlay */}
                     <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:28, transition:"background 0.2s" }}
                       onMouseEnter={e => (e.currentTarget.style.background="rgba(0,0,0,0.4)")}

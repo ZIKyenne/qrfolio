@@ -114,6 +114,17 @@ const ICON_CATS: { cat: string; items: { name: string; label: string }[] }[] = [
 const SHAPES: { id: string; label: string; g: string }[] = [
   { id: "circle", label: "Cercle", g: "●" }, { id: "rrect", label: "Rectangle", g: "▢" }, { id: "pill", label: "Pilule", g: "▬" }, { id: "line", label: "Ligne", g: "―" },
 ]
+// Légende d'aperçu CONTEXTUELLE au support (§23) : selon où l'objet se pose réellement.
+function supportHint(item: Item): string {
+  switch (item.place) {
+    case "Vitrine": return "Placez le téléphone contre la vitre pour prévisualiser"
+    case "Mur": return "Visualisez la taille réelle sur votre mur"
+    case "Comptoir": return "Posé sur le comptoir — taille réelle"
+    case "Main": return "Dans la main — taille réelle"
+    case "Table": return "À poser sur la table — taille réelle"
+    default: return "Aperçu à taille réelle"
+  }
+}
 // Safe-area des éléments libres : plus petite distance d'un élément au bord du support (mm).
 // Sert au pré-vol (mode Studio libre) — un élément au ras du bord = risque de rognage.
 function freeElsEdgeMm(els: FreeEl[], item: Item): number {
@@ -174,16 +185,21 @@ function useKeyboard(enabled: boolean) {
   useEffect(() => {
     if (!enabled) { setKb(0); setTyping(false); return }
     const vv = window.visualViewport
-    const onResize = () => { if (!vv) return; const h = Math.max(0, window.innerHeight - vv.height - vv.offsetTop); setKb(h > 90 ? Math.round(h) : 0) }
+    // On ARRONDIT (pas de re-render pour 1-2px) et on ne réagit QUE si le palier change ⇒ zéro churn pendant la frappe
+    // (évite les artefacts de saisie type « jourtr » avec les claviers prédictifs). Pas d'écoute « scroll » (trop bruyante).
+    const quant = () => { if (!vv) return 0; const h = Math.max(0, window.innerHeight - vv.height - vv.offsetTop); return h > 120 ? Math.round(h / 20) * 20 : 0 }
+    const onResize = () => setKb(prev => { const q = quant(); return q === prev ? prev : q })
     const isField = (el: EventTarget | null) => { const t = el as HTMLElement | null; return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable) }
-    const onFocus = (e: FocusEvent) => { if (isField(e.target)) { setTyping(true); const t = e.target as HTMLElement; setTimeout(() => { try { t.scrollIntoView({ block: "center", behavior: "smooth" }) } catch {} }, 120) } }
+    const onFocus = (e: FocusEvent) => { if (isField(e.target)) { setTyping(true); const t = e.target as HTMLElement; setTimeout(() => { try { t.scrollIntoView({ block: "center", behavior: "smooth" }) } catch {} }, 160) } }
     const onBlur = () => setTyping(false)
-    vv?.addEventListener("resize", onResize); vv?.addEventListener("scroll", onResize); onResize()
+    vv?.addEventListener("resize", onResize); onResize()
     window.addEventListener("focusin", onFocus); window.addEventListener("focusout", onBlur)
-    return () => { vv?.removeEventListener("resize", onResize); vv?.removeEventListener("scroll", onResize); window.removeEventListener("focusin", onFocus); window.removeEventListener("focusout", onBlur) }
+    return () => { vv?.removeEventListener("resize", onResize); window.removeEventListener("focusin", onFocus); window.removeEventListener("focusout", onBlur) }
   }, [enabled])
   return { kb, typing }
 }
+// Attributs anti-artefacts pour les champs texte du studio (claviers mobiles prédictifs).
+const textInputProps = { autoCorrect: "off", autoCapitalize: "sentences", spellCheck: false, enterKeyHint: "done" as const }
 
 export default function PrintStudioClient({ canAccess }: { canAccess: boolean }) {
   const isMobile = useIsMobile()
@@ -775,12 +791,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                   <FlatEditor item={item} design={designProps} freeEls={freeEls} setFreeEls={setFreeEls} selEl={selEl} setSelEl={setSelEl} onQrMove={(x, y) => { setQrFx(x); setQrFy(y) }} zoom={zoom} />
                 </div>
               </>
-            : <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} /></div>}
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
-            {!isMobile && <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>}
-            {!showFlat && <button onClick={() => setFsOpen(true)} style={chipStyle(false)}>⛶ Plein écran</button>}
-          </div>
-          {!showFlat && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>}
+            : <div style={{ position: "relative" }}>
+                <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} /></div>
+                <button onClick={e => { e.stopPropagation(); setFsOpen(true) }} aria-label="Plein écran" title="Plein écran" style={{ position: "absolute", top: 12, right: 12, width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", fontSize: 17, lineHeight: 1, zIndex: 2 }}>⛶</button>
+              </div>}
+          {!isMobile && <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
+            <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>
+          </div>}
+          {!showFlat && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>}
           {showFlat && <>
             <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Glissez pour placer · double-clic pour écrire · coin doré pour redimensionner.</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
@@ -975,15 +993,15 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           {/* Volet TEXTE — inputs d'abord (compact), suggestions contextuelles secondaires, mise en forme repliée. */}
           <Panel id="texte" title="Les textes" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen}>
             <Field label="Nom affiché">
-              <input value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} />
+              <input {...textInputProps} value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} />
               <SuggRow items={BRANDNAMES} active={brand} onPick={setBrandText} />
             </Field>
             <Field label="Titre">
-              <input value={message} onChange={e => setMessage(e.target.value)} placeholder="Titre principal…" style={inputStyle} />
+              <input {...textInputProps} value={message} onChange={e => setMessage(e.target.value)} placeholder="Titre principal…" style={inputStyle} />
               {messages.length > 0 && <SuggRow items={messages} active={title} onPick={setMessage} />}
             </Field>
-            <Field label="Sous-titre (optionnel)"><input value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Une ligne d'accroche…" style={inputStyle} /></Field>
-            <Field label="Bouton"><input value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder={item.cta} style={inputStyle} /></Field>
+            <Field label="Sous-titre (optionnel)"><input {...textInputProps} value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Une ligne d'accroche…" style={inputStyle} /></Field>
+            <Field label="Bouton"><input {...textInputProps} value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder={item.cta} style={inputStyle} /></Field>
             <button onClick={() => setAdvText(v => !v)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 12, padding: 0 }}>{advText ? "Masquer la mise en forme" : "Casse · graisse · typo · alignement →"}</button>
             {advText && <>
               <Field label="Casse du titre"><Seg value={titleCase} options={["normal", "upper"]} onPick={setTitleCase} labels={["Aa normal", "MAJUSCULES"]} /></Field>
@@ -1117,10 +1135,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </>}
 
             {mobileTab === "texte" && <>
-              <Field label="Nom affiché"><input value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} /></Field>
-              <Field label="Titre"><input value={message} onChange={e => setMessage(e.target.value)} placeholder="Titre principal…" style={inputStyle} />{messages.length > 0 && <SuggRow items={messages} active={title} onPick={setMessage} />}</Field>
-              <Field label="Sous-titre (optionnel)"><input value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Une ligne d'accroche…" style={inputStyle} /></Field>
-              <Field label="Bouton"><input value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder={item.cta} style={inputStyle} /></Field>
+              <Field label="Nom affiché"><input {...textInputProps} value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} /></Field>
+              <Field label="Titre"><input {...textInputProps} value={message} onChange={e => setMessage(e.target.value)} placeholder="Titre principal…" style={inputStyle} />{messages.length > 0 && <SuggRow items={messages} active={title} onPick={setMessage} />}</Field>
+              <Field label="Sous-titre (optionnel)"><input {...textInputProps} value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Une ligne d'accroche…" style={inputStyle} /></Field>
+              <Field label="Bouton"><input {...textInputProps} value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder={item.cta} style={inputStyle} /></Field>
               <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.6} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>
               {layout.content !== "band" && <Field label="Position verticale"><Range value={blockY} min={-1} max={1} step={0.1} onChange={setBlockY} hint={blockY < -0.1 ? "vers le haut" : blockY > 0.1 ? "vers le bas" : "centré"} /></Field>}
               <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={v => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
@@ -1154,7 +1172,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </div>
           )}
           <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
-            <button onClick={() => setControl(true)} title="Voir la vérification" style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, cursor: "pointer", color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "8px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> {isMobile ? "Prêt" : "Prêt à imprimer"}</> : <><AlertTriangle size={14} /> {preflight.checks.filter(c => c.status === "fail").length} à corriger</>}</button>
+            <button onClick={() => setControl(true)} title="Voir la vérification" style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, cursor: "pointer", color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "8px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> Prêt à imprimer</> : <><AlertTriangle size={14} /> {preflight.checks.filter(c => c.status === "fail").length} à corriger</>}</button>
             <Button variant="primary" onClick={() => setControl(true)}>Vérifier & exporter</Button>
           </div>
         </div>
@@ -1262,7 +1280,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           <button onClick={() => setFsOpen(false)} aria-label="Fermer l'aperçu" style={{ position: "absolute", top: "calc(env(safe-area-inset-top) + 12px)", right: 16, width: 42, height: 42, borderRadius: 999, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.22)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}><X size={20} /></button>
           <div onClick={e => e.stopPropagation()} style={{ width: "min(94vw, 94vh)", maxWidth: 760 }}>
             <Packshot item={item} scene={scene} {...designProps} box={1400} />
-            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12, margin: "12px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>
+            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12, margin: "12px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>
           </div>
         </div>
       )}

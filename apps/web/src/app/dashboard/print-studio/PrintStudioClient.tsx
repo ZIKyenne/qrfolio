@@ -154,7 +154,21 @@ const PRESETS: Preset[] = [
   { id: "edito", label: "Édito", style: "inkedit", layout: "diagonale", accent: "auto", bgFinish: "quadrillage", frame: "aucun", titleCase: "upper", titleWeight: "normal", qrBadge: "carre", eCorner: "vif", eAccent: "trait", eAlign: "left" },
 ]
 
+// Détection responsive (sans dupliquer le métier, §16) : bascule le shell en mode mobile ≤ bp.
+function useIsMobile(bp = 1024) {
+  const [m, setM] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width:${bp}px)`)
+    const on = () => setM(mq.matches); on()
+    mq.addEventListener("change", on)
+    return () => mq.removeEventListener("change", on)
+  }, [bp])
+  return m
+}
+
 export default function PrintStudioClient({ canAccess }: { canAccess: boolean }) {
+  const isMobile = useIsMobile()
+  const [sheetOpen, setSheetOpen] = useState(false)   // bottom sheet des réglages (mobile)
   const [phase, setPhase] = useState<"library" | "studio">("library")
   const [metier, setMetier] = useState("Tout")
   const [objectif, setObjectif] = useState("Tout")
@@ -724,7 +738,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         </div>
       </header>
 
-      <div className="ps-grid" style={{ maxWidth: 1180, margin: "0 auto", padding: "0 16px 120px", display: "grid", gap: 22, gridTemplateColumns: "1fr" }}>
+      <div className="ps-grid" style={{ maxWidth: 1180, margin: "0 auto", padding: isMobile ? "0 12px 172px" : "0 16px 120px", display: "grid", gap: 22, gridTemplateColumns: "1fr" }}>
         <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:1.35fr 1fr!important}.ps-aside{position:sticky;top:14px;align-self:start}}.ps-chip{transition:border-color .14s var(--mo-ease,ease),background .14s,color .14s}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}`}</style>
 
         {/* Aperçu packshot */}
@@ -748,12 +762,24 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <button onClick={addFreeText} style={chipStyle(false)}>＋ Texte</button>
               <button onClick={() => { setAddSearch(""); setAddOpen(true) }} style={chipStyle(true)}><Plus size={14} style={{ marginRight: 4, verticalAlign: "-2px" }} />Ajouter</button>
             </div>
-            {sel && <p style={{ textAlign: "center", color: C.gold, fontSize: 11, margin: "10px 0 0" }}>Élément sélectionné — réglages dans le panneau à droite.</p>}
+            {sel && (isMobile
+              ? <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}><button onClick={() => setSheetOpen(true)} style={chipStyle(true)}>Modifier l'élément</button></div>
+              : <p style={{ textAlign: "center", color: C.gold, fontSize: 11, margin: "10px 0 0" }}>Élément sélectionné — réglages dans le panneau à droite.</p>)}
           </>}
         </div>
 
-        {/* Volets + action */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {/* Volets — mobile : bottom sheet pilotée par les onglets ; desktop : colonne accordéon (inchangé). */}
+        {isMobile && sheetOpen && <div onClick={() => setSheetOpen(false)} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.5)" }} />}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, ...(isMobile ? { position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 70, maxHeight: "82vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: "8px 16px calc(16px + env(safe-area-inset-bottom))", transform: sheetOpen ? "translateY(0)" : "translateY(110%)", transition: "transform .26s var(--mo-ease-standard, ease)" } : {}) }}>
+          {isMobile && (
+            <div style={{ position: "sticky", top: 0, zIndex: 3, background: C.bg, paddingBottom: 6 }}>
+              <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.18)", margin: "2px auto 8px" }} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600 }}>Réglages</span>
+                <button onClick={() => setSheetOpen(false)} aria-label="Fermer les réglages" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "0 4px" }}>×</button>
+              </div>
+            </div>
+          )}
           {/* Inspecteur CONTEXTUEL : un élément libre sélectionné → ses propriétés (essentiel d'abord, avancé au besoin). */}
           {sel && (
             <div style={{ background: C.surface, border: `1px solid ${C.gold}`, borderRadius: R.card, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1028,11 +1054,20 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         </div>
       </div>
 
-      {/* Barre d'action ancrée */}
-      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "12px 16px calc(12px + env(safe-area-inset-bottom))", zIndex: 30 }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
-          <button onClick={() => setControl(true)} title="Voir la vérification" style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, cursor: "pointer", color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "6px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> Prêt à imprimer</> : <><AlertTriangle size={14} /> {preflight.checks.filter(c => c.status === "fail").length} à corriger</>}</button>
-          <Button variant="primary" onClick={() => setControl(true)}>Vérifier & exporter</Button>
+      {/* Barre d'action ancrée — mobile : onglets (ouvrent la sheet) + action ; desktop : statut + action. */}
+      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))", zIndex: 30 }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
+          {isMobile && (
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
+              {[["modeles", "Modèles"], ["texte", "Contenu"], ["qr", "QR"], ["allure", "Style"], ["details", "Design"]].map(([id, lbl]) => (
+                <button key={id} onClick={() => { setOpen(id); setSheetOpen(true) }} style={{ ...chipStyle(false), minHeight: 40, fontSize: 12 }}>{lbl}</button>
+              ))}
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
+            <button onClick={() => setControl(true)} title="Voir la vérification" style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, cursor: "pointer", color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "8px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> {isMobile ? "Prêt" : "Prêt à imprimer"}</> : <><AlertTriangle size={14} /> {preflight.checks.filter(c => c.status === "fail").length} à corriger</>}</button>
+            <Button variant="primary" onClick={() => setControl(true)}>Vérifier & exporter</Button>
+          </div>
         </div>
       </div>
 

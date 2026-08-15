@@ -39,6 +39,10 @@ const FRAME_LABEL: Record<string, string> = { aucun: "sans cadre", filet: "filet
 // Mises en page adaptées aux supports RONDS (centrées/symétriques) : les autres (bandeau, affiche, colonnes…)
 // supposent un rectangle et se retrouvent rognées par le cercle.
 const ROUND_LAYOUTS = new Set(["centre", "qrgeant", "cadre", "orne"])
+// Bottom sheet mobile (#17) : 3 positions ancrées (repère + hauteur en vh). Canvas visible dès « peek »/« half ».
+const SHEET_ORDER = ["peek", "half", "full"] as const
+type SheetPos = typeof SHEET_ORDER[number]
+const SHEET_VH: Record<SheetPos, number> = { peek: 40, half: 66, full: 90 }
 // Une mise en page est-elle COMPATIBLE avec la forme/le ratio du support ?
 // - rond : uniquement les mises en page centrées.
 // - « colonnes/split » (QR À CÔTÉ du texte) : besoin de largeur (ratio ≥ 1.15) sinon le texte est écrasé/déborde.
@@ -205,6 +209,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const isMobile = useIsMobile()
   const { kb, typing } = useKeyboard(isMobile)   // clavier virtuel : hauteur + saisie en cours (§11)
   const [sheetOpen, setSheetOpen] = useState(false)   // bottom sheet des réglages (mobile)
+  const [sheetPos, setSheetPos] = useState<SheetPos>("half")   // #17 : position ancrée de la sheet (peek/half/full)
+  const [sheetDragging, setSheetDragging] = useState(false)    // drag du handle en cours (désactive la transition)
+  const [sheetDragPx, setSheetDragPx] = useState(0)            // décalage vertical live pendant le drag
+  const sheetDrag = useRef<{ y0: number; moved: number } | null>(null)
   const [mobileTab, setMobileTab] = useState<"theme" | "couleurs" | "texte" | "qr">("theme")   // onglet simple mobile
   const [phase, setPhase] = useState<"library" | "studio">("library")
   const [metier, setMetier] = useState("Tout")
@@ -780,6 +788,22 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setMode(m); try { localStorage.setItem("qrowg-print-mode", m) } catch {}
     if (m === "simple") { setLibre(false); setSelEl(null); setOpen(o => (o === "styles" || o === "details" || o === "calques" ? "texte" : o)) }
   }
+  // #17 : bottom sheet mobile à positions ancrées. Ouvrir un onglet ouvre la sheet à « half ».
+  function openSheet(tab: "theme" | "couleurs" | "texte" | "qr") { setMobileTab(tab); setSheetPos("half"); setSheetOpen(true) }
+  // Déplace la sheet d'un cran (dir +1 = plus grande, -1 = plus petite ; sous « peek » = fermer).
+  function stepSheet(dir: 1 | -1) {
+    const i = SHEET_ORDER.indexOf(sheetPos) + dir
+    if (i < 0) { setSheetOpen(false); return }
+    setSheetPos(SHEET_ORDER[Math.min(SHEET_ORDER.length - 1, i)])
+  }
+  // Drag du handle : suit le doigt (translate), puis snap au cran voisin ; tap sec = cran suivant (cyclique).
+  function onSheetDown(e: React.PointerEvent) { sheetDrag.current = { y0: e.clientY, moved: 0 }; setSheetDragging(true); try { (e.target as HTMLElement).setPointerCapture(e.pointerId) } catch {} }
+  function onSheetMove(e: React.PointerEvent) { const d = sheetDrag.current; if (!d) return; d.moved = e.clientY - d.y0; setSheetDragPx(Math.max(-48, d.moved)) }
+  function onSheetUp() {
+    const d = sheetDrag.current; sheetDrag.current = null; setSheetDragging(false); const dy = d?.moved ?? 0; setSheetDragPx(0)
+    if (Math.abs(dy) < 8) { const i = SHEET_ORDER.indexOf(sheetPos); setSheetPos(SHEET_ORDER[(i + 1) % SHEET_ORDER.length]); return }
+    if (dy > 56) stepSheet(-1); else if (dy < -56) stepSheet(1)
+  }
   const layBtn: React.CSSProperties = { width: 28, height: 28, borderRadius: 7, border: "none", background: "transparent", color: C.fgMuted, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }
   return (
     <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -825,7 +849,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 </div>
               </>
             : <div style={{ position: "relative", ...(isMobile ? {} : { background: "radial-gradient(130% 90% at 50% -10%, rgba(255,255,255,.05), transparent 70%)", border: `1px solid ${C.hairline}`, borderRadius: 24, padding: 28 }) }}>
-                <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} box={isMobile ? 520 : 640} onFocus={isMobile ? undefined : focusPanel} /></div>
+                <div onClick={() => { if (isMobile && sheetOpen && sheetPos !== "peek") setSheetPos("peek"); else setFsOpen(true) }} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} box={isMobile ? 520 : 640} onFocus={isMobile ? undefined : focusPanel} /></div>
                 <button onClick={e => { e.stopPropagation(); setFsOpen(true) }} aria-label="Plein écran" title="Plein écran" style={{ position: "absolute", top: isMobile ? 12 : 40, right: isMobile ? 12 : 40, width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", fontSize: 17, lineHeight: 1, zIndex: 2 }}>⛶</button>
               </div>}
           {!isMobile && mode === "studio" && <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
@@ -1114,11 +1138,16 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* ── MOBILE : version SIMPLIFIÉE — Thème · Couleurs · Texte · QR uniquement (sheet courte, canvas visible). ── */}
       {isMobile && (
         <>
-          {sheetOpen && <div onClick={() => setSheetOpen(false)} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.4)" }} />}
-          <div style={{ position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, maxHeight: kb ? `calc(74vh - ${kb}px)` : "62vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `8px 16px ${kb ? "66px" : "calc(18px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? "translateY(0)" : "translateY(112%)", transition: "transform .26s var(--mo-ease-standard, ease)", display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ position: "sticky", top: 0, zIndex: 3, background: C.bg, paddingBottom: 6 }}>
-              <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.18)", margin: "2px auto 8px" }} />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {/* Backdrop seulement en « full » (tap = revenir à half) ; en peek/half le canvas reste VISIBLE et interactif. */}
+          {sheetOpen && sheetPos === "full" && <div onClick={() => setSheetPos("half")} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.35)" }} />}
+          {/* Padding bas généreux : la barre d'onglets (zIndex 71) reste AU-DESSUS de la sheet → onglets toujours cliquables. */}
+          <div style={{ position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, height: kb ? `calc(74vh - ${kb}px)` : `${SHEET_VH[sheetPos]}vh`, maxHeight: "92vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `0 16px ${kb ? "66px" : "calc(128px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? `translateY(${sheetDragPx}px)` : "translateY(112%)", transition: sheetDragging ? "none" : "transform var(--mo-sheet) var(--mo-ease-standard), height var(--mo-sheet) var(--mo-ease-standard)", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ position: "sticky", top: 0, zIndex: 3, background: C.bg, paddingTop: 8 }}>
+              {/* Handle : glisser pour changer de hauteur (snap au cran voisin) · tap pour passer au cran suivant. */}
+              <div onPointerDown={onSheetDown} onPointerMove={onSheetMove} onPointerUp={onSheetUp} onPointerCancel={onSheetUp} role="slider" aria-label="Hauteur du panneau" aria-valuetext={sheetPos} tabIndex={0} style={{ touchAction: "none", cursor: "grab", padding: "2px 0 6px" }}>
+                <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.22)", margin: "0 auto 8px" }} />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 6 }}>
                 <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 16, fontWeight: 600 }}>{mobileTab === "theme" ? "Thème" : mobileTab === "couleurs" ? "Couleurs" : mobileTab === "texte" ? "Texte" : "QR code"}</span>
                 <button onClick={() => setSheetOpen(false)} aria-label="Fermer" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "0 4px" }}>×</button>
               </div>
@@ -1176,13 +1205,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         </>
       )}
 
-      {/* Barre d'action ancrée — mobile : onglets (ouvrent la sheet) + action ; desktop : statut + action. */}
-      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))", zIndex: 30 }}>
+      {/* Barre d'action ancrée — mobile : onglets (ouvrent la sheet) + action ; desktop : statut + action.
+          zIndex 71 > sheet (70) : les onglets restent tappables même sheet ouverte (peek/half = non modal). */}
+      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))", zIndex: isMobile ? 71 : 30 }}>
         <div style={{ maxWidth: 1320, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
           {isMobile && (
             <div style={{ display: "flex", gap: 6 }}>
               {([["theme", "Thème"], ["couleurs", "Couleurs"], ["texte", "Texte"], ["qr", "QR"]] as const).map(([id, lbl]) => (
-                <button key={id} onClick={() => { setMobileTab(id); setSheetOpen(true) }} style={{ ...chipStyle(sheetOpen && mobileTab === id), minHeight: 42, fontSize: 12.5, flex: 1 }}>{lbl}</button>
+                <button key={id} onClick={() => { if (sheetOpen && mobileTab === id) setSheetOpen(false); else openSheet(id) }} style={{ ...chipStyle(sheetOpen && mobileTab === id), minHeight: 42, fontSize: 12.5, flex: 1 }}>{lbl}</button>
               ))}
             </div>
           )}

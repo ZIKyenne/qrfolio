@@ -806,9 +806,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   }
   const layBtn: React.CSSProperties = { width: 28, height: 28, borderRadius: 7, border: "none", background: "transparent", color: C.fgMuted, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }
   return (
-    <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
+    <div className="ps-root" style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
       <Particles behind />
-      <header style={{ maxWidth: 1320, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+      <header className="ps-hdr" style={{ maxWidth: 1320, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13, flexShrink: 0 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {/* #34 : bascule Simple/Studio (desktop). Simple = essentiel ; Studio révèle l'avancé (design fin, styles, édition libre, planche). */}
@@ -835,9 +835,11 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         </div>
       </header>
 
-      <div className="ps-grid" style={{ maxWidth: 1320, margin: "0 auto", padding: isMobile ? "0 12px 172px" : "0 16px 120px", display: "grid", gap: 24, gridTemplateColumns: "1fr" }}>
-        {/* Canvas héros (#2) : l'aperçu prend toute la largeur élastique, l'inspecteur reste une colonne fixe et lisible (372 px). */}
-        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:minmax(0,1fr) 372px!important}.ps-aside{position:sticky;top:14px;align-self:start}}.ps-chip{transition:border-color var(--mo-fast) var(--mo-ease-standard),background var(--mo-fast) var(--mo-ease-standard),color var(--mo-fast) var(--mo-ease-standard)}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color var(--mo-fast) var(--mo-ease-standard)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash var(--mo-slow) var(--mo-ease-emphasized)}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}@media(prefers-reduced-motion:reduce){.ps-flash{animation:none}.ps-foc{transition:none}}`}</style>
+      <div className="ps-grid" style={{ maxWidth: 1320, margin: "0 auto", padding: isMobile ? "0 12px 172px" : "0 16px 10px", display: "grid", gap: 24, gridTemplateColumns: "1fr" }}>
+        {/* Canvas héros (#2) + shell ZÉRO-SCROLL (§11) : sur desktop le root est une colonne 100dvh (header figé,
+            grille flex:1 à overflow interne, barre d'action en pied statique) → aucun scroll de page, seuls les
+            panneaux/canvas scrollent en interne. Mobile inchangé (scroll doux + sheet). */}
+        <style>{`@media(min-width:1025px){.ps-root{height:100dvh;display:flex;flex-direction:column;overflow:hidden}.ps-hdr{flex-shrink:0}.ps-grid{grid-template-columns:minmax(0,1fr) 372px!important;flex:1;min-height:0;overflow:hidden}.ps-aside{min-height:0;overflow-y:auto;align-self:stretch}.ps-panels{min-height:0;overflow-y:auto}.ps-actionbar{position:static!important}}.ps-chip{transition:border-color var(--mo-fast) var(--mo-ease-standard),background var(--mo-fast) var(--mo-ease-standard),color var(--mo-fast) var(--mo-ease-standard)}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color var(--mo-fast) var(--mo-ease-standard)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash var(--mo-slow) var(--mo-ease-emphasized)}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}@media(prefers-reduced-motion:reduce){.ps-flash{animation:none}.ps-foc{transition:none}}`}</style>
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
@@ -871,7 +873,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Volets — DESKTOP uniquement : colonne accordéon complète. (Mobile = sheet SIMPLIFIÉE, définie plus bas.) */}
         {!isMobile && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="ps-panels" style={{ display: "flex", flexDirection: "column", gap: 10, paddingRight: 2 }}>
           {/* Inspecteur CONTEXTUEL : un élément libre sélectionné → ses propriétés (essentiel d'abord, avancé au besoin). */}
           {sel && (
             <div style={{ background: C.surface, border: `1px solid ${C.goldA55}`, borderRadius: R.card, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1207,7 +1209,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
       {/* Barre d'action ancrée — mobile : onglets (ouvrent la sheet) + action ; desktop : statut + action.
           zIndex 71 > sheet (70) : les onglets restent tappables même sheet ouverte (peek/half = non modal). */}
-      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))", zIndex: isMobile ? 71 : 30 }}>
+      <div className="ps-actionbar" style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))", zIndex: isMobile ? 71 : 30 }}>
         <div style={{ maxWidth: 1320, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
           {isMobile && (
             <div style={{ display: "flex", gap: 6 }}>

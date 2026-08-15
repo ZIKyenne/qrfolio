@@ -263,6 +263,11 @@ const QR_STATUS_CFG: Record<string, { label: string; dot: string; badge: string;
   expired:  { label: "Expire",    dot: "var(--danger)", badge: "rgba(255,107,107,0.12)", text: "var(--danger)", desc: "Acces expire" },
 }
 
+// Sous l'aperçu : bloc stats + éditeur de destination RETIRÉS du flux principal (audit §2/§9 : les stats
+// appartiennent à Analytics, et ce bloc était la 1re cause de scroll). Masqué via flag (code conservé,
+// réversible — la destination pourra être relogée dans le menu « ··· » ou Redirections si besoin).
+const LEGACY_INFO = false as boolean
+
 const PLAN_BADGE: Record<string, { color: string; label: string } | null> = {
   free: null, pro: { color: "var(--accent)", label: "PRO" }, business: { color: "var(--success)", label: "BIZ" },
 }
@@ -2853,8 +2858,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 </div>
               </div>
 
-              {/* Stats */}
-              {/* Stats QR */}
+              {/* Stats + destination RETIRÉS du flux principal (§2/§9) — masqués via LEGACY_INFO (réversible). */}
+              {LEGACY_INFO && (<>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, padding:"14px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
                 {[
                   { label:"Scans total",   value:active.total_scans.toLocaleString(),               color:"var(--accent)", icon:"📡" },
@@ -3043,8 +3048,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   </div>
                 )}
               </div>
+              </>)}
 
-              
+
 {/* Diagnostic scannabilité premium */}
               {scanScore && (
                 <div ref={scanWidgetRef} style={{ borderTop:"1px solid rgba(255,255,255,0.06)", padding:"12px 16px" }}>

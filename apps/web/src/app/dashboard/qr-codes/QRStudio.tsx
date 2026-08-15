@@ -3687,18 +3687,19 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 <AccSection id="qualite" title="Marge & scannabilité" icon="🛡" openId={openAcc} setOpenId={setOpenAcc}>
                 <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
-                  {/* Marge */}
+                  {/* Marge : 2 choix simples (Petit / Grand) — plus de curseur. */}
                   <div>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:7 }}>
-                      <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Marge</p>
-                      <span style={{ color:G, fontSize:11, fontWeight:700 }}>{styleConf.margin ?? 10}px</span>
-                    </div>
-                    <input type="range" min={0} max={30} value={styleConf.margin ?? 10}
-                      onChange={e => setStyleConf(p => ({ ...p, margin: Number(e.target.value) }))}
-                      style={{ width:"100%", accentColor:G, cursor:"pointer" }}/>
-                    <div style={{ display:"flex", justifyContent:"space-between" }}>
-                      <span style={{ color:MUTED, fontSize:9 }}>0</span>
-                      <span style={{ color:MUTED, fontSize:9 }}>30</span>
+                    <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:"0 0 7px" }}>Marge (zone silencieuse)</p>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+                      {([["Petit",8],["Grand",20]] as const).map(([lbl,val]) => {
+                        const on = (styleConf.margin ?? 10) <= 12 ? val === 8 : val === 20
+                        return (
+                          <button key={lbl} type="button" onClick={() => setStyleConf(p => ({ ...p, margin: val }))}
+                            style={{ padding:"10px 8px", background:on?"color-mix(in srgb, var(--accent) 12%, transparent)":"rgba(255,255,255,0.02)", border:`1px solid ${on?"color-mix(in srgb, var(--accent) 40%, transparent)":"rgba(255,255,255,0.07)"}`, borderRadius:9, color:on?G:"#F5F0E8", fontSize:12, fontWeight:on?700:500, cursor:"pointer" }}>
+                            {lbl}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 

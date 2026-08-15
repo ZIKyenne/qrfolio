@@ -10,7 +10,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { QrCode, Search, Copy, Check, Download, Printer, Plus, Settings, ChevronDown, PanelLeftClose, PanelLeftOpen, X, AlertTriangle, Trash2 } from "lucide-react"
+import { QrCode, Search, Copy, Check, Download, Printer, Plus, Settings, ChevronDown, PanelLeftClose, PanelLeftOpen, X, AlertTriangle, Trash2, Maximize2 } from "lucide-react"
 import QRCanvas from "./QRCanvas"
 import { getQRBlob, downloadBlob, buildAndDownloadPdf } from "./qrRender"
 import { composeLogo } from "./logoCompose"
@@ -65,6 +65,8 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
   const [dlBusy, setDlBusy] = useState<string | null>(null)
   const [scanOpen, setScanOpen] = useState(false)
   const [gradOpen, setGradOpen] = useState(false)
+  const [allPresets, setAllPresets] = useState(false)       // « Voir tout » : bibliothèque complète de presets
+  const [fsPreview, setFsPreview] = useState(false)         // aperçu QR plein écran (mode focus)
   const [copied, setCopied] = useState(false)
   const [logoErr, setLogoErr] = useState("")
   const [composedLogo, setComposedLogo] = useState("")
@@ -236,8 +238,11 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
         .qz-col::-webkit-scrollbar { width: 8px }
         .qz-col::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 8px }
         .qz-row { transition: background var(--mo-fast,.12s) var(--mo-ease-standard,ease), border-color var(--mo-fast,.12s) }
+        .qz-row:hover { background: rgba(255,255,255,0.04) }
         .qz-preset { transition: transform var(--mo-fast,.12s) var(--mo-ease-standard,ease), border-color var(--mo-fast,.12s) }
         .qz-preset:hover { transform: translateY(-2px) }
+        .qz-row:focus-visible, .qz-preset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+        @media (prefers-reduced-motion: reduce) { .qz-preset:hover { transform: none } }
         @media (max-width: 980px) {
           .qz-shell { height: auto }
           .qz-grid { grid-template-columns: 1fr !important }
@@ -285,6 +290,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
           {/* Barre d'action (autosave + sorties) — pas de toolbar chargée. */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
             <button type="button" onClick={toggleFocus} title={collapsed ? "Afficher mes QR" : "Masquer mes QR (mode focus)"} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 8, background: "transparent", border: `1px solid ${LINE}`, color: MUTED, cursor: "pointer" }}>{collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}</button>
+            {active && <button type="button" onClick={() => setFsPreview(true)} title="Aperçu plein écran" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 8, background: "transparent", border: `1px solid ${LINE}`, color: MUTED, cursor: "pointer" }}><Maximize2 size={15} /></button>}
             <span style={{ fontSize: 11.5, color: statusColor, display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 600 }}>
               {status === "saving" ? <span className="mo-pulse" style={{ width: 7, height: 7, borderRadius: "50%", background: MUTED }} /> : <Check size={13} />}{active ? statusText : ""}
             </span>
@@ -337,7 +343,10 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
 
             {/* STYLE */}
             <section>
-              <h3 style={secH}>Style</h3>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+                <h3 style={{ ...secH, margin: 0 }}>Style</h3>
+                <button type="button" onClick={() => setAllPresets(true)} style={{ background: "none", border: "none", color: MUTED, fontSize: 11.5, fontWeight: 600, cursor: "pointer", padding: 0 }}>Voir tout</button>
+              </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
                 {stylePresets.map(p => {
                   const locked = !canUsePreset(userPlan, p)
@@ -480,6 +489,54 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
             )}
             <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--success)", display: "flex", alignItems: "center", gap: 6 }}><Check size={13} /> Lisibilité vérifiée automatiquement</p>
           </div>
+        </div>
+      )}
+
+      {/* ── BIBLIOTHÈQUE COMPLÈTE DE STYLES (§P1.1 « Voir tout ») ─────── */}
+      {allPresets && (
+        <div onClick={() => setAllPresets(false)} style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} className="mo-pop-in qz-col" style={{ width: "100%", maxWidth: 560, maxHeight: "80vh", overflowY: "auto", background: SHELL_BG, border: `1px solid ${LINE}`, borderRadius: 18, padding: 20, boxShadow: "0 24px 60px rgba(0,0,0,0.6)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, position: "sticky", top: 0, background: SHELL_BG }}>
+              <h3 style={{ fontFamily: "Fraunces, serif", fontSize: 18, fontWeight: 700, margin: 0 }}>Tous les styles</h3>
+              <button type="button" onClick={() => setAllPresets(false)} style={{ background: "none", border: "none", color: MUTED, cursor: "pointer" }}><X size={18} /></button>
+            </div>
+            {PRESET_CATS.map(cat => {
+              const inCat = PRESETS.filter(p => p.cat === cat.id)
+              if (!inCat.length) return null
+              return (
+                <div key={cat.id} style={{ marginBottom: 16 }}>
+                  <p style={{ ...miniLabel, marginBottom: 8 }}>{cat.emoji} {cat.label}</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+                    {inCat.map(p => {
+                      const locked = !canUsePreset(userPlan, p)
+                      const on = presetActive(p)
+                      const dotR = p.dotStyle === "dot" ? "50%" : p.dotStyle === "rounded" ? "34%" : "2px"
+                      return (
+                        <button key={p.id} type="button" onClick={() => { applyPreset(p); if (canUsePreset(userPlan, p)) setAllPresets(false) }} className="qz-preset" title={p.label} style={{ position: "relative", padding: 8, borderRadius: 11, cursor: "pointer", background: p.bg, border: `2px solid ${on ? G : "transparent"}`, opacity: locked ? 0.55 : 1 }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, width: 28, height: 28, margin: "0 auto" }}>
+                            {Array.from({ length: 9 }).map((_, i) => <span key={i} style={{ background: [0, 2, 4, 6, 8, 3, 5].includes(i) ? p.fg : "transparent", borderRadius: dotR }} />)}
+                          </div>
+                          <span style={{ display: "block", marginTop: 5, fontSize: 8, fontWeight: 700, color: MUTED, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>{p.label}</span>
+                          {locked && <span style={{ position: "absolute", top: 3, right: 3, fontSize: 7.5, fontWeight: 800, color: G, background: "rgba(0,0,0,0.6)", borderRadius: 4, padding: "1px 3px" }}>PRO</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── APERÇU PLEIN ÉCRAN (§P0.3 mode focus) ────────────────────── */}
+      {fsPreview && active && (
+        <div onClick={() => setFsPreview(false)} style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(0,0,0,0.92)", backdropFilter: "blur(6px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24 }}>
+          <button type="button" onClick={() => setFsPreview(false)} aria-label="Fermer" style={{ position: "absolute", top: 20, right: 20, width: 42, height: 42, borderRadius: 999, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={20} /></button>
+          <div onClick={e => e.stopPropagation()} style={{ padding: 26, background: bg || "#fff", borderRadius: 24, lineHeight: 0, boxShadow: "0 24px 70px rgba(0,0,0,0.55)" }}>
+            <QRCanvas value={qrUrl} size={Math.min(460, typeof window !== "undefined" ? Math.floor(Math.min(window.innerWidth, window.innerHeight) * 0.62) : 360)} fg={fg || "#080808"} bg={bg || "#FFFFFF"} ecc={effectiveEcc} style={renderStyle} />
+          </div>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, margin: 0 }}>{active.pages?.title || active.short_code} · <span style={{ color: scanColor }}>{scan.label}</span></p>
         </div>
       )}
     </div>

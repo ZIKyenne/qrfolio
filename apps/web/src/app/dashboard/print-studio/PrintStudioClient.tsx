@@ -1166,14 +1166,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         </div>
       )}
 
-      {/* Écran CONTRÔLE avant export — pré-vol noté + messages actionnables + « Corriger ». */}
-      <Modal open={control} onClose={() => setControl(false)} title="Vérification impression" maxWidth={520}>
-        {/* Bandeau score : étoiles + note honnête (ce qu'on ne mesure pas ne compte pas). */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, background: hasFail ? "var(--danger-bg)" : preflight.score >= 90 ? "var(--success-bg)" : C.surfaceUp, border: `1px solid ${hasFail ? "var(--danger-border)" : preflight.score >= 90 ? "color-mix(in srgb,var(--success) 30%,transparent)" : C.hairline}`, marginBottom: 12 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: hasFail ? C.bad : preflight.score >= 90 ? C.ok : C.fg }}>{preflight.grade}</span>
-            <span style={{ fontSize: 11.5, color: C.fgMuted }}>{"★".repeat(preflight.stars)}{"☆".repeat(5 - preflight.stars)} · {preflight.score}/100{preflight.scanDistanceM ? ` · lisible ~${preflight.scanDistanceM} m` : ""}</span>
-          </div>
+      {/* Écran de VALIDATION & export — moment de satisfaction : score mis en scène + bénéfices + CTA clair. */}
+      <Modal open={control} onClose={() => setControl(false)} title="Votre création" maxWidth={520}>
+        {/* Score mis en scène (§8/§27) : gros chiffre + étoiles + titre + bénéfice de lecture. */}
+        <div style={{ textAlign: "center", padding: "4px 0 16px" }}>
+          <div style={{ fontSize: 42, fontWeight: 800, lineHeight: 1, color: hasFail ? C.bad : preflight.score >= 90 ? C.ok : C.gold }}>{preflight.score}<span style={{ fontSize: 17, fontWeight: 700, color: C.fgMuted }}> / 100</span></div>
+          <div style={{ fontSize: 16, letterSpacing: 2, margin: "6px 0 4px", color: C.gold }}>{"★".repeat(preflight.stars)}<span style={{ color: C.fgFaint }}>{"☆".repeat(5 - preflight.stars)}</span></div>
+          <div style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600, color: C.fg }}>{hasFail ? "Un réglage à corriger" : "Votre création est prête"}</div>
+          {preflight.scanDistanceM && !hasFail && <p style={{ margin: "8px auto 0", maxWidth: 340, fontSize: 12.5, color: C.fgMuted, lineHeight: 1.4 }}>Votre QR devrait être facilement scannable jusqu'à ~{preflight.scanDistanceM} m.</p>}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {preflight.checks.filter(c => c.status !== "na").map(c => {
@@ -1193,14 +1193,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           })}
         </div>
         {!qrReady && <p style={{ margin: "12px 0 0", fontSize: 12, color: C.gold, display: "inline-flex", alignItems: "center", gap: 6 }}><AlertTriangle size={13} /> Ajoutez d'abord votre QR (volet « Le QR »).</p>}
-        <div style={{ marginTop: 14 }}>
-          <Button variant="primary" fullWidth disabled={!ok || !qrReady} leftIcon={<Download size={18} />} onClick={() => { setControl(false); setPrinting(true) }}>{ok ? "Exporter la planche (PDF · taille réelle)" : "Corrigez les points rouges"}</Button>
+        <div style={{ marginTop: 16 }}>
+          <Button variant="primary" fullWidth disabled={!ok || !qrReady} leftIcon={<Download size={18} />} onClick={() => { setControl(false); setPrinting(true) }}>{ok ? "Télécharger le PDF prêt à imprimer" : "Corrigez les points rouges"}</Button>
         </div>
-        <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>Ouvre l'impression du navigateur → « Enregistrer en PDF » : à la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe"}, texte + QR vectoriels).</p>
+        <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>À la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe"}, texte + QR vectoriels) — via « Enregistrer en PDF » de l'impression.</p>
         {qrSource === "mine" && (
-          <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-            <Button variant="secondary" fullWidth disabled={!ok || !qrReady || busy} leftIcon={done ? <Check size={16} /> : <Download size={16} />} onClick={() => exportQr("png")}>{busy ? "…" : done ? "Téléchargé" : "QR seul (PNG)"}</Button>
-            <Button variant="secondary" disabled={!ok || !qrReady || busy} onClick={() => exportQr("svg")}>SVG</Button>
+          <div style={{ marginTop: 16 }}>
+            <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: C.fgFaint }}>Autres formats — QR seul</p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <Button variant="secondary" fullWidth disabled={!ok || !qrReady || busy} leftIcon={done ? <Check size={16} /> : <Download size={16} />} onClick={() => exportQr("png")}>{busy ? "…" : done ? "Téléchargé" : "PNG"}</Button>
+              <Button variant="secondary" fullWidth disabled={!ok || !qrReady || busy} onClick={() => exportQr("svg")}>SVG</Button>
+            </div>
           </div>
         )}
       </Modal>

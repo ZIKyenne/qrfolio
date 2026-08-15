@@ -21,6 +21,7 @@ import { PLAN_RANK, canPrintStudio, minPlanFor } from "@/lib/plans"
 import { createQR, updateQR, getQRBlob, downloadBlob, blobToDataUrl, buildAndDownloadPdf, type QROptions } from "./qrRender"
 import { composeLogo } from "./logoCompose"
 import { BatchQrModal } from "./BatchQrModal"
+import { SegmentedControl } from "./SegmentedControl"
 import type QRCodeStyling from "qr-code-styling"
 
 // Editeur libre (Fabric.js) : charge uniquement cote client (touche au DOM)
@@ -3253,15 +3254,11 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       <ChevronDown size={16} color="#A8A190" />
                     </button>
                   ) : (<>
-                    <div style={{ display:"flex", gap:4, padding:4, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:11, marginBottom:2 }}>
-                      {([["simple","Simple"],["inter","Intermédiaire"],["expert","Expert"]] as const).map(([k,l]) => (
-                        <button key={k} type="button" onClick={() => setLevel(k)}
-                          style={{ flex:1, padding:"7px 4px", borderRadius:8, border:"none", cursor:"pointer", fontSize:10.5, fontWeight:level===k?700:500,
-                            background: level===k ? "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" : "transparent",
-                            color: level===k ? "#080808" : "#A8A190" }}>
-                          {l}
-                        </button>
-                      ))}
+                    <div style={{ marginBottom:8 }}>
+                      <SegmentedControl dense ariaLabel="Niveau de réglages"
+                        labels={["Simple","Intermédiaire","Expert"]}
+                        value={level==="simple"?0:level==="inter"?1:2}
+                        onChange={i => setLevel(i===0?"simple":i===1?"inter":"expert")} />
                     </div>
                     <p style={{ color:MUTED, fontSize:9.5, margin:"0 0 4px", lineHeight:1.4 }}>
                       {level==="simple" ? "L'essentiel : choisir un style et les couleurs. Idéal pour aller vite." : level==="inter" ? "+ formes des modules et des coins." : "Tous les réglages : logo, dégradés, marge, correction d'erreur…"}

@@ -5,7 +5,7 @@ import QRStudioSwitch from "./QRStudioSwitch"
 import Particles from "@/components/Particles"
 import { accessibleOwnerIds } from "@/lib/team"
 import { pageLimit } from "@/lib/plans"
-import { Plus, QrCode, TrendingUp, Activity, Link2 } from "lucide-react"
+import { Plus, QrCode, Link2 } from "lucide-react"
 
 export const metadata: Metadata = { title: "QR Codes Studio - QRowg" }
 
@@ -36,6 +36,9 @@ export default async function QRCodesPage() {
   const activeQR   = (qrCodes ?? []).filter((q: any) => (q.status ?? "active") === "active").length
   // Quota du plan = QR ACTIFS (visitables). null = illimité.
   const activeLimit = pageLimit(userPlan)
+  // Compteur QR actifs : % de quota (barre) + couleur d'état (vert / or ≥80% / rouge à 100%).
+  const quotaPct  = activeLimit ? Math.min(100, Math.round((activeQR / activeLimit) * 100)) : 100
+  const dotColor  = activeLimit == null ? "#6fbf73" : quotaPct >= 100 ? "#d9534f" : quotaPct >= 80 ? "#e8c877" : "#6fbf73"
 
   return (
     <div style={{ minHeight: "100dvh", background: "transparent", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
@@ -79,20 +82,43 @@ export default async function QRCodesPage() {
 
           {/* Actions */}
           <div className="qrh-actions">
-            {/* KPIs en pastilles */}
-            <div className="qrh-kpis" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {[
-                { label: "QR actifs",   value: activeLimit !== null ? `${activeQR} / ${activeLimit}` : activeQR, icon: <Activity size={13} color="var(--success)"/>,    color: "var(--success)" },
-                { label: "Scans total", value: totalScans.toLocaleString("fr-FR"), icon: <TrendingUp size={13} color="var(--accent)"/>, color: "var(--accent)" },
-              ].map((k, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "7px 13px" }}>
-                  {k.icon}
-                  <div>
-                    <p style={{ color: k.color, fontSize: 14, fontWeight: 700, margin: 0, lineHeight: 1 }}>{k.value}</p>
-                    <p style={{ color: "#A8A190", fontSize: 9, margin: "1px 0 0", textTransform: "uppercase", letterSpacing: 0.8 }}>{k.label}</p>
-                  </div>
+            {/* Compteurs d'en-tête — indicateurs animés dorés (handoff « Compteurs d'en-tête »). */}
+            <div className="qrh-kpis" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+              {/* QR ACTIFS — pastille d'état vivante + barre de quota (valeur réelle) */}
+              <div className="kpi-chip" aria-label={activeLimit != null ? `${activeQR} QR actifs sur ${activeLimit}` : `${activeQR} QR actifs`}>
+                <span aria-hidden="true" style={{ position: "relative", display: "inline-flex", width: 11, height: 11, flex: "none" }}>
+                  <span className="kpi-dotring" style={{ position: "absolute", inset: 0, borderRadius: "50%", border: `1.5px solid ${dotColor}` }} />
+                  <span className="kpi-dotcore" style={{ position: "absolute", inset: 1, borderRadius: "50%", background: dotColor, boxShadow: `0 0 12px ${dotColor}b3` }} />
+                </span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-.01em", color: "#e8c877", lineHeight: 1 }}>{activeQR}{activeLimit != null && <span style={{ color: "#6b6258", fontWeight: 500 }}> / {activeLimit}</span>}</div>
+                  <div style={{ fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 600 }}>QR actifs</div>
                 </div>
-              ))}
+                {activeLimit != null && (
+                  <div aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 2, background: "#221f1b" }}>
+                    <div style={{ position: "relative", overflow: "hidden", height: "100%", width: `${quotaPct}%`, background: "linear-gradient(90deg,#c9a24d,#e8c877)", transition: "width .6s cubic-bezier(.2,.8,.2,1)" }}>
+                      <div className="kpi-barshine" style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "40%", background: "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.85), rgba(255,255,255,0))" }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* SCANS TOTAL — icône mini-QR scanné (faisceau + onde) */}
+              <div className="kpi-chip" aria-label={`${totalScans} scans au total`}>
+                <span aria-hidden="true" style={{ position: "relative", display: "inline-flex", width: 20, height: 20, flex: "none" }}>
+                  <span style={{ position: "absolute", inset: 0, borderRadius: 6, border: "1.5px solid rgba(232,200,119,.55)" }} />
+                  <span className="kpi-scanring" style={{ position: "absolute", inset: 0, borderRadius: 6, border: "1.5px solid rgba(232,200,119,.5)" }} />
+                  <span style={{ position: "absolute", left: 4, top: 4, width: 4, height: 4, borderRadius: 1, background: "rgba(232,200,119,.75)" }} />
+                  <span style={{ position: "absolute", right: 4, top: 4, width: 4, height: 4, borderRadius: 1, background: "rgba(232,200,119,.75)" }} />
+                  <span style={{ position: "absolute", left: 4, bottom: 4, width: 4, height: 4, borderRadius: 1, background: "rgba(232,200,119,.75)" }} />
+                  <span className="kpi-scanline" style={{ position: "absolute", left: 2, right: 2, top: 3, height: 1.5, borderRadius: 2, background: "linear-gradient(90deg, rgba(232,200,119,0), #f0d590, rgba(232,200,119,0))", boxShadow: "0 0 8px rgba(232,200,119,.8)" }} />
+                </span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-.01em", color: "#e8c877", lineHeight: 1 }}>{totalScans.toLocaleString("fr-FR")}</div>
+                  <div style={{ fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 600 }}>Scans total</div>
+                </div>
+              </div>
             </div>
 
             {/* QR Dynamique — secondaire or contour (handoff « Boutons d'en-tête »). */}

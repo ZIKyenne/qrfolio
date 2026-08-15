@@ -291,6 +291,23 @@ button:not(:disabled):active { transform: scale(.97); }
   .qb-hsec, .qb-hpri, .qb-hsec .qb-ico, .qb-hpri .qb-ico { transition:background .24s ease, color .2s ease, border-color .22s ease; }
 }
 
+/* Compteurs d'en-tête QR Codes Studio — indicateurs animés (boucles désynchronisées, décoratives) */
+@keyframes kpiPulseDot { 0%{transform:scale(1);opacity:.55} 50%{transform:scale(1.35);opacity:1} 100%{transform:scale(1);opacity:.55} }
+@keyframes kpiDotRing  { 0%{transform:scale(.85);opacity:.55} 70%{transform:scale(1.9);opacity:0} 100%{transform:scale(1.9);opacity:0} }
+@keyframes kpiBarShine { 0%{transform:translateX(-120%)} 60%{transform:translateX(360%)} 100%{transform:translateX(360%)} }
+@keyframes kpiScanLine { 0%{transform:translateY(0);opacity:0} 12%{opacity:1} 50%{transform:translateY(14px);opacity:1} 62%{opacity:0} 100%{transform:translateY(0);opacity:0} }
+@keyframes kpiScanRing { 0%{transform:scale(.9);opacity:0} 35%{opacity:.45} 100%{transform:scale(1.45);opacity:0} }
+.kpi-chip { position:relative; overflow:hidden; display:flex; align-items:center; gap:12px; padding:11px 18px; border-radius:11px; background:linear-gradient(180deg,#17140f 0%,#121009 100%); border:1px solid #26211a; }
+.kpi-dotring  { animation:kpiDotRing 3.2s ease-out infinite; }
+.kpi-dotcore  { animation:kpiPulseDot 3.2s ease-in-out infinite; }
+.kpi-barshine { animation:kpiBarShine 5s ease-in-out infinite; }
+.kpi-scanline { animation:kpiScanLine 3.6s ease-in-out infinite; }
+.kpi-scanring { animation:kpiScanRing 3.6s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .kpi-dotring, .kpi-dotcore, .kpi-barshine, .kpi-scanline, .kpi-scanring { animation:none !important; }
+  .kpi-scanline { opacity:.8 !important; }
+}
+
 /* ════════════════════════════════════════════════════════════════════════════
    UI PRIMITIVES — Button (components/ui/Button.tsx). Styles en classes pour de
    vrais états :hover/:active (impossibles en inline). Couleurs = tokens (accent

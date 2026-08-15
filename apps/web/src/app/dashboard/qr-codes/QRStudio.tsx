@@ -464,6 +464,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   const [scanOpen, setScanOpen] = useState(false) // diagnostic scannabilite : repli par defaut (ne mange plus l'ecran)
   const [autoMsg,    setAutoMsg]    = useState<string>("")
   const [applyAllOk,   setApplyAllOk]   = useState(false)
+  const [applyAllModal, setApplyAllModal] = useState(false)   // confirmation « Appliquer à tous mes QR »
   const [selectedCat,  setSelectedCat]  = useState("classic")
   const [upsell,        setUpsell]        = useState<{ feature: string; plan: string } | null>(null)
   const [batchOpen,     setBatchOpen]     = useState(false)  // génération de QR en lot (B2B)
@@ -2442,6 +2443,22 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         genBlob={(value, ext) => getQRBlob({ data: value, fg, bg, ecc: effectiveEcc, style: renderStyle, size: 1000 }, ext)}
       />
 
+      {/* -- Modale « Appliquer à tous mes QR » (confirmation + explication) ----- */}
+      {applyAllModal && (
+        <Modal open onClose={() => setApplyAllModal(false)} title="Appliquer ce style à tous vos QR ?"
+          footer={<>
+            <button type="button" onClick={() => setApplyAllModal(false)} style={{ padding:"9px 16px", background:"transparent", border:"1px solid rgba(255,255,255,0.14)", borderRadius:9, color:"#A8A190", fontSize:13, fontWeight:600, cursor:"pointer" }}>Annuler</button>
+            <button type="button" onClick={() => { setApplyAllModal(false); void applyToAll() }} className="qb-pill" style={{ padding:"9px 18px", fontSize:13 }}>Appliquer à tous</button>
+          </>}>
+          <p style={{ color:"#C9C3B6", fontSize:13.5, lineHeight:1.6, margin:0 }}>
+            Le <strong style={{ color:"#F5F0E8" }}>style actuel</strong> (couleurs, forme des modules et des coins, logo, marge, correction d'erreur) sera copié sur <strong style={{ color:"#F5F0E8" }}>tous vos QR codes</strong> — {qrCodes.length} au total.
+          </p>
+          <p style={{ color:"#A8A190", fontSize:12, lineHeight:1.55, margin:"10px 0 0" }}>
+            La <strong style={{ color:"#C9C3B6" }}>destination</strong> de chaque QR (là où il pointe) n'est <strong style={{ color:"#C9C3B6" }}>pas modifiée</strong>. Vous pourrez toujours re-personnaliser un QR individuellement ensuite.
+          </p>
+        </Modal>
+      )}
+
       {/* -- Modale suppression -------------------------------------------------- */}
       {confirmId !== null && (
         <Modal open onClose={() => setConfirmId(null)} title="Supprimer ce QR Code ?"
@@ -2656,7 +2673,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 <div style={{ order: isMobile ? 3 : 0, width:"100%", display:"flex", flexDirection:"column", alignItems:"center", gap:16 }}>
                 {/* Sélecteur d'aperçu (QR/Carte/Affiche) déplacé dans l'en-tête « Aperçu » (haut droite) → aperçu remonté. */}
                 {/* Stage à TAILLE FIXE : QR / Carte / Affiche partagent le même bloc (aucun resize au changement). */}
-                <div style={{ position:"relative", width:isMobile?"min(280px,80vw)":290, height:isMobile?250:270, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <div style={{ position:"relative", width:isMobile?"min(290px,86vw)":290, height:isMobile?258:270, display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {/* Scène immersive (produit fini) — remplit le stage, centrée */}
                   {scene !== "none" && (
                     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:"100%", height:"100%", animation:"mo-fade-up .35s ease" }}>
@@ -2676,7 +2693,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                           </div>
                         </div>
                       ) : scene === "card" ? (
-                        <div style={{ width:isMobile?240:284, height:isMobile?142:166, borderRadius:14, background:"linear-gradient(135deg,#16140d,#0c0b08)", border:"1px solid color-mix(in srgb, var(--accent) 22%, transparent)", boxShadow:"0 24px 60px rgba(0,0,0,0.6)", display:"flex", overflow:"hidden" }}>
+                        <div style={{ width:isMobile?266:284, height:isMobile?156:166, borderRadius:14, background:"linear-gradient(135deg,#16140d,#0c0b08)", border:"1px solid color-mix(in srgb, var(--accent) 22%, transparent)", boxShadow:"0 24px 60px rgba(0,0,0,0.6)", display:"flex", overflow:"hidden" }}>
                           <div style={{ flex:1, padding:"16px 14px", display:"flex", flexDirection:"column", justifyContent:"center", gap:6 }}>
                             <div style={{ width:34, height:34, borderRadius:9, background:"linear-gradient(135deg,var(--accent),color-mix(in srgb, var(--accent) 70%, #000))", display:"flex", alignItems:"center", justifyContent:"center", color:"#080808", fontWeight:800, fontSize:15 }}>{(active.pages?.title ?? "Q")[0].toUpperCase()}</div>
                             <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:700, margin:"4px 0 0" }}>{active.pages?.title ?? "Votre nom"}</p>
@@ -2688,7 +2705,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                           </div>
                         </div>
                       ) : scene === "poster" ? (
-                        <div style={{ width:isMobile?188:206, height:isMobile?250:268, borderRadius:12, background:"linear-gradient(160deg,#1a160c,#0a0906)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", boxShadow:"0 28px 70px rgba(0,0,0,0.6)", display:"flex", flexDirection:"column", alignItems:"center", padding:"16px 16px", gap:8 }}>
+                        <div style={{ width:isMobile?196:206, height:isMobile?246:268, borderRadius:12, background:"linear-gradient(160deg,#1a160c,#0a0906)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", boxShadow:"0 28px 70px rgba(0,0,0,0.6)", display:"flex", flexDirection:"column", alignItems:"center", padding:"16px 16px", gap:8 }}>
                           <p style={{ color:"#C9A84C", fontSize:10, fontWeight:800, letterSpacing:2, margin:0 }}>SCANNEZ-MOI</p>
                           <p style={{ color:"#F5F0E8", fontFamily:"Fraunces, serif", fontSize:19, fontWeight:700, textAlign:"center", lineHeight:1.1, margin:0 }}>{active.pages?.title ?? "Découvrez-nous"}</p>
                           <div style={{ padding:10, background:"#fff", borderRadius:12, marginTop:"auto" }}>
@@ -2727,7 +2744,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         borderRight:  h==="right"  ? "2px solid color-mix(in srgb, var(--accent) 70%, transparent)" : "none",
                       }}/>
                     ))}
-                    <div ref={canvasRef} data-qr-container style={{ display:"flex", width:isMobile?"min(200px, 54vw)":"min(30vh, 224px)", height:isMobile?"min(200px, 54vw)":"min(30vh, 224px)", alignItems:"center", justifyContent:"center" }}/>
+                    <div ref={canvasRef} data-qr-container style={{ display:"flex", width:isMobile?"min(206px, 56vw)":"min(30vh, 224px)", height:isMobile?"min(206px, 56vw)":"min(30vh, 224px)", alignItems:"center", justifyContent:"center" }}/>
                     {/* Hover overlay */}
                     <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:28, transition:"background 0.2s" }}
                       onMouseEnter={e => (e.currentTarget.style.background="rgba(0,0,0,0.4)")}
@@ -2890,7 +2907,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         <span style={{ position:"relative", zIndex:1 }}>{saving ? "Enregistrement…" : saved ? "Enregistré" : "Enregistrer le style"}</span>
                       </button>
                     </div>
-                    <button type="button" onClick={applyToAll} className="qb-phantom" style={{ flex:1, padding:"12px 16px", fontSize:13, ...(applyAllOk ? { color:"var(--success)" } : {}) }}>
+                    <button type="button" onClick={() => setApplyAllModal(true)} className="qb-phantom" style={{ flex:1, padding:"12px 16px", fontSize:13, ...(applyAllOk ? { color:"var(--success)" } : {}) }}>
                       {applyAllOk ? <Check size={13}/> : <Settings size={13}/>}
                       {applyAllOk ? "Appliqué à tous" : "Appliquer à tous"}
                     </button>

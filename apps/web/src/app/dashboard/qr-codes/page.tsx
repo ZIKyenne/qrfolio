@@ -95,15 +95,21 @@ export default async function QRCodesPage() {
               ))}
             </div>
 
-            {/* QR d'un lien : generateur de QR pour n'importe quelle URL (decouvrable ici aussi, pas seulement dans le sheet mobile). */}
-            <a href="/dashboard/qr-link" className="qrh-cta" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(201,168,76,0.08)", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)", color: "var(--accent)", textDecoration: "none", fontSize: 12.5, fontWeight: 700, padding: "10px 16px", borderRadius: 10, whiteSpace: "nowrap" as const }}>
-              <Link2 size={14}/> QR Dynamique
+            {/* QR Dynamique — secondaire or contour (handoff « Boutons d'en-tête »). */}
+            <a href="/dashboard/qr-link" className="qrh-cta qb-hsec">
+              <span className="qb-ico" aria-hidden="true" style={{ display: "inline-flex" }}><Link2 size={15}/></span> QR Dynamique
             </a>
 
-            {/* Un QR = une page dans QRowg : la creation part donc d'une page (templates). */}
-            <a href="/dashboard/templates" className="qrh-cta" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 78%, #000))", color: "#080808", textDecoration: "none", fontSize: 12.5, fontWeight: 700, padding: "10px 18px", borderRadius: 10, whiteSpace: "nowrap" as const, boxShadow: "0 4px 14px color-mix(in srgb, var(--accent) 20%, transparent)" }}>
-              <Plus size={14}/> Nouvelle page + QR
-            </a>
+            {/* Nouvelle page + QR — primaire or (halo respirant + reflet au survol). */}
+            <span style={{ position: "relative", display: "inline-flex" }}>
+              <span aria-hidden="true" className="qb-halo" />
+              <a href="/dashboard/templates" className="qrh-cta qb-hpri">
+                <span aria-hidden="true" className="qb-gloss" />
+                <span aria-hidden="true" className="qb-sheen" />
+                <span className="qb-ico" aria-hidden="true" style={{ display: "inline-flex" }}><Plus size={16}/></span>
+                <span style={{ position: "relative", zIndex: 1 }}>Nouvelle page + QR</span>
+              </a>
+            </span>
           </div>
         </div>
       </div>

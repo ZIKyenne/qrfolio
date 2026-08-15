@@ -274,12 +274,12 @@ button:not(:disabled):active { transform: scale(.97); }
 }
 
 /* En-tête QR Codes Studio — QR Dynamique (secondaire) + Nouvelle page + QR (primaire or, halo) */
-.qb-hsec { position:relative; overflow:hidden; cursor:pointer; display:inline-flex; align-items:center; gap:10px; padding:13px 22px; border:1px solid rgba(232,200,119,.28); border-radius:11px; background-color:#14110d; background-image:linear-gradient(135deg, rgba(232,200,119,.1), rgba(201,162,77,.05)); color:#e8c877; font-family:inherit; font-size:14.5px; font-weight:600; text-decoration:none; white-space:nowrap; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.qb-hsec { position:relative; overflow:hidden; cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:9px 15px; border:1px solid rgba(232,200,119,.28); border-radius:10px; background-color:#14110d; background-image:linear-gradient(135deg, rgba(232,200,119,.1), rgba(201,162,77,.05)); color:#e8c877; font-family:inherit; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
 .qb-hsec:hover { background-image:linear-gradient(135deg, rgba(232,200,119,.22), rgba(201,162,77,.12)); border-color:rgba(232,200,119,.7); color:#f0d590; transform:translateY(-2px); box-shadow:0 10px 22px -12px rgba(201,162,77,.6); }
 .qb-hsec:active { transform:scale(.97); }
 .qb-hsec .qb-ico { transition:transform .26s cubic-bezier(.2,.8,.2,1); }
 .qb-hsec:hover .qb-ico { transform:rotate(-20deg) scale(1.1); }
-.qb-hpri { position:relative; overflow:hidden; cursor:pointer; display:inline-flex; align-items:center; gap:10px; padding:13px 24px; border:none; border-radius:11px; background:linear-gradient(135deg,#e8c877,#c9a24d); color:#1a1408; font-family:inherit; font-size:14.5px; font-weight:600; text-decoration:none; white-space:nowrap; box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(90,62,20,.4) inset, 0 6px 16px -10px rgba(0,0,0,.8); transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.qb-hpri { position:relative; overflow:hidden; cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:9px 17px; border:none; border-radius:10px; background:linear-gradient(135deg,#e8c877,#c9a24d); color:#1a1408; font-family:inherit; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(90,62,20,.4) inset, 0 6px 16px -10px rgba(0,0,0,.8); transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
 .qb-hpri:hover { transform:translateY(-2px); box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(90,62,20,.4) inset, 0 12px 26px -10px rgba(201,162,77,.55); }
 .qb-hpri:active { transform:translateY(0) scale(.975); }
 .qb-hpri:hover .qb-sheen { animation:qbSheen .85s cubic-bezier(.3,.7,.3,1) both; }
@@ -297,7 +297,7 @@ button:not(:disabled):active { transform: scale(.97); }
 @keyframes kpiBarShine { 0%{transform:translateX(-120%)} 60%{transform:translateX(360%)} 100%{transform:translateX(360%)} }
 @keyframes kpiScanLine { 0%{transform:translateY(0);opacity:0} 12%{opacity:1} 50%{transform:translateY(14px);opacity:1} 62%{opacity:0} 100%{transform:translateY(0);opacity:0} }
 @keyframes kpiScanRing { 0%{transform:scale(.9);opacity:0} 35%{opacity:.45} 100%{transform:scale(1.45);opacity:0} }
-.kpi-chip { position:relative; overflow:hidden; display:flex; align-items:center; gap:12px; padding:11px 18px; border-radius:11px; background:linear-gradient(180deg,#17140f 0%,#121009 100%); border:1px solid #26211a; }
+.kpi-chip { position:relative; overflow:hidden; display:flex; align-items:center; gap:8px; padding:7px 11px; border-radius:10px; background:linear-gradient(180deg,#17140f 0%,#121009 100%); border:1px solid #26211a; }
 .kpi-dotring  { animation:kpiDotRing 3.2s ease-out infinite; }
 .kpi-dotcore  { animation:kpiPulseDot 3.2s ease-in-out infinite; }
 .kpi-barshine { animation:kpiBarShine 5s ease-in-out infinite; }

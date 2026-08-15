@@ -92,8 +92,8 @@ export default async function QRCodesPage() {
                   <span className="kpi-dotcore" style={{ position: "absolute", inset: 1, borderRadius: "50%", background: dotColor, boxShadow: `0 0 12px ${dotColor}b3` }} />
                 </span>
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-.01em", color: "#e8c877", lineHeight: 1 }}>{activeQR}{activeLimit != null && <span style={{ color: "#6b6258", fontWeight: 500 }}> / {activeLimit}</span>}</div>
-                  <div style={{ fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 600 }}>QR actifs</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em", color: "#e8c877", lineHeight: 1 }}>{activeQR}{activeLimit != null && <span style={{ color: "#6b6258", fontWeight: 500 }}> / {activeLimit}</span>}</div>
+                  <div style={{ fontSize: 9.5, letterSpacing: ".14em", textTransform: "uppercase", color: "#8a8177", fontWeight: 600 }}>QR actifs</div>
                 </div>
                 {activeLimit != null && (
                   <div aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 2, background: "#221f1b" }}>
@@ -115,8 +115,8 @@ export default async function QRCodesPage() {
                   <span className="kpi-scanline" style={{ position: "absolute", left: 2, right: 2, top: 3, height: 1.5, borderRadius: 2, background: "linear-gradient(90deg, rgba(232,200,119,0), #f0d590, rgba(232,200,119,0))", boxShadow: "0 0 8px rgba(232,200,119,.8)" }} />
                 </span>
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-.01em", color: "#e8c877", lineHeight: 1 }}>{totalScans.toLocaleString("fr-FR")}</div>
-                  <div style={{ fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 600 }}>Scans total</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em", color: "#e8c877", lineHeight: 1 }}>{totalScans.toLocaleString("fr-FR")}</div>
+                  <div style={{ fontSize: 9.5, letterSpacing: ".14em", textTransform: "uppercase", color: "#8a8177", fontWeight: 600 }}>Scans total</div>
                 </div>
               </div>
             </div>

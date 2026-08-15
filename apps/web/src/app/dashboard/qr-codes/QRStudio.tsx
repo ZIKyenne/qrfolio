@@ -2540,53 +2540,34 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             const url  = `${appUrl}/q/${qr.short_code}`
             const isM  = menuId === qr.id
             const isC  = copyQRId === qr.id
-            const pb   = PLAN_BADGE[userPlan]
             return (
               <div key={qr.id} role="button" tabIndex={0} onKeyDown={onEnterSpace(() => { setActiveId(qr.id); setMenuId(null); setMobileView("editor") })} onClick={() => { setActiveId(qr.id); setMenuId(null); setMobileView("editor") }}
-                style={{ margin:"0 10px 8px", padding:"12px", cursor:"pointer", borderRadius:12, border:`1px solid ${isA?"color-mix(in srgb, var(--accent) 40%, transparent)":"rgba(255,255,255,0.07)"}`, background:isA?"color-mix(in srgb, var(--accent) 7%, transparent)":"rgba(255,255,255,0.02)", boxShadow:isA?"0 4px 16px color-mix(in srgb, var(--accent) 8%, transparent)":"none", position:"relative", transition:"all 0.15s" }}
-                onMouseEnter={e => { if (!isA) e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)" }}
-                onMouseLeave={e => { if (!isA) e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)" }}>
-                <div style={{ display:"flex", alignItems:"flex-start", gap:9 }}>
-                  <div style={{ width:34, height:34, borderRadius:8, background:qr.background_color, border:`1px solid ${qs==="active"?"rgba(57,255,143,0.3)":qs==="paused"?"rgba(249,115,22,0.3)":qs==="expired"?"rgba(255,107,107,0.3)":"rgba(255,255,255,0.1)"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative" }}>
-                    <QrCode size={16} color={qr.foreground_color}/>
-                    {pb && (
-                      <span style={{ position:"absolute", top:-4, right:-4, background:pb.color, color:"#080808", fontSize:7, fontWeight:800, borderRadius:3, padding:"1px 3px" }}>
-                        {pb.label}
-                      </span>
-                    )}
+                style={{ margin:"0 8px 3px", padding:isMobile?"9px 10px":"7px 9px", cursor:"pointer", borderRadius:9, border:`1px solid ${isA?"color-mix(in srgb, var(--accent) 40%, transparent)":"transparent"}`, background:isA?"color-mix(in srgb, var(--accent) 9%, transparent)":"transparent", position:"relative", transition:"background 0.14s, border-color 0.14s" }}
+                onMouseEnter={e => { if (!isA) e.currentTarget.style.background = "rgba(255,255,255,0.03)" }}
+                onMouseLeave={e => { if (!isA) e.currentTarget.style.background = "transparent" }}>
+                {/* Ligne compacte : pastille (avec point de statut) + titre + /q·scans + menu. Dates/actions -> menu ··· (§8). */}
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <div style={{ width:26, height:26, borderRadius:7, background:qr.background_color, border:"1px solid rgba(255,255,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative" }}>
+                    <QrCode size={13} color={qr.foreground_color}/>
+                    <span title={sCfg.label} style={{ position:"absolute", bottom:-3, right:-3, width:8, height:8, borderRadius:"50%", background:sCfg.dot, border:"1.5px solid #0F0E0B" }}/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ color:isA?"#F5F0E8":"#D4CFC7", fontSize:12, fontWeight:700, margin:"0 0 2px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
+                    <p style={{ color:isA?"#F5F0E8":"#D4CFC7", fontSize:12, fontWeight:600, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
                       {page?.title ?? "Sans titre"}
                     </p>
-                    <p style={{ color:MUTED, fontSize:9, margin:"0 0 4px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, fontFamily:"monospace" }}>
-                      /q/{qr.short_code}
+                    <p style={{ color:MUTED, fontSize:9.5, margin:"1px 0 0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
+                      <span style={{ fontFamily:"monospace" }}>/q/{qr.short_code}</span>{qr.total_scans>0?` · ${qr.total_scans} scan${qr.total_scans>1?"s":""}`:""}
                     </p>
-                    <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                      <span style={{ display:"inline-flex", alignItems:"center", gap:3, padding:"1px 6px", background:sCfg.badge, borderRadius:4, fontSize:9, color:sCfg.text, fontWeight:600 }}>
-                        <div style={{ width:4, height:4, borderRadius:"50%", background:sCfg.dot }}/>
-                        {sCfg.label}
-                      </span>
-                      <span style={{ color:qr.total_scans>0?G:MUTED, fontSize:9 }}>{qr.total_scans} scans</span>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:3 }}>
-                      {qr.last_scan_at && (new Date().getTime() - new Date(qr.last_scan_at).getTime()) < 86400000 && (
-                        <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--success)", animation:"mo-pulse 1.5s infinite", flexShrink:0 }}/>
-                      )}
-                      <p style={{ color:MUTED, fontSize:9, margin:0 }}>
-                        {qr.last_scan_at ? formatDate(qr.last_scan_at) : "Jamais scanné"}
-                      </p>
-                    </div>
                   </div>
                   <button type="button" onClick={e => { e.stopPropagation(); setMenuId(isM ? null : qr.id) }}
-                    style={{ width:isMobile?36:22, height:isMobile?36:22, background:"none", border:"none", color:MUTED, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <MoreVertical size={isMobile?17:13}/>
+                    style={{ width:isMobile?32:20, height:isMobile?32:20, background:"none", border:"none", color:MUTED, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <MoreVertical size={isMobile?16:13}/>
                   </button>
                 </div>
 
                 {/* Menu contextuel */}
                 {isM && (
-                  <div style={{ position:"absolute", right:8, top:38, zIndex:200, background:"#1A1710", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:10, padding:"5px", boxShadow:"0 8px 32px rgba(0,0,0,0.7)", minWidth:158 }}
+                  <div style={{ position:"absolute", right:8, top:32, zIndex:200, background:"#1A1710", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:10, padding:"5px", boxShadow:"0 8px 32px rgba(0,0,0,0.7)", minWidth:158 }}
                     onClick={e => e.stopPropagation()}>
                     {([
                       { icon: <Pencil size={11}/>,  label: "Modifier",     action: () => { window.location.href = `/dashboard/builder/${page?.id}` }, color: "#F5F0E8", disabled: false },
@@ -2610,24 +2591,6 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   </div>
                 )}
 
-                {/* Actions rapides si selectionne */}
-                {isA && (
-                  <div style={{ display:"flex", gap:5, marginTop:8, paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.04)" }}
-                    onClick={e => e.stopPropagation()}>
-                    <a href={`/dashboard/builder/${page?.id}`}
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, padding:"5px", background:"color-mix(in srgb, var(--accent) 8%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 15%, transparent)", borderRadius:7, color:G, fontSize:10, fontWeight:600, textDecoration:"none" }}>
-                      <Pencil size={10}/> Modifier
-                    </a>
-                    <button type="button" onClick={() => copyQRLink(qr.id, url)}
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, padding:"5px", background:isC?"rgba(57,255,143,0.1)":"rgba(255,255,255,0.04)", border:`1px solid ${isC?"rgba(57,255,143,0.3)":"rgba(255,255,255,0.08)"}`, borderRadius:7, color:isC?"var(--success)":MUTED, fontSize:10, cursor:"pointer" }}>
-                      {isC ? <Check size={10}/> : <Copy size={10}/>} Lien
-                    </button>
-                    <button type="button" onClick={() => downloadPNG(400)}
-                      style={{ width:isMobile?38:28, minHeight:isMobile?36:undefined, display:"flex", alignItems:"center", justifyContent:"center", padding:"5px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:7, color:MUTED, cursor:"pointer" }}>
-                      <Download size={isMobile?14:10}/>
-                    </button>
-                  </div>
-                )}
               </div>
             )
           })}

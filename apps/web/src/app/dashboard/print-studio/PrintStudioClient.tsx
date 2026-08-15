@@ -21,6 +21,7 @@ import {
   LAYOUT_BY_ID, LAYOUTS, STYLES, TYPOS, SIZES, MESSAGES, type Item, type Style,
 } from "./catalog"
 import { sceneLayers, paletteFromStyle, scaleFor, SCENES } from "./mockup"
+import { filterTemplates, type PrintTemplate, type TemplateVariant } from "./templates"
 import { printPreflight, hexContrastRatio } from "../qr-codes/printPreflight"
 import { color as C, radius as R } from "./tokens"
 
@@ -198,7 +199,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [advSel, setAdvSel] = useState(false)          // repli des réglages avancés de l'élément sélectionné (X/Y/rotation/opacité)
   const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
-  const [open, setOpen] = useState<string | null>("styles")   // un seul volet ouvert (styles à l'entrée)
+  const [open, setOpen] = useState<string | null>("modeles")   // un seul volet ouvert (Modèles à l'entrée — templates = primaire)
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
   const [declineOpen, setDeclineOpen] = useState(false)    // sélecteur « décliner sur un autre support »
@@ -547,13 +548,25 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setFreeEls(els => [...els, { id, kind: "shape", x: 0.35, y: 0.4, w: 0.3, h2: shape === "line" ? 0.015 : 0.2, size: 0.06, color: p.band, align: "center", weight: 700, font: "", text: "", shape }])
     setSelEl(id); setLibre(true)
   }
-  // Compositions prêtes : ajoute un GROUPE d'éléments finis (ids uniques) dérivés du thème courant.
-  function addComposition(cid: string) {
+  // Compositions prêtes : ajoute un GROUPE d'éléments finis (ids uniques) dérivés du thème (ou d'un style cible).
+  function addComposition(cid: string, styleOverride?: Style) {
     const c = COMPOSITIONS.find(x => x.id === cid); if (!c) return
-    const p = paletteFromStyle(style), base = Date.now()
+    const p = paletteFromStyle(styleOverride || style), base = Date.now()
     const parts: FreeEl[] = c.build(p).map((part, i) => ({ ...part, id: `f_${base}_${i}` }))
     setFreeEls(els => [...els, ...parts])
     setSelEl(parts[0]?.id ?? null); setLibre(true)
+  }
+  // Appliquer un TEMPLATE (§7) : look + contenu suggéré (+ composition), recoercé au support. Annulable (undo).
+  function applyTemplate(t: PrintTemplate, variant?: TemplateVariant) {
+    const L = t.look
+    const st = variant?.style || L.style
+    setStyleId(st); setLayoutId(item ? fitLayout(L.layout, item) : L.layout); setAccent(variant?.accent || L.accent)
+    setBgFinish(L.bgFinish); setFrame(L.frame); setTitleCase(L.titleCase); setTitleWeight(L.titleWeight)
+    setQrBadge(L.qrBadge); setECorner(L.eCorner); setEAccent(L.eAccent); setEAlign(L.eAlign)
+    if (L.eTypo) setETypo(L.eTypo)
+    if (t.content.brand) setBrandText(t.content.brand)
+    setMessage(t.content.title ?? ""); setSubtitle(t.content.subtitle ?? ""); setCtaText(t.content.cta ?? "")
+    if (t.comp) addComposition(t.comp, STYLE_BY_ID[st])   // couleurs de la composition = style cible (pas l'ancien)
   }
   function updateEl(id: string, patch: Partial<FreeEl>) { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...patch } : e)) }
   function deleteEl(id: string) { setFreeEls(els => els.filter(e => e.id !== id)); setSelEl(s => (s === id ? null : s)) }
@@ -684,6 +697,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // Planche = chaque format retenu, répété `campaignQty` fois (imposition N-up : N exemplaires par format).
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   const sel = freeEls.find(e => e.id === selEl)
+  const tmpls = filterTemplates(item)   // templates pertinents au support courant (pertinents d'abord)
   const layBtn: React.CSSProperties = { width: 28, height: 28, borderRadius: 7, border: "none", background: "transparent", color: C.fgMuted, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }
   return (
     <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -776,6 +790,23 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               </div>
             </div>
           )}
+
+          {/* Modèles (§7) — point de départ complet (look + textes + composition), recoercé au support. Primaire. */}
+          <Panel id="modeles" title="Modèles" resume={`${tmpls.length} prêts à l'emploi · contenu inclus`} open={open} setOpen={setOpen}>
+            <p style={{ margin: 0, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Un départ complet — look + textes. Les plus adaptés à ce support d'abord. Tout reste éditable ensuite.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(96px,1fr))", gap: 10 }}>
+              {tmpls.map(t => (
+                <div key={t.id} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <TemplateThumb t={t} onClick={() => applyTemplate(t)} />
+                  {t.variants && t.variants.length > 0 && (
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                      {t.variants.map(v => <button key={v.id} onClick={() => applyTemplate(t, v)} title={`${t.name} — ${v.label}`} aria-label={`${t.name} — ${v.label}`} style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${C.hairline}`, background: v.hex, cursor: "pointer", padding: 0, flexShrink: 0 }} />)}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Panel>
 
           {/* Calques (mode Studio libre) — liste réordonnable des éléments : sélectionner, masquer, verrouiller, avant/arrière. */}
           {libre && freeEls.length > 0 && (
@@ -1486,6 +1517,28 @@ function PresetThumb({ preset, item, on, onClick }: { preset: Preset; item: Item
         <span style={{ width: 26, height: 6, borderRadius: preset.eCorner === "rond" ? 999 : 2, background: accHex }} />
       </div>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: on ? C.gold : C.fgMuted, padding: "4px 6px", background: C.surface, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>{preset.label}</div>
+    </button>
+  )
+}
+
+/* Vignette de TEMPLATE : aperçu représentatif léger (palette + titre réel + casse/alignement + accent + faux QR).
+   Reflète le contenu du modèle, pas juste un look — l'utilisateur reconnaît le point de départ. */
+function TemplateThumb({ t, onClick }: { t: PrintTemplate; onClick: () => void }) {
+  const L = t.look
+  const s = STYLE_BY_ID[L.style] || STYLE_BY_ID.premiumdark
+  const pal = paletteFromStyle(s)
+  const accHex = ACCENTS.find(a => a.id === L.accent)?.hex || pal.band
+  const align = L.eAlign === "left" ? "flex-start" : L.eAlign === "right" ? "flex-end" : "center"
+  const raw = t.content.title || "Titre"
+  const titleTxt = L.titleCase === "upper" ? raw.toUpperCase() : raw
+  return (
+    <button onClick={onClick} title={t.name} style={{ borderRadius: 12, overflow: "hidden", border: "2px solid transparent", background: "none", padding: 0, cursor: "pointer" }}>
+      <div style={{ height: 78, background: pal.bg, display: "flex", flexDirection: "column", alignItems: align, justifyContent: "center", gap: 5, padding: 8 }}>
+        <span style={{ fontFamily: pal.titleFont, fontSize: 10.5, fontWeight: 700, color: pal.fg, lineHeight: 1.05, letterSpacing: pal.titleLs, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titleTxt}</span>
+        <FauxQR size={22} fg={pal.ink} bg={pal.qrBg} />
+        <span style={{ width: 24, height: 6, borderRadius: L.eCorner === "rond" ? 999 : 2, background: accHex }} />
+      </div>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.fgMuted, padding: "4px 6px", background: C.surface, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>{t.name}</div>
     </button>
   )
 }

@@ -861,19 +861,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
           {/* Modèles (§7) — point de départ complet (look + textes + composition), recoercé au support. Primaire. */}
           <Panel id="modeles" title="Modèles" resume={`${tmpls.length} prêts à l'emploi · contenu inclus`} open={open} setOpen={setOpen}>
-            <p style={{ margin: 0, fontSize: 11.5, color: C.fgMuted, lineHeight: 1.4 }}>Un départ complet — look + textes. Les plus adaptés à ce support d'abord. Tout reste éditable ensuite.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(96px,1fr))", gap: 10 }}>
-              {tmpls.map(t => (
-                <div key={t.id} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                  <TemplateThumb t={t} onClick={() => applyTemplate(t)} />
-                  {t.variants && t.variants.length > 0 && (
-                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                      {t.variants.map(v => <button key={v.id} onClick={() => applyTemplate(t, v)} title={`${t.name} — ${v.label}`} aria-label={`${t.name} — ${v.label}`} style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${C.hairline}`, background: v.hex, cursor: "pointer", padding: 0, flexShrink: 0 }} />)}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <TemplateLibrary item={item} onApply={applyTemplate} onApplyVariant={(t, v) => applyTemplate(t, v)} />
           </Panel>
 
           {/* Calques (mode Studio libre) — liste réordonnable des éléments : sélectionner, masquer, verrouiller, avant/arrière. */}
@@ -1104,14 +1092,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
             {mobileTab === "theme" && <>
               <p style={{ margin: 0, fontSize: 11.5, color: C.fgMuted }}>Un thème complet en un tap — tout reste modifiable.</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(100px,1fr))", gap: 10 }}>
-                {tmpls.map(t => (
-                  <div key={t.id} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                    <TemplateThumb t={t} onClick={() => applyTemplate(t)} />
-                    {t.variants && t.variants.length > 0 && <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>{t.variants.map(v => <button key={v.id} onClick={() => applyTemplate(t, v)} title={v.label} aria-label={`${t.name} — ${v.label}`} style={{ width: 18, height: 18, borderRadius: "50%", border: `1px solid ${C.hairline}`, background: v.hex, cursor: "pointer", padding: 0, flexShrink: 0 }} />)}</div>}
-                  </div>
-                ))}
-              </div>
+              <TemplateLibrary item={item} onApply={applyTemplate} onApplyVariant={(t, v) => applyTemplate(t, v)} />
               <p style={secLabel}>Styles rapides</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(80px,1fr))", gap: 8 }}>
                 {PRESETS.map(p => <PresetThumb key={p.id} preset={p} item={item} on={activePreset === p.id} onClick={() => applyPreset(p)} />)}
@@ -1701,7 +1682,7 @@ function TemplateThumb({ t, onClick }: { t: PrintTemplate; onClick: () => void }
   const raw = t.content.title || "Titre"
   const titleTxt = L.titleCase === "upper" ? raw.toUpperCase() : raw
   return (
-    <button onClick={onClick} title={t.name} style={{ borderRadius: 12, overflow: "hidden", border: "2px solid transparent", background: "none", padding: 0, cursor: "pointer" }}>
+    <button onClick={onClick} title={t.name} className="ps-tpl" style={{ borderRadius: 12, overflow: "hidden", border: "2px solid transparent", background: "none", padding: 0, cursor: "pointer" }}>
       <div style={{ height: 78, background: pal.bg, display: "flex", flexDirection: "column", alignItems: align, justifyContent: "center", gap: 5, padding: 8 }}>
         <span style={{ fontFamily: pal.titleFont, fontSize: 10.5, fontWeight: 700, color: pal.fg, lineHeight: 1.05, letterSpacing: pal.titleLs, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titleTxt}</span>
         <FauxQR size={22} fg={pal.ink} bg={pal.qrBg} />
@@ -1709,6 +1690,54 @@ function TemplateThumb({ t, onClick }: { t: PrintTemplate; onClick: () => void }
       </div>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.fgMuted, padding: "4px 6px", background: C.surface, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>{t.name}</div>
     </button>
+  )
+}
+
+/* Bibliothèque de TEMPLATES (§3-4/19-20) : recherche + catégories + « Recommandés » + grille.
+   Réutilisée desktop (volet Modèles) et mobile (onglet Thème). Ne montre jamais un mur brut. */
+const TPL_CATS: { id: string; label: string; m?: (t: PrintTemplate) => boolean }[] = [
+  { id: "pour-vous", label: "Pour vous" },
+  { id: "resto", label: "Restaurant", m: t => t.business.includes("Restaurant") || t.business.includes("Café") || t.business.includes("Boulangerie") },
+  { id: "bar", label: "Bar", m: t => t.business.includes("Bar") || t.business.includes("Caviste") },
+  { id: "commerce", label: "Commerce", m: t => t.business.some(b => ["Boutique", "Food truck", "Boucherie", "Traiteur"].includes(b)) },
+  { id: "avis", label: "Avis", m: t => t.objective.includes("Avis") },
+  { id: "wifi", label: "Wi-Fi", m: t => t.objective.includes("Wifi") },
+  { id: "event", label: "Événement", m: t => t.business.includes("Événement") },
+  { id: "reseaux", label: "Réseaux", m: t => t.objective.includes("Réseaux") },
+  { id: "business", label: "Business", m: t => t.business.some(b => ["Freelance", "Artisan", "Immobilier", "Coach", "Photographe"].includes(b)) || t.objective.includes("Contact") },
+]
+function TemplateLibrary({ item, onApply, onApplyVariant }: { item: Item; onApply: (t: PrintTemplate) => void; onApplyVariant: (t: PrintTemplate, v: TemplateVariant) => void }) {
+  const [q, setQ] = useState("")
+  const [cat, setCat] = useState("pour-vous")
+  const ql = q.trim().toLowerCase()
+  const matchSearch = (t: PrintTemplate) => !ql || t.name.toLowerCase().includes(ql) || t.business.some(b => b.toLowerCase().includes(ql)) || t.objective.some(o => o.toLowerCase().includes(ql)) || t.style.some(s => s.toLowerCase().includes(ql))
+  let list = filterTemplates(item).filter(matchSearch)
+  if (!ql && cat !== "pour-vous") { const c = TPL_CATS.find(x => x.id === cat); if (c?.m) list = list.filter(c.m) }
+  const showReco = !ql && cat === "pour-vous"
+  const reco = showReco ? list.slice(0, 6) : []
+  const rest = showReco ? list.slice(6) : list
+  const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(96px,1fr))", gap: 10 }
+  const card = (t: PrintTemplate) => (
+    <div key={t.id} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <TemplateThumb t={t} onClick={() => onApply(t)} />
+      {t.variants && t.variants.length > 0 && <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{t.variants.map(v => <button key={v.id} onClick={() => onApplyVariant(t, v)} title={`${t.name} — ${v.label}`} aria-label={`${t.name} — ${v.label}`} style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${C.hairline}`, background: v.hex, cursor: "pointer", padding: 0, flexShrink: 0 }} />)}</div>}
+    </div>
+  )
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <style>{`.ps-tpl{transition:transform .15s var(--mo-ease,ease)}.ps-tpl:hover{transform:scale(1.04)}`}</style>
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un modèle…" style={{ ...inputStyle, height: 42 }} />
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
+        {TPL_CATS.map(c => <button key={c.id} onClick={() => { setCat(c.id); setQ("") }} style={{ ...chipStyle(!ql && cat === c.id), minHeight: 36, fontSize: 12 }}>{c.label}</button>)}
+      </div>
+      {showReco && reco.length > 0 && <>
+        <p style={{ margin: 0, fontSize: 11.5, fontWeight: 700, color: C.gold }}>Recommandés pour ce support</p>
+        <div style={grid}>{reco.map(card)}</div>
+        <p style={secLabel}>Tous les modèles</p>
+      </>}
+      <div style={grid}>{rest.map(card)}</div>
+      {list.length === 0 && <p style={{ color: C.fgMuted, fontSize: 13, textAlign: "center", padding: "8px 0" }}>Aucun modèle pour « {q} ».</p>}
+    </div>
   )
 }
 

@@ -2618,7 +2618,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
           </button>
         )}
         {/* Section label */}
-        <div style={{ padding:"9px 16px 8px", borderBottom:"1px solid rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
+        <div style={{ padding:"9px 16px 8px", borderBottom:"1px solid rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
             <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Aperçu</p>
             {active && (() => {
@@ -2632,9 +2632,17 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             })()}
           </div>
           {active && (
-            <span style={{ color:MUTED, fontSize:9, flexShrink:0 }}>
-              {new Date(active.created_at).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric" })}
-            </span>
+            <div style={{ display:"flex", gap:5, flexShrink:0 }}>
+              {([["none","QR","▦"],["card","Carte","💳"],["poster","Affiche","🖼️"]] as const).map(([k,l,e]) => (
+                <button key={k} type="button" onClick={() => setScene(k)}
+                  style={{ display:"flex", alignItems:"center", gap:4, padding:"4px 9px", borderRadius:7, fontSize:10.5, fontWeight:scene===k?700:500, cursor:"pointer",
+                    background: scene===k ? "color-mix(in srgb, var(--accent) 16%, transparent)" : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${scene===k ? "color-mix(in srgb, var(--accent) 45%, transparent)" : "rgba(255,255,255,0.08)"}`,
+                    color: scene===k ? "var(--accent)" : "#A8A190" }}>
+                  <span style={{ fontSize:11 }}>{e}</span> {l}
+                </button>
+              ))}
+            </div>
           )}
         </div>
         {active ? (() => {
@@ -2646,25 +2654,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:isMobile?"14px 16px 16px":"16px 22px 16px", gap:12, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
                 {/* Groupe visuel QR (sélecteur + QR + Agrandir) — placé APRÈS infos/actions sur mobile via order */}
                 <div style={{ order: isMobile ? 3 : 0, width:"100%", display:"flex", flexDirection:"column", alignItems:"center", gap:16 }}>
-                {/* Sélecteur d'aperçu immersif — replié sur mobile pour ne montrer que le QR par défaut */}
-                {isMobile && !sceneSelOpen ? (
-                  <button type="button" onClick={() => setSceneSelOpen(true)}
-                    style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, fontSize:11, fontWeight:600, cursor:"pointer", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.1)", color:"#A8A190" }}>
-                    Changer le format d&apos;aperçu <span style={{ color:"var(--accent)", fontSize:12 }}>▾</span>
-                  </button>
-                ) : (
-                  <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"center" }}>
-                    {([["none","QR","▦"],["card","Carte","💳"],["poster","Affiche","🖼️"]] as const).map(([k,l,e]) => (
-                      <button key={k} type="button" onClick={() => { setScene(k); if (isMobile) setSceneSelOpen(false) }}
-                        style={{ display:"flex", alignItems:"center", gap:4, padding:"5px 10px", borderRadius:8, fontSize:10.5, fontWeight:scene===k?700:500, cursor:"pointer",
-                          background: scene===k ? "color-mix(in srgb, var(--accent) 16%, transparent)" : "rgba(255,255,255,0.04)",
-                          border: `1px solid ${scene===k ? "color-mix(in srgb, var(--accent) 45%, transparent)" : "rgba(255,255,255,0.08)"}`,
-                          color: scene===k ? "var(--accent)" : "#A8A190" }}>
-                        <span style={{ fontSize:11 }}>{e}</span> {l}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {/* Sélecteur d'aperçu (QR/Carte/Affiche) déplacé dans l'en-tête « Aperçu » (haut droite) → aperçu remonté. */}
                 <div style={{ position:"relative" }}>
                   {/* Scène immersive (produit fini) */}
                   {scene !== "none" && (

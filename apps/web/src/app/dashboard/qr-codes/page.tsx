@@ -7,7 +7,7 @@ import { accessibleOwnerIds } from "@/lib/team"
 import { pageLimit } from "@/lib/plans"
 import { Plus, QrCode, TrendingUp, Activity, Link2 } from "lucide-react"
 
-export const metadata: Metadata = { title: "QR Studio - QRowg" }
+export const metadata: Metadata = { title: "QR Codes Studio - QRowg" }
 
 export default async function QRCodesPage() {
   const supabase = await createServerSupabaseClient()
@@ -69,7 +69,7 @@ export default async function QRCodesPage() {
             </div>
             <div>
               <h1 style={{ fontFamily: "Fraunces, serif", fontSize: 22, color: "#F5F0E8", fontWeight: 700, margin: 0, lineHeight: 1.15 }}>
-                QR Studio
+                QR Codes Studio
               </h1>
               <p style={{ color: "#A8A190", fontSize: 11, margin: 0 }}>
                 Créez, personnalisez et exportez vos QR Codes

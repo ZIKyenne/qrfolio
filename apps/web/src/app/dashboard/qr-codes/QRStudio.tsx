@@ -2640,7 +2640,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   </button>
                 ) : (
                   <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"center" }}>
-                    {([["none","QR","▦"],["phone","Mobile","📱"],["card","Carte","💳"],["poster","Affiche","🖼️"],["sticker","Sticker","⭕"],["tent","Chevalet","🍽️"]] as const).map(([k,l,e]) => (
+                    {([["none","QR","▦"],["card","Carte","💳"],["poster","Affiche","🖼️"]] as const).map(([k,l,e]) => (
                       <button key={k} type="button" onClick={() => { setScene(k); if (isMobile) setSceneSelOpen(false) }}
                         style={{ display:"flex", alignItems:"center", gap:4, padding:"5px 10px", borderRadius:8, fontSize:10.5, fontWeight:scene===k?700:500, cursor:"pointer",
                           background: scene===k ? "color-mix(in srgb, var(--accent) 16%, transparent)" : "rgba(255,255,255,0.04)",
@@ -3166,7 +3166,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             {qrCodes.length === 0 ? (
               <>
                 <div style={{ textAlign:"center" as const }}>
-                  <p style={{ color:"#F5F0E8", fontSize:15, fontWeight:700, margin:"0 0 6px" }}>Bienvenue dans QR Studio</p>
+                  <p style={{ color:"#F5F0E8", fontSize:15, fontWeight:700, margin:"0 0 6px" }}>Bienvenue dans QR Codes Studio</p>
                   <p style={{ color:MUTED, fontSize:12, margin:0, lineHeight:1.6 }}>Créez votre première page pour générer<br/>un QR Code personnalisable.</p>
                 </div>
                 <a href="/dashboard" style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"11px 20px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius:10, color:"#080808", fontSize:13, fontWeight:700, textDecoration:"none", boxShadow:"0 4px 14px color-mix(in srgb, var(--accent) 20%, transparent)" }}>

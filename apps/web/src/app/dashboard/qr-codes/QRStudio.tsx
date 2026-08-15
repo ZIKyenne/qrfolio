@@ -2655,10 +2655,11 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 {/* Groupe visuel QR (sélecteur + QR + Agrandir) — placé APRÈS infos/actions sur mobile via order */}
                 <div style={{ order: isMobile ? 3 : 0, width:"100%", display:"flex", flexDirection:"column", alignItems:"center", gap:16 }}>
                 {/* Sélecteur d'aperçu (QR/Carte/Affiche) déplacé dans l'en-tête « Aperçu » (haut droite) → aperçu remonté. */}
-                <div style={{ position:"relative" }}>
-                  {/* Scène immersive (produit fini) */}
+                {/* Stage à TAILLE FIXE : QR / Carte / Affiche partagent le même bloc (aucun resize au changement). */}
+                <div style={{ position:"relative", width:isMobile?"min(280px,80vw)":290, height:isMobile?250:270, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {/* Scène immersive (produit fini) — remplit le stage, centrée */}
                   {scene !== "none" && (
-                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:"min(46vh,360px,100%)", maxWidth:"100%", minHeight:"min(46vh,360px)", animation:"mo-fade-up .35s ease" }}>
+                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:"100%", height:"100%", animation:"mo-fade-up .35s ease" }}>
                       {!qrPng ? (
                         <div className="skeleton" style={{ width:200, height:200 }} />
                       ) : scene === "phone" ? (
@@ -2675,25 +2676,25 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                           </div>
                         </div>
                       ) : scene === "card" ? (
-                        <div style={{ width:isMobile?260:320, height:isMobile?153:188, borderRadius:14, background:"linear-gradient(135deg,#16140d,#0c0b08)", border:"1px solid color-mix(in srgb, var(--accent) 22%, transparent)", boxShadow:"0 24px 60px rgba(0,0,0,0.6)", display:"flex", overflow:"hidden" }}>
-                          <div style={{ flex:1, padding:"20px 18px", display:"flex", flexDirection:"column", justifyContent:"center", gap:7 }}>
+                        <div style={{ width:isMobile?240:284, height:isMobile?142:166, borderRadius:14, background:"linear-gradient(135deg,#16140d,#0c0b08)", border:"1px solid color-mix(in srgb, var(--accent) 22%, transparent)", boxShadow:"0 24px 60px rgba(0,0,0,0.6)", display:"flex", overflow:"hidden" }}>
+                          <div style={{ flex:1, padding:"16px 14px", display:"flex", flexDirection:"column", justifyContent:"center", gap:6 }}>
                             <div style={{ width:34, height:34, borderRadius:9, background:"linear-gradient(135deg,var(--accent),color-mix(in srgb, var(--accent) 70%, #000))", display:"flex", alignItems:"center", justifyContent:"center", color:"#080808", fontWeight:800, fontSize:15 }}>{(active.pages?.title ?? "Q")[0].toUpperCase()}</div>
                             <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:700, margin:"4px 0 0" }}>{active.pages?.title ?? "Votre nom"}</p>
                             <div style={{ width:90, height:6, background:"color-mix(in srgb, var(--accent) 40%, transparent)", borderRadius:4 }}/>
                             <div style={{ width:120, height:5, background:"rgba(255,255,255,0.12)", borderRadius:4 }}/>
                           </div>
-                          <div style={{ width:150, background:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                            <img src={qrPng} alt="QR" style={{ width:116, height:116, display:"block" }}/>
+                          <div style={{ width:126, background:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                            <img src={qrPng} alt="QR" style={{ width:100, height:100, display:"block" }}/>
                           </div>
                         </div>
                       ) : scene === "poster" ? (
-                        <div style={{ width:236, height:318, borderRadius:12, background:"linear-gradient(160deg,#1a160c,#0a0906)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", boxShadow:"0 28px 70px rgba(0,0,0,0.6)", display:"flex", flexDirection:"column", alignItems:"center", padding:"26px 20px", gap:14 }}>
-                          <p style={{ color:"#C9A84C", fontSize:11, fontWeight:800, letterSpacing:2, margin:0 }}>SCANNEZ-MOI</p>
-                          <p style={{ color:"#F5F0E8", fontFamily:"Fraunces, serif", fontSize:24, fontWeight:700, textAlign:"center", lineHeight:1.1, margin:0 }}>{active.pages?.title ?? "Découvrez-nous"}</p>
-                          <div style={{ padding:14, background:"#fff", borderRadius:14, marginTop:"auto" }}>
-                            <img src={qrPng} alt="QR" style={{ width:128, height:128, display:"block" }}/>
+                        <div style={{ width:isMobile?188:206, height:isMobile?250:268, borderRadius:12, background:"linear-gradient(160deg,#1a160c,#0a0906)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", boxShadow:"0 28px 70px rgba(0,0,0,0.6)", display:"flex", flexDirection:"column", alignItems:"center", padding:"16px 16px", gap:8 }}>
+                          <p style={{ color:"#C9A84C", fontSize:10, fontWeight:800, letterSpacing:2, margin:0 }}>SCANNEZ-MOI</p>
+                          <p style={{ color:"#F5F0E8", fontFamily:"Fraunces, serif", fontSize:19, fontWeight:700, textAlign:"center", lineHeight:1.1, margin:0 }}>{active.pages?.title ?? "Découvrez-nous"}</p>
+                          <div style={{ padding:10, background:"#fff", borderRadius:12, marginTop:"auto" }}>
+                            <img src={qrPng} alt="QR" style={{ width:104, height:104, display:"block" }}/>
                           </div>
-                          <p style={{ color:"#A8A190", fontSize:10, margin:"auto 0 0" }}>qrowg · /q/{active.short_code}</p>
+                          <p style={{ color:"#A8A190", fontSize:9.5, margin:"auto 0 0" }}>qrowg · /q/{active.short_code}</p>
                         </div>
                       ) : scene === "sticker" ? (
                         <div style={{ width:244, height:244, borderRadius:"50%", background:"radial-gradient(circle at 50% 35%, #fff, #f1eee6)", boxShadow:"0 24px 60px rgba(0,0,0,0.5), inset 0 0 0 7px var(--accent), inset 0 0 0 9px rgba(0,0,0,0.08)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
@@ -2716,7 +2717,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       )}
                     </div>
                   )}
-                  <div style={{ display: scene==="none" ? "block" : "none", position:"relative", padding:isMobile?16:28, borderRadius:isMobile?22:28, background:bg, boxShadow:`0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent), 0 28px 80px rgba(0,0,0,0.85)`, transition:"background 0.3s", cursor:"pointer" }}
+                  <div style={{ display: scene==="none" ? "block" : "none", position:"relative", padding:isMobile?14:18, borderRadius:isMobile?20:24, background:bg, boxShadow:`0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent), 0 24px 60px rgba(0,0,0,0.8)`, transition:"background 0.3s", cursor:"pointer" }}
                     role="button" tabIndex={0} aria-label="Ouvrir l'aperçu" onKeyDown={onEnterSpace(() => setShowModal(true))} onClick={() => setShowModal(true)}>
                     {[["top","left"],["top","right"],["bottom","left"],["bottom","right"]].map(([v,h], i) => (
                       <div key={i} style={{ position:"absolute", [v]:10, [h]:10, width:18, height:18,
@@ -2726,7 +2727,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         borderRight:  h==="right"  ? "2px solid color-mix(in srgb, var(--accent) 70%, transparent)" : "none",
                       }}/>
                     ))}
-                    <div ref={canvasRef} data-qr-container style={{ display:"flex", width:isMobile?"min(220px, 58vw)":"min(42vh, 320px)", height:isMobile?"min(220px, 58vw)":"min(42vh, 320px)", alignItems:"center", justifyContent:"center" }}/>
+                    <div ref={canvasRef} data-qr-container style={{ display:"flex", width:isMobile?"min(200px, 54vw)":"min(30vh, 224px)", height:isMobile?"min(200px, 54vw)":"min(30vh, 224px)", alignItems:"center", justifyContent:"center" }}/>
                     {/* Hover overlay */}
                     <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:28, transition:"background 0.2s" }}
                       onMouseEnter={e => (e.currentTarget.style.background="rgba(0,0,0,0.4)")}

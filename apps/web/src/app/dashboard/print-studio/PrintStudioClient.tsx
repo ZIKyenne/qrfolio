@@ -189,6 +189,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const isMobile = useIsMobile()
   const { kb, typing } = useKeyboard(isMobile)   // clavier virtuel : hauteur + saisie en cours (§11)
   const [sheetOpen, setSheetOpen] = useState(false)   // bottom sheet des réglages (mobile)
+  const [mobileTab, setMobileTab] = useState<"theme" | "couleurs" | "texte" | "qr">("theme")   // onglet simple mobile
   const [phase, setPhase] = useState<"library" | "studio">("library")
   const [metier, setMetier] = useState("Tout")
   const [objectif, setObjectif] = useState("Tout")
@@ -740,6 +741,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   const sel = freeEls.find(e => e.id === selEl)
   const tmpls = filterTemplates(item)   // templates pertinents au support courant (pertinents d'abord)
+  const showFlat = libre && !isMobile   // l'édition libre (drag/calques) est réservée au desktop — mobile = guidé simple
   const layBtn: React.CSSProperties = { width: 28, height: 28, borderRadius: 7, border: "none", background: "transparent", color: C.fgMuted, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }
   return (
     <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -747,14 +749,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       <header style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13, flexShrink: 0 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <div style={{ display: "inline-flex", gap: 4 }}>
-            <button onClick={undo} disabled={!canUndo} title="Annuler (Ctrl+Z)" aria-label="Annuler" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 10, color: canUndo ? C.fg : C.fgFaint, cursor: canUndo ? "pointer" : "default", opacity: canUndo ? 1 : 0.5 }}><Undo2 size={16} /></button>
-            <button onClick={redo} disabled={!canRedo} title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 10, color: canRedo ? C.fg : C.fgFaint, cursor: canRedo ? "pointer" : "default", opacity: canRedo ? 1 : 0.5 }}><Redo2 size={16} /></button>
-          </div>
-          <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.goldSoft, border: `1px solid ${C.goldA55}`, color: C.gold, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}><Copy size={14} /> Décliner</button>
-          <button onClick={() => { if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}><Layers size={14} /> Planche</button>
+          {/* Mobile = simplifié : on masque annuler/rétablir · Décliner · Planche (fonctions avancées desktop). */}
+          {!isMobile && <>
+            <div style={{ display: "inline-flex", gap: 4 }}>
+              <button onClick={undo} disabled={!canUndo} title="Annuler (Ctrl+Z)" aria-label="Annuler" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 10, color: canUndo ? C.fg : C.fgFaint, cursor: canUndo ? "pointer" : "default", opacity: canUndo ? 1 : 0.5 }}><Undo2 size={16} /></button>
+              <button onClick={redo} disabled={!canRedo} title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 10, color: canRedo ? C.fg : C.fgFaint, cursor: canRedo ? "pointer" : "default", opacity: canRedo ? 1 : 0.5 }}><Redo2 size={16} /></button>
+            </div>
+            <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.goldSoft, border: `1px solid ${C.goldA55}`, color: C.gold, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}><Copy size={14} /> Décliner</button>
+            <button onClick={() => { if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}><Layers size={14} /> Planche</button>
+          </>}
           {designCode && <button onClick={saveDesign} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: designSaved ? C.goldSoft : "transparent", border: `1px solid ${designSaved ? C.gold : C.hairline}`, color: designSaved ? C.gold : C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}>{designSaved ? <Check size={14} /> : <ShieldCheck size={14} />} {designSaved ? "Enregistré" : "Enregistrer"}</button>}
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
+          {!isMobile && <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>}
         </div>
       </header>
 
@@ -763,7 +768,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
-          {libre
+          {showFlat
             ? <>
                 <ZoomBar zoom={zoom} setZoom={setZoom} />
                 <div style={{ overflow: "auto", maxWidth: "100%", display: "flex", justifyContent: "center", padding: "4px 0" }}>
@@ -772,11 +777,11 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               </>
             : <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} /></div>}
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
-            <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>
-            {!libre && <button onClick={() => setFsOpen(true)} style={chipStyle(false)}>⛶ Plein écran</button>}
+            {!isMobile && <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>}
+            {!showFlat && <button onClick={() => setFsOpen(true)} style={chipStyle(false)}>⛶ Plein écran</button>}
           </div>
-          {!libre && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>}
-          {libre && <>
+          {!showFlat && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>}
+          {showFlat && <>
             <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Glissez pour placer · double-clic pour écrire · coin doré pour redimensionner.</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
               <button onClick={addFreeText} style={chipStyle(false)}>＋ Texte</button>
@@ -788,18 +793,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </>}
         </div>
 
-        {/* Volets — mobile : bottom sheet pilotée par les onglets ; desktop : colonne accordéon (inchangé). */}
-        {isMobile && sheetOpen && <div onClick={() => setSheetOpen(false)} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.5)" }} />}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, ...(isMobile ? { position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, maxHeight: kb ? `calc(88vh - ${kb}px)` : "82vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `8px 16px ${kb ? "66px" : "calc(16px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? "translateY(0)" : "translateY(110%)", transition: "transform .26s var(--mo-ease-standard, ease)" } : {}) }}>
-          {isMobile && (
-            <div style={{ position: "sticky", top: 0, zIndex: 3, background: C.bg, paddingBottom: 6 }}>
-              <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.18)", margin: "2px auto 8px" }} />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600 }}>Réglages</span>
-                <button onClick={() => setSheetOpen(false)} aria-label="Fermer les réglages" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "0 4px" }}>×</button>
-              </div>
-            </div>
-          )}
+        {/* Volets — DESKTOP uniquement : colonne accordéon complète. (Mobile = sheet SIMPLIFIÉE, définie plus bas.) */}
+        {!isMobile && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {/* Inspecteur CONTEXTUEL : un élément libre sélectionné → ses propriétés (essentiel d'abord, avancé au besoin). */}
           {sel && (
             <div style={{ background: C.surface, border: `1px solid ${C.gold}`, borderRadius: R.card, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1072,15 +1068,88 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <button onClick={resetDesign} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 12, padding: 0, textDecoration: "underline" }}>Réinitialiser le design</button>
           </Panel>
         </div>
+        )}
       </div>
+
+      {/* ── MOBILE : version SIMPLIFIÉE — Thème · Couleurs · Texte · QR uniquement (sheet courte, canvas visible). ── */}
+      {isMobile && (
+        <>
+          {sheetOpen && <div onClick={() => setSheetOpen(false)} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.4)" }} />}
+          <div style={{ position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, maxHeight: kb ? `calc(74vh - ${kb}px)` : "62vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `8px 16px ${kb ? "66px" : "calc(18px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? "translateY(0)" : "translateY(112%)", transition: "transform .26s var(--mo-ease-standard, ease)", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ position: "sticky", top: 0, zIndex: 3, background: C.bg, paddingBottom: 6 }}>
+              <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.18)", margin: "2px auto 8px" }} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 16, fontWeight: 600 }}>{mobileTab === "theme" ? "Thème" : mobileTab === "couleurs" ? "Couleurs" : mobileTab === "texte" ? "Texte" : "QR code"}</span>
+                <button onClick={() => setSheetOpen(false)} aria-label="Fermer" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "0 4px" }}>×</button>
+              </div>
+            </div>
+
+            {mobileTab === "theme" && <>
+              <p style={{ margin: 0, fontSize: 11.5, color: C.fgMuted }}>Un thème complet en un tap — tout reste modifiable.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(100px,1fr))", gap: 10 }}>
+                {tmpls.map(t => (
+                  <div key={t.id} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    <TemplateThumb t={t} onClick={() => applyTemplate(t)} />
+                    {t.variants && t.variants.length > 0 && <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>{t.variants.map(v => <button key={v.id} onClick={() => applyTemplate(t, v)} title={v.label} aria-label={`${t.name} — ${v.label}`} style={{ width: 18, height: 18, borderRadius: "50%", border: `1px solid ${C.hairline}`, background: v.hex, cursor: "pointer", padding: 0, flexShrink: 0 }} />)}</div>}
+                  </div>
+                ))}
+              </div>
+              <p style={secLabel}>Styles rapides</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(80px,1fr))", gap: 8 }}>
+                {PRESETS.map(p => <PresetThumb key={p.id} preset={p} item={item} on={activePreset === p.id} onClick={() => applyPreset(p)} />)}
+              </div>
+            </>}
+
+            {mobileTab === "couleurs" && <>
+              <p style={secLabel}>Ambiance</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+                {(showAllColors ? STYLES : ambiances.map(a => STYLE_BY_ID[a.rep])).map(s => <Swatch key={s.id} s={s} on={styleId === s.id} label={showAllColors ? s.label : undefined} onClick={() => setStyleId(s.id)} />)}
+              </div>
+              <button onClick={() => setShowAllColors(v => !v)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 12, padding: 0 }}>{showAllColors ? "Voir les ambiances" : `Voir les ${STYLES.length} coloris`}</button>
+              <p style={secLabel}>Couleur d'accent</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {ACCENTS.map(a => (
+                  <button key={a.id} onClick={() => setAccent(a.id)} title={a.label} style={{ width: 44, height: 44, borderRadius: 12, cursor: "pointer", border: `2px solid ${accent === a.id ? C.gold : "transparent"}`, boxShadow: accent === a.id ? `0 0 0 2px ${C.goldA33}` : "none", background: a.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)", position: "relative" }}>
+                    {a.id === "auto" && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8.5, fontWeight: 800, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,.6)" }}>AUTO</span>}
+                  </button>
+                ))}
+              </div>
+            </>}
+
+            {mobileTab === "texte" && <>
+              <Field label="Nom affiché"><input value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} /></Field>
+              <Field label="Titre"><input value={message} onChange={e => setMessage(e.target.value)} placeholder="Titre principal…" style={inputStyle} />{messages.length > 0 && <SuggRow items={messages} active={title} onPick={setMessage} />}</Field>
+              <Field label="Sous-titre (optionnel)"><input value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Une ligne d'accroche…" style={inputStyle} /></Field>
+              <Field label="Bouton"><input value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder={item.cta} style={inputStyle} /></Field>
+              <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.6} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>
+              {layout.content !== "band" && <Field label="Position verticale"><Range value={blockY} min={-1} max={1} step={0.1} onChange={setBlockY} hint={blockY < -0.1 ? "vers le haut" : blockY > 0.1 ? "vers le bas" : "centré"} /></Field>}
+              <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={v => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
+              <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
+            </>}
+
+            {mobileTab === "qr" && <>
+              <Field label="Taille du QR"><RailInline value={sizeId} options={SIZES.map(s => ({ id: s.id, label: s.label, note: s.note }))} onPick={setSizeId} /></Field>
+              <Field label="Pastille"><Seg value={qrBadge} options={["carre", "cercle", "aucune"]} onPick={setQrBadge} labels={["Carré", "Cercle", "Aucune"]} /></Field>
+              {(() => {
+                const qc = preflight.checks.filter(c => ["contrast", "qrsize", "quiet"].includes(c.id) && c.status !== "na")
+                const worst = qc.some(c => c.status === "fail") ? "fail" : qc.some(c => c.status === "warn") ? "warn" : "ok"
+                const col = worst === "ok" ? C.ok : worst === "warn" ? C.gold : C.bad
+                const label = worst === "ok" ? "QR lisible" : worst === "warn" ? "QR lisible — à surveiller" : "QR peu lisible"
+                return <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: col, background: C.surfaceUp, borderRadius: 999, padding: "8px 12px", alignSelf: "flex-start" }}>{worst === "ok" ? <Check size={13} /> : <AlertTriangle size={13} />} {label}{preflight.scanDistanceM ? ` · ~${preflight.scanDistanceM} m` : ""}</div>
+              })()}
+              <p style={{ margin: 0, fontSize: 11, color: C.fgFaint, lineHeight: 1.4 }}>On met en scène votre QR existant — il reste pilotable (destination modifiable) même après impression.</p>
+            </>}
+          </div>
+        </>
+      )}
 
       {/* Barre d'action ancrée — mobile : onglets (ouvrent la sheet) + action ; desktop : statut + action. */}
       <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))", zIndex: 30 }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
           {isMobile && (
-            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
-              {[["modeles", "Modèles"], ["texte", "Contenu"], ["qr", "QR"], ["allure", "Style"], ["details", "Design"]].map(([id, lbl]) => (
-                <button key={id} onClick={() => { setOpen(id); setSheetOpen(true) }} style={{ ...chipStyle(false), minHeight: 40, fontSize: 12 }}>{lbl}</button>
+            <div style={{ display: "flex", gap: 6 }}>
+              {([["theme", "Thème"], ["couleurs", "Couleurs"], ["texte", "Texte"], ["qr", "QR"]] as const).map(([id, lbl]) => (
+                <button key={id} onClick={() => { setMobileTab(id); setSheetOpen(true) }} style={{ ...chipStyle(sheetOpen && mobileTab === id), minHeight: 42, fontSize: 12.5, flex: 1 }}>{lbl}</button>
               ))}
             </div>
           )}

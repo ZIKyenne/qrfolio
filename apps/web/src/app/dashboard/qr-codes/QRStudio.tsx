@@ -2830,20 +2830,19 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   {(() => {
                     const published = active.pages?.status === "published"
                     const scans = active.total_scans ?? 0
-                    const recBtn = { flexShrink: 0, display: "inline-flex", alignItems: "center", padding: "7px 13px", borderRadius: 8, background: "color-mix(in srgb, var(--accent) 14%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 35%, transparent)", color: G, fontSize: 11.5, fontWeight: 700, cursor: "pointer", textDecoration: "none", whiteSpace: "nowrap" as const }
                     let icon: string, text: ReactNode, cta: ReactNode
                     if (!published) {
                       icon = "🚀"; text = <>Publiez votre page pour activer ce QR.</>
-                      cta = <a href={`/dashboard/builder/${active.page_id}`} style={recBtn}>Publier</a>
+                      cta = <a href={`/dashboard/builder/${active.page_id}`} className="qb-pill">Publier</a>
                     } else if (scans === 0) {
                       icon = "📣"; text = <>Aucun scan pour l&apos;instant — testez-le ou partagez-le.</>
-                      cta = <button type="button" onClick={() => setShowModal(true)} style={recBtn}>Tester</button>
+                      cta = <button type="button" onClick={() => setShowModal(true)} className="qb-pill">Tester</button>
                     } else if (PLAN_RANK[userPlan] < PLAN_RANK["pro"]) {
                       icon = "🔥"; text = <><strong style={{ color: "#F5F0E8" }}>{scans}</strong> scan{scans > 1 ? "s" : ""} ! Passez Pro pour les stats avancées.</>
-                      cta = <a href="/upgrade" style={recBtn}>Passer Pro</a>
+                      cta = <a href="/upgrade" className="qb-pill">Passer Pro</a>
                     } else {
                       icon = "🖨️"; text = <><strong style={{ color: "#F5F0E8" }}>{scans}</strong> scan{scans > 1 ? "s" : ""} — créez un support imprimable.</>
-                      cta = <button type="button" onClick={() => setActiveTab("supports")} style={recBtn}>Créer un support</button>
+                      cta = <button type="button" onClick={() => setActiveTab("supports")} className="qb-pill">Créer un support</button>
                     }
                     return (
                       <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", padding: "12px 14px", borderRadius: 13, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -2855,38 +2854,44 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   })()}
                 </div>
 
-                {/* Actions rapides */}
-                <div style={{ order: isMobile ? 2 : 0, display:"flex", flexDirection:"column", gap:7, width:"100%" }}>
-                  <button type="button" onClick={() => downloadPNG(1024)}
-                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"11px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:10, color:"#080808", fontSize:13, fontWeight:700, cursor:"pointer", boxShadow:"0 4px 14px color-mix(in srgb, var(--accent) 20%, transparent)" }}>
-                    <Download size={15}/> Télécharger
-                  </button>
-                  <div style={{ display:"flex", gap:6, width:"100%" }}>
-                    <button type="button" onClick={() => setShowModal(true)}
-                      style={{ flex:1.3, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"9px", background:"color-mix(in srgb, var(--accent) 12%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 35%, transparent)", borderRadius:9, color:"#C9A84C", fontSize:11.5, fontWeight:700, cursor:"pointer" }}>
-                      <Eye size={13}/> Tester
+                {/* Actions rapides — boutons dorés (handoff « Boutons QROWG ») */}
+                <div style={{ order: isMobile ? 2 : 0, display:"flex", flexDirection:"column", gap:9, width:"100%" }}>
+                  {/* Télécharger — primaire or (halo respirant + reflet au survol) */}
+                  <div style={{ position:"relative", display:"flex", width:"100%" }}>
+                    <div aria-hidden="true" className="qb-halo" />
+                    <button type="button" onClick={() => downloadPNG(1024)} className="qb-gold qb-dl" aria-label="Télécharger">
+                      <span aria-hidden="true" className="qb-gloss" />
+                      <span aria-hidden="true" className="qb-sheen" />
+                      <span className="qb-ico"><Download size={16}/></span>
+                      <span style={{ position:"relative", zIndex:1 }}>Télécharger</span>
                     </button>
-                    <button type="button" onClick={() => copy("link")}
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"9px", background:copied==="link"?"rgba(57,255,143,0.1)":"rgba(255,255,255,0.04)", border:`1px solid ${copied==="link"?"rgba(57,255,143,0.3)":"rgba(255,255,255,0.08)"}`, borderRadius:9, color:copied==="link"?"var(--success)":"#A8A190", fontSize:11, cursor:"pointer", transition:"all 0.15s" }}>
-                      {copied==="link" ? <Check size={12}/> : <Copy size={12}/>}
-                      {copied==="link" ? "Copié !" : "Copier"}
+                  </div>
+                  {/* Trio secondaire */}
+                  <div style={{ display:"flex", gap:8, width:"100%" }}>
+                    <button type="button" onClick={() => setShowModal(true)} className="qb-ghost" style={{ flex:1.3 }}>
+                      <span className="qb-ico"><Eye size={13}/></span> Tester
                     </button>
-                    <a href={pageUrl} target="_blank" rel="noopener noreferrer"
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"9px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, color:"#A8A190", fontSize:11, textDecoration:"none" }}>
-                      <ExternalLink size={12}/> Ouvrir
+                    <button type="button" onClick={() => copy("link")} className="qb-ghost" style={{ flex:1, ...(copied==="link" ? { color:"var(--success)", borderColor:"rgba(57,255,143,0.4)" } : {}) }}>
+                      <span className="qb-ico">{copied==="link" ? <Check size={13}/> : <Copy size={13}/>}</span> {copied==="link" ? "Copié !" : "Copier"}
+                    </button>
+                    <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="qb-ghost" style={{ flex:1 }}>
+                      <span className="qb-ico"><ExternalLink size={13}/></span> Ouvrir
                     </a>
                   </div>
-                  {/* Enregistrer le style / Appliquer à tous — déplacés ici (sous l'aperçu, gauche/droite) pour alléger l'inspecteur. */}
-                  <div style={{ display:"flex", gap:6, width:"100%" }}>
-                    <button type="button" onClick={saveCustomization} disabled={saving}
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6, padding:"9px", background:saved?"rgba(57,255,143,0.12)":"rgba(255,255,255,0.04)", border:`1px solid ${saved?"rgba(57,255,143,0.3)":"rgba(255,255,255,0.08)"}`, borderRadius:9, color:saved?"var(--success)":"#C9C3B6", fontSize:11, fontWeight:700, cursor:saving?"wait":"pointer", opacity:saving?0.7:1 }}>
-                      {saving ? <Loader2 size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : saved ? <Check size={12}/> : <Palette size={12}/>}
-                      {saving ? "…" : saved ? "Enregistré" : "Enregistrer le style"}
-                    </button>
-                    <button type="button" onClick={applyToAll}
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6, padding:"9px", background:applyAllOk?"rgba(57,255,143,0.1)":"rgba(255,255,255,0.04)", border:`1px solid ${applyAllOk?"rgba(57,255,143,0.25)":"rgba(255,255,255,0.08)"}`, borderRadius:9, color:applyAllOk?"var(--success)":"#A8A190", fontSize:11, fontWeight:600, cursor:"pointer" }}>
-                      {applyAllOk ? <Check size={12}/> : <Settings size={12}/>}
-                      {applyAllOk ? "Appliqué" : "Appliquer à tous"}
+                  {/* Enregistrer le style (or) + Appliquer à tous (fantôme) — sous l'aperçu, gauche/droite */}
+                  <div style={{ display:"flex", gap:8, width:"100%", alignItems:"stretch" }}>
+                    <div style={{ position:"relative", flex:1, display:"flex" }}>
+                      <div aria-hidden="true" className="qb-halo" />
+                      <button type="button" onClick={saveCustomization} disabled={saving} className="qb-gold qb-save" style={{ padding:"12px 16px", fontSize:13.5 }}>
+                        <span aria-hidden="true" className="qb-gloss" />
+                        <span aria-hidden="true" className="qb-sheen" />
+                        <span className="qb-ico">{saving ? <Loader2 size={14} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : saved ? <Check size={14}/> : <Palette size={14}/>}</span>
+                        <span style={{ position:"relative", zIndex:1 }}>{saving ? "Enregistrement…" : saved ? "Enregistré" : "Enregistrer le style"}</span>
+                      </button>
+                    </div>
+                    <button type="button" onClick={applyToAll} className="qb-phantom" style={{ flex:1, padding:"12px 16px", fontSize:13, ...(applyAllOk ? { color:"var(--success)" } : {}) }}>
+                      {applyAllOk ? <Check size={13}/> : <Settings size={13}/>}
+                      {applyAllOk ? "Appliqué à tous" : "Appliquer à tous"}
                     </button>
                   </div>
                   {saveErr && <div style={{ padding:"7px 9px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.25)", borderRadius:8, color:"var(--danger)", fontSize:10, lineHeight:1.4 }}>Échec : {saveErr}</div>}

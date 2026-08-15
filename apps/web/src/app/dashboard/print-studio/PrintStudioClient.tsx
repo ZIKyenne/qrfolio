@@ -251,6 +251,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
   const [open, setOpen] = useState<string | null>("modeles")   // un seul volet ouvert (Modèles à l'entrée — templates = primaire)
+  const [flashPanel, setFlashPanel] = useState<string | null>(null)   // volet à surligner brièvement après une sélection contextuelle (#12/#32)
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
   const [declineOpen, setDeclineOpen] = useState(false)    // sélecteur « décliner sur un autre support »
@@ -758,6 +759,19 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const sel = freeEls.find(e => e.id === selEl)
   const tmpls = filterTemplates(item)   // templates pertinents au support courant (pertinents d'abord)
   const showFlat = libre && !isMobile   // l'édition libre (drag/calques) est réservée au desktop — mobile = guidé simple
+  // Sélection contextuelle (#12/#32) : cliquer un objet de l'aperçu (titre/QR/bouton/fond) ouvre son volet dédié.
+  // Desktop = ouvre l'accordéon + le fait défiler + surligne ; mobile = ouvre l'onglet correspondant de la sheet.
+  function focusPanel(panel: string) {
+    setLibre(false); setSelEl(null)
+    if (isMobile) {
+      const tab = panel === "qr" ? "qr" : panel === "texte" ? "texte" : panel === "details" ? "couleurs" : "theme"
+      setMobileTab(tab); setSheetOpen(true)
+      return
+    }
+    setOpen(panel); setFlashPanel(panel)
+    requestAnimationFrame(() => document.querySelector(`[data-panel="${panel}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }))
+    window.setTimeout(() => setFlashPanel(p => (p === panel ? null : p)), 1000)
+  }
   const layBtn: React.CSSProperties = { width: 28, height: 28, borderRadius: 7, border: "none", background: "transparent", color: C.fgMuted, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }
   return (
     <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
@@ -781,7 +795,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
       <div className="ps-grid" style={{ maxWidth: 1320, margin: "0 auto", padding: isMobile ? "0 12px 172px" : "0 16px 120px", display: "grid", gap: 24, gridTemplateColumns: "1fr" }}>
         {/* Canvas héros (#2) : l'aperçu prend toute la largeur élastique, l'inspecteur reste une colonne fixe et lisible (372 px). */}
-        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:minmax(0,1fr) 372px!important}.ps-aside{position:sticky;top:14px;align-self:start}}.ps-chip{transition:border-color .14s var(--mo-ease,ease),background .14s,color .14s}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}`}</style>
+        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:minmax(0,1fr) 372px!important}.ps-aside{position:sticky;top:14px;align-self:start}}.ps-chip{transition:border-color .14s var(--mo-ease,ease),background .14s,color .14s}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color .12s var(--mo-ease,ease)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash 1s ease}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}`}</style>
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
@@ -793,13 +807,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 </div>
               </>
             : <div style={{ position: "relative", ...(isMobile ? {} : { background: "radial-gradient(130% 90% at 50% -10%, rgba(255,255,255,.05), transparent 70%)", border: `1px solid ${C.hairline}`, borderRadius: 24, padding: 28 }) }}>
-                <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} box={isMobile ? 520 : 640} /></div>
+                <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} box={isMobile ? 520 : 640} onFocus={focusPanel} /></div>
                 <button onClick={e => { e.stopPropagation(); setFsOpen(true) }} aria-label="Plein écran" title="Plein écran" style={{ position: "absolute", top: isMobile ? 12 : 40, right: isMobile ? 12 : 40, width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", fontSize: 17, lineHeight: 1, zIndex: 2 }}>⛶</button>
               </div>}
           {!isMobile && <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
             <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>
           </div>}
           {!showFlat && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>}
+          {!showFlat && !isMobile && <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "4px 0 0" }}>Cliquez le titre, le QR ou le fond de l'aperçu pour le régler directement.</p>}
           {showFlat && <>
             <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Glissez pour placer · double-clic pour écrire · coin doré pour redimensionner.</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
@@ -932,7 +947,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </Panel>
 
           {/* Volet QR — on RÉUTILISE un QR existant ou on importe un PNG. Aucune création. */}
-          <Panel id="qr" title="Le QR" resume={qrSource === "png" ? (qrPng ? "PNG importé" : "importer un PNG") : (pickedQR ? pickedQR.label : "choisir un QR")} open={open} setOpen={setOpen}>
+          <Panel id="qr" title="Le QR" resume={qrSource === "png" ? (qrPng ? "PNG importé" : "importer un PNG") : (pickedQR ? pickedQR.label : "choisir un QR")} open={open} setOpen={setOpen} flash={flashPanel === "qr"}>
             <Seg value={qrSource} options={["mine", "png"]} labels={["Mes QR", "Importer un PNG"]} onPick={v => setQrSource(v as "mine" | "png")} />
             {qrSource === "mine" ? (
               myQRs.length > 0 ? (
@@ -980,7 +995,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </Panel>
 
           {/* Volet TEXTE — inputs d'abord (compact), suggestions contextuelles secondaires, mise en forme repliée. */}
-          <Panel id="texte" title="Les textes" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen}>
+          <Panel id="texte" title="Les textes" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen} flash={flashPanel === "texte"}>
             <Field label="Nom affiché">
               <input {...textInputProps} value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} />
               <SuggRow items={BRANDNAMES} active={brand} onPick={setBrandText} />
@@ -1023,7 +1038,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </Panel>
 
           {/* Volet DESIGN — 100 % design (aucun réglage du QR : il est fourni tel quel) */}
-          <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen}>
+          <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen} flash={flashPanel === "details"}>
             <Field label="Fond"><RailInline value={bgFinish} options={FINISH_OPTS} onPick={setBgFinish} /></Field>
             <Field label="Photo de fond">
               {bgImage
@@ -1327,10 +1342,10 @@ function chipStyle(on: boolean): React.CSSProperties {
   return { flexShrink: 0, minHeight: 44, padding: "10px 14px", borderRadius: R.chip, cursor: "pointer", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.gold : C.surfaceUp, color: on ? "#0A0A0A" : C.fg, display: "inline-flex", alignItems: "center", justifyContent: "center" }
 }
 
-function Panel({ id, title, resume, open, setOpen, children }: { id: string; title: string; resume: string; open: string | null; setOpen: (v: string | null) => void; children: React.ReactNode }) {
+function Panel({ id, title, resume, open, setOpen, children, flash }: { id: string; title: string; resume: string; open: string | null; setOpen: (v: string | null) => void; children: React.ReactNode; flash?: boolean }) {
   const isOpen = open === id
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, overflow: "hidden" }}>
+    <div data-panel={id} className={flash ? "ps-flash" : undefined} style={{ background: C.surface, border: `1px solid ${flash ? C.goldA55 : C.hairline}`, borderRadius: R.card, overflow: "hidden", scrollMarginTop: 14 }}>
       <button onClick={() => setOpen(isOpen ? null : id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", background: "none", border: "none", cursor: "pointer", color: C.fg, textAlign: "left" }}>
         <span style={{ flex: 1 }}>
           <span style={{ display: "block", fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600 }}>{title}</span>
@@ -1396,8 +1411,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, qrVector, physW, qrDx, qrDy, qrFree, qrFx, qrFy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, freeEls, w, h }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; qrVector?: boolean; physW: number; qrDx: number; qrDy: number; qrFree?: boolean; qrFx?: number; qrFy?: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[]; w: number; h: number }) {
+function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, qrVector, physW, qrDx, qrDy, qrFree, qrFx, qrFy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, freeEls, w, h, onFocus }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; qrVector?: boolean; physW: number; qrDx: number; qrDy: number; qrFree?: boolean; qrFx?: number; qrFy?: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[]; w: number; h: number; onFocus?: (panel: string) => void }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -1433,9 +1448,15 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const btnFg = ctaColor ? readableOn(ctaColor) : ctaFg
   const btnStroke = ctaColor || bandColor
   const clampTxt: React.CSSProperties = { maxWidth: "100%", overflowWrap: "anywhere" }
-  const kickerEl = <div style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: bandColor, ...clampTxt }}>{brand}</div>
-  const titleEl = <div style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol, ...clampTxt }}>{shownTitle}</div>
-  const subtitleEl = subtitle.trim() ? <div style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt }}>{subtitle}</div> : null
+  // Sélection contextuelle (#12/#32) : quand `onFocus` est fourni (aperçu principal SEULEMENT), chaque objet
+  // du support (titre/QR/bouton/marque) devient cliquable → ouvre son volet dédié. Vignettes/planche/éditeur libre
+  // ne reçoivent pas `onFocus` → aucun impact ailleurs.
+  const fcur: React.CSSProperties = onFocus ? { cursor: "pointer" } : {}
+  const fcls = onFocus ? "ps-foc" : undefined
+  const fclick = (panel: string) => onFocus ? (e: React.MouseEvent) => { e.stopPropagation(); onFocus(panel) } : undefined
+  const kickerEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: bandColor, ...clampTxt, ...fcur }}>{brand}</div>
+  const titleEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol, ...clampTxt, ...fcur }}>{shownTitle}</div>
+  const subtitleEl = subtitle.trim() ? <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt, ...fcur }}>{subtitle}</div> : null
   // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
   const qrInner = qrImg
     ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
@@ -1445,12 +1466,12 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     ? <QRVector value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} />
     : <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} ecc="M" />
   const qrBadgeEl = qrBadge === "aucune"
-    ? <div style={{ lineHeight: 0 }}>{qrInner}</div>
-    : <div style={{ background: pal.qrBg, padding: unit * (qrBadge === "cercle" ? 0.05 : 0.028), borderRadius: qrBadge === "cercle" ? "50%" : (eCorner === "rond" ? 16 : eCorner === "vif" ? 2 : 8), lineHeight: 0, display: "inline-block" }}>{qrInner}</div>
+    ? <div className={fcls} onClick={fclick("qr")} style={{ lineHeight: 0, ...fcur }}>{qrInner}</div>
+    : <div className={fcls} onClick={fclick("qr")} style={{ background: pal.qrBg, padding: unit * (qrBadge === "cercle" ? 0.05 : 0.028), borderRadius: qrBadge === "cercle" ? "50%" : (eCorner === "rond" ? 16 : eCorner === "vif" ? 2 : 8), lineHeight: 0, display: "inline-block", ...fcur }}>{qrInner}</div>
   // QR libre : retiré du flux de la mise en page (rendu en absolu à qrFx/qrFy plus bas). Sinon, décalage fin X/Y.
   const qrEl = qrFree ? null : ((qrDx || qrDy) ? <div style={{ transform: `translate(${qrDx * 18}%, ${qrDy * 18}%)`, display: "inline-block" }}>{qrBadgeEl}</div> : qrBadgeEl)
   const ctaEl = eAccent === "aucun" ? null : (
-    <div style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxSizing: "border-box",
+    <div className={fcls} onClick={fclick("texte")} style={{ ...fcur, fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxSizing: "border-box",
       ...(eAccent === "trait" ? { border: `2px solid ${btnStroke}`, color: btnStroke }
         : eAccent === "degrade" ? { background: `linear-gradient(135deg, ${shade(btnBg, 0.12)}, ${shade(btnBg, -0.28)})`, color: btnFg }
         : { background: btnBg, color: btnFg }) }}>{cta}</div>
@@ -1490,20 +1511,20 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   if (layout.content === "band") {
     body = (
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column" }}>
-        <div style={{ background: bandColor, color: bandFg, padding: `${pad * 0.7}px ${pad}px`, fontFamily: titleFont, fontSize: titleSize * 0.86, fontWeight: effWeight as any }}>{shownTitle}</div>
+        <div className={fcls} onClick={fclick("texte")} style={{ background: bandColor, color: bandFg, padding: `${pad * 0.7}px ${pad}px`, fontFamily: titleFont, fontSize: titleSize * 0.86, fontWeight: effWeight as any, ...fcur }}>{shownTitle}</div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * 0.05, padding: pad }}>{subtitleEl}{qrEl}{ctaEl}</div>
       </div>
     )
   } else if (layout.content === "qrbig") {
     // « QR géant » = layout centré sur le QR. La taille du QR reste PHYSIQUE (réglée par la taille/le curseur) :
     // pas de scale CSS ici (ça gonflait le QR au-delà de qrMm et débordait). On rapproche juste les textes.
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * (isRound ? 0.028 : 0.04), minHeight: 0, overflow: "hidden" }}><div style={{ fontFamily: titleFont, fontSize: titleSize * 0.72, fontWeight: effWeight as any, color: titleCol, textAlign: "center", ...clampTxt }}>{shownTitle}</div>{subtitleEl}{qrEl}{ctaEl}</div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * (isRound ? 0.028 : 0.04), minHeight: 0, overflow: "hidden" }}><div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize * 0.72, fontWeight: effWeight as any, color: titleCol, textAlign: "center", ...clampTxt, ...fcur }}>{shownTitle}</div>{subtitleEl}{qrEl}{ctaEl}</div>
   } else if (layout.content === "split") {
     body = <div style={{ flex: 1, display: "flex", alignItems: "center", gap: pad, minWidth: 0 }}><div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: unit * 0.035 }}>{kickerEl}{titleEl}{subtitleEl}{ctaEl}</div>{qrEl}</div>
   } else if (layout.content === "poster") {
     // Bloc bas (QR + bouton) : alignSelf stretch + flexWrap → si la largeur manque, le bouton passe SOUS le QR
     // (jamais coupé au bord). Filet anti-débordement complémentaire au garde-fou layoutOk (poster = A5+).
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between", minWidth: 0 }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems, maxWidth: "100%" }}>{kickerEl}<div style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: titleCol, ...clampTxt }}>{shownTitle}</div>{subtitleEl}</div><div style={{ alignSelf: "stretch", display: "flex", flexWrap: "wrap", alignItems: "center", gap: pad, justifyContent: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "space-between", minWidth: 0 }}><div style={{ display: "flex", flexDirection: "column", gap: unit * 0.03, alignItems, maxWidth: "100%" }}>{kickerEl}<div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize * 1.5, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1, color: titleCol, ...clampTxt, ...fcur }}>{shownTitle}</div>{subtitleEl}</div><div style={{ alignSelf: "stretch", display: "flex", flexWrap: "wrap", alignItems: "center", gap: pad, justifyContent: eAlign === "right" ? "flex-end" : eAlign === "left" ? "flex-start" : "center" }}>{qrEl}{ctaEl}</div></div>
   } else { // stack / center — la position du QR se règle (haut / centre / bas)
     // Sur un rond, on retire le kicker (marque) : le cercle inscrit ne tient pas kicker+titre+QR+bouton sans rogner.
     const kick = isRound ? null : kickerEl
@@ -1520,7 +1541,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     ? body
     : <div style={{ flex: 1, display: "flex", minWidth: 0, transform: blockY ? `translateY(${blockY * 12}%)` : undefined }}>{body}</div>
   return (
-    <div style={base}>
+    <div style={{ ...base, ...fcur }} onClick={onFocus ? (e => { e.stopPropagation(); onFocus("details") }) : undefined}>
       {placed}
       {logo === "objet" && logoUrl && <img src={logoUrl} alt="" style={{ position: "absolute", top: isRound ? unit * 0.2 : pad, left: isRound ? unit * 0.2 : pad, width: unit * 0.14, height: unit * 0.14, objectFit: "contain", zIndex: 2 }} />}
       {frameEl}
@@ -1888,7 +1909,7 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
 }
 
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
-function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrDx: number; qrDy: number; qrFree?: boolean; qrFx?: number; qrFy?: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[]; box?: number }) {
+function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrDx: number; qrDy: number; qrFree?: boolean; qrFx?: number; qrFy?: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[]; box?: number; onFocus?: (panel: string) => void }) {
   const { item, scene } = props
   const box = props.box ?? 520
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])

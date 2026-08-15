@@ -711,7 +711,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             ? <>
                 <ZoomBar zoom={zoom} setZoom={setZoom} />
                 <div style={{ overflow: "auto", maxWidth: "100%", display: "flex", justifyContent: "center", padding: "4px 0" }}>
-                  <FlatEditor item={item} design={designProps} freeEls={freeEls} setFreeEls={setFreeEls} selEl={selEl} setSelEl={setSelEl} onQrMove={(x, y) => { setQrFx(x); setQrFy(y) }} box={Math.round(460 * zoom)} />
+                  <FlatEditor item={item} design={designProps} freeEls={freeEls} setFreeEls={setFreeEls} selEl={selEl} setSelEl={setSelEl} onQrMove={(x, y) => { setQrFx(x); setQrFy(y) }} zoom={zoom} />
                 </div>
               </>
             : <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} qrFree={qrFree} qrFx={qrFx} qrFy={qrFy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY} freeEls={freeEls}
@@ -1519,13 +1519,17 @@ function ZoomBar({ zoom, setZoom }: { zoom: number; setZoom: (v: number | ((z: n
 
 /* Éditeur À PLAT (mode Studio libre) : le support de face, éléments libres déplaçables à la souris.
    Positions en fraction du support -> l'aperçu packshot et la planche PDF les rendent au même endroit. */
-function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMove, box = 460 }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void; onQrMove: (x: number, y: number) => void; box?: number }) {
+function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMove, zoom = 1 }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void; onQrMove: (x: number, y: number) => void; zoom?: number }) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [avail, setAvail] = useState(460)   // largeur dispo mesurée → l'éditeur TIENT à l'écran à 100 % (mobile inclus)
+  useEffect(() => { const m = () => { const cw = wrapRef.current?.clientWidth; if (cw) setAvail(cw) }; m(); window.addEventListener("resize", m); return () => window.removeEventListener("resize", m) }, [])
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number; wpx: number; hpx: number } | null>(null)
   const rez = useRef<{ id: string; sx: number; sy: number; sw: number; sh: number; ss: number; kind: string } | null>(null)   // redimensionnement en cours
   const [editingId, setEditingId] = useState<string | null>(null)   // texte en édition INLINE (double-clic)
   const [guide, setGuide] = useState<{ x: number | null; y: number | null }>({ x: null, y: null })
   const ratio = item.shape === "round" ? 1 : item.ratio
+  const box = Math.round(Math.min(460, Math.max(180, avail)) * zoom)   // 100 % = ajusté à l'écran ; zoom>1 agrandit (défilement)
   const w = ratio >= 1 ? box : Math.round(box * ratio)
   const h = ratio >= 1 ? Math.round(box / ratio) : box
   const unit = Math.min(w, h)
@@ -1581,8 +1585,9 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
   }
   const onUp = () => { drag.current = null; rez.current = null; setGuide({ x: null, y: null }) }
   return (
+    <div ref={wrapRef} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
     <div ref={ref} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp} onPointerDown={() => setSelEl(null)}
-      style={{ position: "relative", width: w, height: h, margin: "0 auto", borderRadius: item.shape === "round" ? "50%" : 12, overflow: "hidden", touchAction: "none", boxShadow: "0 14px 44px rgba(0,0,0,.55)" }}>
+      style={{ position: "relative", width: w, height: h, borderRadius: item.shape === "round" ? "50%" : 12, overflow: "hidden", touchAction: "none", boxShadow: "0 14px 44px rgba(0,0,0,.55)" }}>
       <SupportVisual {...design} item={item} freeEls={[]} physW={wmm} w={w} h={h} />
       {/* Zone de sécurité (marge d'impression) — repère discret : rien d'important au-delà. */}
       <div style={{ position: "absolute", left: (item.margin / wmm) * w, top: (item.margin / item.hMm) * h, right: (item.margin / wmm) * w, bottom: (item.margin / item.hMm) * h, border: `1px dashed ${C.goldA33}`, borderRadius: item.shape === "round" ? "50%" : 6, pointerEvents: "none", zIndex: 1 }} />
@@ -1612,6 +1617,7 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
       })()}
       {guide.x != null && <div style={{ position: "absolute", left: guide.x, top: 0, bottom: 0, width: 1, background: C.gold, opacity: 0.85, pointerEvents: "none", zIndex: 6 }} />}
       {guide.y != null && <div style={{ position: "absolute", top: guide.y, left: 0, right: 0, height: 1, background: C.gold, opacity: 0.85, pointerEvents: "none", zIndex: 6 }} />}
+    </div>
     </div>
   )
 }

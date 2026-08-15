@@ -87,7 +87,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [createOpen])
   const G = accent
   // Masquer la barre mobile dans les editeurs plein ecran (le Print Studio se porte deja au-dessus).
-  const hideMobileNav = pathname.startsWith("/dashboard/builder")
+  // Studios immersifs (Mode Focus) : la barre de nav globale ne doit jamais recouvrir un réglage.
+  const hideMobileNav = pathname.startsWith("/dashboard/builder") || pathname.startsWith("/dashboard/print-studio")
 
   useEffect(() => {
     setMounted(true)

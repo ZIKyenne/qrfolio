@@ -270,6 +270,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [qrFy, setQrFy] = useState(0.55)
   const [zoom, setZoom] = useState(1)                     // zoom de l'éditeur à plat (Studio libre)
   const [fsOpen, setFsOpen] = useState(false)             // aperçu PLEIN ÉCRAN (mobile §2/§9 : « tap = plein écran »)
+  const [realSize, setRealSize] = useState(false)         // #24 : aperçu à TAILLE RÉELLE (physique) dans le plein écran
+  const [calib, setCalib] = useState(false)               // panneau de calibrage (carte bancaire de référence)
+  const [pxPerMm, setPxPerMm] = useState(96 / 25.4)       // px/mm de l'écran (défaut = référence CSS 96 dpi ; calibrable)
+  useEffect(() => { try { const v = parseFloat(localStorage.getItem("qrowg-px-per-mm") || ""); if (v > 1 && v < 20) setPxPerMm(v) } catch {} }, [])
   const [addOpen, setAddOpen] = useState(false)           // bibliothèque « + Ajouter » (formes/icônes catégorisées)
   const [addSearch, setAddSearch] = useState("")          // recherche dans la bibliothèque d'éléments
   const [libre, setLibre] = useState(false)               // mode « Studio libre » (édition à plat + éléments libres)
@@ -585,13 +589,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [])
-  // Échap ferme l'aperçu plein écran.
+  // Échap ferme le calibrage puis l'aperçu plein écran.
   useEffect(() => {
-    if (!fsOpen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFsOpen(false) }
+    if (!fsOpen && !calib) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { if (calib) setCalib(false); else setFsOpen(false) } }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [fsOpen])
+  }, [fsOpen, calib])
 
   // ── Éléments libres (mode Studio libre) ─────────────────────────────────────────
   function addFreeText() {
@@ -1297,9 +1301,44 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {fsOpen && (
         <div onClick={() => setFsOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(0,0,0,0.92)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px)" }}>
           <button onClick={() => setFsOpen(false)} aria-label="Fermer l'aperçu" style={{ position: "absolute", top: "calc(env(safe-area-inset-top) + 12px)", right: 16, width: 42, height: 42, borderRadius: 999, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.22)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}><X size={20} /></button>
-          <div onClick={e => e.stopPropagation()} style={{ width: "min(94vw, 94vh)", maxWidth: 760 }}>
-            <Packshot item={item} scene={scene} {...designProps} box={1400} />
-            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12, margin: "12px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>
+          <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, maxWidth: "100%", maxHeight: "100%" }}>
+            {/* Bascule Scène / Taille réelle (#24) — répond à « est-ce assez grand ? » avant impression. */}
+            <div style={{ display: "inline-flex", gap: 3, background: "rgba(255,255,255,0.1)", borderRadius: 999, padding: 3 }}>
+              {([["scene", "Scène"], ["real", "Taille réelle"]] as const).map(([id, lbl]) => {
+                const on = realSize === (id === "real")
+                return <button key={id} onClick={() => setRealSize(id === "real")} style={{ minHeight: 36, padding: "0 16px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: on ? 800 : 600, background: on ? "#fff" : "transparent", color: on ? "#0A0A0A" : "rgba(255,255,255,0.7)" }}>{lbl}</button>
+              })}
+            </div>
+            {realSize ? (
+              <>
+                <div style={{ overflow: "auto", maxWidth: "92vw", maxHeight: "62vh", display: "flex", justifyContent: "center", alignItems: "flex-start", borderRadius: 8 }}>
+                  <div style={{ flexShrink: 0 }}><SupportVisual {...designProps} item={item} physW={trimWidthMm(item)} w={Math.round(trimWidthMm(item) * pxPerMm)} h={Math.round(item.hMm * pxPerMm)} /></div>
+                </div>
+                <p style={{ textAlign: "center", color: "rgba(255,255,255,0.8)", fontSize: 13, margin: 0 }}>Taille réelle : <b>{trimWidthMm(item)} × {item.hMm} mm</b> · QR ≈ <b>{(item.qrMm * effSize.factor).toFixed(1)} mm</b></p>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <button onClick={() => setCalib(true)} style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.24)", color: "#fff", cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "9px 16px" }}>Ajuster à mon écran</button>
+                </div>
+                <p style={{ textAlign: "center", color: "rgba(255,255,255,0.42)", fontSize: 11, margin: 0, maxWidth: 340 }}>Approximatif selon l'écran — ajustez avec une carte bancaire pour une précision au millimètre.</p>
+              </>
+            ) : (
+              <>
+                <div style={{ width: "min(92vw, 76vh)", maxWidth: 760 }}><Packshot item={item} scene={scene} {...designProps} box={1400} /></div>
+                <p style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12, margin: 0 }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Calibrage écran (#24) — carte bancaire de référence : règle px/mm pour un aperçu au mm près (persisté). */}
+      {calib && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 22, padding: 24 }}>
+          <p style={{ color: "#fff", fontSize: 14, textAlign: "center", maxWidth: 360, margin: 0, lineHeight: 1.45 }}>Placez une carte bancaire contre l'écran et ajustez jusqu'à ce que le rectangle ait <b>exactement</b> sa taille.</p>
+          <div style={{ width: 85.6 * pxPerMm, height: 53.98 * pxPerMm, borderRadius: 3.18 * pxPerMm, border: `2px solid ${C.gold}`, background: C.goldSoft, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.8)", fontSize: 12, flexShrink: 0 }}>Carte bancaire</div>
+          <div style={{ width: "min(90vw, 360px)" }}><Range value={pxPerMm} min={2.5} max={7.5} step={0.01} onChange={v => { setPxPerMm(v); try { localStorage.setItem("qrowg-px-per-mm", String(v)) } catch {} }} hint={`${pxPerMm.toFixed(2)} px/mm`} /></div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={() => { setPxPerMm(96 / 25.4); try { localStorage.removeItem("qrowg-px-per-mm") } catch {} }} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.24)", color: "#fff", cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 18px" }}>Réinitialiser</button>
+            <Button variant="primary" onClick={() => setCalib(false)}>Terminé</Button>
           </div>
         </div>
       )}

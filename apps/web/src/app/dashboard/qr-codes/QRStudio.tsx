@@ -269,6 +269,8 @@ const QR_STATUS_CFG: Record<string, { label: string; dot: string; badge: string;
 const LEGACY_INFO = false as boolean
 // Section « Choisir un style » (presets) retirée du panneau à la demande : Couleurs suffit. Masquée (réversible).
 const SHOW_PRESETS = false as boolean
+// Pavé « diagnostic scannabilité premium » du bas retiré : redondant avec la ligne de lisibilité sous le QR. Masqué (réversible).
+const SHOW_DIAG = false as boolean
 
 const PLAN_BADGE: Record<string, { color: string; label: string } | null> = {
   free: null, pro: { color: "var(--accent)", label: "PRO" }, business: { color: "var(--success)", label: "BIZ" },
@@ -3056,8 +3058,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               </Modal>
 
 
-{/* Diagnostic scannabilité premium */}
-              {scanScore && (
+{/* Diagnostic scannabilité premium — masqué (redondant avec la ligne sous le QR) ; SHOW_DIAG réversible. */}
+              {SHOW_DIAG && scanScore && (
                 <div ref={scanWidgetRef} style={{ borderTop:"1px solid rgba(255,255,255,0.06)", padding:"12px 16px" }}>
 
                   {/* Resume compact (repli par defaut si tout est bon) — ne mange plus l'ecran */}
@@ -3197,7 +3199,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
         {/* Tabs principaux Style/Export */}
         <div style={{ display:"flex", borderBottom:"1px solid rgba(255,255,255,0.06)", flexShrink:0 }}>
-          {([["style","Style","🎨"],["supports","Supports","🖨️"],["export","Télécharger","📤"]] as const).map(([id,label,emoji]) => (
+          {([["style","Style","🎨"],["export","Télécharger","📤"],["supports","Supports","🖨️"]] as const).map(([id,label,emoji]) => (
             <button key={id} type="button" onClick={() => setActiveTab(id)}
               style={{ flex:1, minHeight:isMobile?48:undefined, padding:isMobile?"14px 8px":"11px 8px", background:activeTab===id?"color-mix(in srgb, var(--accent) 14%, transparent)":"transparent", border:"none", borderBottom:activeTab===id?`3px solid ${G}`:"3px solid transparent", color:activeTab===id?G:MUTED, fontSize:isMobile?13.5:12, fontWeight:activeTab===id?800:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
               <span>{emoji}</span>{label}
@@ -3207,7 +3209,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
         {/* Fil guidé (mobile) : étape courante + Suivant, sans bloquer les onglets */}
         {isMobile && active && (() => {
-          const steps = ["style","supports","export"] as const
+          const steps = ["style","export","supports"] as const
           const labels: Record<string,string> = { style:"Style", supports:"Supports", export:"Télécharger" }
           const idx = steps.indexOf(activeTab as any)
           const next = steps[idx + 1]

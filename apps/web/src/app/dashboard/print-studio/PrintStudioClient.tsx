@@ -252,6 +252,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
   const [open, setOpen] = useState<string | null>("modeles")   // un seul volet ouvert (Modèles à l'entrée — templates = primaire)
   const [flashPanel, setFlashPanel] = useState<string | null>(null)   // volet à surligner brièvement après une sélection contextuelle (#12/#32)
+  const [mode, setMode] = useState<"simple" | "studio">("simple")   // #34 : Simple (essentiel) vs Studio (avancé). Desktop uniquement, persisté localStorage.
+  useEffect(() => { try { const m = localStorage.getItem("qrowg-print-mode"); if (m === "studio" || m === "simple") setMode(m) } catch {} }, [])
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
   const [declineOpen, setDeclineOpen] = useState(false)    // sélecteur « décliner sur un autre support »
@@ -768,9 +770,16 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       setMobileTab(tab); setSheetOpen(true)
       return
     }
-    setOpen(panel); setFlashPanel(panel)
-    requestAnimationFrame(() => document.querySelector(`[data-panel="${panel}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }))
-    window.setTimeout(() => setFlashPanel(p => (p === panel ? null : p)), 1000)
+    // En mode Simple, le volet « Le design » (fond fin) est masqué → on renvoie vers « L'allure » (couleurs présentes).
+    const target = mode === "simple" && panel === "details" ? "allure" : panel
+    setOpen(target); setFlashPanel(target)
+    requestAnimationFrame(() => document.querySelector(`[data-panel="${target}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }))
+    window.setTimeout(() => setFlashPanel(p => (p === target ? null : p)), 1000)
+  }
+  // #34 : bascule Simple/Studio (persistée). Passer en Simple ferme l'édition libre et rabat vers un volet essentiel.
+  function applyMode(m: "simple" | "studio") {
+    setMode(m); try { localStorage.setItem("qrowg-print-mode", m) } catch {}
+    if (m === "simple") { setLibre(false); setSelEl(null); setOpen(o => (o === "styles" || o === "details" || o === "calques" ? "texte" : o)) }
   }
   const layBtn: React.CSSProperties = { width: 28, height: 28, borderRadius: 7, border: "none", background: "transparent", color: C.fgMuted, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }
   return (
@@ -779,12 +788,22 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       <header style={{ maxWidth: 1320, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13, flexShrink: 0 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          {/* #34 : bascule Simple/Studio (desktop). Simple = essentiel ; Studio révèle l'avancé (design fin, styles, édition libre, planche). */}
+          {!isMobile && (
+            <div style={{ display: "inline-flex", gap: 3, background: C.surfaceUp, borderRadius: 999, padding: 3 }} role="tablist" aria-label="Mode d'édition">
+              {(["simple", "studio"] as const).map(m => (
+                <button key={m} role="tab" aria-selected={mode === m} onClick={() => applyMode(m)} title={m === "simple" ? "Essentiel — l'indispensable" : "Studio — tous les réglages avancés"} style={{ minHeight: 34, padding: "0 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: mode === m ? 800 : 600, background: mode === m ? C.gold : "transparent", color: mode === m ? "#0A0A0A" : C.fgMuted }}>{m === "simple" ? "Simple" : "Studio"}</button>
+              ))}
+            </div>
+          )}
           {/* Mobile = simplifié : on masque annuler/rétablir · Décliner · Planche (fonctions avancées desktop). */}
           {!isMobile && <>
             <div style={{ display: "inline-flex", gap: 4 }}>
               <button onClick={undo} disabled={!canUndo} title="Annuler (Ctrl+Z)" aria-label="Annuler" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 10, color: canUndo ? C.fg : C.fgFaint, cursor: canUndo ? "pointer" : "default", opacity: canUndo ? 1 : 0.5 }}><Undo2 size={16} /></button>
               <button onClick={redo} disabled={!canRedo} title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 10, color: canRedo ? C.fg : C.fgFaint, cursor: canRedo ? "pointer" : "default", opacity: canRedo ? 1 : 0.5 }}><Redo2 size={16} /></button>
             </div>
+          </>}
+          {!isMobile && mode === "studio" && <>
             <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}><Copy size={14} /> Décliner</button>
             <button onClick={() => { if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}><Layers size={14} /> Planche</button>
           </>}
@@ -810,7 +829,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} box={isMobile ? 520 : 640} onFocus={focusPanel} /></div>
                 <button onClick={e => { e.stopPropagation(); setFsOpen(true) }} aria-label="Plein écran" title="Plein écran" style={{ position: "absolute", top: isMobile ? 12 : 40, right: isMobile ? 12 : 40, width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", fontSize: 17, lineHeight: 1, zIndex: 2 }}>⛶</button>
               </div>}
-          {!isMobile && <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
+          {!isMobile && mode === "studio" && <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
             <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>
           </div>}
           {!showFlat && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>}
@@ -900,8 +919,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </Panel>
           )}
 
-          {/* Styles rapides — volet accordéon (comme les autres) : modèles prêts, modèles perso, charte. */}
-          <Panel id="styles" title="Styles rapides" resume={activePreset ? `Modèle : ${PRESETS.find(p => p.id === activePreset)?.label}` : "Modèles prêts · mes modèles · charte"} open={open} setOpen={setOpen}>
+          {/* Styles rapides (Studio) — volet accordéon : modèles prêts, modèles perso, charte. */}
+          {mode === "studio" && <Panel id="styles" title="Styles rapides" resume={activePreset ? `Modèle : ${PRESETS.find(p => p.id === activePreset)?.label}` : "Modèles prêts · mes modèles · charte"} open={open} setOpen={setOpen}>
             <div>
               <p style={secLabel}>Modèles prêts</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(72px,1fr))", gap: 8 }}>
@@ -944,7 +963,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               </div>
               <p style={{ margin: "6px 0 0", fontSize: 10.5, color: C.fgFaint }}>Capture le look courant — logo, couleur principale (accent), secondaire (bouton), police.</p>
             </div>
-          </Panel>
+          </Panel>}
 
           {/* Volet QR — on RÉUTILISE un QR existant ou on importe un PNG. Aucune création. */}
           <Panel id="qr" title="Le QR" resume={qrSource === "png" ? (qrPng ? "PNG importé" : "importer un PNG") : (pickedQR ? pickedQR.label : "choisir un QR")} open={open} setOpen={setOpen} flash={flashPanel === "qr"}>
@@ -1016,7 +1035,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </Panel>
 
           {/* Volet ALLURE */}
-          <Panel id="allure" title="L'allure" resume={`${style.label} · ${ACCENTS.find(a => a.id === accent)?.label ?? "Auto"} · ${layout.label}`} open={open} setOpen={setOpen}>
+          <Panel id="allure" title="L'allure" resume={`${style.label} · ${ACCENTS.find(a => a.id === accent)?.label ?? "Auto"} · ${layout.label}`} open={open} setOpen={setOpen} flash={flashPanel === "allure"}>
             <Field label="Ambiance">
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
                 {(showAllColors ? STYLES : ambiances.map(a => STYLE_BY_ID[a.rep])).map(s => (
@@ -1037,8 +1056,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <Field label="Mise en page"><RailInline value={layoutId} options={LAYOUTS.filter(l => layoutOk(l.id, item)).map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
           </Panel>
 
-          {/* Volet DESIGN — 100 % design (aucun réglage du QR : il est fourni tel quel) */}
-          <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen} flash={flashPanel === "details"}>
+          {/* Volet DESIGN (Studio) — réglages fins du fond : finition, cadre, photo, placement. */}
+          {mode === "studio" && <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen} flash={flashPanel === "details"}>
             <Field label="Fond"><RailInline value={bgFinish} options={FINISH_OPTS} onPick={setBgFinish} /></Field>
             <Field label="Photo de fond">
               {bgImage
@@ -1088,7 +1107,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <Field label="Couleur du bouton"><ColorField value={ctaColor} onChange={setCtaColor} /></Field>
             </>}
             <button onClick={resetDesign} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 12, padding: 0, textDecoration: "underline" }}>Réinitialiser le design</button>
-          </Panel>
+          </Panel>}
         </div>
         )}
       </div>

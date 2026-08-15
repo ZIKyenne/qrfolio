@@ -267,6 +267,8 @@ const QR_STATUS_CFG: Record<string, { label: string; dot: string; badge: string;
 // appartiennent à Analytics, et ce bloc était la 1re cause de scroll). Masqué via flag (code conservé,
 // réversible — la destination pourra être relogée dans le menu « ··· » ou Redirections si besoin).
 const LEGACY_INFO = false as boolean
+// Section « Choisir un style » (presets) retirée du panneau à la demande : Couleurs suffit. Masquée (réversible).
+const SHOW_PRESETS = false as boolean
 
 const PLAN_BADGE: Record<string, { color: string; label: string } | null> = {
   free: null, pro: { color: "var(--accent)", label: "PRO" }, business: { color: "var(--success)", label: "BIZ" },
@@ -454,7 +456,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   const [corner,     setCorner]     = useState<"square"|"rounded"|"dot">("square")
   const [ecLevel,    setEcLevel]    = useState<"L"|"M"|"Q"|"H">("M")
   const [styleConf,  setStyleConf]  = useState<QRStyleConfig>({ ...DEFAULT_STYLE })
-  const [openAcc,    setOpenAcc]    = useState<string>("presets")
+  const [openAcc,    setOpenAcc]    = useState<string>("couleurs")
   const [morePresets, setMorePresets] = useState(false) // #12 : n'affiche que les premiers styles, "Voir plus" pour le reste
   const [scanOpen, setScanOpen] = useState(false) // diagnostic scannabilite : repli par defaut (ne mange plus l'ecran)
   const [autoMsg,    setAutoMsg]    = useState<string>("")
@@ -3264,7 +3266,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                     </p>
                   </>)}
 
-                  {/* 1. Bibliotheque de presets (ouvert par defaut) */}
+                  {/* 1. « Choisir un style » (presets) RETIRÉ — Couleurs suffit (SHOW_PRESETS, réversible). */}
+                  {SHOW_PRESETS && (
                   <AccSection id="presets" title="Choisir un style" icon="✨" openId={openAcc} setOpenId={setOpenAcc}>
                     {/* Bouton style automatique */}
                     <button type="button" onClick={autoStyle}
@@ -3373,6 +3376,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
                     {/* Upsell modal inline */}
                   </AccSection>
+                  )}
 
                   {/* 2. Couleurs principales (ouvert par defaut) */}
                   <AccSection id="couleurs" title="Couleurs" icon="🎨" openId={openAcc} setOpenId={setOpenAcc}>

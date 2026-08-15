@@ -813,7 +813,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
       <div className="ps-grid" style={{ maxWidth: 1320, margin: "0 auto", padding: isMobile ? "0 12px 172px" : "0 16px 120px", display: "grid", gap: 24, gridTemplateColumns: "1fr" }}>
         {/* Canvas héros (#2) : l'aperçu prend toute la largeur élastique, l'inspecteur reste une colonne fixe et lisible (372 px). */}
-        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:minmax(0,1fr) 372px!important}.ps-aside{position:sticky;top:14px;align-self:start}}.ps-chip{transition:border-color .14s var(--mo-ease,ease),background .14s,color .14s}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color .12s var(--mo-ease,ease)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash 1s ease}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}`}</style>
+        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:minmax(0,1fr) 372px!important}.ps-aside{position:sticky;top:14px;align-self:start}}.ps-chip{transition:border-color var(--mo-fast) var(--mo-ease-standard),background var(--mo-fast) var(--mo-ease-standard),color var(--mo-fast) var(--mo-ease-standard)}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color var(--mo-fast) var(--mo-ease-standard)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash var(--mo-slow) var(--mo-ease-emphasized)}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}@media(prefers-reduced-motion:reduce){.ps-flash{animation:none}.ps-foc{transition:none}}`}</style>
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
@@ -1203,7 +1203,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Écran de VALIDATION & export — moment de satisfaction : score mis en scène + bénéfices + CTA clair. */}
       <Modal open={control} onClose={() => setControl(false)} title="Votre création" maxWidth={520}>
         {/* Score mis en scène (§8/§27) : gros chiffre + étoiles + titre + bénéfice de lecture. */}
-        <div style={{ textAlign: "center", padding: "4px 0 16px" }}>
+        <div className="mo-pop-in" style={{ textAlign: "center", padding: "4px 0 16px" }}>
           <div style={{ fontSize: 42, fontWeight: 800, lineHeight: 1, color: hasFail ? C.bad : preflight.score >= 90 ? C.ok : C.gold }}>{preflight.score}<span style={{ fontSize: 17, fontWeight: 700, color: C.fgMuted }}> / 100</span></div>
           <div style={{ fontSize: 16, letterSpacing: 2, margin: "6px 0 4px", color: C.gold }}>{"★".repeat(preflight.stars)}<span style={{ color: C.fgFaint }}>{"☆".repeat(5 - preflight.stars)}</span></div>
           <div style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600, color: C.fg }}>{hasFail ? "Un réglage à corriger" : "Votre création est prête"}</div>
@@ -1407,7 +1407,7 @@ function Panel({ id, title, resume, open, setOpen, children, flash }: { id: stri
         </span>
         <ChevronDown size={18} color={C.fgMuted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
       </button>
-      {isOpen && <div style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: 14 }}>{children}</div>}
+      {isOpen && <div className="mo-fade-up" style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: 14 }}>{children}</div>}
     </div>
   )
 }
@@ -1840,8 +1840,8 @@ function TemplateLibrary({ item, onApply, onApplyVariant }: { item: Item; onAppl
   )
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <style>{`.ps-tpl{transition:transform .15s var(--mo-ease,ease)}.ps-tpl:hover{transform:scale(1.04)}@keyframes pspop{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:none}}`}</style>
-      {hoverT && <div style={{ position: "fixed", left: hoverT.x, top: hoverT.y, zIndex: 200, pointerEvents: "none", animation: "pspop .13s var(--mo-ease,ease) both" }}><TemplateHoverCard t={hoverT.t} /></div>}
+      <style>{`.ps-tpl{transition:transform var(--mo-fast) var(--mo-ease-standard)}.ps-tpl:hover{transform:scale(1.04)}@media(prefers-reduced-motion:reduce){.ps-tpl:hover{transform:none}}`}</style>
+      {hoverT && <div className="mo-pop-in" style={{ position: "fixed", left: hoverT.x, top: hoverT.y, zIndex: 200, pointerEvents: "none" }}><TemplateHoverCard t={hoverT.t} /></div>}
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un modèle…" style={{ ...inputStyle, height: 42 }} />
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
         {TPL_CATS.map(c => <button key={c.id} onClick={() => { setCat(c.id); setQ("") }} style={{ ...chipStyle(!ql && cat === c.id), minHeight: 36, fontSize: 12 }}>{c.label}</button>)}

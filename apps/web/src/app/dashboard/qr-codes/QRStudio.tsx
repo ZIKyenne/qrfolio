@@ -2618,10 +2618,21 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
           </button>
         )}
         {/* Section label */}
-        <div style={{ padding:"10px 16px 8px", borderBottom:"1px solid rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Aperçu</p>
+        <div style={{ padding:"9px 16px 8px", borderBottom:"1px solid rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
+            <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Aperçu</p>
+            {active && (() => {
+              const st = active.pages?.status ?? "draft"
+              const sCfg = ({ published:{dot:"var(--success)",label:"Publié"}, draft:{dot:"#A8A190",label:"Brouillon"}, archived:{dot:"#F97316",label:"Archivé"}, paused:{dot:"var(--danger)",label:"En pause"} } as any)[st] ?? {dot:"#A8A190",label:"Inconnu"}
+              return (
+                <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, color:sCfg.dot, background:`${sCfg.dot}15`, border:`1px solid ${sCfg.dot}40`, borderRadius:6, padding:"2px 8px", fontWeight:600, flexShrink:0 }}>
+                  <span style={{ width:5, height:5, borderRadius:"50%", background:sCfg.dot }}/>{sCfg.label}
+                </span>
+              )
+            })()}
+          </div>
           {active && (
-            <span style={{ color:MUTED, fontSize:9 }}>
+            <span style={{ color:MUTED, fontSize:9, flexShrink:0 }}>
               {new Date(active.created_at).toLocaleDateString("fr-FR", { day:"numeric", month:"short", year:"numeric" })}
             </span>
           )}
@@ -2632,7 +2643,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             <div className="qr-scroll" style={{ display:"flex", flexDirection:"column", height:"100%", overflowY:"auto" }}>
 
               {/* QR Card */}
-              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:isMobile?"18px 18px 22px":"30px 24px 24px", gap:16, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:isMobile?"14px 16px 16px":"16px 22px 16px", gap:12, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
                 {/* Groupe visuel QR (sélecteur + QR + Agrandir) — placé APRÈS infos/actions sur mobile via order */}
                 <div style={{ order: isMobile ? 3 : 0, width:"100%", display:"flex", flexDirection:"column", alignItems:"center", gap:16 }}>
                 {/* Sélecteur d'aperçu immersif — replié sur mobile pour ne montrer que le QR par défaut */}
@@ -2761,32 +2772,46 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       {copied==="short" ? <Check size={isMobile?14:11}/> : <Copy size={isMobile?14:11}/>}
                     </button>
                   </div>
-                  {(() => {
-                    const st   = active.pages?.status ?? "draft"
-                    const sCfg = ({ published:{dot:"var(--success)",label:"Publié"}, draft:{dot:"#A8A190",label:"Brouillon"}, archived:{dot:"#F97316",label:"Archivé"}, paused:{dot:"var(--danger)",label:"En pause"} } as any)[st] ?? {dot:"#A8A190",label:"Inconnu"}
-                    return (
-                      <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, color:sCfg.dot, background:`${sCfg.dot}15`, border:`1px solid ${sCfg.dot}40`, borderRadius:6, padding:"2px 8px", fontWeight:600 }}>
-                        <div style={{ width:5, height:5, borderRadius:"50%", background:sCfg.dot }}/>{sCfg.label}
-                      </span>
-                    )
-                  })()}
+                  {/* Statut déplacé en haut à gauche (en-tête « Aperçu »). */}
 
                   {/* Carte score scannabilité — pédagogique */}
                   {scanScore && (
-                    <div style={{ width:"100%", marginTop:12, padding:"12px 14px", background:`${scanScore.gradeColor}0e`, border:`1px solid ${scanScore.gradeColor}33`, borderRadius:14, display:"flex", flexDirection:"column", gap:9 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:11 }}>
-                        <span style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", background:scanScore.gradeColor, color:"#080808", fontSize:13, fontWeight:800, flexShrink:0 }}>
+                    <div style={{ width:"100%", marginTop:8, padding:"10px 12px", background:`${scanScore.gradeColor}0e`, border:`1px solid ${scanScore.gradeColor}33`, borderRadius:13, display:"flex", flexDirection:"column", gap:8 }}>
+                      {/* En-tête cliquable : déplie le détail (contraste / taille / ECC / problèmes). */}
+                      <button type="button" onClick={() => setScanOpen(o => !o)} aria-expanded={scanOpen} style={{ display:"flex", alignItems:"center", gap:10, background:"none", border:"none", padding:0, cursor:"pointer", width:"100%", textAlign:"left" as const }}>
+                        <span style={{ display:"flex", alignItems:"center", justifyContent:"center", width:32, height:32, borderRadius:"50%", background:scanScore.gradeColor, color:"#080808", fontSize:12, fontWeight:800, flexShrink:0 }}>
                           {scanScore.score}
                         </span>
-                        <div style={{ flex:1, minWidth:0, textAlign:"left" as const }}>
-                          <p style={{ color:scanScore.gradeColor, fontSize:13, fontWeight:800, margin:0 }}>{scanScore.grade} · scannabilité</p>
-                          <p style={{ color:MUTED, fontSize:11, margin:"2px 0 0", lineHeight:1.45 }}>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <p style={{ color:scanScore.gradeColor, fontSize:12.5, fontWeight:800, margin:0 }}>{scanScore.grade} · scannabilité</p>
+                          <p style={{ color:MUTED, fontSize:10.5, margin:"1px 0 0", lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
                             {scanScore.grade === "Excellent"
                               ? "Contraste élevé et marge suffisante : il se scanne sans souci."
                               : (scanScore.issues[0]?.detail || scanScore.issues[0]?.title || "Quelques réglages amélioreraient la lisibilité.")}
                           </p>
                         </div>
-                      </div>
+                        <ChevronDown size={16} color={MUTED} style={{ transform: scanOpen ? "rotate(180deg)" : "none", transition:"transform .2s", flexShrink:0 }}/>
+                      </button>
+                      {scanOpen && (
+                        <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const }}>
+                          <span style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:6, padding:"3px 9px", fontSize:9.5, color:MUTED }}>Contraste {scanScore.ratio}:1</span>
+                          <span style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:6, padding:"3px 9px", fontSize:9.5, color:MUTED }}>Taille min {scanScore.minSize}</span>
+                          <span style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:6, padding:"3px 9px", fontSize:9.5, color:MUTED }}>ECC {ecLevel}</span>
+                        </div>
+                      )}
+                      {scanOpen && scanScore.issues.length > 0 && (
+                        <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
+                          {scanScore.issues.map(issue => (
+                            <div key={issue.id} style={{ display:"flex", alignItems:"flex-start", gap:7, padding:"7px 9px", background:`${issue.severity==="critical"?"rgba(255,107,107,0.07)":issue.severity==="warning"?"rgba(249,115,22,0.06)":"rgba(255,255,255,0.03)"}`, border:`1px solid ${issue.severity==="critical"?"rgba(255,107,107,0.2)":issue.severity==="warning"?"rgba(249,115,22,0.18)":"rgba(255,255,255,0.07)"}`, borderRadius:8 }}>
+                              <span style={{ fontSize:11, flexShrink:0, marginTop:1 }}>{issue.severity==="critical"?"🔴":issue.severity==="warning"?"🟡":"🔵"}</span>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <p style={{ color:"#F5F0E8", fontSize:10.5, fontWeight:600, margin:"0 0 1px" }}>{issue.title}</p>
+                                <p style={{ color:MUTED, fontSize:9, margin:0, lineHeight:1.45 }}>{issue.detail}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       {scanScore.grade !== "Excellent" && (<>
                         <button type="button" onClick={autoFix}
                           style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"9px", background:`${scanScore.gradeColor}1c`, border:`1px solid ${scanScore.gradeColor}55`, borderRadius:10, color:scanScore.gradeColor, fontSize:12, fontWeight:700, cursor:"pointer" }}>

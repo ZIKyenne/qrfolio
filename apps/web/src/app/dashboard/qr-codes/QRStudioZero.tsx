@@ -13,6 +13,7 @@ import Link from "next/link"
 import { QrCode, Search, Copy, Check, Download, Printer, Plus, Settings, ChevronDown, PanelLeftClose, PanelLeftOpen, X, AlertTriangle, Trash2 } from "lucide-react"
 import QRCanvas from "./QRCanvas"
 import { getQRBlob, downloadBlob, buildAndDownloadPdf } from "./qrRender"
+import { composeLogo } from "./logoCompose"
 import { qrScannability, scanLevelColor } from "./qrScannability"
 import { PRESETS, PRESET_CATS, DOT_STYLES, CORNER_STYLE_LIST, DEFAULT_STYLE, type QRStyleConfig, type Preset, type QRCode } from "./QRStudio"
 import { PLAN_RANK } from "@/lib/plans"
@@ -63,7 +64,10 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
   const [dlOpen, setDlOpen] = useState(false)
   const [dlBusy, setDlBusy] = useState<string | null>(null)
   const [scanOpen, setScanOpen] = useState(false)
+  const [gradOpen, setGradOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [logoErr, setLogoErr] = useState("")
+  const [composedLogo, setComposedLogo] = useState("")
   const loadedRef = useRef(false)
   const logoInput = useRef<HTMLInputElement>(null)
   const { ref: previewBox, size: previewSize } = useFitSize()
@@ -99,6 +103,20 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fg, bg, corner, ecc, styleConf])
 
+  // Logo : ECC forcé H (le logo masque des modules) + logo COMPOSÉ (forme/fond) au rendu, comme l'ancien.
+  const effectiveEcc = styleConf.logoUrl ? "H" : ecc
+  useEffect(() => {
+    let cancelled = false
+    const src = styleConf.logoUrl
+    if (!src) { setComposedLogo(""); return }
+    composeLogo(src, { shape: styleConf.logoShape, bg: styleConf.logoBg, bgColor: styleConf.logoBgColor })
+      .then(u => { if (!cancelled) setComposedLogo(u) })
+      .catch(() => { if (!cancelled) setComposedLogo(src) })
+    return () => { cancelled = true }
+  }, [styleConf.logoUrl, styleConf.logoShape, styleConf.logoBg, styleConf.logoBgColor])
+  const renderStyle: QRStyleConfig = (styleConf.logoUrl && composedLogo && composedLogo !== styleConf.logoUrl)
+    ? { ...styleConf, logoUrl: composedLogo } : styleConf
+
   async function save() {
     if (!active) return
     try {
@@ -117,8 +135,8 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
   // Lisibilité AUTOMATIQUE — un seul moteur, un seul indicateur (§16).
   const scan = useMemo(() => qrScannability({
     fg: fg || "#080808", bg: bg || "#FFFFFF", transparent: styleConf.transparent,
-    ecc, dotStyle: styleConf.dotStyle, hasLogo: !!styleConf.logoUrl, margin: styleConf.margin,
-  }), [fg, bg, styleConf.transparent, ecc, styleConf.dotStyle, styleConf.logoUrl, styleConf.margin])
+    ecc: effectiveEcc, dotStyle: styleConf.dotStyle, hasLogo: !!styleConf.logoUrl, margin: styleConf.margin,
+  }), [fg, bg, styleConf.transparent, effectiveEcc, styleConf.dotStyle, styleConf.logoUrl, styleConf.margin])
   const scanColor = scanLevelColor(scan.level)
   const risky = scan.level === "risque"
 
@@ -146,11 +164,13 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
   function invert() { setFg(bg || "#FFFFFF"); setBg(fg || "#0A0A0A") }
 
   function onLogoFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f) return
+    const f = e.target.files?.[0]; e.target.value = ""; if (!f) return
+    setLogoErr("")
+    if (!f.type.startsWith("image/")) { setLogoErr("Fichier image requis (PNG, JPG, SVG)."); return }
+    if (f.size > 2 * 1024 * 1024) { setLogoErr("Logo trop volumineux (max 2 Mo)."); return }
     const r = new FileReader()
     r.onload = () => setStyleConf(s => ({ ...s, logoUrl: String(r.result), logoSize: Math.min(s.logoSize ?? 18, 22) }))
     r.readAsDataURL(f)
-    e.target.value = ""
   }
 
   function filename(ext: string) {
@@ -161,13 +181,13 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
     if (!active || risky) return
     setDlBusy(fmt)
     try {
-      const opts = { data: qrUrl, fg, bg, ecc, style: styleConf, size: 1024 }
+      const opts = { data: qrUrl, fg, bg, ecc: effectiveEcc, style: renderStyle, size: 1024 }
       if (fmt === "svg") { const b = await getQRBlob(opts, "svg"); if (b) downloadBlob(b, filename("svg")) }
       else if (fmt === "pdf") {
-        const png = await getQRBlob({ ...opts, style: { ...styleConf, transparent: false } }, "png")
+        const png = await getQRBlob({ ...opts, style: { ...renderStyle, transparent: false } }, "png")
         if (png) await buildAndDownloadPdf(png, filename("pdf"), { title: active.pages?.title || undefined, url: qrUrl })
       } else if (fmt === "png-t") {
-        const b = await getQRBlob({ ...opts, style: { ...styleConf, transparent: true } }, "png"); if (b) downloadBlob(b, filename("png"))
+        const b = await getQRBlob({ ...opts, style: { ...renderStyle, transparent: true } }, "png"); if (b) downloadBlob(b, filename("png"))
       } else { const b = await getQRBlob(opts, "png"); if (b) downloadBlob(b, filename("png")) }
     } catch {}
     setDlBusy(null)
@@ -218,7 +238,13 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
         .qz-row { transition: background var(--mo-fast,.12s) var(--mo-ease-standard,ease), border-color var(--mo-fast,.12s) }
         .qz-preset { transition: transform var(--mo-fast,.12s) var(--mo-ease-standard,ease), border-color var(--mo-fast,.12s) }
         .qz-preset:hover { transform: translateY(-2px) }
-        @media (max-width: 980px) { .qz-shell { height: auto } .qz-grid { grid-template-columns: 1fr !important } .qz-aside { position: static !important } }
+        @media (max-width: 980px) {
+          .qz-shell { height: auto }
+          .qz-grid { grid-template-columns: 1fr !important }
+          .qz-center { order: 1; min-height: 62vh }
+          .qz-right { order: 2; overflow: visible !important; border-left: none !important; border-top: 1px solid ${LINE} }
+          .qz-aside { order: 3; display: flex !important; max-height: 44vh; border-right: none !important; border-top: 1px solid ${LINE} }
+        }
       `}</style>
 
       <div className="qz-shell qz-grid" style={{ display: "grid", gridTemplateColumns: `${leftW} minmax(0,1fr) clamp(300px, 24vw, 344px)`, gap: 0, background: SHELL_BG, border: `1px solid ${LINE}`, borderRadius: 16, overflow: "hidden" }}>
@@ -255,7 +281,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
         </aside>
 
         {/* ── CENTRE — APERÇU ─────────────────────────────────────────── */}
-        <section style={{ display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
+        <section className="qz-center" style={{ display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
           {/* Barre d'action (autosave + sorties) — pas de toolbar chargée. */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
             <button type="button" onClick={toggleFocus} title={collapsed ? "Afficher mes QR" : "Masquer mes QR (mode focus)"} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 8, background: "transparent", border: `1px solid ${LINE}`, color: MUTED, cursor: "pointer" }}>{collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}</button>
@@ -273,7 +299,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 20, minHeight: 0 }}>
               <div ref={previewBox} style={{ flex: 1, width: "100%", maxWidth: 460, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 0 }}>
                 <div style={{ padding: 18, background: bg || "#fff", borderRadius: 20, boxShadow: "0 18px 50px rgba(0,0,0,0.45)", lineHeight: 0 }}>
-                  <QRCanvas value={qrUrl} size={previewSize} fg={fg || "#080808"} bg={bg || "#FFFFFF"} ecc={ecc} style={styleConf} />
+                  <QRCanvas value={qrUrl} size={previewSize} fg={fg || "#080808"} bg={bg || "#FFFFFF"} ecc={effectiveEcc} style={renderStyle} />
                 </div>
               </div>
               <div style={{ textAlign: "center", flexShrink: 0 }}>
@@ -290,7 +316,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
                 </button>
                 {scanOpen && (
                   <div className="mo-fade-up" style={{ marginTop: 8, padding: "10px 13px", background: SURF, border: `1px solid ${LINE}`, borderRadius: 11, fontSize: 11.5, color: MUTED, lineHeight: 1.5 }}>
-                    <p style={{ margin: "0 0 6px", color: INK, fontWeight: 700 }}>Diagnostic {scan.contrast != null ? `· contraste ${scan.contrast.toFixed(1)}:1` : ""} · correction {ecc}</p>
+                    <p style={{ margin: "0 0 6px", color: INK, fontWeight: 700 }}>Diagnostic {scan.contrast != null ? `· contraste ${scan.contrast.toFixed(1)}:1` : ""} · correction {effectiveEcc}{styleConf.logoUrl ? " (auto pour logo)" : ""}</p>
                     {scan.advices.length ? <ul style={{ margin: 0, paddingLeft: 16 }}>{scan.advices.map((a, i) => <li key={i} style={{ marginBottom: 3 }}>{a}</li>)}</ul> : <p style={{ margin: 0 }}>Contraste, structure et marges validés — scan garanti.</p>}
                   </div>
                 )}
@@ -306,7 +332,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
         </section>
 
         {/* ── DROITE — PERSONNALISER ──────────────────────────────────── */}
-        <aside className="qz-col" style={{ borderLeft: `1px solid ${LINE}`, display: active ? "flex" : "none", flexDirection: "column", minHeight: 0, overflowY: "auto", background: "rgba(0,0,0,0.12)" }}>
+        <aside className="qz-col qz-right" style={{ borderLeft: `1px solid ${LINE}`, display: active ? "flex" : "none", flexDirection: "column", minHeight: 0, overflowY: "auto", background: "rgba(0,0,0,0.12)" }}>
           <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 20 }}>
 
             {/* STYLE */}
@@ -355,7 +381,26 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
               <h3 style={secH}>Couleurs</h3>
               <ColorRow label="QR" value={fg || "#0A0A0A"} onChange={setFg} />
               <ColorRow label="Fond" value={bg || "#FFFFFF"} onChange={setBg} />
-              <button type="button" onClick={invert} style={{ marginTop: 4, background: "none", border: "none", color: G, fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: 0 }}>Inverser</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
+                <button type="button" onClick={invert} style={{ background: "none", border: "none", color: G, fontSize: 11.5, fontWeight: 700, cursor: "pointer", padding: 0 }}>Inverser</button>
+                <button type="button" onClick={() => setGradOpen(o => !o)} style={{ background: "none", border: "none", color: MUTED, fontSize: 11.5, fontWeight: 600, cursor: "pointer", padding: 0 }}>{gradOpen || (styleConf.gradient && styleConf.gradient !== "none") ? "− Dégradé" : "+ Dégradé"}</button>
+              </div>
+              {/* Palettes recommandées (contraste garanti) */}
+              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 10 }}>
+                {PALETTES.map(([pfg, pbg]) => {
+                  const on = fg.toLowerCase() === pfg.toLowerCase() && bg.toLowerCase() === pbg.toLowerCase()
+                  return <button key={pfg + pbg} type="button" onClick={() => { setFg(pfg); setBg(pbg) }} title="Palette" style={{ width: 30, height: 30, borderRadius: 8, cursor: "pointer", background: pbg, border: `2px solid ${on ? G : LINE}`, position: "relative", flexShrink: 0 }}><span style={{ position: "absolute", inset: 6, borderRadius: 4, background: pfg }} /></button>
+                })}
+              </div>
+              {(gradOpen || (styleConf.gradient && styleConf.gradient !== "none")) && (
+                <div className="mo-fade-up" style={{ marginTop: 12, padding: 10, background: SURF, border: `1px solid ${LINE}`, borderRadius: 10 }}>
+                  <p style={miniLabel}>Type de dégradé</p>
+                  <div style={{ display: "flex", gap: 4, background: "rgba(0,0,0,0.2)", borderRadius: 8, padding: 3, marginBottom: 8 }}>
+                    {(["none", "linear", "radial", "diagonal"] as const).map(gt => <button key={gt} type="button" onClick={() => setStyleConf(s => ({ ...s, gradient: gt }))} style={{ flex: 1, padding: "6px 0", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 10.5, fontWeight: (styleConf.gradient ?? "none") === gt ? 800 : 600, background: (styleConf.gradient ?? "none") === gt ? G : "transparent", color: (styleConf.gradient ?? "none") === gt ? "#080808" : MUTED }}>{gt === "none" ? "Aucun" : gt === "linear" ? "Linéaire" : gt === "radial" ? "Radial" : "Diagonal"}</button>)}
+                  </div>
+                  {styleConf.gradient && styleConf.gradient !== "none" && <ColorRow label="2ᵉ ton" value={styleConf.fg2 || fg || "#0A0A0A"} onChange={v => setStyleConf(s => ({ ...s, fg2: v }))} />}
+                </div>
+              )}
             </section>
 
             {/* LOGO */}
@@ -371,10 +416,15 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
                   </div>
                   <p style={miniLabel}>Taille — plafonnée pour garantir le scan</p>
                   <input type="range" min={10} max={22} step={1} value={styleConf.logoSize ?? 18} onChange={e => setStyleConf(s => ({ ...s, logoSize: Number(e.target.value) }))} style={{ width: "100%", accentColor: "var(--accent)" }} />
+                  <p style={{ ...miniLabel, marginTop: 8 }}>Forme</p>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {(["square", "rounded", "circle"] as const).map(sh => <button key={sh} type="button" onClick={() => setStyleConf(s => ({ ...s, logoShape: sh }))} style={shapeBtn((styleConf.logoShape ?? "rounded") === sh)}>{sh === "circle" ? "●" : sh === "rounded" ? "▢" : "■"}</button>)}
+                  </div>
                 </>
               ) : (
                 <button type="button" onClick={() => logoInput.current?.click()} style={{ width: "100%", padding: "11px", borderRadius: 10, border: `1.5px dashed color-mix(in srgb, var(--accent) 34%, transparent)`, background: "color-mix(in srgb, var(--accent) 8%, transparent)", color: G, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>+ Ajouter un logo</button>
               )}
+              {logoErr && <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--danger)" }}>{logoErr}</p>}
             </section>
 
             {/* AVANCÉ (drawer discret) */}
@@ -436,6 +486,11 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
   )
 }
 
+// Palettes recommandées — paires à contraste élevé (scan fiable garanti).
+const PALETTES: [string, string][] = [
+  ["#0A0A0A", "#FFFFFF"], ["#1E3A5F", "#FFFFFF"], ["#B91C1C", "#FFF7ED"],
+  ["#047857", "#ECFDF5"], ["#4F46E5", "#FFFFFF"], ["#C9A84C", "#0A0A0A"], ["#2D2D2D", "#F5F0E8"],
+]
 const secH: React.CSSProperties = { fontFamily: "Fraunces, serif", fontSize: 15, fontWeight: 700, color: INK, margin: "0 0 10px" }
 const miniLabel: React.CSSProperties = { margin: "0 0 6px", fontSize: 10.5, fontWeight: 600, color: MUTED }
 const smallBtn: React.CSSProperties = { minHeight: 34, padding: "0 12px", borderRadius: 9, background: SURF, border: `1px solid ${LINE}`, color: INK, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }

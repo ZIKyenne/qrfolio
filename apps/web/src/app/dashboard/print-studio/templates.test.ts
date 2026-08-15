@@ -7,8 +7,8 @@ const KNOWN_COMPS = ["scannez", "avis", "wifi", "suivre", "reserver", "fidelite"
 const ACCENTS = ["auto", "or", "rouge", "corail", "vert", "bleu", "violet", "rose"]
 
 describe("Print Studio — moteur de templates", () => {
-  it("au moins 10 modèles, ids uniques", () => {
-    expect(TEMPLATES.length).toBeGreaterThanOrEqual(10)
+  it("au moins 30 modèles, ids uniques", () => {
+    expect(TEMPLATES.length).toBeGreaterThanOrEqual(30)
     const ids = new Set(TEMPLATES.map(t => t.id))
     expect(ids.size).toBe(TEMPLATES.length)
   })

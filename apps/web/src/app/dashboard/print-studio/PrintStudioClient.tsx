@@ -1789,9 +1789,36 @@ const TPL_CATS: { id: string; label: string; m?: (t: PrintTemplate) => boolean }
   { id: "reseaux", label: "Réseaux", m: t => t.objective.includes("Réseaux") },
   { id: "business", label: "Business", m: t => t.business.some(b => ["Freelance", "Artisan", "Immobilier", "Coach", "Photographe"].includes(b)) || t.objective.includes("Contact") },
 ]
+// Aperçu RICHE au survol (#4) — rendu représentatif agrandi + méta (objectif). Desktop `hover:fine` uniquement,
+// en position fixed (échappe à l'overflow du volet), non interactif (pointer-events none).
+function TemplateHoverCard({ t }: { t: PrintTemplate }) {
+  const L = t.look
+  const s = STYLE_BY_ID[L.style] || STYLE_BY_ID.premiumdark
+  const pal = paletteFromStyle(s)
+  const accHex = ACCENTS.find(a => a.id === L.accent)?.hex || pal.band
+  const align = L.eAlign === "left" ? "flex-start" : L.eAlign === "right" ? "flex-end" : "center"
+  const raw = t.content.title || "Titre"
+  const titleTxt = L.titleCase === "upper" ? raw.toUpperCase() : raw
+  return (
+    <div style={{ width: 210, borderRadius: 14, overflow: "hidden", border: `1px solid ${C.hairline}`, background: C.surface, boxShadow: "0 18px 50px rgba(0,0,0,.6)" }}>
+      <div style={{ height: 184, background: pal.bg, display: "flex", flexDirection: "column", alignItems: align, justifyContent: "center", gap: 9, padding: 18, textAlign: align === "center" ? "center" : align === "flex-end" ? "right" : "left" }}>
+        <span style={{ fontFamily: pal.bodyFont, fontSize: 8.5, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: accHex }}>{t.business[0] || "QRowg"}</span>
+        <span style={{ fontFamily: pal.titleFont, fontSize: 17, fontWeight: 700, color: pal.fg, lineHeight: 1.05, letterSpacing: pal.titleLs, maxWidth: "100%", overflowWrap: "anywhere" }}>{titleTxt}</span>
+        {t.content.subtitle && <span style={{ fontFamily: pal.bodyFont, fontSize: 9.5, fontWeight: 500, color: pal.fg, opacity: 0.8, lineHeight: 1.2, maxWidth: "100%" }}>{t.content.subtitle}</span>}
+        <FauxQR size={46} fg={pal.ink} bg={pal.qrBg} />
+        {t.content.cta && <span style={{ fontFamily: pal.bodyFont, fontSize: 9, fontWeight: 800, color: readableOn(accHex), background: accHex, borderRadius: L.eCorner === "rond" ? 999 : L.eCorner === "vif" ? 0 : 6, padding: "5px 12px", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.content.cta}</span>}
+      </div>
+      <div style={{ padding: "9px 12px", background: C.surface }}>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.fg, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.name}</div>
+        {t.objective.length > 0 && <div style={{ fontSize: 10.5, color: C.fgMuted, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.objective.slice(0, 3).join(" · ")}</div>}
+      </div>
+    </div>
+  )
+}
 function TemplateLibrary({ item, onApply, onApplyVariant }: { item: Item; onApply: (t: PrintTemplate) => void; onApplyVariant: (t: PrintTemplate, v: TemplateVariant) => void }) {
   const [q, setQ] = useState("")
   const [cat, setCat] = useState("pour-vous")
+  const [hoverT, setHoverT] = useState<{ t: PrintTemplate; x: number; y: number } | null>(null)
   const ql = q.trim().toLowerCase()
   const matchSearch = (t: PrintTemplate) => !ql || t.name.toLowerCase().includes(ql) || t.business.some(b => b.toLowerCase().includes(ql)) || t.objective.some(o => o.toLowerCase().includes(ql)) || t.style.some(s => s.toLowerCase().includes(ql))
   let list = filterTemplates(item).filter(matchSearch)
@@ -1800,15 +1827,25 @@ function TemplateLibrary({ item, onApply, onApplyVariant }: { item: Item; onAppl
   const reco = showReco ? list.slice(0, 6) : []
   const rest = showReco ? list.slice(6) : list
   const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(96px,1fr))", gap: 10 }
+  // Survol enrichi (desktop pointeur fin) : positionne la carte à côté du thumbnail, repliée dans le viewport.
+  function onHover(t: PrintTemplate, e: React.MouseEvent) {
+    if (!window.matchMedia?.("(hover: hover) and (pointer: fine)").matches) return
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const W = 210, H = 232, gap = 12
+    const x = r.right + gap + W <= window.innerWidth ? r.right + gap : Math.max(8, r.left - gap - W)
+    const y = Math.max(8, Math.min(r.top - 24, window.innerHeight - H - 8))
+    setHoverT({ t, x, y })
+  }
   const card = (t: PrintTemplate) => (
-    <div key={t.id} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+    <div key={t.id} style={{ display: "flex", flexDirection: "column", gap: 5 }} onMouseEnter={e => onHover(t, e)} onMouseMove={e => onHover(t, e)} onMouseLeave={() => setHoverT(h => (h?.t.id === t.id ? null : h))}>
       <TemplateThumb t={t} onClick={() => onApply(t)} />
       {t.variants && t.variants.length > 0 && <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{t.variants.map(v => <button key={v.id} onClick={() => onApplyVariant(t, v)} title={`${t.name} — ${v.label}`} aria-label={`${t.name} — ${v.label}`} style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${C.hairline}`, background: v.hex, cursor: "pointer", padding: 0, flexShrink: 0 }} />)}</div>}
     </div>
   )
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <style>{`.ps-tpl{transition:transform .15s var(--mo-ease,ease)}.ps-tpl:hover{transform:scale(1.04)}`}</style>
+      <style>{`.ps-tpl{transition:transform .15s var(--mo-ease,ease)}.ps-tpl:hover{transform:scale(1.04)}@keyframes pspop{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:none}}`}</style>
+      {hoverT && <div style={{ position: "fixed", left: hoverT.x, top: hoverT.y, zIndex: 200, pointerEvents: "none", animation: "pspop .13s var(--mo-ease,ease) both" }}><TemplateHoverCard t={hoverT.t} /></div>}
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un modèle…" style={{ ...inputStyle, height: 42 }} />
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
         {TPL_CATS.map(c => <button key={c.id} onClick={() => { setCat(c.id); setQ("") }} style={{ ...chipStyle(!ql && cat === c.id), minHeight: 36, fontSize: 12 }}>{c.label}</button>)}

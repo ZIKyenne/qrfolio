@@ -215,6 +215,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [qrFx, setQrFx] = useState(0.32)                  // position libre du QR (coin haut-gauche, fraction)
   const [qrFy, setQrFy] = useState(0.55)
   const [zoom, setZoom] = useState(1)                     // zoom de l'éditeur à plat (Studio libre)
+  const [fsOpen, setFsOpen] = useState(false)             // aperçu PLEIN ÉCRAN (mobile §2/§9 : « tap = plein écran »)
   const [addOpen, setAddOpen] = useState(false)           // bibliothèque « + Ajouter » (formes/icônes catégorisées)
   const [addSearch, setAddSearch] = useState("")          // recherche dans la bibliothèque d'éléments
   const [libre, setLibre] = useState(false)               // mode « Studio libre » (édition à plat + éléments libres)
@@ -530,6 +531,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [])
+  // Échap ferme l'aperçu plein écran.
+  useEffect(() => {
+    if (!fsOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFsOpen(false) }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [fsOpen])
 
   // ── Éléments libres (mode Studio libre) ─────────────────────────────────────────
   function addFreeText() {
@@ -728,10 +736,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                   <FlatEditor item={item} design={designProps} freeEls={freeEls} setFreeEls={setFreeEls} selEl={selEl} setSelEl={setSelEl} onQrMove={(x, y) => { setQrFx(x); setQrFy(y) }} zoom={zoom} />
                 </div>
               </>
-            : <Packshot item={item} scene={scene} pal={pal} style={style} layout={layout} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} qrFree={qrFree} qrFx={qrFx} qrFy={qrFy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY} freeEls={freeEls}
-                brand={brand} subtitle={subtitle} title={title} cta={cta} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />}
+            : <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} /></div>}
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
             <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>
+            {!libre && <button onClick={() => setFsOpen(true)} style={chipStyle(false)}>⛶ Plein écran</button>}
           </div>
           {!libre && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR dans « Le QR »"}</p>}
           {libre && <>
@@ -1115,6 +1123,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </div>
           <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "10px 0 0" }}>Une feuille auto-dimensionnée, chaque exemplaire à sa taille réelle avec repère de découpe (idéal cartes/stickers en série).</p>
         </Modal>
+      )}
+
+      {/* Aperçu PLEIN ÉCRAN (mobile §2/§9) — tap/⛶ ouvre ; tap hors visuel, X ou Échap ferme. */}
+      {fsOpen && (
+        <div onClick={() => setFsOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(0,0,0,0.92)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px)" }}>
+          <button onClick={() => setFsOpen(false)} aria-label="Fermer l'aperçu" style={{ position: "absolute", top: "calc(env(safe-area-inset-top) + 12px)", right: 16, width: 42, height: 42, borderRadius: 999, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.22)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}><X size={20} /></button>
+          <div onClick={e => e.stopPropagation()} style={{ width: "min(94vw, 94vh)", maxWidth: 760 }}>
+            <Packshot item={item} scene={scene} {...designProps} box={1400} />
+            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 12, margin: "12px 0 0" }}>{scene.caption} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>
+          </div>
+        </div>
       )}
 
       {/* Bibliothèque d'éléments « + Ajouter » : formes + icônes catégorisées + recherche. */}
@@ -1686,9 +1705,9 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
 }
 
 /* Aperçu packshot : le support posé dans sa scène (perspective + ombres + sol). */
-function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrDx: number; qrDy: number; qrFree?: boolean; qrFx?: number; qrFy?: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[] }) {
+function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pal: ReturnType<typeof paletteFromStyle>; style: Style; layout: { content: string; deco: string | null }; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrDx: number; qrDy: number; qrFree?: boolean; qrFx?: number; qrFy?: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; brand: string; subtitle: string; title: string; cta: string; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[]; box?: number }) {
   const { item, scene } = props
-  const box = 520
+  const box = props.box ?? 520
   const hPx = scaleFor(item.hMm, box, SCENES[item.scene])
   const wPx = item.shape === "round" ? hPx : hPx * item.ratio
   const clampedW = Math.min(wPx, box - 40)

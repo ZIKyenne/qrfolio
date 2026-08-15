@@ -25,7 +25,7 @@ import type QRCodeStyling from "qr-code-styling"
 
 // Editeur libre (Fabric.js) : charge uniquement cote client (touche au DOM)
 
-type QRCode = {
+export type QRCode = {
   id:               string
   page_id:          string
   short_code:       string
@@ -60,7 +60,7 @@ interface Props {
 }
 
 // -- QR Style Config type -----------------------------------------------------
-type QRStyleConfig = {
+export type QRStyleConfig = {
   fg2?:          string    // couleur secondaire (degrade)
   cornerColor?:  string    // couleur des coins
   eyeColor?:     string    // couleur des yeux (centres)
@@ -79,7 +79,7 @@ type QRStyleConfig = {
   logoPadding?:  number    // px, 0-12, defaut 4
 }
 
-const DOT_STYLES: { id: QRStyleConfig["dotStyle"]; label: string; emoji: string }[] = [
+export const DOT_STYLES: { id: QRStyleConfig["dotStyle"]; label: string; emoji: string }[] = [
   { id:"square",     label:"Classique",    emoji:"⬛" },
   { id:"rounded",    label:"Arrondi",      emoji:"🔵" },
   { id:"dot",        label:"Dots",         emoji:"⚫" },
@@ -90,7 +90,7 @@ const DOT_STYLES: { id: QRStyleConfig["dotStyle"]; label: string; emoji: string 
   { id:"luxury",     label:"Luxury",       emoji:"💎" },
 ]
 
-const CORNER_STYLE_LIST: { id: QRStyleConfig["cornerStyle"]; label: string }[] = [
+export const CORNER_STYLE_LIST: { id: QRStyleConfig["cornerStyle"]; label: string }[] = [
   { id:"square",   label:"Carré"   },
   { id:"rounded",  label:"Arrondi" },
   { id:"circle",   label:"Cercle"  },
@@ -99,14 +99,14 @@ const CORNER_STYLE_LIST: { id: QRStyleConfig["cornerStyle"]; label: string }[] =
   { id:"minimal",  label:"Minimal" },
 ]
 
-const GRADIENT_OPTS: { id: QRStyleConfig["gradient"]; label: string }[] = [
+export const GRADIENT_OPTS: { id: QRStyleConfig["gradient"]; label: string }[] = [
   { id:"none",     label:"Aucun"    },
   { id:"linear",   label:"Lineaire" },
   { id:"radial",   label:"Radial"   },
   { id:"diagonal", label:"Diagonal" },
 ]
 
-const DEFAULT_STYLE: QRStyleConfig = {
+export const DEFAULT_STYLE: QRStyleConfig = {
   fg2: "", cornerColor: "", eyeColor: "", transparent: false,
   gradient: "none", gradientBg: "", dotStyle: "square",
   cornerStyle: "square", margin: 10, density: "medium",
@@ -115,7 +115,7 @@ const DEFAULT_STYLE: QRStyleConfig = {
 }
 
 // -- Bibliotheque de presets premium ------------------------------------------
-type Preset = {
+export type Preset = {
   id:       string
   label:    string
   cat:      string
@@ -135,7 +135,7 @@ type Preset = {
   plan:     string
 }
 
-const PRESET_CATS = [
+export const PRESET_CATS = [
   { id:"classic",    label:"Classique",  emoji:"⚫" },
   { id:"business",   label:"Business",   emoji:"💼" },
   { id:"restaurant", label:"Restaurant", emoji:"🍽️" },
@@ -146,7 +146,7 @@ const PRESET_CATS = [
   { id:"retail",     label:"Retail",     emoji:"🛍️" },
 ]
 
-const PRESETS: Preset[] = [
+export const PRESETS: Preset[] = [
   // == CLASSIQUE ==============================================================
   { id:"classic-black",     label:"Classic Black",   cat:"classic", fg:"#0A0A0A", bg:"#FFFFFF", dotStyle:"square",  cornerStyle:"square",  plan:"free" },
   { id:"snow-white",        label:"Snow White",      cat:"classic", fg:"#1A1A1A", bg:"#F8F8F8", dotStyle:"rounded", cornerStyle:"rounded", plan:"free" },

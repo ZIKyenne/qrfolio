@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import type { Metadata } from "next"
-import QRStudio from "./QRStudio"
+import QRStudioSwitch from "./QRStudioSwitch"
 import Particles from "@/components/Particles"
 import { accessibleOwnerIds } from "@/lib/team"
 import { pageLimit } from "@/lib/plans"
@@ -110,7 +110,7 @@ export default async function QRCodesPage() {
 
       {/* ===== Studio ===== */}
       <div className="qrh-content" style={{ maxWidth: 1320, margin: "0 auto", padding: "20px 24px 40px" }}>
-        <QRStudio
+        <QRStudioSwitch
           qrCodes={(qrCodes ?? []) as any}
           userPlan={userPlan}
           appUrl={appUrl}

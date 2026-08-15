@@ -166,8 +166,28 @@ function useIsMobile(bp = 1024) {
   return m
 }
 
+// UX clavier mobile (§11) : hauteur du clavier virtuel (visualViewport) + champ texte focalisé.
+// Actif seulement sur mobile pour ne pas perturber le desktop (pas de scroll auto au focus).
+function useKeyboard(enabled: boolean) {
+  const [kb, setKb] = useState(0)
+  const [typing, setTyping] = useState(false)
+  useEffect(() => {
+    if (!enabled) { setKb(0); setTyping(false); return }
+    const vv = window.visualViewport
+    const onResize = () => { if (!vv) return; const h = Math.max(0, window.innerHeight - vv.height - vv.offsetTop); setKb(h > 90 ? Math.round(h) : 0) }
+    const isField = (el: EventTarget | null) => { const t = el as HTMLElement | null; return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable) }
+    const onFocus = (e: FocusEvent) => { if (isField(e.target)) { setTyping(true); const t = e.target as HTMLElement; setTimeout(() => { try { t.scrollIntoView({ block: "center", behavior: "smooth" }) } catch {} }, 120) } }
+    const onBlur = () => setTyping(false)
+    vv?.addEventListener("resize", onResize); vv?.addEventListener("scroll", onResize); onResize()
+    window.addEventListener("focusin", onFocus); window.addEventListener("focusout", onBlur)
+    return () => { vv?.removeEventListener("resize", onResize); vv?.removeEventListener("scroll", onResize); window.removeEventListener("focusin", onFocus); window.removeEventListener("focusout", onBlur) }
+  }, [enabled])
+  return { kb, typing }
+}
+
 export default function PrintStudioClient({ canAccess }: { canAccess: boolean }) {
   const isMobile = useIsMobile()
+  const { kb, typing } = useKeyboard(isMobile)   // clavier virtuel : hauteur + saisie en cours (§11)
   const [sheetOpen, setSheetOpen] = useState(false)   // bottom sheet des réglages (mobile)
   const [phase, setPhase] = useState<"library" | "studio">("library")
   const [metier, setMetier] = useState("Tout")
@@ -770,7 +790,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Volets — mobile : bottom sheet pilotée par les onglets ; desktop : colonne accordéon (inchangé). */}
         {isMobile && sheetOpen && <div onClick={() => setSheetOpen(false)} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.5)" }} />}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, ...(isMobile ? { position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 70, maxHeight: "82vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: "8px 16px calc(16px + env(safe-area-inset-bottom))", transform: sheetOpen ? "translateY(0)" : "translateY(110%)", transition: "transform .26s var(--mo-ease-standard, ease)" } : {}) }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, ...(isMobile ? { position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, maxHeight: kb ? `calc(88vh - ${kb}px)` : "82vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `8px 16px ${kb ? "66px" : "calc(16px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? "translateY(0)" : "translateY(110%)", transition: "transform .26s var(--mo-ease-standard, ease)" } : {}) }}>
           {isMobile && (
             <div style={{ position: "sticky", top: 0, zIndex: 3, background: C.bg, paddingBottom: 6 }}>
               <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.18)", margin: "2px auto 8px" }} />
@@ -1070,6 +1090,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </div>
         </div>
       </div>
+
+      {/* Barre « Terminé » au-dessus du clavier (§11) — ferme le clavier sans perdre le champ. */}
+      {isMobile && typing && (
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 90, display: "flex", justifyContent: "flex-end", padding: "8px 12px", background: "color-mix(in srgb, var(--surface) 96%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(6px)" }}>
+          <button onPointerDown={e => e.preventDefault()} onClick={() => { const a = document.activeElement as HTMLElement | null; a?.blur?.() }} style={{ ...chipStyle(true), minHeight: 40 }}>Terminé</button>
+        </div>
+      )}
 
       {/* Écran CONTRÔLE avant export — pré-vol noté + messages actionnables + « Corriger ». */}
       <Modal open={control} onClose={() => setControl(false)} title="Vérification impression" maxWidth={520}>

@@ -765,15 +765,10 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const sel = freeEls.find(e => e.id === selEl)
   const tmpls = filterTemplates(item)   // templates pertinents au support courant (pertinents d'abord)
   const showFlat = libre && !isMobile   // l'édition libre (drag/calques) est réservée au desktop — mobile = guidé simple
-  // Sélection contextuelle (#12/#32) : cliquer un objet de l'aperçu (titre/QR/bouton/fond) ouvre son volet dédié.
-  // Desktop = ouvre l'accordéon + le fait défiler + surligne ; mobile = ouvre l'onglet correspondant de la sheet.
+  // Sélection contextuelle (#12/#32) — DESKTOP uniquement (onFocus n'est pas passé sur mobile : le tap y reste « plein écran »).
+  // Cliquer un objet de l'aperçu (titre/QR/bouton/fond) ouvre son volet dédié : accordéon + scroll + surlignage.
   function focusPanel(panel: string) {
     setLibre(false); setSelEl(null)
-    if (isMobile) {
-      const tab = panel === "qr" ? "qr" : panel === "texte" ? "texte" : panel === "details" ? "couleurs" : "theme"
-      setMobileTab(tab); setSheetOpen(true)
-      return
-    }
     // En mode Simple, le volet « Le design » (fond fin) est masqué → on renvoie vers « L'allure » (couleurs présentes).
     const target = mode === "simple" && panel === "details" ? "allure" : panel
     setOpen(target); setFlashPanel(target)
@@ -830,7 +825,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 </div>
               </>
             : <div style={{ position: "relative", ...(isMobile ? {} : { background: "radial-gradient(130% 90% at 50% -10%, rgba(255,255,255,.05), transparent 70%)", border: `1px solid ${C.hairline}`, borderRadius: 24, padding: 28 }) }}>
-                <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} box={isMobile ? 520 : 640} onFocus={focusPanel} /></div>
+                <div onClick={() => setFsOpen(true)} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} box={isMobile ? 520 : 640} onFocus={isMobile ? undefined : focusPanel} /></div>
                 <button onClick={e => { e.stopPropagation(); setFsOpen(true) }} aria-label="Plein écran" title="Plein écran" style={{ position: "absolute", top: isMobile ? 12 : 40, right: isMobile ? 12 : 40, width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", fontSize: 17, lineHeight: 1, zIndex: 2 }}>⛶</button>
               </div>}
           {!isMobile && mode === "studio" && <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
@@ -1315,10 +1310,11 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                   <div style={{ flexShrink: 0 }}><SupportVisual {...designProps} item={item} physW={trimWidthMm(item)} w={Math.round(trimWidthMm(item) * pxPerMm)} h={Math.round(item.hMm * pxPerMm)} /></div>
                 </div>
                 <p style={{ textAlign: "center", color: "rgba(255,255,255,0.8)", fontSize: 13, margin: 0 }}>Taille réelle : <b>{trimWidthMm(item)} × {item.hMm} mm</b> · QR ≈ <b>{(item.qrMm * effSize.factor).toFixed(1)} mm</b></p>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                {/* Le calibrage carte bancaire (85,6 mm) n'a de sens que sur un écran plus large qu'une carte → desktop. */}
+                {!isMobile && <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                   <button onClick={() => setCalib(true)} style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.24)", color: "#fff", cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "9px 16px" }}>Ajuster à mon écran</button>
-                </div>
-                <p style={{ textAlign: "center", color: "rgba(255,255,255,0.42)", fontSize: 11, margin: 0, maxWidth: 340 }}>Approximatif selon l'écran — ajustez avec une carte bancaire pour une précision au millimètre.</p>
+                </div>}
+                <p style={{ textAlign: "center", color: "rgba(255,255,255,0.42)", fontSize: 11, margin: 0, maxWidth: 340 }}>Approximatif selon l'écran{!isMobile ? " — ajustez avec une carte bancaire pour une précision au millimètre." : "."}</p>
               </>
             ) : (
               <>
@@ -1829,7 +1825,7 @@ function TemplateLibrary({ item, onApply, onApplyVariant }: { item: Item; onAppl
   const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(96px,1fr))", gap: 10 }
   // Survol enrichi (desktop pointeur fin) : positionne la carte à côté du thumbnail, repliée dans le viewport.
   function onHover(t: PrintTemplate, e: React.MouseEvent) {
-    if (!window.matchMedia?.("(hover: hover) and (pointer: fine)").matches) return
+    if (!window.matchMedia || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return
     const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const W = 210, H = 232, gap = 12
     const x = r.right + gap + W <= window.innerWidth ? r.right + gap : Math.max(8, r.left - gap - W)

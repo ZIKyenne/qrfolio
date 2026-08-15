@@ -2876,6 +2876,20 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       <ExternalLink size={12}/> Ouvrir
                     </a>
                   </div>
+                  {/* Enregistrer le style / Appliquer à tous — déplacés ici (sous l'aperçu, gauche/droite) pour alléger l'inspecteur. */}
+                  <div style={{ display:"flex", gap:6, width:"100%" }}>
+                    <button type="button" onClick={saveCustomization} disabled={saving}
+                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6, padding:"9px", background:saved?"rgba(57,255,143,0.12)":"rgba(255,255,255,0.04)", border:`1px solid ${saved?"rgba(57,255,143,0.3)":"rgba(255,255,255,0.08)"}`, borderRadius:9, color:saved?"var(--success)":"#C9C3B6", fontSize:11, fontWeight:700, cursor:saving?"wait":"pointer", opacity:saving?0.7:1 }}>
+                      {saving ? <Loader2 size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : saved ? <Check size={12}/> : <Palette size={12}/>}
+                      {saving ? "…" : saved ? "Enregistré" : "Enregistrer le style"}
+                    </button>
+                    <button type="button" onClick={applyToAll}
+                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6, padding:"9px", background:applyAllOk?"rgba(57,255,143,0.1)":"rgba(255,255,255,0.04)", border:`1px solid ${applyAllOk?"rgba(57,255,143,0.25)":"rgba(255,255,255,0.08)"}`, borderRadius:9, color:applyAllOk?"var(--success)":"#A8A190", fontSize:11, fontWeight:600, cursor:"pointer" }}>
+                      {applyAllOk ? <Check size={12}/> : <Settings size={12}/>}
+                      {applyAllOk ? "Appliqué" : "Appliquer à tous"}
+                    </button>
+                  </div>
+                  {saveErr && <div style={{ padding:"7px 9px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.25)", borderRadius:8, color:"var(--danger)", fontSize:10, lineHeight:1.4 }}>Échec : {saveErr}</div>}
                 </div>
               </div>
 
@@ -3756,24 +3770,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               )}
             </div>
 
-            {/* Actions en bas */}
-            <div style={{ padding:"12px 14px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", gap:7, flexShrink:0 }}>
-              <button type="button" onClick={saveCustomization} disabled={saving}
-                style={{ padding:"10px", background:saved?"rgba(57,255,143,0.12)":"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:saved?"1px solid rgba(57,255,143,0.3)":"none", borderRadius:9, color:saved?"var(--success)":"#080808", fontSize:12, fontWeight:700, cursor:saving?"wait":"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7, opacity:saving?0.7:1, transition:"all 0.2s" }}>
-                {saving ? <><Loader2 size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Enregistrement...</>
-                  : saved ? <><Check size={12}/> Sauvegarde !</>
-                  : <><Palette size={12}/> Enregistrer le style</>}
-              </button>
-              {saveErr && (
-                <div style={{ padding:"8px 10px", background:"rgba(255,107,107,0.08)", border:"1px solid rgba(255,107,107,0.25)", borderRadius:8, color:"var(--danger)", fontSize:10, lineHeight:1.4 }}>
-                  Echec de l'enregistrement : {saveErr}
-                </div>
-              )}
-              <button type="button" onClick={applyToAll}
-                style={{ padding:"9px", background:applyAllOk?"rgba(57,255,143,0.1)":"rgba(255,255,255,0.03)", border:`1px solid ${applyAllOk?"rgba(57,255,143,0.25)":"rgba(255,255,255,0.08)"}`, borderRadius:9, color:applyAllOk?"var(--success)":MUTED, fontSize:11, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                {applyAllOk ? <><Check size={11}/> Applique a tous !</> : <><Settings size={11}/> Appliquer a tous mes QR</>}
-              </button>
-            </div>
+            {/* « Enregistrer le style » / « Appliquer à tous » déplacés sous l'aperçu (gauche/droite) — inspecteur allégé. */}
           </div>
         )}
 

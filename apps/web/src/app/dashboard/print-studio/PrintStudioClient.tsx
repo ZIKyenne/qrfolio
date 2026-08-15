@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Lock, Unlock, Eye, EyeOff, ChevronUp, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2, Plus,
+import { ArrowLeft, Lock, Unlock, Eye, EyeOff, ChevronUp, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2, Plus, MoreVertical,
   Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap,
   Award, Sun, Moon, Leaf, Navigation, Home, Users, Utensils, Wine, Beer, Pizza, ShoppingBag, ShoppingCart,
   CreditCard, Percent, MessageCircle, ThumbsUp, Share2, Send, AtSign, Link2, QrCode, Smartphone, Calendar, Bell, Info, Scissors, ArrowDown } from "lucide-react"
@@ -261,6 +261,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [open, setOpen] = useState<string | null>("modeles")   // un seul volet ouvert (Modèles à l'entrée — templates = primaire)
   const [flashPanel, setFlashPanel] = useState<string | null>(null)   // volet à surligner brièvement après une sélection contextuelle (#12/#32)
   const [mode, setMode] = useState<"simple" | "studio">("simple")   // #34 : Simple (essentiel) vs Studio (avancé). Desktop uniquement, persisté localStorage.
+  const [moreMenu, setMoreMenu] = useState(false)   // menu « ··· » : actions secondaires (Décliner/Planche) hors du header principal
   useEffect(() => { try { const m = localStorage.getItem("qrowg-print-mode"); if (m === "studio" || m === "simple") setMode(m) } catch {} }, [])
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
@@ -826,10 +827,21 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <button onClick={redo} disabled={!canRedo} title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: "transparent", border: `1px solid ${C.hairline}`, borderRadius: 10, color: canRedo ? C.fg : C.fgFaint, cursor: canRedo ? "pointer" : "default", opacity: canRedo ? 1 : 0.5 }}><Redo2 size={16} /></button>
             </div>
           </>}
-          {!isMobile && mode === "studio" && <>
-            <button onClick={() => setDeclineOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}><Copy size={14} /> Décliner</button>
-            <button onClick={() => { if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${C.hairline}`, color: C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}><Layers size={14} /> Planche</button>
-          </>}
+          {/* Actions secondaires regroupées dans un menu « ··· » (§P1/§9 : header allégé, sorties clarifiées). */}
+          {!isMobile && mode === "studio" && (
+            <div style={{ position: "relative" }}>
+              <button onClick={() => setMoreMenu(v => !v)} aria-haspopup="menu" aria-expanded={moreMenu} title="Plus d'actions" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, background: moreMenu ? C.surfaceUp : "transparent", border: `1px solid ${C.hairline}`, borderRadius: 10, color: C.fg, cursor: "pointer" }}><MoreVertical size={16} /></button>
+              {moreMenu && (
+                <>
+                  <div onClick={() => setMoreMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                  <div role="menu" className="mo-fade-up" style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 41, minWidth: 180, background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: 12, padding: 6, boxShadow: "0 16px 44px rgba(0,0,0,0.5)" }}>
+                    <button role="menuitem" onClick={() => { setMoreMenu(false); setDeclineOpen(true) }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 12px", background: "none", border: "none", borderRadius: 8, color: C.fg, cursor: "pointer", fontSize: 13, fontWeight: 600, textAlign: "left" }}><Copy size={15} color={C.fgMuted} /> Décliner sur un support</button>
+                    <button role="menuitem" onClick={() => { setMoreMenu(false); if (!campaign.length) setCampaign([item.id]); setCampaignOpen(true) }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "10px 12px", background: "none", border: "none", borderRadius: 8, color: C.fg, cursor: "pointer", fontSize: 13, fontWeight: 600, textAlign: "left" }}><Layers size={15} color={C.fgMuted} /> Planche multi-supports</button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           {designCode && <button onClick={saveDesign} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: designSaved ? C.goldSoft : "transparent", border: `1px solid ${designSaved ? C.gold : C.hairline}`, color: designSaved ? C.gold : C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}>{designSaved ? <Check size={14} /> : <ShieldCheck size={14} />} {designSaved ? "Enregistré" : "Enregistrer"}</button>}
           {!isMobile && <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>}
         </div>

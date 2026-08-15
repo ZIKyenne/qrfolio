@@ -454,7 +454,6 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   const [corner,     setCorner]     = useState<"square"|"rounded"|"dot">("square")
   const [ecLevel,    setEcLevel]    = useState<"L"|"M"|"Q"|"H">("M")
   const [styleConf,  setStyleConf]  = useState<QRStyleConfig>({ ...DEFAULT_STYLE })
-  const [styleTab,   setStyleTab]   = useState<"apparence"|"branding"|"qualite">("apparence")
   const [openAcc,    setOpenAcc]    = useState<string>("presets")
   const [morePresets, setMorePresets] = useState(false) // #12 : n'affiche que les premiers styles, "Voir plus" pour le reste
   const [scanOpen, setScanOpen] = useState(false) // diagnostic scannabilite : repli par defaut (ne mange plus l'ecran)
@@ -3229,24 +3228,12 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         {activeTab === "style" && active && (
           <div className="qr-scroll" style={{ display:"flex", flexDirection:"column", flex:1, overflow:"hidden" }}>
 
-            {/* Sous-tabs Apparence/Branding/Qualite — etat actif plus contraste (#13) */}
-            <div style={{ display:"flex", borderBottom:"1px solid rgba(255,255,255,0.05)", padding:"0 8px", flexShrink:0, overflowX:"auto" }}>
-              {([
-                ["apparence", "Apparence", "🎨"],
-                ["branding",  "Branding",  "🖼"],
-                ["qualite",   "Qualité",   "🛡"],
-              ] as const).map(([id,label,emoji]) => (
-                <button key={id} type="button" onClick={() => setStyleTab(id)}
-                  style={{ flex:1, minHeight:isMobile?44:undefined, padding:isMobile?"11px 10px":"10px 10px", background:styleTab===id?"color-mix(in srgb, var(--accent) 10%, transparent)":"none", border:"none", borderBottom:styleTab===id?`3px solid ${G}`:"3px solid transparent", color:styleTab===id?G:MUTED, fontSize:isMobile?12.5:11, fontWeight:styleTab===id?800:500, cursor:"pointer", whiteSpace:"nowrap" as const, display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
-                  <span style={{ fontSize:12 }}>{emoji}</span>{label}
-                </button>
-              ))}
-            </div>
+            {/* Onglets Apparence/Branding/Qualité RETIRÉS (§4/6/7) — une seule hiérarchie verticale d'accordéons. */}
 
             <div className="qr-scroll" style={{ flex:1, overflowY:"auto", padding:"14px" }}>
 
               {/* -- APPARENCE (accordeons) ----------------------------------- */}
-              {styleTab === "apparence" && (
+              {(
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
 
                   {/* Niveau de réglages : désencombre le panneau (Simple → Expert) */}
@@ -3544,8 +3531,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               )}
 
 
-              {/* -- LOGO --------------------------------------------------- */}
-              {styleTab === "branding" && (
+              {/* -- LOGO (accordéon) --------------------------------------- */}
+              {(
+                <AccSection id="logo" title="Logo" icon="🖼" openId={openAcc} setOpenId={setOpenAcc}>
                 <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
                   {/* ECC warning automatique */}
@@ -3683,10 +3671,12 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                     </>
                   )}
                 </div>
+                </AccSection>
               )}
 
-              {/* -- AVANCE ---------------------------------------------------- */}
-              {styleTab === "qualite" && (
+              {/* -- MARGE & SCANNABILITÉ (accordéon) ------------------------- */}
+              {(
+                <AccSection id="qualite" title="Marge & scannabilité" icon="🛡" openId={openAcc} setOpenId={setOpenAcc}>
                 <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
                   {/* Marge */}
@@ -3739,6 +3729,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                     <RotateCcw size={12}/> Reinitialiser par defaut
                   </button>
                 </div>
+                </AccSection>
               )}
             </div>
 

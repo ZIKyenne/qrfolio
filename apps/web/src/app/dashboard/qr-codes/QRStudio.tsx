@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback, type ReactNode } from "react"
 import {
   QrCode, Download, Link, Check, Lock, Pencil, Plus,
   Eye, EyeOff, ChevronRight, ScanLine, Clock,
-  Palette, Settings, Share2, ExternalLink, Copy,
+  Palette, Settings, Share2, ExternalLink, Copy, CreditCard,
   RotateCcw, Loader2, Search, Trash2, Archive,
   MoreVertical, AlertTriangle, X,
   ImageIcon, FileText, Maximize2, ClipboardList, SlidersHorizontal,
@@ -2648,19 +2648,25 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               )
             })()}
           </div>
-          {active && (
-            <div style={{ display:"flex", gap:5, flexShrink:0 }}>
-              {([["none","QR","▦"],["card","Carte","💳"],["poster","Affiche","🖼️"]] as const).map(([k,l,e]) => (
-                <button key={k} type="button" onClick={() => setScene(k)}
-                  style={{ display:"flex", alignItems:"center", gap:4, padding:"4px 9px", borderRadius:7, fontSize:10.5, fontWeight:scene===k?700:500, cursor:"pointer",
-                    background: scene===k ? "color-mix(in srgb, var(--accent) 16%, transparent)" : "rgba(255,255,255,0.04)",
-                    border: `1px solid ${scene===k ? "color-mix(in srgb, var(--accent) 45%, transparent)" : "rgba(255,255,255,0.08)"}`,
-                    color: scene===k ? "var(--accent)" : "#A8A190" }}>
-                  <span style={{ fontSize:11 }}>{e}</span> {l}
-                </button>
-              ))}
-            </div>
-          )}
+          {active && (() => {
+            // Sélecteur de vue — segmented rail doré discret (handoff « Sélecteur de vue »).
+            const views = [["none", "QR", <QrCode size={14}/>], ["card", "Carte", <CreditCard size={14}/>], ["poster", "Affiche", <ImageIcon size={14}/>]] as const
+            const vi = scene === "card" ? 1 : scene === "poster" ? 2 : 0
+            return (
+              <div role="tablist" aria-label="Aperçu" style={{ position: "relative", display: "grid", gridAutoFlow: "column", gridAutoColumns: "1fr", width: "min(306px, 48vw)", flexShrink: 0, padding: 4, borderRadius: 12, background: "#100e0c", border: "1px solid #221f1b", boxShadow: "0 1px 0 rgba(255,255,255,.03) inset, 0 -1px 0 rgba(0,0,0,.5) inset", isolation: "isolate" }}>
+                <div aria-hidden="true" className="qv-ind" style={{ position: "absolute", top: 4, bottom: 4, left: 4, width: "calc((100% - 8px) / 3)", transform: `translateX(calc(${vi} * 100%))`, transition: "transform .38s cubic-bezier(.2,.85,.2,1)", borderRadius: 9, background: "rgba(232,200,119,.07)", border: "1px solid rgba(232,200,119,.34)", boxShadow: "0 0 0 1px rgba(0,0,0,.25)", pointerEvents: "none" }} />
+                {views.map(([k, l, icon], i) => {
+                  const on = vi === i
+                  return (
+                    <button key={k} role="tab" aria-selected={on} type="button" onClick={() => setScene(k as any)} className="qv-tab"
+                      style={{ position: "relative", zIndex: 1, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 8px", borderRadius: 9, fontSize: 12.5, fontWeight: on ? 600 : 500, color: on ? "#e8c877" : "#7d766c", transition: "color .2s ease, font-weight .18s ease", whiteSpace: "nowrap" }}>
+                      <span style={{ display: "inline-flex", transition: "transform .26s cubic-bezier(.2,.8,.2,1)", transform: on ? "scale(1.08)" : "none" }}>{icon}</span> {l}
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          })()}
         </div>
         {active ? (() => {
           const diag = getDiagnostic(diagFg || fg, diagBg || bg)
@@ -3250,15 +3256,29 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
           )}
         </div>
 
-        {/* Tabs principaux Style/Export */}
-        <div style={{ display:"flex", borderBottom:"1px solid rgba(255,255,255,0.06)", flexShrink:0 }}>
-          {([["style","Style","🎨"],["export","Télécharger","📤"],["supports","Supports","🖨️"]] as const).map(([id,label,emoji]) => (
-            <button key={id} type="button" onClick={() => setActiveTab(id)}
-              style={{ flex:1, minHeight:isMobile?48:undefined, padding:isMobile?"14px 8px":"11px 8px", background:activeTab===id?"color-mix(in srgb, var(--accent) 14%, transparent)":"transparent", border:"none", borderBottom:activeTab===id?`3px solid ${G}`:"3px solid transparent", color:activeTab===id?G:MUTED, fontSize:isMobile?13.5:12, fontWeight:activeTab===id?800:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
-              <span>{emoji}</span>{label}
-            </button>
-          ))}
-        </div>
+        {/* Onglets Personnaliser — barre à soulignement doré glissant (handoff « Onglets Personnaliser »). */}
+        {(() => {
+          const tabs = [["style", "Style", <Palette size={15}/>], ["export", "Télécharger", <Download size={15}/>], ["supports", "Supports", <Printer size={15}/>]] as const
+          const ti = activeTab === "export" ? 1 : activeTab === "supports" ? 2 : 0
+          const hints = ["L'essentiel : choisir un style et les couleurs. Idéal pour aller vite.", "Exportez votre QR en PNG, SVG ou PDF, prêt à imprimer.", "Déclinez ce QR sur vos supports : carte, affiche, sticker."]
+          return (
+            <div style={{ flexShrink: 0 }}>
+              <div role="tablist" aria-label="Personnaliser" style={{ position: "relative", display: "grid", gridAutoFlow: "column", gridAutoColumns: "1fr", borderBottom: "1px solid #221f1b" }}>
+                {tabs.map(([id, label, icon], i) => {
+                  const on = ti === i
+                  return (
+                    <button key={id} role="tab" aria-selected={on} type="button" onClick={() => setActiveTab(id as any)} className="qv-tab"
+                      style={{ position: "relative", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 9, minHeight: isMobile ? 48 : undefined, padding: isMobile ? "14px 8px" : "13px 10px", background: on ? "linear-gradient(180deg, rgba(232,200,119,.09), rgba(232,200,119,.02))" : "transparent", color: on ? "#e8c877" : "#8a8177", fontSize: 14, fontWeight: on ? 600 : 500, transition: "color .2s ease, background .24s ease, font-weight .18s ease", whiteSpace: "nowrap" }}>
+                      <span style={{ display: "inline-flex", transition: "transform .26s cubic-bezier(.2,.8,.2,1)", transform: on ? "scale(1.06)" : "none" }}>{icon}</span> {label}
+                    </button>
+                  )
+                })}
+                <div aria-hidden="true" className="qv-ind" style={{ position: "absolute", left: 0, bottom: -1, height: 2, width: "calc(100% / 3)", transform: `translateX(calc(${ti} * 100%))`, transition: "transform .38s cubic-bezier(.2,.85,.2,1)", background: "linear-gradient(90deg, rgba(201,162,77,.35), #e8c877, rgba(201,162,77,.35))", borderRadius: 2, boxShadow: "0 0 12px rgba(232,200,119,.4)" }} />
+              </div>
+              <div style={{ padding: "10px 14px 0", fontSize: 12.5, lineHeight: 1.5, color: "#8a8177" }}>{hints[ti]}</div>
+            </div>
+          )
+        })()}
 
         {/* Fil guidé (mobile) : étape courante + Suivant, sans bloquer les onglets */}
         {isMobile && active && (() => {

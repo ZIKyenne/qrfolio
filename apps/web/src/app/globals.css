@@ -308,6 +308,10 @@ button:not(:disabled):active { transform: scale(.97); }
   .kpi-scanline { opacity:.8 !important; }
 }
 
+/* Sélecteurs segmentés dorés (aperçu QR/Carte/Affiche + onglets Personnaliser) : focus + reduced-motion */
+.qv-tab:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(201,162,77,.3); border-radius:9px; }
+@media (prefers-reduced-motion: reduce) { .qv-ind { transition-duration:.01ms !important; } }
+
 /* ════════════════════════════════════════════════════════════════════════════
    UI PRIMITIVES — Button (components/ui/Button.tsx). Styles en classes pour de
    vrais états :hover/:active (impossibles en inline). Couleurs = tokens (accent

@@ -499,6 +499,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   const [destHistory, setDestHistory] = useState<DestEntry[]>([])
   const [destConfirm, setDestConfirm] = useState(false)
   const [destCopied,  setDestCopied]  = useState(false)
+  const [destModal,   setDestModal]   = useState(false)   // éditeur de destination PAR QR (ouvert depuis le menu ···)
   // -- QR Status states -------------------------------------------------
   const [qrStatusLoading,setQrStatusLoading]= useState<string | null>(null)
   const [pauseMsg,       setPauseMsg]       = useState("")
@@ -2575,6 +2576,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                     onClick={e => e.stopPropagation()}>
                     {([
                       { icon: <Pencil size={11}/>,  label: "Modifier",     action: () => { window.location.href = `/dashboard/builder/${page?.id}` }, color: "#F5F0E8", disabled: false },
+                      { icon: <ExternalLink size={11}/>, label: "Changer la destination", action: () => { setActiveId(qr.id); setMenuId(null); setDestModal(true) }, color: "#F5F0E8", disabled: false },
                       { icon: isC ? <Check size={11}/> : <Copy size={11}/>, label: isC ? "Copie !" : "Copier lien", action: () => copyQRLink(qr.id, url), color: isC ? "var(--success)" : "#F5F0E8", disabled: false },
                       { icon: <Download size={11}/>, label: "PNG",          action: () => { setActiveId(qr.id); setTimeout(() => downloadPNG(400), 100); setMenuId(null) }, color: "#F5F0E8", disabled: false },
                       { icon: dupId === qr.id ? <Loader2 size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Copy size={11}/>, label: dupId === qr.id ? "Duplication..." : "Dupliquer", action: () => duplicateQR(qr.id), color: "#F5F0E8", disabled: dupId === qr.id },
@@ -2857,8 +2859,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 </div>
               </div>
 
-              {/* Stats + destination RETIRÉS du flux principal (§2/§9) — masqués via LEGACY_INFO (réversible). */}
-              {LEGACY_INFO && (<>
+              {/* Stats RETIRÉES du flux principal (§2/§9) — masquées via LEGACY_INFO (réversible). */}
+              {LEGACY_INFO && (
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, padding:"14px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
                 {[
                   { label:"Scans total",   value:active.total_scans.toLocaleString(),               color:"var(--accent)", icon:"📡" },
@@ -2872,9 +2874,11 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   </div>
                 ))}
               </div>
+              )}
 
-              {/* Destination */}
-              <div style={{ borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+              {/* Destination — éditable PAR QR depuis le menu ··· (modale ; §11 : hors du flux permanent). */}
+              <Modal open={destModal} onClose={() => setDestModal(false)} title="Destination du QR" maxWidth={460}>
+              <div>
 
                 {/* Header */}
                 <div style={{ padding:"12px 16px 10px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
@@ -3047,7 +3051,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   </div>
                 )}
               </div>
-              </>)}
+              </Modal>
 
 
 {/* Diagnostic scannabilité premium */}

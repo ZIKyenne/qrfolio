@@ -323,6 +323,27 @@ button:not(:disabled):active { transform: scale(.97); }
 .qb-star-b { animation:qbTwinkleB 3.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .qb-star-a, .qb-star-b { animation:none; } .qb-gen { transition:background .24s ease, color .2s ease, border-color .22s ease; } }
 
+/* Corrections DA (page QR Codes Studio) — respirations dorées décoratives (halo état actif + passage lumineux du bandeau) */
+@keyframes omBreath { 0%,100% { opacity:.35; transform:scale(.9); } 50% { opacity:.9; transform:scale(1.35); } }
+@keyframes omBar    { 0% { transform:translateY(-120%); } 100% { transform:translateY(320%); } }
+.om-breath { animation:omBreath 3.2s ease-in-out infinite; }
+.om-bar    { animation:omBar 2.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .om-breath, .om-bar { animation:none !important; } }
+
+/* Corrections DA §04 — Recherche & filtres (page QR Codes Studio) : champs charbon chaud, rayon 11, focus doré */
+.da-field { background:#100e0c; border:1px solid #26211a; border-radius:11px; color:#F5F0E8; caret-color:#e8c877; outline:none; transition:border-color .2s ease, box-shadow .2s ease; }
+.da-field::placeholder { color:#7d766c; }
+.da-field:focus { border-color:rgba(232,200,119,.42); box-shadow:0 0 0 3px rgba(232,200,119,.1); }
+.da-select { background:#100e0c; border:1px solid #26211a; border-radius:11px; color:#b8b1a6; outline:none; cursor:pointer; transition:border-color .2s ease, box-shadow .2s ease, color .2s ease; }
+.da-select:hover { border-color:rgba(232,200,119,.4); color:#e8e3da; }
+.da-select:focus { border-color:rgba(232,200,119,.42); box-shadow:0 0 0 3px rgba(232,200,119,.1); }
+
+/* Corrections DA §07 — famille de pills unique (compteur liste + bascule Archives) */
+.da-pill { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:4px 11px; font-size:11px; font-weight:600; letter-spacing:.02em; border:1px solid #26211a; background:transparent; color:#8a8177; cursor:pointer; transition:border-color .2s ease, color .2s ease, background .2s ease; white-space:nowrap; }
+button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
+.da-pill.on { background:rgba(232,200,119,.1); border-color:rgba(232,200,119,.34); color:#e8c877; }
+.da-pill:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(201,162,77,.3); }
+
 /* ════════════════════════════════════════════════════════════════════════════
    UI PRIMITIVES — Button (components/ui/Button.tsx). Styles en classes pour de
    vrais états :hover/:active (impossibles en inline). Couleurs = tokens (accent

@@ -209,12 +209,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div key={href} style={{ position: "relative" }} className="sidebar-item">
                 <Link href={href} style={{ textDecoration: "none" }}>
                   <div style={{
+                    position: "relative",
                     display: "flex", alignItems: "center", gap: 10,
                     padding: collapsed ? "10px 0" : "9px 12px",
                     justifyContent: collapsed ? "center" : "flex-start",
                     borderRadius: 9,
-                    background: active ? `${G}12` : "transparent",
-                    border: `1px solid ${active ? G+"30" : "transparent"}`,
+                    background: active ? "linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 2%, transparent))" : "transparent",
+                    border: "1px solid transparent",
                     color: active ? G : MUTED,
                     fontSize: 13, fontWeight: active ? 600 : 400,
                     cursor: "pointer",
@@ -224,6 +225,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   }}
                   onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#F5F0E8" } }}
                   onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = MUTED } }}>
+                    {/* Filet doré à gauche de l'item actif (DA §08) */}
+                    {active && !collapsed && <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 9, bottom: 9, width: 2, borderRadius: 2, background: `linear-gradient(180deg, ${G}, color-mix(in srgb, var(--accent) 70%, #000))` }} />}
                     <div style={{ position: "relative", flexShrink: 0, display: "flex" }}>
                       <Icon size={16} />
                       {href === "/dashboard/leads" && unreadLeads > 0 && (
@@ -232,7 +235,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                     {!collapsed && <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>}
                     {!collapsed && href === "/dashboard/leads" && unreadLeads > 0 && <span style={{ marginLeft: "auto", background: "#EF4444", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 9, padding: "1px 7px", flexShrink: 0 }}>{unreadLeads > 99 ? "99+" : unreadLeads}</span>}
-                    {!collapsed && active && href !== "/dashboard/leads" && <div style={{ width: 4, height: 4, borderRadius: "50%", background: G, marginLeft: "auto", flexShrink: 0 }} />}
+                    {!collapsed && active && href !== "/dashboard/leads" && <div style={{ width: 7, height: 7, borderRadius: "50%", background: G, marginLeft: "auto", flexShrink: 0, boxShadow: "0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent)" }} />}
                   </div>
                 </Link>
                 {/* Tooltip en mode collapsed */}
@@ -257,21 +260,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Upgrade */}
           <div style={{ position: "relative" }} className="sidebar-item">
             <Link href="/upgrade" style={{ textDecoration: "none" }}>
+              {/* Carte Upgrade apaisée (DA §08) : plus de fond doré plein — bordure bronze + texte doré. */}
               <div style={{
                 display: "flex", alignItems: "center", gap: 10,
-                padding: collapsed ? "10px 0" : "9px 12px",
+                padding: collapsed ? "10px 0" : "10px 12px",
                 justifyContent: collapsed ? "center" : "flex-start",
-                borderRadius: 9, cursor: "pointer",
-                background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)",
+                borderRadius: 11, cursor: "pointer",
+                background: "color-mix(in srgb, var(--accent) 4%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)",
                 marginBottom: 6, transition: "all 0.15s", overflow: "hidden",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(201,168,76,0.14)"; e.currentTarget.style.borderColor = "rgba(201,168,76,0.4)" }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(201,168,76,0.08)"; e.currentTarget.style.borderColor = "rgba(201,168,76,0.2)" }}>
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 50%, transparent)" }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 26%, transparent)" }}>
                 <Activity size={16} color={G} style={{ flexShrink: 0 }} />
                 {!collapsed && (
                   <div style={{ overflow: "hidden", minWidth: 0 }}>
-                    <p style={{ color: G, fontSize: 12, fontWeight: 700, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Upgrade</p>
-                    <p style={{ color: MUTED, fontSize: 10, margin: 0, whiteSpace: "nowrap" }}>{profile?.plan === "business" ? "Business" : profile?.plan === "pro" ? "Plan Pro" : "Passer Pro"}</p>
+                    <p style={{ color: G, fontSize: 13, fontWeight: 700, letterSpacing: "-.01em", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {profile?.plan === "business" ? "Business" : profile?.plan === "pro" ? "Plan Pro" : "Passer au Pro"}
+                    </p>
+                    <p style={{ color: MUTED, fontSize: 10, margin: 0, whiteSpace: "nowrap" }}>{profile?.plan === "pro" || profile?.plan === "business" ? "Abonnement actif" : "Débloquez tout QRowg"}</p>
                   </div>
                 )}
               </div>

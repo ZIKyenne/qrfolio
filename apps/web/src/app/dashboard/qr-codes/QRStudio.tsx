@@ -296,19 +296,61 @@ function formatDate(iso: string | null): string {
 }
 
 // -- Section accordeon depliable (une seule ouverte a la fois) --------------
-function AccSection({ id, title, icon, openId, setOpenId, children }: {
-  id: string; title: string; icon?: string;
+// Glyphes dorés monochromes (DA §03) : chaque tuile 28×28 dorée décrit littéralement son réglage.
+// Deux familles : « centré » (rendu en flux, ex. disque/grille) et « rempli » (spans absolus ancrés sur la tuile relative).
+const GLYPH_COULEURS = (
+  <span style={{ width:16, height:16, borderRadius:"50%", border:"1.5px solid #e8c877", background:"linear-gradient(135deg, #e8c877 0 50%, transparent 50% 100%)" }} />
+)
+const GLYPH_MODULES = (
+  <span style={{ display:"grid", gridTemplateColumns:"repeat(3, 4px)", gridTemplateRows:"repeat(3, 4px)", gap:2 }}>
+    <span style={{ background:"#e8c877", borderRadius:"50%" }}/><span style={{ background:"#e8c877", borderRadius:"50%" }}/><span style={{ background:"rgba(232,200,119,.3)", borderRadius:"50%" }}/>
+    <span style={{ background:"#e8c877", borderRadius:1 }}/><span style={{ background:"rgba(232,200,119,.3)", borderRadius:1 }}/><span style={{ background:"#e8c877", borderRadius:1 }}/>
+    <span style={{ background:"rgba(232,200,119,.3)", borderRadius:"50%" }}/><span style={{ background:"#e8c877", borderRadius:"50%" }}/><span style={{ background:"#e8c877", borderRadius:"50%" }}/>
+  </span>
+)
+const GLYPH_COINS = (<>
+  <span style={{ position:"absolute", left:4, top:4, width:13, height:13, border:"2px solid #e8c877", borderRadius:3 }}/>
+  <span style={{ position:"absolute", left:8, top:8, width:5, height:5, background:"#e8c877", borderRadius:1 }}/>
+  <span style={{ position:"absolute", right:4, bottom:4, width:6, height:6, borderRight:"2px solid rgba(232,200,119,.5)", borderBottom:"2px solid rgba(232,200,119,.5)", borderBottomRightRadius:3 }}/>
+</>)
+const GLYPH_AVANCES = (<>
+  <span style={{ position:"absolute", left:5, top:10, width:16, height:1.5, background:"rgba(232,200,119,.55)" }}/>
+  <span style={{ position:"absolute", left:9, top:7.5, width:6, height:6, borderRadius:"50%", background:"#e8c877" }}/>
+  <span style={{ position:"absolute", left:5, top:18, width:16, height:1.5, background:"rgba(232,200,119,.55)" }}/>
+  <span style={{ position:"absolute", left:15, top:15.5, width:6, height:6, borderRadius:"50%", background:"#e8c877" }}/>
+</>)
+const GLYPH_LOGO = (
+  <span style={{ position:"relative", width:17, height:14, border:"1.5px solid #e8c877", borderRadius:3, overflow:"hidden" }}>
+    <span style={{ position:"absolute", left:2, top:2, width:3.5, height:3.5, borderRadius:"50%", background:"#e8c877" }}/>
+    <span style={{ position:"absolute", left:2, bottom:0, width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderBottom:"7px solid #e8c877" }}/>
+  </span>
+)
+const GLYPH_MARGE = (<>
+  <span style={{ position:"absolute", left:6, top:6, width:16, height:16, border:"1.5px dashed rgba(232,200,119,.6)", borderRadius:3 }}/>
+  <span style={{ position:"absolute", left:10.5, top:10.5, width:7, height:7, background:"#e8c877", borderRadius:1 }}/>
+</>)
+
+function AccSection({ id, title, icon, glyph, subtitle, openId, setOpenId, children }: {
+  id: string; title: string; icon?: string; glyph?: ReactNode; subtitle?: string;
   openId: string; setOpenId: (v: string) => void; children: ReactNode
 }) {
   const open = openId === id
   return (
-    <div style={{ border:`1px solid ${open?"color-mix(in srgb, var(--accent) 25%, transparent)":"rgba(255,255,255,0.07)"}`, borderRadius:10, overflow:"hidden", background:"rgba(255,255,255,0.015)", transition:"border-color 0.2s" }}>
+    <div style={{ border:`1px solid ${open?"rgba(232,200,119,.42)":"#26211a"}`, borderRadius:11, overflow:"hidden", background:"rgba(255,255,255,0.025)", transition:"border-color 0.24s ease" }}>
       <button type="button" onClick={() => setOpenId(open ? "" : id)}
-        style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"11px 13px", background: open ? "color-mix(in srgb, var(--accent) 6%, transparent)" : "transparent", border:"none", cursor:"pointer" }}>
-        <span style={{ display:"flex", alignItems:"center", gap:8, color: open ? "var(--accent)" : "#F5F0E8", fontSize:12, fontWeight:700 }}>
-          {icon && <span style={{ fontSize:14 }}>{icon}</span>}{title}
+        onMouseEnter={e => { if (!open) e.currentTarget.style.background = "rgba(232,200,119,.07)" }}
+        onMouseLeave={e => { if (!open) e.currentTarget.style.background = "transparent" }}
+        style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, padding:"12px 14px", background: open ? "rgba(232,200,119,.07)" : "transparent", border:"none", cursor:"pointer", transition:"background 0.24s ease" }}>
+        <span style={{ display:"flex", alignItems:"center", gap:11, minWidth:0 }}>
+          {glyph ? (
+            <span aria-hidden="true" style={{ position:"relative", display:"inline-flex", alignItems:"center", justifyContent:"center", width:28, height:28, flexShrink:0, borderRadius:8, background:"linear-gradient(135deg, rgba(232,200,119,.16), rgba(201,162,77,.05))", border:"1px solid rgba(232,200,119,.22)" }}>{glyph}</span>
+          ) : icon ? (<span style={{ fontSize:14 }}>{icon}</span>) : null}
+          <span style={{ display:"flex", flexDirection:"column", gap:2, minWidth:0, textAlign:"left" as const }}>
+            <span style={{ fontSize:13.5, fontWeight:600, color:"#e8e3da", letterSpacing:"-.01em", whiteSpace:"nowrap" as const }}>{title}</span>
+            {subtitle && <span style={{ fontSize:11, color:"#8a8177", whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{subtitle}</span>}
+          </span>
         </span>
-        <ChevronRight size={15} color={open ? "var(--accent)" : "#A8A190"} style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)", transition:"transform 0.2s" }}/>
+        <ChevronRight size={15} color={open ? "#e8c877" : "#7d766c"} style={{ flexShrink:0, transform: open ? "rotate(90deg)" : "rotate(0deg)", transition:"transform 0.2s" }}/>
       </button>
       {open && (
         <div style={{ padding:"6px 13px 14px" }}>
@@ -2501,18 +2543,17 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 {qrCodes.length} total
               </p>
             </div>
-            <div style={{ display:"flex", gap:5, alignItems:"center" }}>
-              <span style={{ background:"color-mix(in srgb, var(--accent) 12%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:5, padding:"1px 7px", fontSize:10, color:G, fontWeight:700 }}>{filteredQR.length}/{qrCodes.length}</span>
-              <button type="button" onClick={() => setShowArchived(p => !p)}
-                style={{ padding:"1px 6px", background:showArchived?"rgba(107,114,128,0.2)":"transparent", border:"1px solid rgba(107,114,128,0.2)", borderRadius:5, color:MUTED, fontSize:8, cursor:"pointer" }}>
-                {showArchived?"- Archives":"+ Archives"}
+            <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+              <span className="da-pill on">{filteredQR.length} / {qrCodes.length}</span>
+              <button type="button" onClick={() => setShowArchived(p => !p)} className={"da-pill" + (showArchived ? " on" : "")} aria-pressed={showArchived}>
+                Archives
               </button>
             </div>
           </div>
           <div style={{ position:"relative" }}>
-            <Search size={11} style={{ position:"absolute", left:8, top:"50%", transform:"translateY(-50%)", color:MUTED, pointerEvents:"none" }}/>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Nom, URL..."
-              style={{ width:"100%", background:"#111009", border:"1px solid rgba(255,255,255,0.07)", borderRadius:8, padding:"6px 26px 6px 26px", color:"#F5F0E8", fontSize:11, outline:"none", boxSizing:"border-box" as const }}/>
+            <Search size={11} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", color:"#c9a24d", pointerEvents:"none" }}/>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Nom, URL…" className="da-field"
+              style={{ width:"100%", padding:"7px 26px 7px 27px", fontSize:11, boxSizing:"border-box" as const }}/>
             {search && (
               <button type="button" onClick={() => setSearch("")} style={{ position:"absolute", right:6, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:MUTED, display:"flex" }}>
                 <X size={11}/>
@@ -2523,8 +2564,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               recherche suffit) pour desencombrer. Toujours presents sur desktop. */}
           {!isMobile && (
           <div style={{ display:"flex", gap:5 }}>
-            <select value={filterSt} onChange={e => setFilterSt(e.target.value)}
-              style={{ flex:1, background:"#111009", border:"1px solid rgba(255,255,255,0.07)", borderRadius:7, color:MUTED, padding:"5px 6px", fontSize:10, outline:"none", cursor:"pointer" }}>
+            <select value={filterSt} onChange={e => setFilterSt(e.target.value)} className="da-select"
+              style={{ flex:1, padding:"6px 8px", fontSize:10 }}>
               <option value="all">Tous</option>
               <option value="active">Actif</option>
               <option value="draft">Brouillon</option>
@@ -2532,8 +2573,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               <option value="archived">Archive</option>
               <option value="expired">Expire</option>
             </select>
-            <select value={sortKey} onChange={e => setSortKey(e.target.value)}
-              style={{ flex:1, background:"#111009", border:"1px solid rgba(255,255,255,0.07)", borderRadius:7, color:MUTED, padding:"5px 6px", fontSize:10, outline:"none", cursor:"pointer" }}>
+            <select value={sortKey} onChange={e => setSortKey(e.target.value)} className="da-select"
+              style={{ flex:1, padding:"6px 8px", fontSize:10 }}>
               <option value="date-desc">Date rec.</option>
               <option value="date-asc">Date anc.</option>
               <option value="scans-desc">+ scans</option>
@@ -2577,9 +2618,18 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 onMouseLeave={e => { if (!isA) e.currentTarget.style.background = "transparent" }}>
                 {/* Ligne compacte : pastille (avec point de statut) + titre + /q·scans + menu. Dates/actions -> menu ··· (§8). */}
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div style={{ width:26, height:26, borderRadius:7, background:qr.background_color, border:"1px solid rgba(255,255,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative" }}>
+                  <div style={{ width:26, height:26, borderRadius:8, background:qr.background_color, border:"1px solid #2e281f", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative" }}>
                     <QrCode size={13} color={qr.foreground_color}/>
-                    <span title={sCfg.label} style={{ position:"absolute", bottom:-3, right:-3, width:8, height:8, borderRadius:"50%", background:sCfg.dot, border:"1.5px solid #0F0E0B" }}/>
+                    {/* Pastille d'état (DA §02) : actif = point doré + halo qui respire ; brouillon = anneau creux bronze ; aucun vert. */}
+                    {qs === "active" ? (
+                      <span title={sCfg.label} style={{ position:"absolute", bottom:-3, right:-3, width:9, height:9, borderRadius:"50%", background:"#e8c877", border:"1.5px solid #0F0E0B" }}>
+                        <span aria-hidden="true" className="om-breath" style={{ position:"absolute", inset:-1.5, borderRadius:"50%", background:"rgba(232,200,119,.5)" }}/>
+                      </span>
+                    ) : qs === "draft" ? (
+                      <span title={sCfg.label} style={{ position:"absolute", bottom:-3, right:-3, width:9, height:9, borderRadius:"50%", background:"#0F0E0B", border:"1.5px solid #c9a24d" }}/>
+                    ) : (
+                      <span title={sCfg.label} style={{ position:"absolute", bottom:-3, right:-3, width:8, height:8, borderRadius:"50%", background:sCfg.dot, border:"1.5px solid #0F0E0B" }}/>
+                    )}
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <p style={{ color:isA?"#F5F0E8":"#D4CFC7", fontSize:12, fontWeight:600, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
@@ -2643,7 +2693,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Aperçu</p>
             {active && (() => {
               const st = active.pages?.status ?? "draft"
-              const sCfg = ({ published:{dot:"var(--success)",label:"Publié"}, draft:{dot:"#A8A190",label:"Brouillon"}, archived:{dot:"#F97316",label:"Archivé"}, paused:{dot:"var(--danger)",label:"En pause"} } as any)[st] ?? {dot:"#A8A190",label:"Inconnu"}
+              const sCfg = ({ published:{dot:"#e8c877",label:"Publié"}, draft:{dot:"#c9a24d",label:"Brouillon"}, archived:{dot:"#F97316",label:"Archivé"}, paused:{dot:"var(--danger)",label:"En pause"} } as any)[st] ?? {dot:"#c9a24d",label:"Inconnu"}
               return (
                 <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, color:sCfg.dot, background:`${sCfg.dot}15`, border:`1px solid ${sCfg.dot}40`, borderRadius:6, padding:"2px 8px", fontWeight:600, flexShrink:0 }}>
                   <span style={{ width:5, height:5, borderRadius:"50%", background:sCfg.dot }}/>{sCfg.label}
@@ -2780,14 +2830,16 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
                   {/* Carte score scannabilité — pédagogique */}
                   {scanScore && (
-                    <div style={{ width:"100%", marginTop:8, padding:"10px 12px", background:`${scanScore.gradeColor}0e`, border:`1px solid ${scanScore.gradeColor}33`, borderRadius:13, display:"flex", flexDirection:"column", gap:8 }}>
-                      {/* En-tête cliquable : déplie le détail (contraste / taille / ECC / problèmes). */}
+                    <div style={{ width:"100%", marginTop:8, padding:"10px 12px", background:"#17140f", border:"1px solid #2a2419", borderRadius:13, display:"flex", flexDirection:"column", gap:8 }}>
+                      {/* En-tête cliquable : déplie le détail (contraste / taille / ECC / problèmes).
+                          Score = anneau conique bronze (l'info passe par le remplissage, plus par la teinte — DA §01). */}
                       <button type="button" onClick={() => setScanOpen(o => !o)} aria-expanded={scanOpen} style={{ display:"flex", alignItems:"center", gap:10, background:"none", border:"none", padding:0, cursor:"pointer", width:"100%", textAlign:"left" as const }}>
-                        <span style={{ display:"flex", alignItems:"center", justifyContent:"center", width:32, height:32, borderRadius:"50%", background:scanScore.gradeColor, color:"#080808", fontSize:12, fontWeight:800, flexShrink:0 }}>
-                          {scanScore.score}
+                        <span aria-hidden="true" style={{ position:"relative", display:"flex", alignItems:"center", justifyContent:"center", width:32, height:32, borderRadius:"50%", flexShrink:0, background:`conic-gradient(#e8c877 0 ${scanScore.score}%, #2a2419 ${scanScore.score}% 100%)` }}>
+                          <span style={{ position:"absolute", inset:3, borderRadius:"50%", background:"#17140f" }}/>
+                          <span style={{ position:"relative", fontSize:12, fontWeight:700, color:"#e8c877", letterSpacing:"-.02em" }}>{scanScore.score}</span>
                         </span>
                         <div style={{ flex:1, minWidth:0 }}>
-                          <p style={{ color:scanScore.gradeColor, fontSize:12.5, fontWeight:800, margin:0 }}>{scanScore.grade} · scannabilité</p>
+                          <p style={{ color:"#e8c877", fontSize:12.5, fontWeight:800, margin:0 }}>{scanScore.grade} · scannabilité</p>
                           <p style={{ color:MUTED, fontSize:10.5, margin:"1px 0 0", lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
                             {scanScore.grade === "Excellent"
                               ? "Contraste élevé et marge suffisante : il se scanne sans souci."
@@ -2840,28 +2892,33 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                     </div>
                   )}
 
-                  {/* Assistant : prochaine étape contextuelle selon l'état du QR */}
+                  {/* Assistant : prochaine étape contextuelle selon l'état du QR (bandeau DA — filet doré animé, sans emoji, CTA translucide) */}
                   {(() => {
                     const published = active.pages?.status === "published"
                     const scans = active.total_scans ?? 0
-                    let icon: string, text: ReactNode, cta: ReactNode
+                    let text: ReactNode, cta: ReactNode
                     if (!published) {
-                      icon = "🚀"; text = <>Publiez votre page pour activer ce QR.</>
+                      text = <>Publiez votre page pour activer ce QR.</>
                       cta = <a href={`/dashboard/builder/${active.page_id}`} className="qb-pill">Publier</a>
                     } else if (scans === 0) {
-                      icon = "📣"; text = <>Aucun scan pour l&apos;instant — testez-le ou partagez-le.</>
+                      text = <>Aucun scan pour l&apos;instant — testez-le ou partagez-le.</>
                       cta = <button type="button" onClick={() => setShowModal(true)} className="qb-pill">Tester</button>
                     } else if (PLAN_RANK[userPlan] < PLAN_RANK["pro"]) {
-                      icon = "🔥"; text = <><strong style={{ color: "#F5F0E8" }}>{scans}</strong> scan{scans > 1 ? "s" : ""} ! Passez Pro pour les stats avancées.</>
+                      text = <><strong style={{ color: "#F5F0E8" }}>{scans}</strong> scan{scans > 1 ? "s" : ""} ! Passez Pro pour les stats avancées.</>
                       cta = <a href="/upgrade" className="qb-pill">Passer Pro</a>
                     } else {
-                      icon = "🖨️"; text = <><strong style={{ color: "#F5F0E8" }}>{scans}</strong> scan{scans > 1 ? "s" : ""} — créez un support imprimable.</>
+                      text = <><strong style={{ color: "#F5F0E8" }}>{scans}</strong> scan{scans > 1 ? "s" : ""} — créez un support imprimable.</>
                       cta = <button type="button" onClick={() => setActiveTab("supports")} className="qb-pill">Créer un support</button>
                     }
                     return (
-                      <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", padding: "12px 14px", borderRadius: 13, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                        <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
-                        <p style={{ flex: 1, minWidth: 0, margin: 0, color: "#C9C3B6", fontSize: 12.5, lineHeight: 1.45 }}>{text}</p>
+                      <div style={{ position: "relative", overflow: "hidden", marginTop: 12, display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "13px 15px", borderRadius: 13, background: "#17140f", border: "1px solid #2e281f" }}>
+                        {/* Filet doré à gauche + passage lumineux (remplace l'emoji) */}
+                        <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 2, background: "linear-gradient(180deg,#e8c877,#c9a24d)" }} />
+                        <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 2, overflow: "hidden" }}>
+                          <span className="om-bar" style={{ position: "absolute", left: 0, right: 0, height: "40%", background: "rgba(255,255,255,.75)" }} />
+                        </span>
+                        <span aria-hidden="true" style={{ width: 7, height: 7, flexShrink: 0, borderRadius: "50%", background: "#e8c877", boxShadow: "0 0 0 4px rgba(232,200,119,.12)" }} />
+                        <p style={{ flex: 1, minWidth: 0, margin: 0, color: "#b8b1a6", fontSize: 12.5, lineHeight: 1.45 }}>{text}</p>
                         {cta}
                       </div>
                     )
@@ -3250,7 +3307,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         {(() => {
           const tabs = [["style", "Style", <Palette size={15}/>], ["export", "Télécharger", <Download size={15}/>], ["supports", "Supports", <Printer size={15}/>]] as const
           const ti = activeTab === "export" ? 1 : activeTab === "supports" ? 2 : 0
-          const hints = ["L'essentiel : choisir un style et les couleurs. Idéal pour aller vite.", "Exportez votre QR en PNG, SVG ou PDF, prêt à imprimer.", "Déclinez ce QR sur vos supports : carte, affiche, sticker."]
+          // Onglet Style : pas de légende ici — la description du mode (sous le contrôle Simple/Inter/Expert) est l'unique occurrence (DA §06).
+          const hints = ["", "Exportez votre QR en PNG, SVG ou PDF, prêt à imprimer.", "Déclinez ce QR sur vos supports : carte, affiche, sticker."]
           return (
             <div style={{ flexShrink: 0 }}>
               <div role="tablist" aria-label="Personnaliser" style={{ position: "relative", display: "grid", gridAutoFlow: "column", gridAutoColumns: "1fr", borderBottom: "1px solid #221f1b" }}>
@@ -3265,7 +3323,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 })}
                 <div aria-hidden="true" className="qv-ind" style={{ position: "absolute", left: 0, bottom: -1, height: 2, width: "calc(100% / 3)", transform: `translateX(calc(${ti} * 100%))`, transition: "transform .38s cubic-bezier(.2,.85,.2,1)", background: "linear-gradient(90deg, rgba(201,162,77,.35), #e8c877, rgba(201,162,77,.35))", borderRadius: 2, boxShadow: "0 0 12px rgba(232,200,119,.4)" }} />
               </div>
-              <div style={{ padding: "10px 14px 0", fontSize: 12.5, lineHeight: 1.5, color: "#8a8177" }}>{hints[ti]}</div>
+              {hints[ti] && <div style={{ padding: "10px 14px 0", fontSize: 12.5, lineHeight: 1.5, color: "#8a8177" }}>{hints[ti]}</div>}
             </div>
           )
         })()}
@@ -3322,9 +3380,13 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         value={level==="simple"?0:level==="inter"?1:2}
                         onChange={i => setLevel(i===0?"simple":i===1?"inter":"expert")} />
                     </div>
-                    <p style={{ color:MUTED, fontSize:9.5, margin:"0 0 4px", lineHeight:1.4 }}>
-                      {level==="simple" ? "L'essentiel : choisir un style et les couleurs. Idéal pour aller vite." : level==="inter" ? "+ formes des modules et des coins." : "Tous les réglages : logo, dégradés, marge, correction d'erreur…"}
-                    </p>
+                    {/* Légende du mode — occurrence unique, précédée d'un filet doré (DA §06). */}
+                    <div style={{ display:"flex", gap:9, alignItems:"flex-start", margin:"0 0 4px" }}>
+                      <span aria-hidden="true" style={{ width:2, alignSelf:"stretch", borderRadius:2, background:"rgba(232,200,119,.35)", flexShrink:0 }} />
+                      <p style={{ color:"#8a8177", fontSize:11.5, lineHeight:1.55, margin:0 }}>
+                        {level==="simple" ? "L'essentiel : choisir un style et les couleurs. Idéal pour aller vite." : level==="inter" ? "+ formes des modules et des coins." : "Tous les réglages : logo, dégradés, marge, correction d'erreur…"}
+                      </p>
+                    </div>
                   </>)}
 
                   {/* 1. « Choisir un style » (presets) RETIRÉ — Couleurs suffit (SHOW_PRESETS, réversible). */}
@@ -3440,7 +3502,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   )}
 
                   {/* 2. Couleurs principales (ouvert par defaut) */}
-                  <AccSection id="couleurs" title="Couleurs" icon="🎨" openId={openAcc} setOpenId={setOpenAcc}>
+                  <AccSection id="couleurs" title="Couleurs" glyph={GLYPH_COULEURS} subtitle="Points, fond, dégradé" openId={openAcc} setOpenId={setOpenAcc}>
                     {/* Générer une palette — secondaire or + étincelles animées (handoff « Contrôles Style »). */}
                     <button type="button" onClick={genPalette} className="qb-gen" style={{ marginBottom:10 }}>
                       <span aria-hidden="true" style={{ position:"relative", display:"inline-flex", width:15, height:15, flex:"none" }}>
@@ -3497,7 +3559,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
                   {/* 3. Style des modules (Intermédiaire+) */}
                   {level !== "simple" && (
-                  <AccSection id="modules" title="Style des modules" icon="🔲" openId={openAcc} setOpenId={setOpenAcc}>
+                  <AccSection id="modules" title="Style des modules" glyph={GLYPH_MODULES} subtitle="Forme des points du code" openId={openAcc} setOpenId={setOpenAcc}>
                     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
                       {DOT_STYLES.map(ds => {
                         const isActive = (styleConf.dotStyle??"square") === ds.id
@@ -3521,7 +3583,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
                   {/* 4. Style des coins (Intermédiaire+) */}
                   {level !== "simple" && (
-                  <AccSection id="coins" title="Style des coins" icon="⬛" openId={openAcc} setOpenId={setOpenAcc}>
+                  <AccSection id="coins" title="Style des coins" glyph={GLYPH_COINS} subtitle="Motifs de repérage" openId={openAcc} setOpenId={setOpenAcc}>
                     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7, marginBottom:14 }}>
                       {CORNER_STYLE_LIST.map(cs => {
                         const isActive = (styleConf.cornerStyle??"square") === cs.id
@@ -3556,7 +3618,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
                   {/* 5. Reglages avances (Expert) : logo, couleurs avancees + degrade */}
                   {level === "expert" && (
-                  <AccSection id="avances" title="Réglages avancés" icon="⚙️" openId={openAcc} setOpenId={setOpenAcc}>
+                  <AccSection id="avances" title="Réglages avancés" glyph={GLYPH_AVANCES} subtitle="Correction d'erreur, densité" openId={openAcc} setOpenId={setOpenAcc}>
                     <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:"0 0 8px" }}>Couleurs avancees</p>
                     <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:14 }}>
                       {([
@@ -3602,7 +3664,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
               {/* -- LOGO (accordéon) --------------------------------------- */}
               {(
-                <AccSection id="logo" title="Logo" icon="🖼" openId={openAcc} setOpenId={setOpenAcc}>
+                <AccSection id="logo" title="Logo" glyph={GLYPH_LOGO} subtitle="Image au centre du code" openId={openAcc} setOpenId={setOpenAcc}>
                 <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
                   {/* ECC warning automatique */}
@@ -3743,7 +3805,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
               {/* -- MARGE & SCANNABILITÉ (accordéon) ------------------------- */}
               {(
-                <AccSection id="qualite" title="Marge & scannabilité" icon="🛡" openId={openAcc} setOpenId={setOpenAcc}>
+                <AccSection id="qualite" title="Marge & scannabilité" glyph={GLYPH_MARGE} subtitle="Zone de silence, contraste" openId={openAcc} setOpenId={setOpenAcc}>
                 <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
                   {/* Marge : 2 choix simples (Petit / Grand) — plus de curseur. */}

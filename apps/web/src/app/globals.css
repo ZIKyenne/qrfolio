@@ -312,6 +312,17 @@ button:not(:disabled):active { transform: scale(.97); }
 .qv-tab:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(201,162,77,.3); border-radius:9px; }
 @media (prefers-reduced-motion: reduce) { .qv-ind { transition-duration:.01ms !important; } }
 
+/* Contrôles panneau Style — « Générer une palette » (secondaire or + étincelles animées) */
+.qb-gen { position:relative; overflow:hidden; cursor:pointer; width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:12px 18px; border:1px solid rgba(232,200,119,.26); border-radius:11px; background-color:#17140f; background-image:linear-gradient(135deg, rgba(232,200,119,.09), rgba(201,162,77,.04)); color:#e8c877; font-family:inherit; font-size:13.5px; font-weight:600; white-space:nowrap; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.qb-gen:hover:not(:disabled) { background-image:linear-gradient(135deg, rgba(232,200,119,.22), rgba(201,162,77,.1)); border-color:rgba(232,200,119,.65); color:#f0d590; transform:translateY(-1px); box-shadow:0 8px 20px -12px rgba(201,162,77,.6); }
+.qb-gen:active:not(:disabled) { transform:scale(.97); }
+.qb-gen:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(201,162,77,.3); }
+@keyframes qbTwinkleA { 0%{transform:scale(1) rotate(0);opacity:.8} 45%{transform:scale(1.18) rotate(18deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:.8} }
+@keyframes qbTwinkleB { 0%{transform:scale(.7);opacity:.35} 35%{transform:scale(1.1);opacity:1} 70%{transform:scale(.7);opacity:.35} 100%{transform:scale(.7);opacity:.35} }
+.qb-star-a { animation:qbTwinkleA 3.4s ease-in-out infinite; }
+.qb-star-b { animation:qbTwinkleB 3.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .qb-star-a, .qb-star-b { animation:none; } .qb-gen { transition:background .24s ease, color .2s ease, border-color .22s ease; } }
+
 /* ════════════════════════════════════════════════════════════════════════════
    UI PRIMITIVES — Button (components/ui/Button.tsx). Styles en classes pour de
    vrais états :hover/:active (impossibles en inline). Couleurs = tokens (accent

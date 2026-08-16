@@ -3451,10 +3451,13 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
                   {/* 2. Couleurs principales (ouvert par defaut) */}
                   <AccSection id="couleurs" title="Couleurs" icon="🎨" openId={openAcc} setOpenId={setOpenAcc}>
-                    {/* Generer une palette */}
-                    <button type="button" onClick={genPalette}
-                      style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:7, marginBottom:10, padding:"9px", background:"linear-gradient(90deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent) 6%, transparent))", border:"1px solid color-mix(in srgb, var(--accent) 30%, transparent)", borderRadius:9, color:G, fontSize:12, fontWeight:700, cursor:"pointer" }}>
-                      <Sparkles size={13}/> Générer une palette
+                    {/* Générer une palette — secondaire or + étincelles animées (handoff « Contrôles Style »). */}
+                    <button type="button" onClick={genPalette} className="qb-gen" style={{ marginBottom:10 }}>
+                      <span aria-hidden="true" style={{ position:"relative", display:"inline-flex", width:15, height:15, flex:"none" }}>
+                        <span className="qb-star-a" style={{ position:"absolute", left:0, top:2, width:11, height:11, background:"currentColor", clipPath:"polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%)" }} />
+                        <span className="qb-star-b" style={{ position:"absolute", right:0, top:0, width:6, height:6, background:"currentColor", clipPath:"polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%)" }} />
+                      </span>
+                      Générer une palette
                     </button>
                     {/* Palettes en un clic */}
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:6, marginBottom:12 }}>
@@ -3542,8 +3545,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         else if (cs.id === "minimal") setCorner("dot")
                         else setCorner("square")
                       }}
-                            style={{ padding:"10px 8px", background:isActive?"color-mix(in srgb, var(--accent) 10%, transparent)":"rgba(255,255,255,0.02)", border:`1px solid ${isActive?"color-mix(in srgb, var(--accent) 40%, transparent)":"rgba(255,255,255,0.07)"}`, borderRadius:9, cursor:"pointer", opacity:canAccess?1:0.85, position:"relative" as const }}>
-                            <p style={{ color:isActive?G:"#F5F0E8", fontSize:11, fontWeight:isActive?700:500, margin:0, textAlign:"center" as const }}>{cs.label}</p>
+                            style={{ display:"flex", alignItems:"center", gap:9, padding:"10px 12px", background:isActive?"color-mix(in srgb, var(--accent) 10%, transparent)":"rgba(255,255,255,0.02)", border:`1px solid ${isActive?"color-mix(in srgb, var(--accent) 40%, transparent)":"rgba(255,255,255,0.07)"}`, borderRadius:11, cursor:"pointer", opacity:canAccess?1:0.85, position:"relative" as const }}>
+                            <span aria-hidden="true" style={{ width:13, height:13, flexShrink:0, border:`1.5px solid ${isActive?G:MUTED}`, borderRadius:(({square:"2px",rounded:"4px",circle:"50%",diamond:"2px",luxury:"6px 1px 6px 1px",minimal:"1px"} as Record<string,string>)[cs.id ?? "square"]), transform:(cs.id==="diamond"?"rotate(45deg)":cs.id==="minimal"?"scale(0.8)":"none"), transition:"transform .26s cubic-bezier(.2,.8,.2,1), border-radius .26s ease" }} />
+                            <span style={{ color:isActive?G:"#F5F0E8", fontSize:12, fontWeight:isActive?600:500 }}>{cs.label}</span>
                             {isPro && !canAccess && (
                               <span style={{ position:"absolute", top:4, right:4, display:"inline-flex", alignItems:"center", gap:1, background:G, borderRadius:4, padding:"1px 4px", fontSize:7, color:"#080808", fontWeight:800, boxShadow:"0 2px 6px rgba(0,0,0,0.4)" }}><Sparkles size={6} color="#080808"/>PRO</span>
                             )}
@@ -3551,15 +3555,23 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         )
                       })}
                     </div>
-                    <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:"0 0 8px" }}>Arrondi general</p>
-                    <div style={{ display:"flex", gap:6 }}>
-                      {(["square","rounded","dot"] as const).map(c => (
-                        <button key={c} type="button" onClick={() => setCorner(c)}
-                          style={{ flex:1, padding:"7px 6px", background:corner===c?"color-mix(in srgb, var(--accent) 12%, transparent)":"rgba(255,255,255,0.03)", border:`1px solid ${corner===c?"color-mix(in srgb, var(--accent) 40%, transparent)":"rgba(255,255,255,0.07)"}`, borderRadius:8, color:corner===c?G:MUTED, fontSize:10, cursor:"pointer", fontWeight:corner===c?700:400 }}>
-                          {c==="square"?"Carré":c==="rounded"?"Arrondi":"Dots"}
-                        </button>
-                      ))}
-                    </div>
+                    <p style={{ color:MUTED, fontSize:10.5, fontWeight:600, textTransform:"uppercase", letterSpacing:1.6, margin:"0 0 8px" }}>Arrondi général</p>
+                    {(() => {
+                      const rounds = [["square","Carré"],["rounded","Arrondi"],["dot","Dots"]] as const
+                      const ri = corner === "rounded" ? 1 : corner === "dot" ? 2 : 0
+                      return (
+                        <div role="tablist" aria-label="Arrondi général" style={{ position:"relative", display:"grid", gridAutoFlow:"column", gridAutoColumns:"1fr", padding:4, borderRadius:12, background:"#100e0c", border:"1px solid #221f1b", boxShadow:"0 1px 0 rgba(255,255,255,.03) inset, 0 -1px 0 rgba(0,0,0,.5) inset", isolation:"isolate" }}>
+                          <div aria-hidden="true" className="qv-ind" style={{ position:"absolute", top:4, bottom:4, left:4, width:"calc((100% - 8px) / 3)", transform:`translateX(calc(${ri} * 100%))`, transition:"transform .38s cubic-bezier(.2,.85,.2,1)", borderRadius:9, background:"rgba(232,200,119,.07)", border:"1px solid rgba(232,200,119,.34)", boxShadow:"0 0 0 1px rgba(0,0,0,.25)", pointerEvents:"none" }} />
+                          {rounds.map(([c,l],i) => {
+                            const on = ri === i
+                            return (
+                              <button key={c} role="tab" aria-selected={on} type="button" onClick={() => setCorner(c)} className="qv-tab"
+                                style={{ position:"relative", zIndex:1, background:"transparent", border:"none", cursor:"pointer", padding:"9px 10px", borderRadius:9, fontSize:13, fontWeight:on?600:500, color:on?"#e8c877":"#7d766c", transition:"color .2s ease, font-weight .18s ease", whiteSpace:"nowrap" }}>{l}</button>
+                            )
+                          })}
+                        </div>
+                      )
+                    })()}
                   </AccSection>
 
                   )}
@@ -3646,9 +3658,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                           {logoUploading ? "Chargement..." : "Deposer votre logo"}
                         </p>
                         <p style={{ color:MUTED, fontSize:10, margin:"0 0 10px" }}>PNG, SVG, WEBP -- max 2 Mo</p>
-                        <span style={{ display:"inline-block", padding:"5px 14px", background:"color-mix(in srgb, var(--accent) 10%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 25%, transparent)", borderRadius:7, color:G, fontSize:11, fontWeight:600 }}>
-                          Parcourir
-                        </span>
+                        <span className="qb-pill" style={{ fontSize:12.5, padding:"7px 15px" }}>Parcourir</span>
                         <input ref={logoInputRef} type="file" accept="image/*" style={{ display:"none" }}
                           onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = "" }}/>
                       </div>

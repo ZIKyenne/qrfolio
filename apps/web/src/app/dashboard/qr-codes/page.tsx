@@ -48,6 +48,7 @@ export default async function QRCodesPage() {
       <style>{`
         .qrh-inner { max-width:1320px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:66px; }
         .qrh-actions { display:flex; align-items:center; gap:14px; }
+        .qrh-cta-group { display:flex; align-items:center; gap:14px; }
         @media (max-width:860px) {
           /* En-tete NON sticky sur mobile : il defile au lieu d'occuper l'ecran en
              permanence -> la personnalisation commence plus haut et le bas des
@@ -58,7 +59,8 @@ export default async function QRCodesPage() {
           /* KPIs (QR actifs / scans total) masques sur mobile : peu d'info pour la
              place prise ; les scans restent consultables dans l'onglet Stats. */
           .qrh-kpis { display:none !important; }
-          .qrh-cta { width:100%; justify-content:center; padding:13px !important; font-size:14px !important; }
+          /* QR Dynamique + Nouvelle page + QR masqués sur mobile : déjà accessibles via le « + » de la barre du bas. */
+          .qrh-cta-group { display:none !important; }
           .qrh-content { padding:16px 16px 130px !important; }
         }
       `}</style>
@@ -121,21 +123,24 @@ export default async function QRCodesPage() {
               </div>
             </div>
 
-            {/* QR Dynamique — secondaire or contour (handoff « Boutons d'en-tête »). */}
-            <a href="/dashboard/qr-link" className="qrh-cta qb-hsec">
-              <span className="qb-ico" aria-hidden="true" style={{ display: "inline-flex" }}><Link2 size={15}/></span> QR Dynamique
-            </a>
-
-            {/* Nouvelle page + QR — primaire or (halo respirant + reflet au survol). */}
-            <span style={{ position: "relative", display: "inline-flex" }}>
-              <span aria-hidden="true" className="qb-halo" />
-              <a href="/dashboard/templates" className="qrh-cta qb-hpri">
-                <span aria-hidden="true" className="qb-gloss" />
-                <span aria-hidden="true" className="qb-sheen" />
-                <span className="qb-ico" aria-hidden="true" style={{ display: "inline-flex" }}><Plus size={16}/></span>
-                <span style={{ position: "relative", zIndex: 1 }}>Nouvelle page + QR</span>
+            {/* QR Dynamique + Nouvelle page + QR — masqués sur mobile (redondants avec le « + » de la barre du bas). */}
+            <div className="qrh-cta-group">
+              {/* QR Dynamique — secondaire or contour (handoff « Boutons d'en-tête »). */}
+              <a href="/dashboard/qr-link" className="qb-hsec">
+                <span className="qb-ico" aria-hidden="true" style={{ display: "inline-flex" }}><Link2 size={15}/></span> QR Dynamique
               </a>
-            </span>
+
+              {/* Nouvelle page + QR — primaire or (halo respirant + reflet au survol). */}
+              <span style={{ position: "relative", display: "inline-flex" }}>
+                <span aria-hidden="true" className="qb-halo" />
+                <a href="/dashboard/templates" className="qb-hpri">
+                  <span aria-hidden="true" className="qb-gloss" />
+                  <span aria-hidden="true" className="qb-sheen" />
+                  <span className="qb-ico" aria-hidden="true" style={{ display: "inline-flex" }}><Plus size={16}/></span>
+                  <span style={{ position: "relative", zIndex: 1 }}>Nouvelle page + QR</span>
+                </a>
+              </span>
+            </div>
           </div>
         </div>
       </div>

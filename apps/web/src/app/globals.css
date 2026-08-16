@@ -344,6 +344,16 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .da-pill.on { background:rgba(232,200,119,.1); border-color:rgba(232,200,119,.34); color:#e8c877; }
 .da-pill:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(201,162,77,.3); }
 
+/* Corrections DA §09 — onglet Supports : CTA Print Studio en carte bronze (plus d'aplat plein) + vignettes de format */
+.da-suppcta { position:relative; overflow:hidden; cursor:pointer; width:100%; display:flex; align-items:center; gap:13px; padding:15px 17px; border-radius:12px; background:linear-gradient(135deg, rgba(232,200,119,.07), rgba(201,162,77,.02)); border:1px solid rgba(232,200,119,.3); transition:background .3s ease, border-color .3s ease; text-align:left; }
+.da-suppcta:hover { background:linear-gradient(135deg, rgba(232,200,119,.12), rgba(201,162,77,.05)); border-color:rgba(232,200,119,.55); }
+.da-suppcta:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(201,162,77,.3); }
+.da-suppchev { margin-left:auto; width:8px; height:8px; flex:none; border-right:1.7px solid #c9a24d; border-top:1.7px solid #c9a24d; transform:rotate(45deg); transition:transform .3s cubic-bezier(.2,.85,.3,1), border-color .24s ease; }
+.da-suppcta:hover .da-suppchev { transform:rotate(45deg) translate(2px,-2px); border-color:#e8c877; }
+.da-fmt { cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:7px; padding:11px 6px; border-radius:11px; background:rgba(255,255,255,.025); border:1px solid #26211a; transition:background .24s ease, border-color .24s ease; }
+.da-fmt:hover { background:rgba(232,200,119,.07); border-color:rgba(232,200,119,.45); }
+.da-fmt:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(201,162,77,.3); }
+
 /* ════════════════════════════════════════════════════════════════════════════
    UI PRIMITIVES — Button (components/ui/Button.tsx). Styles en classes pour de
    vrais états :hover/:active (impossibles en inline). Couleurs = tokens (accent

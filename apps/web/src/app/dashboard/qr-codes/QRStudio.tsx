@@ -3852,20 +3852,48 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         {/* -- Imprimables : entree vers QR Print Studio + explicatif ---------- */}
         {activeTab === "supports" && active && (
           <div className="qr-scroll" style={{ display:"flex", flexDirection:"column", flex:1, overflow:"auto", padding:"18px 16px", gap:14 }}>
-            {/* CTA principal : ouvrir l'editeur QR Print Studio */}
-            <button type="button" onClick={openEditor}
-              style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:9, padding:"15px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:12, color:"#080808", fontSize:14, fontWeight:800, cursor:"pointer", boxShadow:"0 8px 26px color-mix(in srgb, var(--accent) 30%, transparent)" }}>
-              <Sparkles size={16}/>
-              Ouvrir QR Print Studio
+            {/* CTA « Ouvrir QR Print Studio » — carte bronze à tuile dorée (DA §09) : plus d'aplat plein
+                (le seul bouton plein doré de la zone reste « Télécharger »). */}
+            <button type="button" onClick={openEditor} className="da-suppcta">
+              <span aria-hidden="true" style={{ position:"absolute", left:0, top:0, right:0, height:1, background:"linear-gradient(90deg, transparent, rgba(232,200,119,.5), transparent)" }} />
+              {/* Tuile dorée pleine + glyphe imprimante (dit « Print Studio », là où une flèche ne représentait rien) */}
+              <span aria-hidden="true" style={{ position:"relative", display:"inline-flex", alignItems:"center", justifyContent:"center", width:34, height:34, flexShrink:0, borderRadius:10, background:"linear-gradient(135deg, #e8c877, #c9a24d)", boxShadow:"0 8px 18px -10px rgba(201,162,77,.9)" }}>
+                <span style={{ position:"relative", display:"inline-block", width:18, height:18 }}>
+                  <span style={{ position:"absolute", left:4, top:0, width:10, height:4.5, border:"1.6px solid #1a1408", borderBottom:"none", borderRadius:"1px 1px 0 0" }}/>
+                  <span style={{ position:"absolute", left:0, top:4.5, width:18, height:7.5, borderRadius:2, background:"#1a1408" }}/>
+                  <span style={{ position:"absolute", right:2, top:7, width:2.5, height:2.5, borderRadius:"50%", background:"#e8c877" }}/>
+                  <span style={{ position:"absolute", left:3.5, top:12, width:11, height:6, border:"1.6px solid #1a1408", borderRadius:"0 0 1px 1px" }}/>
+                </span>
+              </span>
+              <span style={{ display:"flex", flexDirection:"column", gap:3, minWidth:0 }}>
+                <span style={{ fontSize:14, fontWeight:700, color:"#e8c877", letterSpacing:"-.01em" }}>Ouvrir QR Print Studio</span>
+                <span style={{ fontSize:11.5, color:"#8a8177", lineHeight:1.4 }}>Six formats prêts à imprimer, déjà calés sur votre QR.</span>
+              </span>
+              <span aria-hidden="true" className="da-suppchev" />
             </button>
-            <p style={{ color:MUTED, fontSize:11.5, textAlign:"center" as const, margin:0, lineHeight:1.5 }}>
-              Créez une affiche, un flyer, une carte ou un sticker prêt à imprimer.
-            </p>
 
-            {/* Chips des supports (compact, toujours visible) */}
-            <div style={{ display:"flex", flexWrap:"wrap", gap:6, justifyContent:"center" }}>
-              {["Affiche","Flyer","Carte","Sticker","Menu","Avis"].map(s => (
-                <span key={s} style={{ padding:"5px 11px", borderRadius:100, background:"color-mix(in srgb, var(--accent) 8%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 22%, transparent)", color:G, fontSize:11, fontWeight:600 }}>{s}</span>
+            {/* Formats — grille 3 colonnes, vignettes au ratio réel du support (le format se lit avant le mot). */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:8 }}>
+              {[
+                { key:"affiche", label:"Affiche", glyph:<span style={{ width:13, height:18, border:"1.5px solid #e8c877", borderRadius:2 }}/> },
+                { key:"flyer",   label:"Flyer",   glyph:<span style={{ width:12, height:16, border:"1.5px solid #e8c877", borderRadius:2, borderBottomWidth:4 }}/> },
+                { key:"carte",   label:"Carte",   glyph:<span style={{ width:19, height:12, border:"1.5px solid #e8c877", borderRadius:2 }}/> },
+                { key:"sticker", label:"Sticker", glyph:<span style={{ width:16, height:16, border:"1.5px dashed #e8c877", borderRadius:"50%" }}/> },
+                { key:"menu",    label:"Menu",    glyph:(<span style={{ position:"relative", width:12, height:18, border:"1.5px solid #e8c877", borderRadius:2 }}>
+                  <span style={{ position:"absolute", left:2, top:3, right:2, height:1.5, background:"rgba(232,200,119,.75)" }}/>
+                  <span style={{ position:"absolute", left:2, top:7, right:4, height:1.5, background:"rgba(232,200,119,.5)" }}/>
+                  <span style={{ position:"absolute", left:2, top:11, right:3, height:1.5, background:"rgba(232,200,119,.5)" }}/>
+                </span>) },
+                { key:"avis",    label:"Avis",    glyph:(<span style={{ position:"relative", display:"inline-flex", width:18, height:18 }}>
+                  <span style={{ position:"absolute", top:2, left:0, right:0, height:12, border:"1.5px solid #e8c877", borderRadius:3 }}/>
+                  <span style={{ position:"absolute", left:4, bottom:0, width:0, height:0, borderLeft:"4px solid transparent", borderRight:"4px solid transparent", borderTop:"5px solid #e8c877" }}/>
+                  <span style={{ position:"absolute", top:6, left:5, width:8, height:1.5, background:"#e8c877" }}/>
+                </span>) },
+              ].map(f => (
+                <button key={f.key} type="button" onClick={openEditor} className="da-fmt" aria-label={`Créer : ${f.label}`}>
+                  <span aria-hidden="true" style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", height:18 }}>{f.glyph}</span>
+                  <span style={{ fontSize:11.5, fontWeight:600, color:"#e8e3da" }}>{f.label}</span>
+                </button>
               ))}
             </div>
 

@@ -282,6 +282,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [qrFree, setQrFree] = useState(false)             // QR en position LIBRE (déplaçable), sinon dans la mise en page
   const [qrFx, setQrFx] = useState(0.32)                  // position libre du QR (coin haut-gauche, fraction)
   const [qrFy, setQrFy] = useState(0.55)
+  const [contentFree, setContentFree] = useState(false)   // « Tout déplacer » : le contenu de mise en page devient des éléments libres
   const [zoom, setZoom] = useState(1)                     // zoom de l'éditeur à plat (Studio libre)
   const [fsOpen, setFsOpen] = useState(false)             // aperçu PLEIN ÉCRAN (mobile §2/§9 : « tap = plein écran »)
   const [realSize, setRealSize] = useState(false)         // #24 : aperçu à TAILLE RÉELLE (physique) dans le plein écran
@@ -457,6 +458,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null); setBgCredit("")
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor("")
     setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center"); setETitle(1); setEPad(1)
+    setContentFree(false); setFreeEls(els => els.filter(e => !e.id.startsWith("fc_")))
   }
   async function saveCurrent() {
     const name = saveName.trim() || `Mon style ${savedPresets.length + 1}`
@@ -513,7 +515,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     return ""
   })()
   function captureDesign(): Record<string, any> {
-    return { v: 2, itemId, styleId, layoutId, sizeId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, qrScale, blockY, qrDx, qrDy, qrFree, qrFx, qrFy, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, titleColor, subColor, ctaColor, logo, logoUrl, bgImage, bgCredit, brandText, subtitle, message, ctaText, qrSource, qrPickId, qrPng, freeEls }
+    return { v: 2, itemId, styleId, layoutId, sizeId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, qrScale, blockY, qrDx, qrDy, qrFree, qrFx, qrFy, contentFree, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, titleColor, subColor, ctaColor, logo, logoUrl, bgImage, bgCredit, brandText, subtitle, message, ctaText, qrSource, qrPickId, qrPng, freeEls }
   }
   function restoreDesign(c: Record<string, any>) {
     if (!c || typeof c !== "object") return
@@ -532,6 +534,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     if (c.qrSource) setQrSource(c.qrSource); if (c.qrPickId) setQrPickId(c.qrPickId); setQrPng(c.qrPng ?? null)
     setFreeEls(Array.isArray(c.freeEls) ? c.freeEls : [])
     setQrFree(!!c.qrFree); if (typeof c.qrFx === "number") setQrFx(c.qrFx); if (typeof c.qrFy === "number") setQrFy(c.qrFy)
+    setContentFree(!!c.contentFree)
     setPhase("studio")
   }
   async function saveDesign() {
@@ -545,7 +548,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // ── Annuler / Rétablir (historique du design complet) ───────────────────────────
   // Snapshot sérialisé du design courant (mêmes champs que captureDesign) — clé de l'historique.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const snap = useMemo(() => JSON.stringify(captureDesign()), [itemId, styleId, layoutId, sizeId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, qrScale, blockY, qrDx, qrDy, qrFree, qrFx, qrFy, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, titleColor, subColor, ctaColor, logo, logoUrl, bgImage, bgCredit, brandText, subtitle, message, ctaText, qrSource, qrPickId, qrPng, freeEls])
+  const snap = useMemo(() => JSON.stringify(captureDesign()), [itemId, styleId, layoutId, sizeId, accent, bgFinish, frame, titleCase, titleWeight, qrBadge, qrPos, qrScale, blockY, qrDx, qrDy, qrFree, qrFx, qrFy, contentFree, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, titleColor, subColor, ctaColor, logo, logoUrl, bgImage, bgCredit, brandText, subtitle, message, ctaText, qrSource, qrPickId, qrPng, freeEls])
   // Empile (débounce 350 ms) : une salve de réglages = une seule entrée d'historique.
   useEffect(() => {
     if (phase !== "studio") return
@@ -636,6 +639,26 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setFreeEls(els => [...els, ...parts])
     setSelEl(parts[0]?.id ?? null); setLibre(true)
   }
+  // « Tout déplacer » : convertit le contenu de mise en page (marque/titre/sous-titre/bouton) en ÉLÉMENTS LIBRES
+  // (ids préfixés `fc_`) + QR en position libre, puis masque le contenu de mise en page (contentFree). Tout devient
+  // glissable/redimensionnable/éditable via le système d'éléments libres déjà en place. Réversible (bouton + undo).
+  function makeAllMovable() {
+    if (contentFree) return
+    const p = paletteFromStyle(style), b = Date.now()
+    let i = 0
+    const seeds: FreeEl[] = []
+    const push = (text: string, y: number, size: number, weight: number) => { if (text && text.trim()) seeds.push({ id: `fc_${b}_${i++}`, kind: "text", x: 0.1, y, w: 0.62, size, color: p.fg, align: "left", weight, font: "", text }) }
+    push(brand, 0.09, 0.05, 700)
+    push(title, 0.17, 0.11, 700)
+    push(subtitle, 0.31, 0.05, 500)
+    push(cta, 0.86, 0.05, 800)
+    setFreeEls(els => [...els, ...seeds])
+    if (!qrFree) { setQrFree(true); setQrFx(0.5); setQrFy(0.42) }
+    setContentFree(true); setLibre(true); setSelEl(seeds[0]?.id ?? null)
+  }
+  function undoAllMovable() {
+    setContentFree(false); setFreeEls(els => els.filter(e => !e.id.startsWith("fc_"))); setSelEl(null)
+  }
   // Appliquer un TEMPLATE (§7) : look + contenu suggéré (+ composition), recoercé au support. Annulable (undo).
   function applyTemplate(t: PrintTemplate, variant?: TemplateVariant) {
     const L = t.look
@@ -689,7 +712,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null); setBgCredit("")
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor(""); setAdvColor(false); setAdvQr(false)
     setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false)
-    setLibre(true); setFreeEls([]); setSelEl(null); setQrFree(false); setQrFx(0.32); setQrFy(0.55); setPhase("studio")
+    setLibre(true); setFreeEls([]); setSelEl(null); setQrFree(false); setQrFx(0.32); setQrFy(0.55); setContentFree(false); setPhase("studio")
     undoRef.current = { past: [], future: [], apply: false, last: "", t: null }; setCanUndo(false); setCanRedo(false)
   }
 
@@ -884,7 +907,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const scene = sceneLayers(item.scene, metier === "Tout" ? null : metier)
   const pal = paletteFromStyle(style)
   // Tous les réglages de DESIGN partagés (sans `item`/`physW`/`w`/`h`) — réutilisés pour la planche multi-supports.
-  const designProps = { style, pal, layout, size: effSize, qrValue, qrImg, qrBadge, qrPos, qrDx, qrDy, qrFree, qrFx, qrFy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, brand, subtitle, title, cta, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, freeEls }
+  const designProps = { style, pal, layout, size: effSize, qrValue, qrImg, qrBadge, qrPos, qrDx, qrDy, qrFree, qrFx, qrFy, contentFree, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, brand, subtitle, title, cta, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, freeEls }
   // Planche = chaque format retenu, répété `campaignQty` fois (imposition N-up : N exemplaires par format).
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   const sel = freeEls.find(e => e.id === selEl)
@@ -1009,6 +1032,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
               <button onClick={addFreeText} style={chipStyle(false)}>＋ Texte</button>
               <button onClick={() => { setAddSearch(""); setAddOpen(true) }} style={chipStyle(true)}><Plus size={14} style={{ marginRight: 4, verticalAlign: "-2px" }} />Ajouter</button>
+              <button onClick={contentFree ? undoAllMovable : makeAllMovable} title={contentFree ? "Revenir à la mise en page automatique" : "Rendre le titre, le QR et le bouton déplaçables"} style={chipStyle(contentFree)}>{contentFree ? "↩ Remettre en page" : "⤢ Tout déplacer"}</button>
             </div>
             {sel && (isMobile
               ? <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}><button onClick={() => setSheetOpen(true)} style={chipStyle(true)}>Modifier l'élément</button></div>
@@ -1587,7 +1611,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {/* Planche d'impression — montée UNIQUEMENT pendant l'impression (évite un 2e moteur QR en fond). */}
       {printing && <div className="ps-print-root" aria-hidden>
         <style>{`@media screen{.ps-print-root{display:none!important}}@media print{body *{visibility:hidden!important}.ps-print-root,.ps-print-root *{visibility:visible!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.ps-print-root{position:fixed!important;left:0;top:0;display:block!important}@page{size:${mediaDims(item).mediaWmm}mm ${mediaDims(item).mediaHmm}mm;margin:0}}`}</style>
-        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} subtitle={subtitle} title={title} cta={cta} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} qrFree={qrFree} qrFx={qrFx} qrFy={qrFy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY} freeEls={freeEls} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
+        <PrintSheet item={item} style={style} pal={pal} layout={layout} brand={brand} subtitle={subtitle} title={title} cta={cta} size={effSize} qrValue={qrValue} qrImg={qrImg} qrBadge={qrBadge} qrPos={qrPos} qrDx={qrDx} qrDy={qrDy} qrFree={qrFree} qrFx={qrFx} qrFy={qrFy} logo={logo} logoUrl={logoUrl} bgFinish={bgFinish} bgImage={bgImage} frame={frame} accent={accent} titleCase={titleCase} titleWeight={titleWeight} titleColor={titleColor} subColor={subColor} ctaColor={ctaColor} blockY={blockY} freeEls={freeEls} contentFree={contentFree} eCorner={eCorner} eAccent={eAccent} eTypo={eTypo} eAlign={eAlign} eTitle={eTitle} ePad={ePad} />
       </div>}
     </div>
   )
@@ -1731,8 +1755,8 @@ function Swatch({ s, on, label, onClick }: { s: Style; on: boolean; label?: stri
 }
 
 /* Rendu du support (le visuel imprimé) — palette + texte + QR, arrangé par layout. */
-function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, qrVector, physW, qrDx, qrDy, qrFree, qrFx, qrFy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, freeEls, w, h, onFocus }:
-  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; qrVector?: boolean; physW: number; qrDx: number; qrDy: number; qrFree?: boolean; qrFx?: number; qrFy?: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[]; w: number; h: number; onFocus?: (panel: string) => void }) {
+function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, qrValue, qrImg, qrBadge, qrPos, qrStatic, qrVector, physW, qrDx, qrDy, qrFree, qrFx, qrFy, logo, logoUrl, bgFinish, bgImage, frame, accent, titleCase, titleWeight, titleColor, subColor, ctaColor, blockY, eCorner, eAccent, eTypo, eAlign, eTitle, ePad, freeEls, contentFree, w, h, onFocus }:
+  { item: Item; style: Style; pal: ReturnType<typeof paletteFromStyle>; layout: { content: string; deco: string | null }; brand: string; subtitle: string; title: string; cta: string; size: { factor: number }; qrValue: string; qrImg: string | null; qrBadge: string; qrPos: string; qrStatic?: boolean; qrVector?: boolean; physW: number; qrDx: number; qrDy: number; qrFree?: boolean; qrFx?: number; qrFy?: number; logo: string; logoUrl: string | null; bgFinish: string; bgImage: string | null; frame: string; accent: string; titleCase: string; titleWeight: string; titleColor: string; subColor: string; ctaColor: string; blockY: number; eCorner: string; eAccent: string; eTypo: string; eAlign: "left" | "center" | "right"; eTitle: number; ePad: number; freeEls?: FreeEl[]; contentFree?: boolean; w: number; h: number; onFocus?: (panel: string) => void }) {
   const typo = TYPOS.find(t => t.id === eTypo)
   const titleFont = typo?.t ? `"${typo.t}",Georgia,serif` : pal.titleFont
   const bodyFont = typo?.b ? `"${typo.b}",Helvetica,Arial,sans-serif` : pal.bodyFont
@@ -1852,7 +1876,8 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     : <div style={{ flex: 1, display: "flex", minWidth: 0, transform: blockY ? `translateY(${blockY * 12}%)` : undefined }}>{body}</div>
   return (
     <div style={{ ...base, ...fcur }} onClick={onFocus ? (e => { e.stopPropagation(); onFocus("details") }) : undefined}>
-      {placed}
+      {/* contentFree (« Tout déplacer ») : le contenu de mise en page est masqué — tout passe par les éléments libres + QR libre. */}
+      {!contentFree && placed}
       {logo === "objet" && logoUrl && <img src={logoUrl} alt="" style={{ position: "absolute", top: isRound ? unit * 0.2 : pad, left: isRound ? unit * 0.2 : pad, width: unit * 0.14, height: unit * 0.14, objectFit: "contain", zIndex: 2 }} />}
       {frameEl}
       {/* décor optionnel (lié à la mise en page) */}

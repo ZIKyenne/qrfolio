@@ -4,52 +4,148 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  LayoutDashboard, FileText, BarChart, QrCode, User,
-  Activity, ChevronRight, LogOut, Settings, Menu, X, Eye, Inbox, Images,
-  Plus, Printer, Upload, Sparkles, Link2, Users, Globe, Target, Shuffle, Zap
+  FileText, QrCode, User,
+  Activity, ChevronRight, LogOut, Menu, X, Eye,
+  Plus, Printer, Upload, Sparkles, Link2
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { ToastProvider } from "@/components/Toast"
 import { ConfirmProvider } from "@/components/ui/Confirm"
 import MobileNav from "@/components/MobileNav"
 import { accessibleOwnerIds } from "@/lib/team"
+import { pageLimit } from "@/lib/plans"
 
 const DEFAULT_ACCENT = "#C9A84C"
 const MUTED = "#A8A190"
 
-// Marque QR partagée (DA §10) : même glyphe que la tuile du header (3 repères + matrice de données 2×2),
-// à l'échelle nav (repères 7×7 / modules 2.5px). En currentColor → suit l'état de l'item (actif or / survol clair).
+// Jeu de glyphes filaires de la nav (DA §10) : 16×16, traits 1.4px, dessinés en `currentColor` → ils s'éclairent
+// avec le libellé (actif or / survol clair / repos muté). Fond des masques = #0A0A0A (fond réel de la sidebar).
+const S16 = { position: "relative" as const, display: "inline-block" as const, width: 16, height: 16, flexShrink: 0 }
+const SB  = "#0A0A0A"
+
+// Glyphe QR partagé (même dessin que la tuile du header, à l'échelle nav) : 3 repères + matrice de données.
 function QRNavGlyph() {
-  const finder = { position: "absolute" as const, display: "inline-flex" as const, alignItems: "center" as const, justifyContent: "center" as const, width: 7, height: 7, border: "1.5px solid currentColor", borderRadius: 1.5 }
-  const dot    = { position: "absolute" as const, width: 2.5, height: 2.5, background: "currentColor" }
+  const finder = { position: "absolute" as const, display: "inline-flex" as const, alignItems: "center" as const, justifyContent: "center" as const, width: 6.5, height: 6.5, border: "1.4px solid currentColor", borderRadius: 1.5 }
+  const eye = { width: 1.8, height: 1.8, background: "currentColor" }
   return (
-    <span aria-hidden="true" style={{ position: "relative", display: "inline-block", width: 18, height: 18, flexShrink: 0 }}>
-      <span style={{ ...finder, left: 0, top: 0 }}><span style={{ width: 2, height: 2, background: "currentColor" }} /></span>
-      <span style={{ ...finder, right: 0, top: 0 }}><span style={{ width: 2, height: 2, background: "currentColor" }} /></span>
-      <span style={{ ...finder, left: 0, bottom: 0 }}><span style={{ width: 2, height: 2, background: "currentColor" }} /></span>
-      <span style={{ ...dot, right: 4.5, bottom: 4.5, opacity: 0.55 }} />
-      <span style={{ ...dot, right: 0, bottom: 4.5 }} />
-      <span style={{ ...dot, right: 4.5, bottom: 0 }} />
-      <span style={{ ...dot, right: 0, bottom: 0 }} />
+    <span aria-hidden="true" style={S16}>
+      <span style={{ ...finder, left: 0, top: 0 }}><span style={eye} /></span>
+      <span style={{ ...finder, right: 0, top: 0 }}><span style={eye} /></span>
+      <span style={{ ...finder, left: 0, bottom: 0 }}><span style={eye} /></span>
+      <span style={{ position: "absolute", right: 0, bottom: 0, width: 2.4, height: 2.4, background: "currentColor" }} />
+      <span style={{ position: "absolute", right: 4, bottom: 4, width: 2.4, height: 2.4, background: "currentColor", opacity: 0.5 }} />
     </span>
   )
 }
 
-const NAV_ITEMS = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", exact: true },
-  { href: "/dashboard/templates", icon: FileText, label: "Templates" },
-  { href: "/dashboard/assets", icon: Images, label: "Médias" },
-  { href: "/dashboard/analytics", icon: BarChart, label: "Analytics" },
-  { href: "/dashboard/goals", icon: Target, label: "Objectifs" },
-  { href: "/dashboard/leads", icon: Inbox, label: "Messages" },
-  { href: "/dashboard/qr-codes", icon: QrCode, label: "QR Codes" },
-  { href: "/dashboard/print-studio", icon: Printer, label: "Print Studio" },
-  { href: "/dashboard/qr-link", icon: Zap, label: "QR Dynamique" },
-  { href: "/dashboard/team", icon: Users, label: "Équipe" },
-  { href: "/dashboard/domains", icon: Globe, label: "Domaines" },
-  { href: "/dashboard/redirects", icon: Shuffle, label: "Redirections" },
-  { href: "/dashboard/profile", icon: User, label: "Profil" },
-  { href: "/dashboard/settings", icon: Settings, label: "Paramètres" },
+// Glyphe par entrée (voir tableau du handoff §10). Chacun décrit littéralement sa page.
+function NavGlyph({ name }: { name: string }) {
+  switch (name) {
+    case "qr": return <QRNavGlyph />
+    case "dashboard": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", left: 0, top: 0, width: 6, height: 16, border: "1.4px solid currentColor", borderRadius: 2 }} />
+        <span style={{ position: "absolute", right: 0, top: 0, width: 8, height: 7, border: "1.4px solid currentColor", borderRadius: 2 }} />
+        <span style={{ position: "absolute", right: 0, bottom: 0, width: 8, height: 7, border: "1.4px solid currentColor", borderRadius: 2, opacity: 0.55 }} />
+      </span>)
+    case "templates": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", right: 0, top: 0, width: 11, height: 13, border: "1.4px solid currentColor", borderRadius: 2, opacity: 0.4 }} />
+        <span style={{ position: "absolute", left: 0, bottom: 0, width: 12.5, height: 14.5, border: "1.4px solid currentColor", borderRadius: 2.5, background: SB, overflow: "hidden" }}>
+          <span style={{ position: "absolute", left: 0, top: 0, right: 0, height: 4, background: "currentColor" }} />
+          <span style={{ position: "absolute", left: 2.5, top: 6.5, width: 5, height: 5, background: "currentColor", borderRadius: 1, opacity: 0.6 }} />
+        </span>
+      </span>)
+    case "media": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", left: 0, top: 1, width: 16, height: 13, border: "1.4px solid currentColor", borderRadius: 2, overflow: "hidden" }}>
+          <span style={{ position: "absolute", left: 2, top: 2, width: 3, height: 3, borderRadius: "50%", background: "currentColor" }} />
+          <span style={{ position: "absolute", left: 2, bottom: 0, width: 0, height: 0, borderLeft: "4px solid transparent", borderRight: "4px solid transparent", borderBottom: "6px solid currentColor" }} />
+        </span>
+      </span>)
+    case "print": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", left: 3.5, top: 0, width: 9, height: 4, border: "1.4px solid currentColor", borderBottom: "none", borderRadius: "1.5px 1.5px 0 0", opacity: 0.55 }} />
+        <span style={{ position: "absolute", left: 0, top: 4, width: 16, height: 7.5, border: "1.4px solid currentColor", borderRadius: 2.5 }} />
+        <span style={{ position: "absolute", right: 2.5, top: 6.5, width: 2.2, height: 2.2, borderRadius: "50%", background: "currentColor" }} />
+        <span style={{ position: "absolute", left: 3.5, bottom: 0, width: 9, height: 5, background: "currentColor", borderRadius: "0 0 1.5px 1.5px" }} />
+      </span>)
+    case "dynamic": return (
+      <span aria-hidden="true" style={{ ...S16, background: "currentColor", clipPath: "polygon(58% 0, 20% 55%, 45% 55%, 38% 100%, 80% 42%, 53% 42%)" }} />)
+    case "analytics": return (
+      <span aria-hidden="true" style={{ display: "flex", alignItems: "flex-end", gap: 2.5, width: 16, height: 16, flexShrink: 0 }}>
+        <span style={{ width: 3, height: 7, background: "currentColor", borderRadius: 1, opacity: 0.6 }} />
+        <span style={{ width: 3, height: 12, background: "currentColor", borderRadius: 1 }} />
+        <span style={{ width: 3, height: 16, background: "currentColor", borderRadius: 1 }} />
+      </span>)
+    case "goals": return (
+      <span aria-hidden="true" style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, flexShrink: 0 }}>
+        <span style={{ position: "absolute", inset: 0, border: "1.4px solid currentColor", borderRadius: "50%", opacity: 0.55 }} />
+        <span style={{ position: "absolute", inset: 4.5, border: "1.4px solid currentColor", borderRadius: "50%" }} />
+        <span style={{ width: 3, height: 3, borderRadius: "50%", background: "currentColor" }} />
+      </span>)
+    case "messages": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", left: 0, top: 1, width: 16, height: 11, border: "1.4px solid currentColor", borderRadius: 3 }} />
+        <span style={{ position: "absolute", left: 2.5, top: 11.4, width: 0, height: 0, borderRight: "5.5px solid transparent", borderTop: "4.5px solid currentColor" }} />
+        <span style={{ position: "absolute", left: 4, top: 5, width: 8, height: 1.4, background: "currentColor" }} />
+      </span>)
+    case "team": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", left: 1.5, top: 1, width: 6, height: 6, border: "1.4px solid currentColor", borderRadius: "50%" }} />
+        <span style={{ position: "absolute", left: 0.5, bottom: 1, width: 8, height: 5, border: "1.4px solid currentColor", borderBottom: "none", borderRadius: "5px 5px 0 0" }} />
+        <span style={{ position: "absolute", right: 1.5, top: 1, width: 6, height: 6, border: "1.4px solid currentColor", borderRadius: "50%" }} />
+        <span style={{ position: "absolute", right: 0.5, bottom: 1, width: 8, height: 5, border: "1.4px solid currentColor", borderBottom: "none", borderRadius: "5px 5px 0 0", background: SB }} />
+      </span>)
+    case "domains": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", inset: 0, border: "1.4px solid currentColor", borderRadius: "50%", overflow: "hidden" }}>
+          <span style={{ position: "absolute", left: -2, top: 7.5, width: 20, height: 1.4, background: "currentColor", transform: "rotate(-24deg)" }} />
+        </span>
+      </span>)
+    case "redirects": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", left: 0.7, bottom: 1.2, width: 8.5, height: 9.5, borderLeft: "1.4px solid currentColor", borderBottom: "1.4px solid currentColor", borderBottomLeftRadius: 4, transform: "scaleX(-1)" }} />
+        <span style={{ position: "absolute", left: 5.4, top: 0, width: 0, height: 0, borderLeft: "4px solid transparent", borderRight: "4px solid transparent", borderBottom: "5px solid currentColor" }} />
+      </span>)
+    case "profile": return (
+      <span aria-hidden="true" style={S16}>
+        <span style={{ position: "absolute", left: 4.5, top: 0, width: 7, height: 7, border: "1.4px solid currentColor", borderRadius: "50%" }} />
+        <span style={{ position: "absolute", left: 1, bottom: 0, width: 14, height: 7, border: "1.4px solid currentColor", borderBottom: "none", borderRadius: "7px 7px 0 0" }} />
+      </span>)
+    case "settings": return (
+      <span aria-hidden="true" style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, flexShrink: 0 }}>
+        <span style={{ position: "absolute", inset: 0, background: "currentColor", clipPath: "polygon(41% 0,59% 0,63% 12%,78% 8%,88% 22%,80% 33%,94% 41%,94% 59%,80% 67%,88% 78%,78% 92%,63% 88%,59% 100%,41% 100%,37% 88%,22% 92%,12% 78%,20% 67%,6% 59%,6% 41%,20% 33%,12% 22%,22% 8%,37% 12%)" }} />
+        <span style={{ position: "relative", width: 5.5, height: 5.5, borderRadius: "50%", background: SB }} />
+      </span>)
+    default: return null
+  }
+}
+
+// Navigation groupée en 4 familles étiquetées (DA §10) — glyphes filaires maison (voir NavGlyph).
+const NAV_GROUPS = [
+  { label: "Principal", items: [
+    { href: "/dashboard", glyph: "dashboard", label: "Dashboard", exact: true },
+    { href: "/dashboard/templates", glyph: "templates", label: "Templates" },
+    { href: "/dashboard/assets", glyph: "media", label: "Médias" },
+  ] },
+  { label: "QR & impression", items: [
+    { href: "/dashboard/qr-codes", glyph: "qr", label: "QR Codes" },
+    { href: "/dashboard/print-studio", glyph: "print", label: "Print Studio" },
+    { href: "/dashboard/qr-link", glyph: "dynamic", label: "QR Dynamique" },
+  ] },
+  { label: "Mesure", items: [
+    { href: "/dashboard/analytics", glyph: "analytics", label: "Analytics" },
+    { href: "/dashboard/goals", glyph: "goals", label: "Objectifs" },
+    { href: "/dashboard/leads", glyph: "messages", label: "Messages" },
+  ] },
+  { label: "Compte", items: [
+    { href: "/dashboard/team", glyph: "team", label: "Équipe" },
+    { href: "/dashboard/domains", glyph: "domains", label: "Domaines" },
+    { href: "/dashboard/redirects", glyph: "redirects", label: "Redirections" },
+    { href: "/dashboard/profile", glyph: "profile", label: "Profil" },
+    { href: "/dashboard/settings", glyph: "settings", label: "Paramètres" },
+  ] },
 ]
 
 // Actions du bouton central "Créer".
@@ -77,6 +173,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [accent, setAccent] = useState(DEFAULT_ACCENT) // couleur d'accent de l'utilisateur
   const [isMobile, setIsMobile] = useState(false) // < 860px : menu replié d'office
   const [unreadLeads, setUnreadLeads] = useState(0) // messages non lus (badge nav)
+  const [qrActive, setQrActive] = useState<number | null>(null) // QR actifs (jauge de quota du pied de page)
   const [createOpen, setCreateOpen] = useState(false) // sheet "Créer" (bouton central mobile)
 
   // Mode Focus du builder : replie la nav (via l'événement `qrowg:builder-focus`) SANS écraser la
@@ -123,10 +220,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             const acc = p?.preferences?.accent_color || p?.accent_color
             if (acc) { setAccent(acc); localStorage.setItem("qrfolio_accent", acc) }
           })
-        // Compteur de messages non lus (le sien + celui des équipes dont il est membre)
-        accessibleOwnerIds(supabase, data.user.id).then(ownerIds =>
+        // Compteurs (le sien + celui des équipes dont il est membre) : messages non lus + QR actifs (quota).
+        accessibleOwnerIds(supabase, data.user.id).then(ownerIds => {
           supabase.from("leads").select("id", { count: "exact", head: true }).in("user_id", ownerIds).eq("is_read", false)
-            .then(({ count }: any) => { if (typeof count === "number") setUnreadLeads(count) }))
+            .then(({ count }: any) => { if (typeof count === "number") setUnreadLeads(count) })
+          // Quota = QR ACTIFS (status "active" ou nul par défaut) — cf. modèle de quota par actifs.
+          supabase.from("qr_codes").select("id", { count: "exact", head: true }).in("user_id", ownerIds).or("status.eq.active,status.is.null")
+            .then(({ count }: any) => { if (typeof count === "number") setQrActive(count) })
+        })
       }
     })
   }, [])
@@ -201,9 +302,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: collapsed ? "0 14px" : "0 16px 0 20px", borderBottom: "1px solid rgba(201,168,76,0.08)", flexShrink: 0 }}>
           {/* Logo */}
           <Link href="/dashboard" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8, overflow: "hidden" }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg, ${G}, color-mix(in srgb, var(--accent) 75%, #000))`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: `0 2px 8px ${G}40` }}>
-              <QrCode size={14} color="#080808" />
-            </div>
+            {/* Tuile QR (DA §10) : même marque que le header de page, animée (voile lumineux + un module qui s'allume). */}
+            <span style={{ position: "relative", display: "inline-block", overflow: "hidden", width: 30, height: 30, flexShrink: 0, borderRadius: 9, background: "linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 5%, transparent))", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)" }}>
+              <span aria-hidden="true" className="om-sweep" style={{ position: "absolute", top: "-20%", bottom: "-20%", left: 0, width: "26%", background: "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.45), rgba(255,255,255,0))" }} />
+              <span style={{ position: "absolute", left: 7, top: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 6, height: 6, border: "1.3px solid var(--accent)", borderRadius: 1.5 }}><span style={{ width: 1.6, height: 1.6, background: "var(--accent)" }} /></span>
+              <span style={{ position: "absolute", right: 7, top: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 6, height: 6, border: "1.3px solid var(--accent)", borderRadius: 1.5 }}><span style={{ width: 1.6, height: 1.6, background: "var(--accent)" }} /></span>
+              <span style={{ position: "absolute", left: 7, bottom: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 6, height: 6, border: "1.3px solid var(--accent)", borderRadius: 1.5 }}><span style={{ width: 1.6, height: 1.6, background: "var(--accent)" }} /></span>
+              <span aria-hidden="true" className="om-blink" style={{ position: "absolute", right: 7, bottom: 7, width: 2.5, height: 2.5, background: "var(--accent)" }} />
+              <span style={{ position: "absolute", right: 11, bottom: 11, width: 2.5, height: 2.5, background: "color-mix(in srgb, var(--accent) 50%, transparent)" }} />
+            </span>
             {!collapsed && (
               <span style={{ color: G, fontFamily: "Fraunces, serif", fontSize: 18, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textTransform: "uppercase" }}>
                 QRowg
@@ -221,118 +328,153 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Navigation */}
         <nav aria-label="Navigation principale" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "10px 8px" }} className="sidebar-nav">
-          {NAV_ITEMS.map(({ href, icon: Icon, label, exact }) => {
-            const active = isActive(href, exact)
-            return (
-              <div key={href} style={{ position: "relative" }} className="sidebar-item">
-                <Link href={href} style={{ textDecoration: "none" }}>
-                  <div style={{
-                    position: "relative",
-                    display: "flex", alignItems: "center", gap: 10,
-                    padding: collapsed ? "10px 0" : "9px 12px",
-                    justifyContent: collapsed ? "center" : "flex-start",
-                    borderRadius: 9,
-                    background: active ? "linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 2%, transparent))" : "transparent",
-                    border: "1px solid transparent",
-                    color: active ? G : MUTED,
-                    fontSize: 13, fontWeight: active ? 600 : 400,
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                    marginBottom: 2,
-                    whiteSpace: "nowrap", overflow: "hidden",
-                  }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#F5F0E8" } }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = MUTED } }}>
-                    {/* Filet doré à gauche de l'item actif (DA §08) */}
-                    {active && !collapsed && <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 9, bottom: 9, width: 2, borderRadius: 2, background: `linear-gradient(180deg, ${G}, color-mix(in srgb, var(--accent) 70%, #000))` }} />}
-                    <div style={{ position: "relative", flexShrink: 0, display: "flex" }}>
-                      {href === "/dashboard/qr-codes" ? <QRNavGlyph /> : <Icon size={16} />}
-                      {href === "/dashboard/leads" && unreadLeads > 0 && (
-                        <span style={{ position: "absolute", top: -5, right: collapsed ? -5 : -6, minWidth: 15, height: 15, padding: "0 4px", borderRadius: 8, background: "#EF4444", color: "#fff", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, boxShadow: "0 0 0 2px #0A0A0A" }}>{unreadLeads > 99 ? "99+" : unreadLeads}</span>
-                      )}
-                    </div>
-                    {!collapsed && <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>}
-                    {!collapsed && href === "/dashboard/leads" && unreadLeads > 0 && <span style={{ marginLeft: "auto", background: "#EF4444", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 9, padding: "1px 7px", flexShrink: 0 }}>{unreadLeads > 99 ? "99+" : unreadLeads}</span>}
-                    {!collapsed && active && href !== "/dashboard/leads" && <div style={{ width: 7, height: 7, borderRadius: "50%", background: G, marginLeft: "auto", flexShrink: 0, boxShadow: "0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent)" }} />}
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={group.label}>
+              {/* Étiquette de famille (DA §10) — masquée repliée ; un filet sépare les groupes en mode réduit. */}
+              {!collapsed
+                ? <div style={{ padding: gi === 0 ? "2px 8px 5px" : "12px 8px 5px", fontSize: 9.5, letterSpacing: ".2em", textTransform: "uppercase", color: "#5c554b", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden" }}>{group.label}</div>
+                : gi > 0 && <div aria-hidden="true" style={{ margin: "8px 12px", height: 1, background: "rgba(255,255,255,0.05)" }} />}
+              {group.items.map(({ href, glyph, label, exact }) => {
+                const active = isActive(href, exact)
+                return (
+                  <div key={href} style={{ position: "relative" }} className="sidebar-item">
+                    <Link href={href} style={{ textDecoration: "none" }}>
+                      <div style={{
+                        position: "relative",
+                        display: "flex", alignItems: "center", gap: 11,
+                        padding: collapsed ? "10px 0" : "9px 12px",
+                        justifyContent: collapsed ? "center" : "flex-start",
+                        borderRadius: 9,
+                        background: active ? "linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 2%, transparent))" : "transparent",
+                        border: "1px solid transparent",
+                        color: active ? G : MUTED,
+                        fontSize: 13, fontWeight: active ? 600 : 400,
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                        marginBottom: 2,
+                        whiteSpace: "nowrap", overflow: "hidden",
+                      }}
+                      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "rgba(255,255,255,0.035)"; e.currentTarget.style.color = "#e8e3da" } }}
+                      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = MUTED } }}>
+                        {/* Filet doré à gauche de l'item actif (DA §08/§10) */}
+                        {active && !collapsed && <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 8, bottom: 8, width: 2, borderRadius: 2, background: `linear-gradient(180deg, ${G}, color-mix(in srgb, var(--accent) 70%, #000))` }} />}
+                        <div style={{ position: "relative", flexShrink: 0, display: "flex" }}>
+                          <NavGlyph name={glyph} />
+                          {href === "/dashboard/leads" && unreadLeads > 0 && (
+                            <span style={{ position: "absolute", top: -5, right: collapsed ? -5 : -6, minWidth: 15, height: 15, padding: "0 4px", borderRadius: 8, background: "#EF4444", color: "#fff", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, boxShadow: "0 0 0 2px #0A0A0A" }}>{unreadLeads > 99 ? "99+" : unreadLeads}</span>
+                          )}
+                        </div>
+                        {!collapsed && <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>}
+                        {!collapsed && href === "/dashboard/leads" && unreadLeads > 0 && <span style={{ marginLeft: "auto", background: "#EF4444", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 9, padding: "1px 7px", flexShrink: 0 }}>{unreadLeads > 99 ? "99+" : unreadLeads}</span>}
+                        {!collapsed && active && href !== "/dashboard/leads" && <div style={{ width: 7, height: 7, borderRadius: "50%", background: G, marginLeft: "auto", flexShrink: 0, boxShadow: "0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent)" }} />}
+                      </div>
+                    </Link>
+                    {/* Tooltip en mode collapsed */}
+                    {collapsed && (
+                      <div className="sidebar-tooltip" style={{
+                        position: "absolute", left: "calc(100% + 10px)", top: "50%", transform: "translateY(-50%)",
+                        background: "#1A1A1A", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8,
+                        padding: "6px 12px", color: "#F5F0E8", fontSize: 12, fontWeight: 600,
+                        whiteSpace: "nowrap", pointerEvents: "none", zIndex: 100,
+                        opacity: 0, transition: "opacity 0.15s", boxShadow: "0 4px 16px rgba(0,0,0,0.4)"
+                      }}>
+                        {label}
+                      </div>
+                    )}
                   </div>
-                </Link>
-                {/* Tooltip en mode collapsed */}
-                {collapsed && (
-                  <div className="sidebar-tooltip" style={{
-                    position: "absolute", left: "calc(100% + 10px)", top: "50%", transform: "translateY(-50%)",
-                    background: "#1A1A1A", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8,
-                    padding: "6px 12px", color: "#F5F0E8", fontSize: 12, fontWeight: 600,
-                    whiteSpace: "nowrap", pointerEvents: "none", zIndex: 100,
-                    opacity: 0, transition: "opacity 0.15s", boxShadow: "0 4px 16px rgba(0,0,0,0.4)"
-                  }}>
-                    {label}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+                )
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Section bas: Upgrade + User */}
         <div style={{ padding: "8px", borderTop: "1px solid rgba(255,255,255,0.05)", flexShrink: 0 }}>
-          {/* Upgrade */}
-          <div style={{ position: "relative" }} className="sidebar-item">
-            <Link href="/upgrade" style={{ textDecoration: "none" }}>
-              {/* Carte Upgrade apaisée (DA §08) : plus de fond doré plein — bordure bronze + texte doré. */}
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: collapsed ? "10px 0" : "10px 12px",
-                justifyContent: collapsed ? "center" : "flex-start",
-                borderRadius: 11, cursor: "pointer",
-                background: "color-mix(in srgb, var(--accent) 4%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)",
-                marginBottom: 6, transition: "all 0.15s", overflow: "hidden",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 50%, transparent)" }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 26%, transparent)" }}>
-                <Activity size={16} color={G} style={{ flexShrink: 0 }} />
-                {!collapsed && (
-                  <div style={{ overflow: "hidden", minWidth: 0 }}>
-                    <p style={{ color: G, fontSize: 13, fontWeight: 700, letterSpacing: "-.01em", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {profile?.plan === "business" ? "Business" : profile?.plan === "pro" ? "Plan Pro" : "Passer au Pro"}
-                    </p>
-                    <p style={{ color: MUTED, fontSize: 10, margin: 0, whiteSpace: "nowrap" }}>{profile?.plan === "pro" || profile?.plan === "business" ? "Abonnement actif" : "Débloquez tout QRowg"}</p>
+          {/* Carte plan (DA §10) : bordure bronze, pastille « Actif », jauge de quota RÉELLE (QR actifs / limite du plan). */}
+          {(() => {
+            const plan = profile?.plan || "free"
+            const isPaid = plan === "pro" || plan === "business"
+            const planLabel = plan === "business" ? "Business" : plan === "pro" ? "Plan Pro" : "Passer au Pro"
+            const planLimit = pageLimit(plan)
+            const pct = planLimit && qrActive != null ? Math.min(100, Math.round((qrActive / planLimit) * 100)) : 0
+            return (
+              <div style={{ position: "relative" }} className="sidebar-item">
+                <Link href="/upgrade" style={{ textDecoration: "none" }}>
+                  <div style={{
+                    display: "flex", flexDirection: collapsed ? "row" : "column", alignItems: collapsed ? "center" : "stretch", gap: 8,
+                    padding: collapsed ? "10px 0" : "12px 13px",
+                    justifyContent: "center",
+                    borderRadius: 11, cursor: "pointer",
+                    background: "color-mix(in srgb, var(--accent) 4%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)",
+                    marginBottom: 8, transition: "border-color 0.26s", overflow: "hidden",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 50%, transparent)" }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "color-mix(in srgb, var(--accent) 26%, transparent)" }}>
+                    {collapsed ? (
+                      <Activity size={16} color={G} style={{ flexShrink: 0 }} />
+                    ) : (
+                      <>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                          <span style={{ fontSize: 12.5, fontWeight: 700, color: G, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{planLabel}</span>
+                          {isPaid && <span style={{ padding: "2px 8px", borderRadius: 999, border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)", fontSize: 9.5, letterSpacing: ".1em", textTransform: "uppercase", color: "#c9a24d", fontWeight: 700, flexShrink: 0 }}>Actif</span>}
+                        </div>
+                        {planLimit && qrActive != null ? (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+                              <span style={{ fontSize: 11, color: MUTED }}>QR utilisés</span>
+                              <span style={{ fontSize: 11, color: "#b8b1a6" }}>{qrActive} / {planLimit}</span>
+                            </div>
+                            <div style={{ height: 2, borderRadius: 2, background: "#221f1b", overflow: "hidden" }}>
+                              <div style={{ width: `${pct}%`, height: "100%", background: "linear-gradient(90deg, #c9a24d, #e8c877)", transition: "width .6s cubic-bezier(.2,.8,.2,1)" }} />
+                            </div>
+                          </div>
+                        ) : planLimit == null && qrActive != null ? (
+                          <span style={{ fontSize: 11, color: MUTED }}>{qrActive} QR · illimité</span>
+                        ) : (
+                          <span style={{ fontSize: 11, color: MUTED }}>{isPaid ? "Abonnement actif" : "Débloquez tout QRowg"}</span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </Link>
+                {collapsed && (
+                  <div className="sidebar-tooltip" style={{
+                    position: "absolute", left: "calc(100% + 10px)", top: "50%", transform: "translateY(-50%)",
+                    background: "#1A1A1A", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8,
+                    padding: "6px 12px", color: G, fontSize: 12, fontWeight: 600,
+                    whiteSpace: "nowrap", pointerEvents: "none", zIndex: 100,
+                    opacity: 0, transition: "opacity 0.15s", boxShadow: "0 4px 16px rgba(0,0,0,0.4)"
+                  }}>
+                    {planLabel}
                   </div>
                 )}
               </div>
-            </Link>
-            {collapsed && (
-              <div className="sidebar-tooltip" style={{
-                position: "absolute", left: "calc(100% + 10px)", top: "50%", transform: "translateY(-50%)",
-                background: "#1A1A1A", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8,
-                padding: "6px 12px", color: G, fontSize: 12, fontWeight: 600,
-                whiteSpace: "nowrap", pointerEvents: "none", zIndex: 100,
-                opacity: 0, transition: "opacity 0.15s", boxShadow: "0 4px 16px rgba(0,0,0,0.4)"
-              }}>
-                Upgrade
-              </div>
-            )}
-          </div>
+            )
+          })()}
 
-          {/* Utilisateur */}
+          {/* Ligne compte (DA §10) : avatar + nom + e-mail (au lieu du plan, redondant avec la carte). */}
           {user && (
             <div style={{ position: "relative" }} className="sidebar-item">
               <Link href="/dashboard/profile" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10,
-                padding: collapsed ? "8px 0" : "8px 10px",
+                padding: collapsed ? "8px 0" : "8px 9px",
                 justifyContent: collapsed ? "center" : "flex-start",
-                borderRadius: 9, overflow: "hidden", cursor: "pointer" }}>
+                borderRadius: 10, overflow: "hidden", cursor: "pointer", transition: "background 0.2s" }}
+                onMouseEnter={e => { if (!collapsed) e.currentTarget.style.background = "rgba(255,255,255,0.035)" }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent" }}>
                 <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg, ${G}, color-mix(in srgb, var(--accent) 75%, #000))`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#080808", flexShrink: 0 }}>
                   {(profile?.full_name || user.email || "?")[0].toUpperCase()}
                 </div>
                 {!collapsed && (
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: "#F5F0E8", fontSize: 12, fontWeight: 600, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <p style={{ color: "#e8e3da", fontSize: 12.5, fontWeight: 600, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {profile?.full_name || user.email?.split("@")[0] || "Utilisateur"}
                     </p>
-                    <p style={{ color: MUTED, fontSize: 10, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {profile?.plan ? `Plan ${profile.plan}` : "Plan Free"}
+                    <p style={{ color: MUTED, fontSize: 10.5, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {user.email || "—"}
                     </p>
                   </div>
                 )}
+                {!collapsed && <span aria-hidden="true" style={{ marginLeft: "auto", width: 6, height: 6, borderRight: "1.5px solid #7d766c", borderTop: "1.5px solid #7d766c", transform: "rotate(45deg)", flexShrink: 0 }} />}
               </Link>
               {collapsed && (
                 <div className="sidebar-tooltip" style={{

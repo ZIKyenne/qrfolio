@@ -912,8 +912,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   const sel = freeEls.find(e => e.id === selEl)
   const tmpls = filterTemplates(item)   // templates pertinents au support courant (pertinents d'abord)
-  // Édition libre TOUJOURS active en mode Studio (desktop) : plus de bascule Aperçu/Édition — on entre direct en édition.
-  const showFlat = libre && mode === "studio" && !isMobile   // réservée au desktop ; mobile = guidé simple
+  // UN SEUL aperçu sur desktop = l'éditeur où l'on déplace les éléments (plus de « guidé » non-déplaçable en parallèle).
+  // Mobile garde l'aperçu guidé simple (le drag fin y est inadapté).
+  const showFlat = !isMobile
   // Sélection contextuelle (#12/#32) — DESKTOP uniquement (onFocus n'est pas passé sur mobile : le tap y reste « plein écran »).
   // Cliquer un objet de l'aperçu (titre/QR/bouton/fond) ouvre son volet dédié : accordéon + scroll + surlignage.
   function focusPanel(panel: string) {
@@ -1094,7 +1095,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           </Panel>
 
           {/* Calques (mode Studio libre) — liste réordonnable des éléments : sélectionner, masquer, verrouiller, avant/arrière. */}
-          {libre && freeEls.length > 0 && (
+          {!isMobile && freeEls.length > 0 && (
             <Panel id="calques" title="Calques" resume={`${freeEls.length} élément${freeEls.length > 1 ? "s" : ""}`} open={open} setOpen={setOpen}>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[...freeEls].reverse().map(el => {

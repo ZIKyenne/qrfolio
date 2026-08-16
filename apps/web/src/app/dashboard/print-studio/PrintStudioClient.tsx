@@ -646,8 +646,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     if (L.eTypo) setETypo(L.eTypo)
     if (t.content.brand) setBrandText(t.content.brand)
     setMessage(t.content.title ?? ""); setSubtitle(t.content.subtitle ?? ""); setCtaText(t.content.cta ?? "")
-    // La composition pose des éléments libres, éditables uniquement sur desktop (canvas à plat) → on ne l'injecte pas sur mobile (sinon éléments non déplaçables/supprimables).
-    if (t.comp && !isMobile) addComposition(t.comp, STYLE_BY_ID[st])   // couleurs de la composition = style cible (pas l'ancien)
+    // Compositions (comp) NON auto-injectées : posées en absolu, elles chevauchaient le titre/QR du layout
+    // (surtout sur les supports ronds/petits). Elles restent disponibles à la demande dans « + Ajouter »
+    // (éditeur libre), où l'utilisateur les positionne. Le modèle rend un design propre, sans superposition.
   }
   function updateEl(id: string, patch: Partial<FreeEl>) { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...patch } : e)) }
   function deleteEl(id: string) { setFreeEls(els => els.filter(e => e.id !== id)); setSelEl(s => (s === id ? null : s)) }

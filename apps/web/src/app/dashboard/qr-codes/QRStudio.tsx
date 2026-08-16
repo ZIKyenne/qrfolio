@@ -2690,7 +2690,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         {/* Section label */}
         <div style={{ padding:"9px 16px 8px", borderBottom:"1px solid rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
-            <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Aperçu</p>
+            {/* Label « Aperçu » masqué sur mobile (désencombrement demandé). */}
+            {!isMobile && <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Aperçu</p>}
             {active && (() => {
               const st = active.pages?.status ?? "draft"
               const sCfg = ({ published:{dot:"#e8c877",label:"Publié"}, draft:{dot:"#c9a24d",label:"Brouillon"}, archived:{dot:"#F97316",label:"Archivé"}, paused:{dot:"var(--danger)",label:"En pause"} } as any)[st] ?? {dot:"#c9a24d",label:"Inconnu"}
@@ -2701,7 +2702,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               )
             })()}
           </div>
-          {active && (
+          {/* Sélecteur d'aperçu : desktop uniquement — sur mobile on ne garde que la vue QR (Carte/Affiche retirées). */}
+          {active && !isMobile && (
             <SegTabs ariaLabel="Aperçu" width="min(306px, 48vw)" fontSize={12.5}
               items={[{ key: "none", label: "QR", icon: <QrCode size={14}/> }, { key: "card", label: "Carte", icon: <CreditCard size={14}/> }, { key: "poster", label: "Affiche", icon: <ImageIcon size={14}/> }]}
               value={scene === "card" ? 1 : scene === "poster" ? 2 : 0}
@@ -2710,6 +2712,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         </div>
         {active ? (() => {
           const diag = getDiagnostic(diagFg || fg, diagBg || bg)
+          // Mobile : la vue est toujours « QR » (le sélecteur Carte/Affiche est masqué), même si un état desktop subsistait.
+          const previewScene = isMobile ? "none" : scene
           return (
             <div className="qr-scroll" style={{ display:"flex", flexDirection:"column", height:"100%", overflowY:"auto" }}>
 
@@ -2721,7 +2725,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 {/* Stage à TAILLE FIXE : QR / Carte / Affiche partagent le même bloc (aucun resize au changement). */}
                 <div style={{ position:"relative", width:isMobile?"min(290px,86vw)":290, height:isMobile?258:270, display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {/* Scène immersive (produit fini) — remplit le stage, centrée */}
-                  {scene !== "none" && (
+                  {previewScene !== "none" && (
                     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:"100%", height:"100%", animation:"mo-fade-up .35s ease" }}>
                       {!qrPng ? (
                         <div className="skeleton" style={{ width:200, height:200 }} />
@@ -2780,7 +2784,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       )}
                     </div>
                   )}
-                  <div style={{ display: scene==="none" ? "block" : "none", position:"relative", padding:isMobile?14:18, borderRadius:isMobile?20:24, background:bg, boxShadow:`0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent), 0 24px 60px rgba(0,0,0,0.8)`, transition:"background 0.3s", cursor:"pointer" }}
+                  <div style={{ display: previewScene==="none" ? "block" : "none", position:"relative", padding:isMobile?14:18, borderRadius:isMobile?20:24, background:bg, boxShadow:`0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent), 0 24px 60px rgba(0,0,0,0.8)`, transition:"background 0.3s", cursor:"pointer" }}
                     role="button" tabIndex={0} aria-label="Ouvrir l'aperçu" onKeyDown={onEnterSpace(() => setShowModal(true))} onClick={() => setShowModal(true)}>
                     {[["top","left"],["top","right"],["bottom","left"],["bottom","right"]].map(([v,h], i) => (
                       <div key={i} style={{ position:"absolute", [v]:10, [h]:10, width:18, height:18,
@@ -2892,8 +2896,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                     </div>
                   )}
 
-                  {/* Assistant : prochaine étape contextuelle selon l'état du QR (bandeau DA — filet doré animé, sans emoji, CTA translucide) */}
-                  {(() => {
+                  {/* Assistant : prochaine étape contextuelle selon l'état du QR (bandeau DA — filet doré animé, sans emoji, CTA translucide).
+                      Masqué sur mobile : pas de bandeau d'info sur téléphone (désencombrement demandé). */}
+                  {!isMobile && (() => {
                     const published = active.pages?.status === "published"
                     const scans = active.total_scans ?? 0
                     let text: ReactNode, cta: ReactNode

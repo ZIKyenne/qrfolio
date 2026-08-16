@@ -5,7 +5,7 @@ import QRStudioSwitch from "./QRStudioSwitch"
 import Particles from "@/components/Particles"
 import { accessibleOwnerIds } from "@/lib/team"
 import { pageLimit } from "@/lib/plans"
-import { Plus, QrCode, Link2 } from "lucide-react"
+import { Plus, Link2 } from "lucide-react"
 
 export const metadata: Metadata = { title: "QR Codes Studio - QRowg" }
 
@@ -69,9 +69,23 @@ export default async function QRCodesPage() {
 
           {/* Identite */}
           <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, color-mix(in srgb, var(--accent) 20%, transparent), color-mix(in srgb, var(--accent) 8%, transparent))", border: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px color-mix(in srgb, var(--accent) 12%, transparent)" }}>
-              <QrCode size={19} color="var(--accent)"/>
-            </div>
+            {/* Marque QR (DA §10) : glyphe unique (3 repères + matrice de données), tuile dorée animée
+                (halo qui respire + voile lumineux toutes les 5 s + un module qui s'allume). */}
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, flex: "none" }}>
+              <span aria-hidden="true" className="om-halo" style={{ position: "absolute", inset: -5, borderRadius: 16, background: "radial-gradient(60% 60% at 50% 50%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 70%)", filter: "blur(5px)" }} />
+              <span style={{ position: "relative", display: "inline-block", overflow: "hidden", width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 5%, transparent))", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)" }}>
+                <span aria-hidden="true" className="om-sweep" style={{ position: "absolute", top: "-20%", bottom: "-20%", left: 0, width: "26%", background: "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.5), rgba(255,255,255,0))" }} />
+                {/* 3 repères (anneau + module plein centré) */}
+                <span style={{ position: "absolute", left: 11, top: 11, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 8, height: 8, border: "1.5px solid var(--accent)", borderRadius: 2 }}><span style={{ width: 3, height: 3, background: "var(--accent)", borderRadius: 0.5 }} /></span>
+                <span style={{ position: "absolute", right: 11, top: 11, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 8, height: 8, border: "1.5px solid var(--accent)", borderRadius: 2 }}><span style={{ width: 3, height: 3, background: "var(--accent)", borderRadius: 0.5 }} /></span>
+                <span style={{ position: "absolute", left: 11, bottom: 11, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 8, height: 8, border: "1.5px solid var(--accent)", borderRadius: 2 }}><span style={{ width: 3, height: 3, background: "var(--accent)", borderRadius: 0.5 }} /></span>
+                {/* Matrice de données 2×2 (bas-droite) — un module à .55, un qui clignote */}
+                <span style={{ position: "absolute", right: 16, bottom: 16, width: 3.5, height: 3.5, background: "color-mix(in srgb, var(--accent) 55%, transparent)", borderRadius: 0.5 }} />
+                <span style={{ position: "absolute", right: 11, bottom: 16, width: 3.5, height: 3.5, background: "var(--accent)", borderRadius: 0.5 }} />
+                <span style={{ position: "absolute", right: 16, bottom: 11, width: 3.5, height: 3.5, background: "var(--accent)", borderRadius: 0.5 }} />
+                <span aria-hidden="true" className="om-blink" style={{ position: "absolute", right: 11, bottom: 11, width: 3.5, height: 3.5, background: "var(--accent)", borderRadius: 0.5 }} />
+              </span>
+            </span>
             <div>
               <h1 style={{ fontFamily: "Fraunces, serif", fontSize: 22, color: "#F5F0E8", fontWeight: 700, margin: 0, lineHeight: 1.15 }}>
                 QR Codes Studio

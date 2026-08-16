@@ -17,6 +17,24 @@ import { accessibleOwnerIds } from "@/lib/team"
 const DEFAULT_ACCENT = "#C9A84C"
 const MUTED = "#A8A190"
 
+// Marque QR partagée (DA §10) : même glyphe que la tuile du header (3 repères + matrice de données 2×2),
+// à l'échelle nav (repères 7×7 / modules 2.5px). En currentColor → suit l'état de l'item (actif or / survol clair).
+function QRNavGlyph() {
+  const finder = { position: "absolute" as const, display: "inline-flex" as const, alignItems: "center" as const, justifyContent: "center" as const, width: 7, height: 7, border: "1.5px solid currentColor", borderRadius: 1.5 }
+  const dot    = { position: "absolute" as const, width: 2.5, height: 2.5, background: "currentColor" }
+  return (
+    <span aria-hidden="true" style={{ position: "relative", display: "inline-block", width: 18, height: 18, flexShrink: 0 }}>
+      <span style={{ ...finder, left: 0, top: 0 }}><span style={{ width: 2, height: 2, background: "currentColor" }} /></span>
+      <span style={{ ...finder, right: 0, top: 0 }}><span style={{ width: 2, height: 2, background: "currentColor" }} /></span>
+      <span style={{ ...finder, left: 0, bottom: 0 }}><span style={{ width: 2, height: 2, background: "currentColor" }} /></span>
+      <span style={{ ...dot, right: 4.5, bottom: 4.5, opacity: 0.55 }} />
+      <span style={{ ...dot, right: 0, bottom: 4.5 }} />
+      <span style={{ ...dot, right: 4.5, bottom: 0 }} />
+      <span style={{ ...dot, right: 0, bottom: 0 }} />
+    </span>
+  )
+}
+
 const NAV_ITEMS = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", exact: true },
   { href: "/dashboard/templates", icon: FileText, label: "Templates" },
@@ -228,7 +246,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {/* Filet doré à gauche de l'item actif (DA §08) */}
                     {active && !collapsed && <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 9, bottom: 9, width: 2, borderRadius: 2, background: `linear-gradient(180deg, ${G}, color-mix(in srgb, var(--accent) 70%, #000))` }} />}
                     <div style={{ position: "relative", flexShrink: 0, display: "flex" }}>
-                      <Icon size={16} />
+                      {href === "/dashboard/qr-codes" ? <QRNavGlyph /> : <Icon size={16} />}
                       {href === "/dashboard/leads" && unreadLeads > 0 && (
                         <span style={{ position: "absolute", top: -5, right: collapsed ? -5 : -6, minWidth: 15, height: 15, padding: "0 4px", borderRadius: 8, background: "#EF4444", color: "#fff", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, boxShadow: "0 0 0 2px #0A0A0A" }}>{unreadLeads > 99 ? "99+" : unreadLeads}</span>
                       )}

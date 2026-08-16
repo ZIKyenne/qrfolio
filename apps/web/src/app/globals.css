@@ -330,6 +330,15 @@ button:not(:disabled):active { transform: scale(.97); }
 .om-bar    { animation:omBar 2.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .om-breath, .om-bar { animation:none !important; } }
 
+/* Corrections DA §10 — marque QR du header : tuile animée (voile lumineux 5s + halo qui respire + un module qui s'allume) */
+@keyframes omSweep { 0% { transform:translateX(-140%) skewX(-18deg); opacity:0; } 12% { opacity:.9; } 40%,100% { transform:translateX(240%) skewX(-18deg); opacity:0; } }
+@keyframes omHalo  { 0%,100% { opacity:.3; transform:scale(.94); } 50% { opacity:.75; transform:scale(1.06); } }
+@keyframes omBlink { 0%,62%,100% { opacity:.35; } 72%,88% { opacity:1; } }
+.om-sweep { animation:omSweep 5s cubic-bezier(.4,0,.2,1) infinite; }
+.om-halo  { animation:omHalo 6s ease-in-out infinite; }
+.om-blink { animation:omBlink 5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .om-sweep, .om-halo, .om-blink { animation:none !important; } .om-sweep { opacity:0 !important; } }
+
 /* Corrections DA §04 — Recherche & filtres (page QR Codes Studio) : champs charbon chaud, rayon 11, focus doré */
 .da-field { background:#100e0c; border:1px solid #26211a; border-radius:11px; color:#F5F0E8; caret-color:#e8c877; outline:none; transition:border-color .2s ease, box-shadow .2s ease; }
 .da-field::placeholder { color:#7d766c; }

@@ -1160,8 +1160,24 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               )
             )}
             <input ref={qrPngInput} type="file" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
-            {/* Taille du QR = barre continue (pilote qrScale ; le palier de base reste « moyen »). */}
-            <Field label="Taille du QR"><Range value={qrScale} min={0.6} max={1.7} step={0.02} onChange={setQrScale} hint={`${Math.round(item.qrMm * size.factor * qrScale)} mm${preflight.scanDistanceM ? ` · lisible ~${preflight.scanDistanceM} m` : ""}`} /></Field>
+            {/* Taille du QR : 3 tailles sémantiques (Compact/Recommandé/Maximum) + barre fine, bornée à une
+                plage SÛRE par support (anti-overflow : le QR ne peut plus écraser la composition — audit §6/§8). */}
+            {(() => {
+              const minDimMm = Math.min(trimWidthMm(item), item.hMm)
+              const qMax = Math.max(1.05, Math.min(2.2, (0.72 * minDimMm) / item.qrMm))
+              const qMin = Math.max(0.55, Math.min(0.95, 20 / item.qrMm))
+              const clampS = (v: number) => Math.min(qMax, Math.max(qMin, v))
+              const sem = qrScale <= qMin + (1 - qMin) * 0.5 ? "compact" : qrScale >= 1 + (qMax - 1) * 0.5 ? "max" : "reco"
+              const chips: [string, string, number][] = [["compact", "Compact", clampS(qMin)], ["reco", "Recommandé", clampS(1)], ["max", "Maximum", qMax]]
+              return <Field label="Taille du QR">
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 6 }}>{chips.map(([cid, lab, val]) => (
+                    <button key={cid} onClick={() => setQrScale(val)} className="ps-chip" style={{ flex: 1, background: sem === cid ? C.goldSoft : "transparent", border: `1px solid ${sem === cid ? C.gold : C.hairline}`, color: sem === cid ? C.gold : C.fg, borderRadius: 10, padding: "8px 4px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{lab}</button>
+                  ))}</div>
+                  <Range value={clampS(qrScale)} min={qMin} max={qMax} step={0.02} onChange={v => setQrScale(clampS(v))} hint={`${Math.round(item.qrMm * size.factor * qrScale)} mm${preflight.scanDistanceM ? ` · lisible ~${preflight.scanDistanceM} m` : ""}`} />
+                </div>
+              </Field>
+            })()}
             <Field label="Pastille"><Seg value={qrBadge} options={["carre", "cercle", "aucune"]} onPick={setQrBadge} labels={["Carré", "Cercle", "Aucune"]} /></Field>
             {/* Score QR en temps réel (§4/§10) — lisibilité mesurée, pas décorative. */}
             {(() => {
@@ -1347,7 +1363,22 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                       : <button onClick={() => qrPngInput.current?.click()} style={{ marginTop: 8, width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer un PNG</button>)}
                 <input ref={qrPngInput} type="file" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
               </Field>
-              <Field label="Taille du QR"><Range value={qrScale} min={0.6} max={1.7} step={0.02} onChange={setQrScale} hint={`${Math.round(item.qrMm * size.factor * qrScale)} mm${preflight.scanDistanceM ? ` · ~${preflight.scanDistanceM} m` : ""}`} /></Field>
+              {(() => {
+                const minDimMm = Math.min(trimWidthMm(item), item.hMm)
+                const qMax = Math.max(1.05, Math.min(2.2, (0.72 * minDimMm) / item.qrMm))
+                const qMin = Math.max(0.55, Math.min(0.95, 20 / item.qrMm))
+                const clampS = (v: number) => Math.min(qMax, Math.max(qMin, v))
+                const sem = qrScale <= qMin + (1 - qMin) * 0.5 ? "compact" : qrScale >= 1 + (qMax - 1) * 0.5 ? "max" : "reco"
+                const chips: [string, string, number][] = [["compact", "Compact", clampS(qMin)], ["reco", "Recommandé", clampS(1)], ["max", "Maximum", qMax]]
+                return <Field label="Taille du QR">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 6 }}>{chips.map(([cid, lab, val]) => (
+                      <button key={cid} onClick={() => setQrScale(val)} className="ps-chip" style={{ flex: 1, background: sem === cid ? C.goldSoft : "transparent", border: `1px solid ${sem === cid ? C.gold : C.hairline}`, color: sem === cid ? C.gold : C.fg, borderRadius: 10, padding: "8px 4px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{lab}</button>
+                    ))}</div>
+                    <Range value={clampS(qrScale)} min={qMin} max={qMax} step={0.02} onChange={v => setQrScale(clampS(v))} hint={`${Math.round(item.qrMm * size.factor * qrScale)} mm${preflight.scanDistanceM ? ` · ~${preflight.scanDistanceM} m` : ""}`} />
+                  </div>
+                </Field>
+              })()}
               <Field label="Pastille"><Seg value={qrBadge} options={["carre", "cercle", "aucune"]} onPick={setQrBadge} labels={["Carré", "Cercle", "Aucune"]} /></Field>
               {(() => {
                 const qc = preflight.checks.filter(c => ["contrast", "qrsize", "quiet"].includes(c.id) && c.status !== "na")
@@ -1374,7 +1405,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </div>
           )}
           <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
-            <button onClick={() => setControl(true)} title="Voir la vérification" style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, cursor: "pointer", color: ok ? C.ok : C.bad, background: ok ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${ok ? "color-mix(in srgb,var(--success) 30%,transparent)" : "var(--danger-border)"}`, borderRadius: 999, padding: "8px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{ok ? <><ShieldCheck size={14} /> Prêt à imprimer</> : <><AlertTriangle size={14} /> {preflight.checks.filter(c => c.status === "fail").length} à corriger</>}</button>
+            {(() => {
+              // Statut d'export à 3 états (audit Écran 2 « à conserver ») : Prêt / À vérifier / Bloquant.
+              const fails = preflight.checks.filter(c => c.status === "fail").length
+              const warns = preflight.checks.filter(c => c.status === "warn").length
+              const st = fails ? "block" : warns ? "warn" : "ready"
+              const col = st === "ready" ? C.ok : st === "warn" ? C.gold : C.bad
+              const bg = st === "ready" ? "var(--success-bg)" : st === "warn" ? C.goldSoft : "var(--danger-bg)"
+              const bd = st === "ready" ? "color-mix(in srgb,var(--success) 30%,transparent)" : st === "warn" ? C.gold : "var(--danger-border)"
+              const label = st === "ready" ? "Prêt à imprimer" : st === "warn" ? `À vérifier · ${warns}` : `${fails} à corriger`
+              return <button onClick={() => setControl(true)} title="Voir la vérification" style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, cursor: "pointer", color: col, background: bg, border: `1px solid ${bd}`, borderRadius: 999, padding: "8px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{st === "ready" ? <ShieldCheck size={14} /> : <AlertTriangle size={14} />} {label}</button>
+            })()}
             <Button variant="primary" onClick={() => setControl(true)}>Vérifier & exporter</Button>
           </div>
         </div>

@@ -1606,6 +1606,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           onIcon={(n) => { addFreeIcon(n); setAddOpen(false) }} />
       </Modal>
 
+      {/* État CONTRÔLÉ avant l'ouverture de la fenêtre d'impression (review P1) : plus de « flash blanc = plantage ».
+          Écran-only (le CSS d'impression masque body * -> n'apparaît pas dans le PDF). */}
+      {(printing || multiPrinting) && (
+        <div aria-live="polite" style={{ position: "fixed", inset: 0, zIndex: 90, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, background: "rgba(8,8,8,0.88)", backdropFilter: "blur(4px)" }}>
+          <style>{`@keyframes psspin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.ps-spin{animation:none!important}}`}</style>
+          <div className="ps-spin" style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.hairline}`, borderTopColor: C.gold, animation: "psspin .8s linear infinite" }} />
+          <div style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600, color: C.fg }}>Préparation de votre fichier PDF…</div>
+          <div style={{ fontSize: 12.5, color: C.fgMuted, maxWidth: 320, textAlign: "center", lineHeight: 1.5 }}>La fenêtre d'impression va s'ouvrir — choisissez <b style={{ color: C.fg }}>« Enregistrer au format PDF »</b> comme destination.</div>
+        </div>
+      )}
+
       {/* Rendu de la PLANCHE multi-supports — monté seulement pendant l'impression. */}
       {multiPrinting && <MultiSheet items={campaignItems} design={designProps} />}
 

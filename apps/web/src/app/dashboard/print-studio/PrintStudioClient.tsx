@@ -2230,19 +2230,25 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
     const clamp = (v: number) => Math.max(0, Math.min(1, v))
     let nx = clamp(d.ox + (e.clientX - d.sx) / r.width)
     let ny = clamp(d.oy + (e.clientY - d.sy) / r.height)
-    const TH = 7  // aimantation (px) : centre du support, marges de sécurité, et CENTRE des autres éléments (guides dorés).
+    const TH = 7  // aimantation (px) : centre/marges du support + BORDS des autres éléments (avec écart mini) → guides dorés.
     const mX = (item.margin / wmm) * w, mY = (item.margin / item.hMm) * h
-    const xc = [w / 2, mX, w - mX], yc = [h / 2, mY, h - mY]
+    const GAP = Math.max(6, Math.round(unit * 0.03))   // écart minimal entre éléments (snap aux bords + gap)
+    // Cibles = position du bord GAUCHE/HAUT de l'élément déplacé → [cible, ligne-guide à afficher].
+    const xt: [number, number][] = [[w / 2 - d.wpx / 2, w / 2], [mX, mX], [w - mX - d.wpx, w - mX]]
+    const yt: [number, number][] = [[h / 2 - d.hpx / 2, h / 2], [mY, mY], [h - mY - d.hpx, h - mY]]
     for (const el of freeEls) {
       if (el.hidden || el.id === d.id) continue
       const ewp = (el.kind === "text" || el.kind === "shape") ? el.w * w : unit * el.size
       const ehp = el.kind === "shape" ? (el.h2 ?? 0.12) * h : el.kind === "text" ? unit * el.size * 1.2 : unit * el.size
-      xc.push(el.x * w + ewp / 2); yc.push(el.y * h + ehp / 2)
+      const nl = el.x * w, nr = nl + ewp, nt = el.y * h, nb = nt + ehp
+      // centre · alignements de bord (gauche/droite, haut/bas) · placement avec écart (à côté / au-dessus / en-dessous)
+      xt.push([nl + ewp / 2 - d.wpx / 2, nl + ewp / 2], [nl, nl], [nr - d.wpx, nr], [nr + GAP, nr + GAP], [nl - GAP - d.wpx, nl - GAP])
+      yt.push([nt + ehp / 2 - d.hpx / 2, nt + ehp / 2], [nt, nt], [nb - d.hpx, nb], [nb + GAP, nb + GAP], [nt - GAP - d.hpx, nt - GAP])
     }
-    let cx = nx * w + d.wpx / 2, cy = ny * h + d.hpx / 2
     let gx: number | null = null, gy: number | null = null
-    for (const c of xc) if (Math.abs(cx - c) < TH) { nx = clamp((c - d.wpx / 2) / w); cx = c; gx = c; break }
-    for (const c of yc) if (Math.abs(cy - c) < TH) { ny = clamp((c - d.hpx / 2) / h); cy = c; gy = c; break }
+    const leftPx = nx * w, topPx = ny * h
+    let bestX = TH; for (const [p, g] of xt) { const q = Math.abs(leftPx - p); if (q < bestX) { bestX = q; nx = clamp(p / w); gx = g } }
+    let bestY = TH; for (const [p, g] of yt) { const q = Math.abs(topPx - p); if (q < bestY) { bestY = q; ny = clamp(p / h); gy = g } }
     // Bounding (P0 review) : l'élément reste dans la ZONE IMPRIMABLE (marges de sécurité) — plus de sortie de cadre.
     const loX = mX / w, hiX = Math.max(loX, (w - mX - d.wpx) / w)
     const loY = mY / h, hiY = Math.max(loY, (h - mY - d.hpx) / h)
@@ -2251,7 +2257,30 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
     else setFreeEls(els => els.map(x => (x.id === d.id ? { ...x, x: nx, y: ny } : x)))
     setGuide({ x: gx, y: gy })
   }
-  const onUp = () => { drag.current = null; rez.current = null; setGuide({ x: null, y: null }) }
+  // Anti-collision DOUCE (P0 review) : à la POSE, si l'élément recouvre un voisin, on le glisse juste EN-DESSOUS
+  // (+ écart), borné à la zone imprimable. Déterministe, une seule fois (pas de tremblement pendant le drag).
+  function resolveOverlap(id: string) {
+    setFreeEls(els => {
+      const me = els.find(e => e.id === id); if (!me || me.hidden) return els
+      const box = (el: FreeEl) => {
+        const ewp = (el.kind === "text" || el.kind === "shape") ? el.w * w : unit * el.size
+        const ehp = el.kind === "shape" ? (el.h2 ?? 0.12) * h : el.kind === "text" ? unit * el.size * 1.2 : unit * el.size
+        return { l: el.x * w, t: el.y * h, r: el.x * w + ewp, b: el.y * h + ehp, ehp }
+      }
+      const m = box(me)
+      let maxBottom = -1
+      for (const el of els) {
+        if (el.id === id || el.hidden) continue
+        const b = box(el)
+        if (m.l < b.r && m.r > b.l && m.t < b.b && m.b > b.t) maxBottom = Math.max(maxBottom, b.b)
+      }
+      if (maxBottom < 0) return els
+      const GAP = Math.max(6, Math.round(unit * 0.03)), my2 = (item.margin / item.hMm) * h
+      const newTop = Math.min(Math.max(my2, maxBottom + GAP), Math.max(my2, h - my2 - m.ehp))
+      return els.map(e => e.id === id ? { ...e, y: newTop / h } : e)
+    })
+  }
+  const onUp = () => { const d = drag.current; if (d && d.id !== "__qr__") resolveOverlap(d.id); drag.current = null; rez.current = null; setGuide({ x: null, y: null }) }
   return (
     <div ref={wrapRef} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
     <div ref={ref} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={onUp} onPointerDown={() => setSelEl(null)}

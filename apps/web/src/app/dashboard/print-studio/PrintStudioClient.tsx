@@ -267,7 +267,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [flashPanel, setFlashPanel] = useState<string | null>(null)   // volet à surligner brièvement après une sélection contextuelle (#12/#32)
   const [mode, setMode] = useState<"simple" | "studio">("studio")   // #34 : Studio (édition libre) par défaut ; Simple = essentiel. Desktop uniquement, persisté localStorage.
   const [moreMenu, setMoreMenu] = useState(false)   // menu « ··· » : actions secondaires (Décliner/Planche) hors du header principal
-  useEffect(() => { try { const m = localStorage.getItem("qrowg-print-mode"); if (m === "studio" || m === "simple") setMode(m) } catch {} }, [])
+  // Mode unique « Studio » : la bascule Simple/Studio a été retirée (un seul canvas, sûr par conception).
   const [showAllColors, setShowAllColors] = useState(false)
   const [control, setControl] = useState(false)           // écran « contrôle avant export »
   const [declineOpen, setDeclineOpen] = useState(false)    // sélecteur « décliner sur un autre support »
@@ -659,6 +659,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   function undoAllMovable() {
     setContentFree(false); setFreeEls(els => els.filter(e => !e.id.startsWith("fc_"))); setSelEl(null)
   }
+  // « ✨ Réorganiser » (P0 review) : récupération 1 clic — le contenu principal (titre/QR/bouton) revient à la mise en
+  // page automatique propre ; les éléments AJOUTÉS par l'utilisateur (+ Ajouter) sont conservés.
+  function reorganize() {
+    setContentFree(false); setFreeEls(els => els.filter(e => !e.id.startsWith("fc_")))
+    setQrFree(false); setQrDx(0); setQrDy(0); setBlockY(0); setSelEl(null)
+  }
   // Appliquer un TEMPLATE (§7) : look + contenu suggéré (+ composition), recoercé au support. Annulable (undo).
   function applyTemplate(t: PrintTemplate, variant?: TemplateVariant) {
     const L = t.look
@@ -955,14 +961,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       <header className="ps-hdr" style={{ maxWidth: 1320, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13, flexShrink: 0 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          {/* #34 : bascule Simple/Studio (desktop). Simple = essentiel ; Studio révèle l'avancé (design fin, styles, édition libre, planche). */}
-          {!isMobile && (
-            <div style={{ display: "inline-flex", gap: 3, background: C.surfaceUp, borderRadius: 999, padding: 3 }} role="tablist" aria-label="Mode d'édition">
-              {(["simple", "studio"] as const).map(m => (
-                <button key={m} role="tab" aria-selected={mode === m} onClick={() => applyMode(m)} title={m === "simple" ? "Essentiel — l'indispensable" : "Studio — tous les réglages avancés"} style={{ minHeight: 34, padding: "0 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: mode === m ? 800 : 600, background: mode === m ? C.gold : "transparent", color: mode === m ? "#0A0A0A" : C.fgMuted }}>{m === "simple" ? "Simple" : "Studio"}</button>
-              ))}
-            </div>
-          )}
+          {/* Bascule Simple/Studio retirée : un seul mode d'édition (canvas libre borné, sûr par conception). */}
           {/* Mobile = simplifié : on masque annuler/rétablir · Décliner · Planche (fonctions avancées desktop). */}
           {!isMobile && <>
             <div style={{ display: "inline-flex", gap: 4 }}>
@@ -1034,6 +1033,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <button onClick={addFreeText} style={chipStyle(false)}>＋ Texte</button>
               <button onClick={() => { setAddSearch(""); setAddOpen(true) }} style={chipStyle(true)}><Plus size={14} style={{ marginRight: 4, verticalAlign: "-2px" }} />Ajouter</button>
               <button onClick={contentFree ? undoAllMovable : makeAllMovable} title={contentFree ? "Revenir à la mise en page automatique" : "Rendre le titre, le QR et le bouton déplaçables"} style={chipStyle(contentFree)}>{contentFree ? "↩ Remettre en page" : "⤢ Tout déplacer"}</button>
+              <button onClick={reorganize} title="Remettre le titre, le QR et le bouton dans une mise en page propre" style={chipStyle(false)}>✨ Réorganiser</button>
             </div>
             {sel && (isMobile
               ? <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}><button onClick={() => setSheetOpen(true)} style={chipStyle(true)}>Modifier l'élément</button></div>
@@ -2241,6 +2241,10 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
     let gx: number | null = null, gy: number | null = null
     for (const c of xc) if (Math.abs(cx - c) < TH) { nx = clamp((c - d.wpx / 2) / w); cx = c; gx = c; break }
     for (const c of yc) if (Math.abs(cy - c) < TH) { ny = clamp((c - d.hpx / 2) / h); cy = c; gy = c; break }
+    // Bounding (P0 review) : l'élément reste dans la ZONE IMPRIMABLE (marges de sécurité) — plus de sortie de cadre.
+    const loX = mX / w, hiX = Math.max(loX, (w - mX - d.wpx) / w)
+    const loY = mY / h, hiY = Math.max(loY, (h - mY - d.hpx) / h)
+    nx = Math.max(loX, Math.min(hiX, nx)); ny = Math.max(loY, Math.min(hiY, ny))
     if (d.id === "__qr__") onQrMove(nx, ny)
     else setFreeEls(els => els.map(x => (x.id === d.id ? { ...x, x: nx, y: ny } : x)))
     setGuide({ x: gx, y: gy })

@@ -3328,36 +3328,13 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 })}
                 <div aria-hidden="true" className="qv-ind" style={{ position: "absolute", left: 0, bottom: -1, height: 2, width: "calc(100% / 3)", transform: `translateX(calc(${ti} * 100%))`, transition: "transform .38s cubic-bezier(.2,.85,.2,1)", background: "linear-gradient(90deg, rgba(201,162,77,.35), #e8c877, rgba(201,162,77,.35))", borderRadius: 2, boxShadow: "0 0 12px rgba(232,200,119,.4)" }} />
               </div>
-              {hints[ti] && <div style={{ padding: "10px 14px 0", fontSize: 12.5, lineHeight: 1.5, color: "#8a8177" }}>{hints[ti]}</div>}
+              {/* Légende d'onglet : desktop uniquement (mobile désencombré — la légende du mode suffit). */}
+              {!isMobile && hints[ti] && <div style={{ padding: "10px 14px 0", fontSize: 12.5, lineHeight: 1.5, color: "#8a8177" }}>{hints[ti]}</div>}
             </div>
           )
         })()}
 
-        {/* Fil guidé (mobile) : étape courante + Suivant, sans bloquer les onglets */}
-        {isMobile && active && (() => {
-          const steps = ["style","export","supports"] as const
-          const labels: Record<string,string> = { style:"Style", supports:"Supports", export:"Télécharger" }
-          const idx = steps.indexOf(activeTab as any)
-          const next = steps[idx + 1]
-          return (
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, padding:"9px 14px", borderBottom:"1px solid rgba(255,255,255,0.05)", background:"rgba(255,255,255,0.015)" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-                {steps.map((_, i) => (
-                  <span key={i} style={{ width:i===idx?16:6, height:6, borderRadius:3, background:i<=idx?G:"rgba(255,255,255,0.15)", transition:"all 0.25s" }}/>
-                ))}
-                <span style={{ color:MUTED, fontSize:11, marginLeft:4 }}>Étape {idx+1}/3 · {labels[activeTab]}</span>
-              </div>
-              {next ? (
-                <button type="button" onClick={() => setActiveTab(next)}
-                  style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"6px 13px", borderRadius:8, background:"color-mix(in srgb, var(--accent) 14%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 35%, transparent)", color:G, fontSize:11.5, fontWeight:700, cursor:"pointer" }}>
-                  {labels[next]} <ArrowRight size={12}/>
-                </button>
-              ) : (
-                <span style={{ color:"var(--success)", fontSize:11, fontWeight:600 }}>Dernière étape ✓</span>
-              )}
-            </div>
-          )
-        })()}
+        {/* Fil guidé mobile (« Étape 1/3 » + Suivant) retiré : redondant avec les onglets tappables au-dessus. */}
 
         {activeTab === "style" && active && (
           <div className="qr-scroll" style={{ display:"flex", flexDirection:"column", flex:1, overflow:"hidden" }}>

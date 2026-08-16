@@ -367,6 +367,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     window.addEventListener("afterprint", after)
     return () => { clearTimeout(t); window.removeEventListener("afterprint", after) }
   }, [multiPrinting])
+  // Focus canvas (review P1) : pendant l'ÉDITION (phase studio, desktop), on replie la nav globale pour libérer
+  // le canvas — via le Mode Focus partagé du dashboard (ne persiste PAS la préférence sidebar ; restaurée à la sortie).
+  useEffect(() => {
+    if (isMobile) return
+    try { window.dispatchEvent(new CustomEvent("qrowg:builder-focus", { detail: phase === "studio" })) } catch {}
+    return () => { try { window.dispatchEvent(new CustomEvent("qrowg:builder-focus", { detail: false })) } catch {} }
+  }, [phase, isMobile])
   function persistPresets(next: { id: string; name: string; cfg: Record<string, any> }[]) { setSavedPresets(next); try { localStorage.setItem("qrowg-print-presets", JSON.stringify(next)) } catch {} }
 
   // QR existants de l'utilisateur (codes statiques liés à une page + QR instantanés dynamiques/statiques).

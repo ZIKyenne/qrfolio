@@ -1296,7 +1296,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               )}
             </Field>
             <Field label="Cadre"><Seg value={frame} options={["aucun", "filet", "double", "coins"]} onPick={setFrame} labels={["Aucun", "Filet", "Double", "Coins"]} /></Field>
-            <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.6} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>
+            <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.4} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>
             <Field label="Air autour"><Range value={ePad} min={0.5} max={1.6} step={0.05} onChange={setEPad} hint={ePad < 0.85 ? "serré" : ePad > 1.2 ? "large" : "équilibré"} /></Field>
             {layout.content !== "band" && <Field label="Placement vertical"><Range value={blockY} min={-1} max={1} step={0.1} onChange={setBlockY} hint={blockY < -0.1 ? "vers le haut" : blockY > 0.1 ? "vers le bas" : "centré"} /></Field>}
             <Field label="Arrondi"><Seg value={eCorner} options={["vif", "adouci", "rond"]} onPick={setECorner} labels={["Vif", "Adouci", "Rond"]} /></Field>
@@ -1374,7 +1374,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <Field label="Titre"><input {...textInputProps} value={message} onChange={e => setMessage(e.target.value)} placeholder="Titre principal…" style={inputStyle} />{messages.length > 0 && <SuggRow items={messages} active={title} onPick={setMessage} />}</Field>
               <Field label="Sous-titre (optionnel)"><input {...textInputProps} value={subtitle} onChange={e => setSubtitle(e.target.value)} placeholder="Une ligne d'accroche…" style={inputStyle} /></Field>
               <Field label="Bouton"><input {...textInputProps} value={ctaText} onChange={e => setCtaText(e.target.value)} placeholder={item.cta} style={inputStyle} /></Field>
-              <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.6} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>
+              <Field label="Taille du titre"><Range value={eTitle} min={0.7} max={1.4} step={0.05} onChange={setETitle} hint={`${Math.round(eTitle * 100)} %`} /></Field>
               {layout.content !== "band" && <Field label="Position verticale"><Range value={blockY} min={-1} max={1} step={0.1} onChange={setBlockY} hint={blockY < -0.1 ? "vers le haut" : blockY > 0.1 ? "vers le bas" : "centré"} /></Field>}
               <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={v => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
               <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
@@ -2215,12 +2215,14 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
     const z = rez.current
     if (z) {
       const dx = (e.clientX - z.sx) / r.width, dy = (e.clientY - z.sy) / r.height
+      const mfx = item.margin / wmm, mfy = item.margin / item.hMm   // marges de sécurité (fraction)
       setFreeEls(els => els.map(x => {
         if (x.id !== z.id) return x
-        if (z.kind === "shape") return { ...x, w: cl(z.sw + dx, 0.03, 1), h2: cl(z.sh + dy, 0.01, 1) }
-        if (z.kind === "icon") return { ...x, size: cl(z.ss + (dx + dy) / 2, 0.03, 0.6) }
-        const dd = (dx + dy) / 2   // texte : police + largeur suivent le glissement (uniforme)
-        return { ...x, size: cl(z.ss + dd, 0.02, 0.4), w: cl(z.sw + dd * 2, 0.05, 1) }
+        // Bornes de redimensionnement (P0 review) : jamais au-delà de la zone imprimable, ni assez gros pour tout recouvrir.
+        if (z.kind === "shape") return { ...x, w: cl(z.sw + dx, 0.03, Math.max(0.06, 1 - mfx - x.x)), h2: cl(z.sh + dy, 0.01, Math.max(0.03, 1 - mfy - x.y)) }
+        if (z.kind === "icon") { const m = Math.max(0.06, Math.min(0.4, 1 - mfx - x.x, 1 - mfy - x.y)); return { ...x, size: cl(z.ss + (dx + dy) / 2, 0.03, m) } }
+        const dd = (dx + dy) / 2   // texte : police plafonnée + largeur bornée à la zone imprimable
+        return { ...x, size: cl(z.ss + dd, 0.02, 0.2), w: cl(z.sw + dd * 2, 0.05, Math.max(0.1, 1 - mfx - x.x)) }
       }))
       return
     }

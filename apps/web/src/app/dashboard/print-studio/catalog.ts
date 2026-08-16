@@ -54,6 +54,23 @@ const STYLES: Style[] = [
   { id: 'portfolio', label: 'Portfolio', bg: '#15181C', ink: '#F0F2F4', accent: '#D9A441', title: 'Raleway', body: 'Montserrat', qr: '#0A0A0A', qrBg: '#F8F8F8' },
   { id: 'wifivert', label: 'Wifi Vert', bg: '#0E1A16', ink: '#EAF4F0', accent: '#2E8B7B', title: 'Montserrat', body: 'Poppins', qr: '#0F3D2E', qrBg: '#FFFFFF' },
   { id: 'guide', label: 'Guide Étapes', bg: '#F3F0E9', ink: '#2A2419', accent: '#3FA796', title: 'Lora', body: 'Raleway', qr: '#0A0A0A', qrBg: '#FFFFFF' },
+  // ── Lot 4 : socle sobre ──
+  { id: 'papier', label: 'Papier', bg: '#F7F3EA', ink: '#23201B', accent: '#23201B', title: 'Fraunces', body: 'Inter', qr: '#141210', qrBg: '#FFFFFF' },
+  { id: 'lin', label: 'Lin', bg: '#EFE8DB', ink: '#453C30', accent: '#8A7357', title: 'Georgia', body: 'Inter', qr: '#2A241C', qrBg: '#FFFFFF' },
+  { id: 'craie', label: 'Craie', bg: '#FCFBF8', ink: '#202020', accent: '#6E6E6E', title: 'Inter', body: 'Inter', qr: '#0A0A0A', qrBg: '#F4F4F4' },
+  { id: 'ardoise', label: 'Ardoise', bg: '#23262B', ink: '#E9ECEF', accent: '#9FB4C7', title: 'Inter', body: 'Inter', qr: '#0A0A0A', qrBg: '#F2F5F7' },
+  { id: 'encre', label: 'Encre', bg: '#14161B', ink: '#EDEFF3', accent: '#C9CDD6', title: 'Georgia', body: 'Inter', qr: '#0A0A0A', qrBg: '#FFFFFF' },
+  // ── Lot 4 : série caractère ──
+  { id: 'terracotta', label: 'Terracotta', bg: '#F3E2D4', ink: '#4E2D1A', accent: '#C05B2E', title: 'Fraunces', body: 'DM Sans', qr: '#3A2114', qrBg: '#FFFFFF' },
+  { id: 'matcha', label: 'Matcha', bg: '#1E2A21', ink: '#E8F0E3', accent: '#8FBF6F', title: 'Georgia', body: 'DM Sans', qr: '#0F3D2E', qrBg: '#FFFFFF' },
+  { id: 'cobalt', label: 'Cobalt', bg: '#101B45', ink: '#EAF0FF', accent: '#4D6BFF', title: 'Inter', body: 'Inter', qr: '#13243A', qrBg: '#EAF2FF' },
+  { id: 'framboise', label: 'Framboise', bg: '#FBEFF3', ink: '#3D1224', accent: '#C42B5C', title: 'Fraunces', body: 'DM Sans', qr: '#2A0A1A', qrBg: '#FFFFFF' },
+  { id: 'safran', label: 'Safran', bg: '#211A0E', ink: '#FBEED2', accent: '#E7A917', title: 'Fraunces', body: 'DM Sans', qr: '#0A0A0A', qrBg: '#FBF8F0' },
+  // ── Lot 5 : signature Riso (duotone encre/papier + trame) ──
+  { id: 'risobleu', label: 'Riso Bleu', bg: '#F2EDE0', ink: '#2437C8', accent: '#2437C8', title: 'Impact', body: 'JetBrains Mono', qr: '#1B2A99', qrBg: '#FFFFFF' },
+  { id: 'risorouge', label: 'Riso Rouge', bg: '#F6EFE3', ink: '#D8452B', accent: '#D8452B', title: 'Impact', body: 'JetBrains Mono', qr: '#A32812', qrBg: '#FFFFFF' },
+  { id: 'risovert', label: 'Riso Vert', bg: '#F1EFE4', ink: '#1E7A46', accent: '#1E7A46', title: 'Impact', body: 'JetBrains Mono', qr: '#0F4A28', qrBg: '#FFFFFF' },
+  { id: 'journal', label: 'Journal', bg: '#EFEDE6', ink: '#1C1C1C', accent: '#C22B1F', title: 'Georgia', body: 'JetBrains Mono', qr: '#111111', qrBg: '#FFFFFF' },
 ]
 
 // Polices RÉELLEMENT rendues : self-hostées (Fraunces / Inter / DM Sans / JetBrains Mono, cf. globals.css)
@@ -74,14 +91,15 @@ const TYPOS: Typo[] = [
 ]
 
 const AMBIANCES: Ambiance[] = [
-  { id: 'chaleureux', label: 'Chaleureux', rep: 'restofresh', styles: ['restofresh', 'menuclair', 'airbnb', 'aviscadre', 'offre', 'sunset'] },
-  { id: 'epure', label: 'Épuré', rep: 'minimal', styles: ['minimal', 'inkedit', 'immo', 'guide'] },
-  { id: 'nuit', label: 'Nuit', rep: 'modernblack', styles: ['modernblack', 'premiumdark', 'portfolio', 'contact', 'decouvrir'] },
-  { id: 'dore', label: 'Doré', rep: 'luxgold', styles: ['luxgold', 'barnoir', 'menuclair'] },
+  { id: 'chaleureux', label: 'Chaleureux', rep: 'restofresh', styles: ['restofresh', 'menuclair', 'airbnb', 'aviscadre', 'offre', 'sunset', 'terracotta'] },
+  { id: 'epure', label: 'Épuré', rep: 'minimal', styles: ['minimal', 'inkedit', 'immo', 'guide', 'papier', 'lin', 'craie'] },
+  { id: 'nuit', label: 'Nuit', rep: 'modernblack', styles: ['modernblack', 'premiumdark', 'portfolio', 'contact', 'decouvrir', 'ardoise', 'encre'] },
+  { id: 'dore', label: 'Doré', rep: 'luxgold', styles: ['luxgold', 'barnoir', 'menuclair', 'safran'] },
   { id: 'vif', label: 'Vif', rep: 'neon', styles: ['neon', 'insta', 'ticket', 'creator', 'soldes'] },
-  { id: 'naturel', label: 'Naturel', rep: 'sage', styles: ['sage', 'wifivert', 'resa', 'resaclair'] },
-  { id: 'marin', label: 'Marin', rep: 'corporate', styles: ['corporate', 'contactclair', 'contact'] },
-  { id: 'pastel', label: 'Pastel', rep: 'instaclair', styles: ['instaclair', 'resaclair', 'airbnb', 'guide'] },
+  { id: 'naturel', label: 'Naturel', rep: 'sage', styles: ['sage', 'wifivert', 'resa', 'resaclair', 'matcha'] },
+  { id: 'marin', label: 'Marin', rep: 'corporate', styles: ['corporate', 'contactclair', 'contact', 'cobalt'] },
+  { id: 'pastel', label: 'Pastel', rep: 'instaclair', styles: ['instaclair', 'resaclair', 'airbnb', 'guide', 'framboise'] },
+  { id: 'riso', label: 'Riso', rep: 'risobleu', styles: ['risobleu', 'risorouge', 'risovert', 'journal'] },
 ]
 
 // style id -> ambiance id (première ambiance qui le revendique)
@@ -98,17 +116,17 @@ const MET_AMB: Record<string, string[]> = {
   'Beauté': ['pastel', 'epure', 'dore'],
   'Boutique': ['vif', 'epure', 'chaleureux'],
   'Hôtel': ['dore', 'chaleureux', 'marin'],
-  'Artisan': ['naturel', 'chaleureux', 'epure'],
+  'Artisan': ['naturel', 'chaleureux', 'riso'],
   'Coach': ['naturel', 'marin', 'epure'],
   'Immobilier': ['marin', 'epure', 'naturel'],
   'Freelance': ['epure', 'nuit', 'marin'],
-  'Événement': ['vif', 'nuit', 'dore'],
+  'Événement': ['vif', 'nuit', 'riso'],
   'Fleuriste': ['naturel', 'pastel', 'chaleureux'],
   'Caviste': ['dore', 'nuit', 'naturel'],
-  'Food truck': ['vif', 'chaleureux', 'nuit'],
+  'Food truck': ['vif', 'chaleureux', 'riso'],
   'Salle de sport': ['nuit', 'vif', 'marin'],
   'Photographe': ['nuit', 'epure', 'dore'],
-  'Tatoueur': ['nuit', 'vif', 'epure'],
+  'Tatoueur': ['nuit', 'vif', 'riso'],
   'Pharmacie': ['marin', 'epure', 'naturel'],
   'Café': ['chaleureux', 'dore', 'epure'],
   'Boucherie': ['chaleureux', 'naturel', 'vif'],

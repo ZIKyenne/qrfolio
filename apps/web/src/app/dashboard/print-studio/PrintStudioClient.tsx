@@ -20,7 +20,7 @@ import {
   METIERS, OBJECTIFS, BRANDNAMES, filterItems, ambiancesFor, ITEM_BY_ID, STYLE_BY_ID,
   LAYOUT_BY_ID, LAYOUTS, STYLES, TYPOS, SIZES, MESSAGES, type Item, type Style,
 } from "./catalog"
-import { sceneLayers, paletteFromStyle, scaleFor, SCENES } from "./mockup"
+import { sceneLayers, paletteFromStyle, scaleFor, SCENES, finishLayer, grad, gradStrong } from "./mockup"
 import { filterTemplates, type PrintTemplate, type TemplateVariant } from "./templates"
 import { printPreflight, hexContrastRatio } from "../qr-codes/printPreflight"
 import { color as C, radius as R } from "./tokens"
@@ -1691,7 +1691,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const subCol = subColor || pal.fg
   const btnBg = ctaColor || ctaBg
   const btnFg = ctaColor ? readableOn(ctaColor) : ctaFg
-  const btnStroke = ctaColor || bandColor
+  const btnStroke = ctaColor || pal.trait   // #2 : encre sûre pour le bouton « trait »
   const clampTxt: React.CSSProperties = { maxWidth: "100%", overflowWrap: "anywhere" }
   // Sélection contextuelle (#12/#32) : quand `onFocus` est fourni (aperçu principal SEULEMENT), chaque objet
   // du support (titre/QR/bouton/marque) devient cliquable → ouvre son volet dédié. Vignettes/planche/éditeur libre
@@ -1724,18 +1724,8 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
 
   const alignItems = eAlign === "left" ? "flex-start" : eAlign === "right" ? "flex-end" : "center"
   // Fini du fond : uni, dégradé (voile lumière→ombre) ou grain (trame de points fine). Composé sur pal.bg.
-  const grainStep = Math.max(4, unit * 0.02)
-  const gridStep = Math.max(8, unit * 0.06)
-  const stripeStep = Math.max(6, unit * 0.05)
-  const bgCss = bgFinish === "degrade"
-    ? `linear-gradient(155deg, rgba(255,255,255,0.10), transparent 42%, rgba(0,0,0,0.16)), ${pal.bg}`
-    : bgFinish === "grain"
-    ? `radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1.5px) 0 0 / ${grainStep}px ${grainStep}px, ${pal.bg}`
-    : bgFinish === "rayures"
-    ? `repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 ${stripeStep * 0.5}px, transparent ${stripeStep * 0.5}px ${stripeStep}px), ${pal.bg}`
-    : bgFinish === "quadrillage"
-    ? `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / ${gridStep}px ${gridStep}px, linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / ${gridStep}px ${gridStep}px, ${pal.bg}`
-    : pal.bg
+  // #4 — finis dérivés de l'encre du thème (mockup.finishLayer) : lisibles sur fond clair ET sombre.
+  const bgCss = `${finishLayer(pal.fg, bgFinish)}${bgFinish === "degrade" ? gradStrong(pal.flat) : grad(pal.flat)}`
   // Photo de fond : voile de lisibilité auto (sombre si le texte est clair, clair si le texte est sombre).
   const scrim = readableOn(pal.fg) === "#0A0A0A"
     ? "linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.52))"

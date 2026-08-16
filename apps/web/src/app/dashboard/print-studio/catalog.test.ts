@@ -8,10 +8,10 @@ import { evaluateControls, canExport, LIGNE_DE_CONTROLE, VOLETS, ECRANS } from "
 
 // ── Intégrité : « ne supprime pas d'élément / paramètre » ─────────────────────
 describe("catalogue — intégrité (comptes exacts)", () => {
-  it("29 styles, 12 typos, 8 ambiances, 9 mises en page, 3 tailles", () => {
-    expect(STYLES).toHaveLength(29)
+  it("43 styles, 12 typos, 9 ambiances, 9 mises en page, 3 tailles", () => {
+    expect(STYLES).toHaveLength(43)
     expect(TYPOS).toHaveLength(12)
-    expect(AMBIANCES).toHaveLength(8)
+    expect(AMBIANCES).toHaveLength(9)
     expect(LAYOUTS).toHaveLength(9)
     expect(SIZES).toHaveLength(3)
   })
@@ -74,9 +74,9 @@ describe("filterItems", () => {
 })
 
 describe("ambiancesFor", () => {
-  it("renvoie les 8, les 3 recommandées en tête", () => {
+  it("renvoie les 9, les 3 recommandées en tête", () => {
     const r = ambiancesFor("Restaurant")
-    expect(r).toHaveLength(8)
+    expect(r).toHaveLength(9)
     expect(r.slice(0, 3).map(a => a.id)).toEqual(MET_AMB["Restaurant"])
   })
   it("métier inconnu -> ordre 'Tout'", () => {

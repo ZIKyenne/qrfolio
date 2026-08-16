@@ -106,8 +106,40 @@ const lum = (hex: string): number => rgb(hex).map(v => v / 255)
 export const wcag = (a: string, b: string): number => { const l1 = lum(a), l2 = lum(b); return (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05) }
 // encre lisible sur un fond donné (noir ou blanc, celui qui contraste le plus)
 export const on = (hex: string): string => wcag('#0A0A0A', hex) >= wcag('#FFFFFF', hex) ? '#0A0A0A' : '#FFFFFF'
-// dégradé subtil : un fond plat n'a jamais l'air photographié
-export const grad = (hex: string): string => `linear-gradient(165deg,${shade(hex, .06)},${shade(hex, -.05)})`
+
+// #2 — encre du bouton « trait » : l'accent, sauf s'il se fond dans le fond (< 2.2:1),
+// auquel cas on se rabat sur l'encre du thème. Sert pour la bordure ET le libellé.
+export const traitInk = (accent: string, bg: string, ink: string): string =>
+  wcag(accent, bg) >= 2.2 ? accent : ink
+
+// #3 — éclairage : un fond plat n'a jamais l'air photographié.
+export const grad = (hex: string): string => `linear-gradient(168deg,${shade(hex, .07)} 0%,${hex} 45%,${shade(hex, -.07)} 100%)`
+// version renforcée pour le fini « dégradé » (bgFinish === 'degrade')
+export const gradStrong = (hex: string): string => `linear-gradient(168deg,${shade(hex, .12)} 0%,${hex} 45%,${shade(hex, -.12)} 100%)`
+
+// #4 — finis dérivés de l'encre du thème (plus de gris fixe : lisible sur clair ET sombre).
+// SupportVisual préfixe la couche au background : `${finishLayer(pal.fg, bgFinish)}${grad(pal.flat)}`
+export function finishLayer(ink: string, finish: string): string {
+  const iA = rgba(ink, .06)
+  if (finish === 'grain') return `radial-gradient(${rgba(ink, .07)} .6px,transparent .7px) 0 0 / 5px 5px, `
+  if (finish === 'rayures') return `repeating-linear-gradient(135deg,${iA} 0 5px,transparent 5px 11px), `
+  if (finish === 'quadrillage') return `repeating-linear-gradient(0deg,${iA} 0 1px,transparent 1px 12px), repeating-linear-gradient(90deg,${iA} 0 1px,transparent 1px 12px), `
+  return ''
+}
+
+// #1 — familles déclarées mais non chargées → familles réellement rendues.
+const FONT_FALLBACK: Record<string, string> = {
+  'Playfair Display': '"Fraunces",Georgia,serif',
+  'Lora': 'Georgia,serif',
+  'Montserrat': '"Inter",sans-serif',
+  'Poppins': '"DM Sans",sans-serif',
+  'Raleway': '"DM Sans",sans-serif',
+  'Bebas Neue': 'Impact,"Arial Black",sans-serif',
+}
+const fontStack = (f: string, serif: boolean): string =>
+  FONT_FALLBACK[f] ?? `"${f}",${serif ? 'Georgia,serif' : 'Helvetica,Arial,sans-serif'}`
+// familles « condensé affiche » : graisse 400 + léger espacement (Bebas → Impact inclus)
+const isDisplay = (f: string): boolean => f === 'Bebas Neue' || f === 'Impact'
 
 // Palette prête à peindre, dérivée d'un STYLE du catalogue.
 export function paletteFromStyle(s: Style) {
@@ -116,10 +148,12 @@ export function paletteFromStyle(s: Style) {
     flat: s.bg, bg: grad(s.bg), fg: s.ink, muted: rgba(s.ink, .55),
     ctaBg: s.accent, ctaFg: on(s.accent), ink: s.qr, qrBg: s.qrBg,
     band: s.accent, bandFg: on(s.accent), rule: rgba(s.ink, .3),
-    titleFont: `"${s.title}",Georgia,serif`,
-    bodyFont: `"${s.body}",Helvetica,Arial,sans-serif`,
-    titleWeight: s.title === 'Bebas Neue' ? 400 : 600,
-    titleLs: s.title === 'Bebas Neue' ? '.02em' : '-.015em',
+    // #2 : encre sûre pour les éléments « trait » (bordure + libellé du bouton filaire)
+    trait: traitInk(s.accent, s.bg, s.ink),
+    titleFont: fontStack(s.title, true),
+    bodyFont: fontStack(s.body, false),
+    titleWeight: isDisplay(s.title) ? 400 : 600,
+    titleLs: isDisplay(s.title) ? '.02em' : '-.015em',
   }
 }
 

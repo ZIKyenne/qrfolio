@@ -708,11 +708,11 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // « Corriger » un contrôle de pré-vol : ferme le contrôle, ouvre le bon volet, applique un correctif sûr quand c'est net.
   function fixCheck(id: string) {
     setControl(false)
-    if (id === "contrast") setOpen("allure")                                  // changer l'ambiance (couleurs du QR)
-    else if (id === "qrsize") { setSizeId("grand"); setOpen("qr") }           // agrandir le QR
-    else if (id === "quiet") { setQrBadge(qrBadge === "aucune" ? "carre" : "cercle"); setOpen("qr") }  // pastille = zone franche
-    else if (id === "margin") { if (!freeEls.length) setOpen("details") }     // en libre : l'utilisateur écarte l'élément du bord
-    else setOpen("details")
+    if (id === "contrast") setOpen("style")                                   // changer l'ambiance (couleurs du QR)
+    else if (id === "qrsize") { setQrScale(v => Math.min(1.6, v + 0.3)); setOpen("contenu") }  // agrandir le QR
+    else if (id === "quiet") { setQrBadge(qrBadge === "aucune" ? "carre" : "cercle"); setOpen("contenu") }  // pastille = zone franche
+    else if (id === "margin") { if (!freeEls.length) setOpen("page") }        // en libre : l'utilisateur écarte l'élément du bord
+    else setOpen("page")
   }
 
   // Dernières closures pour les raccourcis clavier (montés une seule fois plus haut).
@@ -895,8 +895,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // Cliquer un objet de l'aperçu (titre/QR/bouton/fond) ouvre son volet dédié : accordéon + scroll + surlignage.
   function focusPanel(panel: string) {
     setLibre(false); setSelEl(null)
-    // En mode Simple, le volet « Le design » (fond fin) est masqué → on renvoie vers « L'allure » (couleurs présentes).
-    const target = mode === "simple" && panel === "details" ? "allure" : panel
+    // Clics d'aperçu → 5 catégories consolidées : titre/bouton → Contenu, QR → Contenu, fond → Style.
+    const MAP: Record<string, string> = { texte: "contenu", qr: "contenu", details: "style", allure: "style" }
+    const target = MAP[panel] ?? panel
     setOpen(target); setFlashPanel(target)
     requestAnimationFrame(() => document.querySelector(`[data-panel="${target}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }))
     window.setTimeout(() => setFlashPanel(p => (p === target ? null : p)), 1000)
@@ -904,7 +905,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // #34 : bascule Simple/Studio (persistée). Passer en Simple ferme l'édition libre et rabat vers un volet essentiel.
   function applyMode(m: "simple" | "studio") {
     setMode(m); try { localStorage.setItem("qrowg-print-mode", m) } catch {}
-    if (m === "simple") { setLibre(false); setSelEl(null); setOpen(o => (o === "styles" || o === "details" || o === "calques" ? "texte" : o)) }
+    if (m === "simple") { setLibre(false); setSelEl(null); setOpen(o => (o === "styles" || o === "details" || o === "calques" ? "contenu" : o)) }
     else setLibre(true)   // Studio = édition libre d'office
   }
   // #17 : bottom sheet mobile à positions ancrées. Ouvrir un onglet ouvre la sheet à « half ».
@@ -1134,8 +1135,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </div>
           </Panel>}
 
-          {/* Volet QR — on RÉUTILISE un QR existant ou on importe un PNG. Aucune création. */}
-          <Panel id="qr" title="Le QR" resume={qrSource === "png" ? (qrPng ? "PNG importé" : "importer un PNG") : (pickedQR ? pickedQR.label : "choisir un QR")} open={open} setOpen={setOpen} flash={flashPanel === "qr"}>
+          {/* ── CONTENU : le QR réutilisé + les textes (audit « Contenu » = ce que vous posez sur le support) ── */}
+          <Panel id="contenu" title="Contenu" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen} flash={flashPanel === "contenu"}>
+            <p style={secLabel}>Le QR</p>
             <Seg value={qrSource} options={["mine", "png"]} labels={["Mes QR", "Importer un PNG"]} onPick={v => setQrSource(v as "mine" | "png")} />
             {qrSource === "mine" ? (
               myQRs.length > 0 ? (
@@ -1195,10 +1197,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <Field label="Décalage horizontal"><Range value={qrDx} min={-1} max={1} step={0.1} onChange={setQrDx} hint={qrDx < -0.05 ? "← gauche" : qrDx > 0.05 ? "droite →" : "centré"} /></Field>
               <Field label="Décalage vertical"><Range value={qrDy} min={-1} max={1} step={0.1} onChange={setQrDy} hint={qrDy < -0.05 ? "↑ haut" : qrDy > 0.05 ? "bas ↓" : "centré"} /></Field>
             </>}
-          </Panel>
-
-          {/* Volet TEXTE — inputs d'abord (compact), suggestions contextuelles secondaires, mise en forme repliée. */}
-          <Panel id="texte" title="Les textes" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen} flash={flashPanel === "texte"}>
+            <div style={{ height: 1, background: C.hairline, margin: "6px 0 2px" }} />
+            <p style={secLabel}>Les textes</p>
             <Field label="Nom affiché">
               <input {...textInputProps} value={brandText} onChange={e => setBrandText(e.target.value)} placeholder="Votre marque…" style={inputStyle} />
               <SuggRow items={BRANDNAMES} active={brand} onPick={setBrandText} />
@@ -1218,8 +1218,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </>}
           </Panel>
 
-          {/* Volet ALLURE */}
-          <Panel id="allure" title="L'allure" resume={`${style.label} · ${ACCENTS.find(a => a.id === accent)?.label ?? "Auto"} · ${layout.label}`} open={open} setOpen={setOpen} flash={flashPanel === "allure"}>
+          {/* ── STYLE : ambiance + accent ── */}
+          <Panel id="style" title="Style" resume={`${style.label} · ${ACCENTS.find(a => a.id === accent)?.label ?? "Auto"}`} open={open} setOpen={setOpen} flash={flashPanel === "style"}>
             <Field label="Ambiance">
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
                 {(showAllColors ? STYLES : ambiances.map(a => STYLE_BY_ID[a.rep])).map(s => (
@@ -1237,11 +1237,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 ))}
               </div>
             </Field>
-            <Field label="Mise en page"><RailInline value={layoutId} options={LAYOUTS.filter(l => layoutOk(l.id, item)).map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
           </Panel>
 
-          {/* Volet DESIGN (Studio) — réglages fins du fond : finition, cadre, photo, placement. */}
-          {mode === "studio" && <Panel id="details" title="Le design" resume={`${FINISH_LABEL[bgFinish] ?? "Uni"} · ${FRAME_LABEL[frame] ?? "sans cadre"}`} open={open} setOpen={setOpen} flash={flashPanel === "details"}>
+          {/* ── MISE EN PAGE : disposition (Simple + Studio) + réglages fins du fond (Studio) ── */}
+          <Panel id="page" title="Mise en page" resume={`${layout.label}${mode === "studio" ? ` · ${FINISH_LABEL[bgFinish] ?? "Uni"}` : ""}`} open={open} setOpen={setOpen} flash={flashPanel === "page"}>
+            <Field label="Disposition"><RailInline value={layoutId} options={LAYOUTS.filter(l => layoutOk(l.id, item)).map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
+            {mode === "studio" && <>
             <Field label="Fond"><RailInline value={bgFinish} options={FINISH_OPTS} onPick={setBgFinish} /></Field>
             <Field label="Photo de fond">
               {bgImage
@@ -1291,7 +1292,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <Field label="Couleur du bouton"><ColorField value={ctaColor} onChange={setCtaColor} /></Field>
             </>}
             <button onClick={resetDesign} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 12, padding: 0, textDecoration: "underline" }}>Réinitialiser le design</button>
-          </Panel>}
+            </>}
+          </Panel>
         </div>
         )}
       </div>

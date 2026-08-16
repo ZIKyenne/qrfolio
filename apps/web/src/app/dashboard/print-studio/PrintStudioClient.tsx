@@ -217,6 +217,11 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [phase, setPhase] = useState<"library" | "studio">("library")
   const [metier, setMetier] = useState("Tout")
   const [objectif, setObjectif] = useState("Tout")
+  // Écran bibliothèque (refonte DA) : recherche libre, tri, expansions.
+  const [suppSearch, setSuppSearch] = useState("")
+  const [suppSort, setSuppSort] = useState<"pop" | "az">("pop")
+  const [showOthers, setShowOthers] = useState(false)     // « Voir les N autres »
+  const [allMetiers, setAllMetiers] = useState(false)     // « + N métiers » (déplie les raccourcis)
   const [itemId, setItemId] = useState<string | null>(null)
 
   // état studio
@@ -727,38 +732,147 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
   // ── Bibliothèque ─────────────────────────────────────────────────────────────
   if (phase === "library" || !item) {
-    const items = filterItems(metier, objectif)
+    // Données réelles dérivées du catalogue (jamais de chiffres inventés).
+    const allItems = filterItems("Tout", "Tout")
+    const totalFormats = new Set(allItems.map(i => i.size)).size
+    const q = suppSearch.trim().toLowerCase()
+    const match = (i: Item) => !q || [i.name, i.support, i.size, i.place, i.plain].some(s => s.toLowerCase().includes(q))
+    const sortList = (l: Item[]) => (suppSort === "az" ? l.slice().sort((a, b) => a.name.localeCompare(b.name, "fr")) : l)
+    const hasFilter = metier !== "Tout" || objectif !== "Tout"
+    const reco = sortList(filterItems(metier, objectif).filter(match))
+    const recoIds = new Set(reco.map(i => i.id))
+    const others = hasFilter ? sortList(allItems.filter(i => !recoIds.has(i.id)).filter(match)) : []
+    const othersShown = showOthers ? others : others.slice(0, 4)
+    const nothing = reco.length === 0 && others.length === 0
+    const quick = allMetiers ? METIERS.slice(1) : METIERS.slice(1, 7)
+    // Carte de support (aperçu réel via MiniSupport ; badge de format ; ruban « Recommandé » sur la 1re).
+    const card = (it: Item, top?: string) => (
+      <button key={it.id} className="ps2-card" onClick={() => openItem(it.id)} style={{ position: "relative", textAlign: "left", display: "flex", flexDirection: "column", background: "#141210", border: "1px solid #221f1b", borderRadius: 14, overflow: "hidden", cursor: "pointer", color: "#e8e3da" }}>
+        <div style={{ position: "relative", aspectRatio: "4 / 3", display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(120% 100% at 50% 0%, #191512, #100e0c 72%)", borderBottom: "1px solid #1c1917" }}>
+          <span style={{ position: "absolute", top: 11, right: 11, padding: "3px 9px", borderRadius: 999, background: "rgba(232,200,119,.1)", border: "1px solid rgba(232,200,119,.3)", color: "#c9a24d", fontSize: 9.5, letterSpacing: ".1em", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap" }}>{it.size}</span>
+          {top && <span style={{ position: "absolute", top: 11, left: 11, padding: "3px 9px", borderRadius: 999, background: "linear-gradient(135deg,#e8c877,#c9a24d)", color: "#1a1408", fontSize: 9.5, letterSpacing: ".08em", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap" }}>{top}</span>}
+          <MiniSupport item={it} style={STYLE_BY_ID[it.pal]} />
+        </div>
+        <div style={{ padding: "13px 15px 15px", display: "flex", flexDirection: "column", gap: 5 }}>
+          <div style={{ fontSize: 14.5, fontWeight: 600, letterSpacing: "-.01em" }}>{it.name}</div>
+          <div style={{ fontSize: 11.5, color: "#8a8177", fontFamily: "ui-monospace, monospace" }}>{it.support} · {it.size}</div>
+          <div style={{ fontSize: 11.5, color: "#8a8177", lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{it.plain}</div>
+          <div className="ps2-perso" style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 600, color: "#c9a24d" }}>Personnaliser<span aria-hidden style={{ width: 6, height: 6, borderRight: "1.5px solid currentColor", borderTop: "1.5px solid currentColor", transform: "rotate(45deg)" }} /></div>
+        </div>
+      </button>
+    )
     return (
-      <div style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif", padding: "0 16px 40px" }}>
+      <div style={{ position: "relative", minHeight: "100dvh", color: "#e8e3da", fontFamily: "Inter, system-ui, sans-serif", padding: "0 16px 56px" }}>
         <Particles behind />
-        <header style={{ maxWidth: 1040, margin: "0 auto", padding: "18px 0 8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/dashboard/qr-codes" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: C.fgMuted, textDecoration: "none", fontSize: 13 }}><ArrowLeft size={16} /> QR codes</Link>
-          <span style={{ fontSize: 13, fontWeight: 700, color: C.gold, letterSpacing: 0.3 }}>Print Studio</span>
-        </header>
-        <div style={{ maxWidth: 1040, margin: "0 auto" }}>
-          <style>{`.ps-card{transition:border-color .15s var(--mo-ease,ease), transform .15s var(--mo-ease,ease), background .15s}.ps-card:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);transform:translateY(-2px)}.ps-chip{transition:border-color .14s var(--mo-ease,ease),background .14s,color .14s}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}@media(min-width:720px){.ps-rail{flex-wrap:wrap!important;overflow:visible!important}.ps-rail-fade{display:none!important}}`}</style>
-          <h1 style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: "clamp(24px,4vw,34px)", fontWeight: 600, letterSpacing: "-0.02em", margin: "10px 0 6px" }}>Choisissez un support</h1>
-          <p style={{ color: C.fgMuted, fontSize: 14, margin: "0 0 18px" }}>Un objet réel, déjà réussi. Trois suffisent : à table, en vitrine, dans la main.</p>
+        <style>{`.ps2-card{transition:border-color .26s ease, transform .26s cubic-bezier(.2,.85,.3,1)}.ps2-card:hover{border-color:rgba(232,200,119,.45);transform:translateY(-2px)}.ps2-card:hover .ps2-perso{color:#e8c877}.ps2-sel:hover{border-color:rgba(232,200,119,.4);color:#e8e3da}.ps2-chip{transition:border-color .24s ease,color .24s ease}.ps2-chip:hover{border-color:rgba(232,200,119,.34);color:#e8e3da}.ps2-menuitem:hover{background:rgba(232,200,119,.07)!important}.ps2-x{opacity:.7;transition:opacity .2s ease}.ps2-x:hover{opacity:1}.ps2-search::placeholder{color:#6b6258}.ps2-search:focus{outline:none}.ps2-editeur{transition:background .28s ease,color .28s ease}.ps2-editeur:hover{background:linear-gradient(135deg,#e8c877,#c9a24d)!important;color:#1a1408!important}.ps2-more:hover{color:#e8c877}`}</style>
+        <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", flexDirection: "column", gap: 22 }}>
 
-          {/* Filtres métier × objectif */}
-          <Rail label="Métier" value={metier} options={METIERS} onPick={setMetier} />
-          <Rail label="Objectif" value={objectif} options={OBJECTIFS} onPick={setObjectif} />
+          {/* En-tête : fil d'Ariane + eyebrow */}
+          <header style={{ padding: "18px 0 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <Link href="/dashboard/qr-codes" className="ps2-chip" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 13px 6px 10px", borderRadius: 999, border: "1px solid #26211a", color: "#8a8177", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
+              <span aria-hidden style={{ width: 6, height: 6, borderLeft: "1.5px solid currentColor", borderBottom: "1.5px solid currentColor", transform: "rotate(45deg)" }} /> QR codes
+            </Link>
+            <span style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 700 }}>Print Studio</span>
+          </header>
 
-          {/* Grille d'objets */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, marginTop: 18 }}>
-            {items.map(it => (
-              <button key={it.id} className="ps-card" onClick={() => openItem(it.id)} style={{ textAlign: "left", background: C.surface, border: `1px solid ${C.hairline}`, borderRadius: R.card, padding: 12, cursor: "pointer", color: C.fg, display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ height: 122, borderRadius: 10, background: `radial-gradient(80% 70% at 50% 8%, #2a2e34, #16181c)`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                  <MiniSupport item={it} style={STYLE_BY_ID[it.pal]} />
-                </div>
-                <div>
-                  <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>{it.name}</p>
-                  <p style={{ margin: "2px 0 0", fontSize: 11, color: C.fgFaint, fontFamily: "ui-monospace, monospace" }}>{it.support} · {it.size}</p>
-                </div>
-              </button>
-            ))}
+          {/* Titre + compteurs réels */}
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 620 }}>
+              <h1 style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: "clamp(26px,4vw,34px)", fontWeight: 700, letterSpacing: "-.025em", lineHeight: 1.05, margin: 0 }}>Choisissez un support</h1>
+              <p style={{ fontSize: 14.5, lineHeight: 1.5, color: "#8a8177", margin: 0, textWrap: "pretty" as any }}>Un objet réel, déjà réussi. Trois suffisent : à table, en vitrine, dans la main.</p>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 22, padding: "14px 20px", borderRadius: 12, background: "#141210", border: "1px solid #221f1b" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "#e8c877", letterSpacing: "-.01em" }}>{allItems.length}</div>
+                <div style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 600 }}>Supports</div>
+              </div>
+              <span style={{ width: 1, height: 26, background: "#221f1b" }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "#e8c877", letterSpacing: "-.01em" }}>{totalFormats}</div>
+                <div style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 600 }}>Formats</div>
+              </div>
+            </div>
           </div>
-          {items.length === 0 && <p style={{ color: C.fgMuted, fontSize: 13, marginTop: 20 }}>Aucun support pour ce filtre. <button onClick={() => { setMetier("Tout"); setObjectif("Tout") }} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 13 }}>Tout afficher</button></p>}
+
+          {/* Barre de filtres collante */}
+          <div style={{ position: "sticky", top: 0, zIndex: 5, background: "rgba(20,18,16,.95)", backdropFilter: "blur(10px)", border: "1px solid #221f1b", borderRadius: 14, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <div style={{ flex: "1 1 220px", minWidth: 180, display: "flex", alignItems: "center", gap: 9, padding: "10px 13px", borderRadius: 11, background: "#100e0c", border: "1px solid #26211a" }}>
+                <span aria-hidden style={{ position: "relative", width: 11, height: 11, flex: "none", border: "1.5px solid #c9a24d", borderRadius: "50%" }}><span style={{ position: "absolute", right: -4, bottom: -3, width: 5, height: 1.5, background: "#c9a24d", transform: "rotate(45deg)" }} /></span>
+                <input className="ps2-search" value={suppSearch} onChange={e => setSuppSearch(e.target.value)} placeholder="Sticker, chevalet, carte…" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", color: "#e8e3da", fontSize: 12.5, caretColor: "#e8c877" }} />
+                {suppSearch && <button type="button" aria-label="Effacer" onClick={() => setSuppSearch("")} style={{ background: "none", border: "none", color: "#8a8177", cursor: "pointer", fontSize: 15, lineHeight: 1, padding: 0 }}>×</button>}
+              </div>
+              <FilterSelect label="Métier" value={metier} options={METIERS} onPick={setMetier} />
+              <FilterSelect label="Objectif" value={objectif} options={OBJECTIFS} onPick={setObjectif} />
+              <FilterSelect label="Trier" value={suppSort === "az" ? "A → Z" : "Populaires"} options={["Populaires", "A → Z"]} onPick={v => setSuppSort(v === "A → Z" ? "az" : "pop")} />
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#5c554b", fontWeight: 700, marginRight: 2 }}>Rapide</span>
+              {quick.map(m => {
+                const on = metier === m
+                return (
+                  <button key={m} type="button" className={on ? undefined : "ps2-chip"} onClick={() => setMetier(on ? "Tout" : m)}
+                    style={{ padding: "6px 13px", borderRadius: 999, cursor: "pointer", fontSize: 12, fontWeight: on ? 600 : 500, background: on ? "rgba(232,200,119,.1)" : "transparent", border: `1px solid ${on ? "rgba(232,200,119,.4)" : "#26211a"}`, color: on ? "#e8c877" : "#8a8177" }}>{m}</button>
+                )
+              })}
+              <button type="button" className="ps2-more" onClick={() => setAllMetiers(a => !a)} style={{ padding: "6px 4px", background: "none", border: "none", color: "#8a8177", fontSize: 12, fontWeight: 600, cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(232,200,119,.3)", textUnderlineOffset: 3, transition: "color .24s ease" }}>{allMetiers ? "− Réduire" : `+ ${METIERS.length - 1 - 6} métiers`}</button>
+            </div>
+
+            {hasFilter && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 12, borderTop: "1px solid #1c1917", flexWrap: "wrap" }}>
+                <span style={{ fontSize: 11.5, color: "#8a8177", whiteSpace: "nowrap" }}>Filtres actifs</span>
+                {metier !== "Tout" && <ActiveChip label={metier} onClear={() => setMetier("Tout")} />}
+                {objectif !== "Tout" && <ActiveChip label={objectif} onClear={() => setObjectif("Tout")} />}
+                <button type="button" onClick={() => { setMetier("Tout"); setObjectif("Tout") }} style={{ marginLeft: "auto", background: "none", border: "none", color: "#8a8177", fontSize: 11.5, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>Tout effacer</button>
+              </div>
+            )}
+          </div>
+
+          {nothing && (
+            <p style={{ color: "#8a8177", fontSize: 13, margin: "8px 0" }}>Aucun support pour ce filtre. <button type="button" onClick={() => { setMetier("Tout"); setObjectif("Tout"); setSuppSearch("") }} style={{ background: "none", border: "none", color: "#e8c877", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Tout afficher</button></p>
+          )}
+
+          {/* Section recommandés (filtre actif) */}
+          {hasFilter && reco.length > 0 && (
+            <>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{reco.length} recommandé{reco.length > 1 ? "s" : ""} pour {metier !== "Tout" ? metier : objectif}{metier !== "Tout" && objectif !== "Tout" ? ` · ${objectif}` : ""}</span>
+                <span style={{ fontSize: 12, color: "#8a8177" }}>les plus adaptés d'abord</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(238px, 1fr))", gap: 18 }}>
+                {reco.map((it, i) => card(it, i === 0 ? "Recommandé" : undefined))}
+              </div>
+            </>
+          )}
+
+          {/* Section « Tous les supports » (les autres si filtre, sinon tout) */}
+          {(hasFilter ? others.length > 0 : reco.length > 0) && (
+            <>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 14, flexWrap: "wrap", paddingTop: 4 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>Tous les supports</span>
+                  <span style={{ fontSize: 12, color: "#8a8177" }}>{hasFilter ? `${others.length} autre${others.length > 1 ? "s" : ""}, tous métiers confondus` : `${reco.length} support${reco.length > 1 ? "s" : ""}`}</span>
+                </div>
+                {hasFilter && others.length > 4 && (
+                  <button type="button" className="ps2-chip" onClick={() => setShowOthers(s => !s)} style={{ padding: "7px 15px", borderRadius: 999, border: "1px solid #26211a", background: "none", color: "#8a8177", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>{showOthers ? "Réduire" : `Voir les ${others.length - 4} autres`}</button>
+                )}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(238px, 1fr))", gap: 18 }}>
+                {(hasFilter ? othersShown : reco).map(it => card(it))}
+              </div>
+            </>
+          )}
+
+          {/* Pied de page : éditeur libre */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 12, background: "#17140f", border: "1px solid #2e281f", flexWrap: "wrap" }}>
+            <span aria-hidden style={{ width: 2, alignSelf: "stretch", minHeight: 34, borderRadius: 2, background: "linear-gradient(180deg, #e8c877, #c9a24d)" }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#e8e3da" }}>Vous ne trouvez pas votre support ?</span>
+              <span style={{ fontSize: 11.5, color: "#8a8177" }}>L'éditeur libre part d'un format A4 : vous posez le QR où vous voulez.</span>
+            </div>
+            <button type="button" className="ps2-editeur" onClick={() => openItem("i11")} style={{ marginLeft: "auto", padding: "9px 18px", borderRadius: 999, border: "1px solid rgba(232,200,119,.35)", background: "linear-gradient(135deg, rgba(232,200,119,.16), rgba(201,162,77,.1))", color: "#e8c877", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer" }}>Éditeur libre</button>
+          </div>
         </div>
       </div>
     )
@@ -1410,20 +1524,53 @@ const inputStyle: React.CSSProperties = { width: "100%", boxSizing: "border-box"
 // Libellé de section/champ unifié (casse normale, muted) — même convention que <Field>.
 const secLabel: React.CSSProperties = { margin: "0 0 8px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }
 
-function Rail({ label, value, options, onPick }: { label: string; value: string; options: string[]; onPick: (v: string) => void }) {
+// Sélecteur déroulant doré (barre de filtres du Print Studio, refonte DA) : déclencheur + menu ancré,
+// overlay de fermeture au clic extérieur. Or fixe assumé (identité DA), a11y : bouton + aria-expanded.
+function FilterSelect({ label, value, options, onPick }: { label: string; value: string; options: string[]; onPick: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
   return (
-    <div style={{ marginTop: 12 }}>
-      <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: C.fgFaint }}>{label}</p>
-      {/* Desktop : les puces s'enroulent (tout visible). Étroit : défilement horizontal + fondu. */}
-      <div style={{ position: "relative" }}>
-        <div className="ps-rail" style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
-          {options.map(o => <button key={o} className="ps-chip" onClick={() => onPick(o)} style={chipStyle(value === o)}>{o}</button>)}
-        </div>
-        <div aria-hidden className="ps-rail-fade" style={{ position: "absolute", top: 0, right: 0, bottom: 4, width: 28, pointerEvents: "none", background: "linear-gradient(90deg, transparent, #080808)" }} />
-      </div>
+    <div style={{ position: "relative" }}>
+      <button type="button" className="ps2-sel" aria-expanded={open} onClick={() => setOpen(o => !o)}
+        style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 11, background: "rgba(255,255,255,.025)", border: "1px solid #26211a", color: "#b8b1a6", fontSize: 12.5, cursor: "pointer", whiteSpace: "nowrap" }}>
+        <span style={{ fontSize: 10, letterSpacing: ".14em", textTransform: "uppercase", color: "#6b6258", fontWeight: 700 }}>{label}</span>
+        <span style={{ color: "#e8c877", fontWeight: 600 }}>{value}</span>
+        <span aria-hidden style={{ width: 6, height: 6, borderRight: "1.5px solid #c9a24d", borderBottom: "1.5px solid #c9a24d", transform: open ? "rotate(-135deg) translate(-1px,-1px)" : "rotate(45deg) translateY(-2px)", transition: "transform .22s ease" }} />
+      </button>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+          <div role="listbox" style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 41, minWidth: 190, maxHeight: 300, overflowY: "auto", background: "#17140f", border: "1px solid #2e281f", borderRadius: 12, padding: 6, boxShadow: "0 18px 44px rgba(0,0,0,.62)" }}>
+            {options.map(o => {
+              const on = o === value
+              return (
+                <button key={o} type="button" className="ps2-menuitem" onClick={() => { onPick(o); setOpen(false) }}
+                  style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 10px", borderRadius: 8, background: on ? "rgba(232,200,119,.08)" : "transparent", border: "none", color: on ? "#e8c877" : "#b8b1a6", fontSize: 12.5, fontWeight: on ? 600 : 500, cursor: "pointer", textAlign: "left" }}>
+                  {o}{on && <span aria-hidden style={{ width: 6, height: 6, borderRight: "1.5px solid #e8c877", borderBottom: "1.5px solid #e8c877", transform: "rotate(45deg)" }} />}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
     </div>
   )
 }
+
+// Pastille de filtre actif (dorée) avec croix de retrait.
+function ActiveChip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 8px 5px 11px", borderRadius: 999, background: "rgba(232,200,119,.07)", border: "1px solid rgba(232,200,119,.28)", color: "#e8c877", fontSize: 11.5, fontWeight: 600 }}>
+      {label}
+      <button type="button" aria-label={`Retirer ${label}`} onClick={onClear} className="ps2-x" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: "50%", background: "rgba(232,200,119,.15)", border: "none", cursor: "pointer", padding: 0 }}>
+        <span style={{ position: "relative", width: 7, height: 7 }}>
+          <span style={{ position: "absolute", top: 2.8, left: 0, width: 7, height: 1.4, background: "#e8c877", transform: "rotate(45deg)" }} />
+          <span style={{ position: "absolute", top: 2.8, left: 0, width: 7, height: 1.4, background: "#e8c877", transform: "rotate(-45deg)" }} />
+        </span>
+      </button>
+    </span>
+  )
+}
+
 function RailInline({ value, options, onPick }: { value: string; options: { id: string; label: string; note?: string }[]; onPick: (v: string) => void }) {
   return (
     <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>

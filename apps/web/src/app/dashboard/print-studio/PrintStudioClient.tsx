@@ -1559,7 +1559,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <div style={{ display: "inline-flex", gap: 3, background: "rgba(255,255,255,0.1)", borderRadius: 999, padding: 3 }}>
               {([["scene", "Scène"], ["real", "Taille réelle"]] as const).map(([id, lbl]) => {
                 const on = realSize === (id === "real")
-                return <button key={id} onClick={() => setRealSize(id === "real")} style={{ minHeight: 36, padding: "0 16px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: on ? 800 : 600, background: on ? "#fff" : "transparent", color: on ? "#0A0A0A" : "rgba(255,255,255,0.7)" }}>{lbl}</button>
+                return <button key={id} onClick={() => setRealSize(id === "real")} style={{ minHeight: 40, padding: "0 16px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: on ? 800 : 600, background: on ? "#fff" : "transparent", color: on ? "#0A0A0A" : "rgba(255,255,255,0.7)" }}>{lbl}</button>
               })}
             </div>
             {realSize ? (
@@ -2137,7 +2137,7 @@ function TemplateLibrary({ item, onApply, onApplyVariant }: { item: Item; onAppl
       {hoverT && <div className="mo-pop-in" style={{ position: "fixed", left: hoverT.x, top: hoverT.y, zIndex: 200, pointerEvents: "none" }}><TemplateHoverCard t={hoverT.t} /></div>}
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un modèle…" style={{ ...inputStyle, height: 42 }} />
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
-        {TPL_CATS.map(c => <button key={c.id} onClick={() => { setCat(c.id); setQ("") }} style={{ ...chipStyle(!ql && cat === c.id), minHeight: 36, fontSize: 12 }}>{c.label}</button>)}
+        {TPL_CATS.map(c => <button key={c.id} onClick={() => { setCat(c.id); setQ("") }} style={{ ...chipStyle(!ql && cat === c.id), minHeight: 40, fontSize: 12 }}>{c.label}</button>)}
       </div>
       {showReco && reco.length > 0 && <>
         <p style={{ margin: 0, fontSize: 11.5, fontWeight: 700, color: C.gold }}>Recommandés pour ce support</p>

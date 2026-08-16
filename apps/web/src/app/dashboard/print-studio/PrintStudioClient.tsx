@@ -1090,50 +1090,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           )}
 
           {/* Styles rapides (Studio) — volet accordéon : modèles prêts, modèles perso, charte. */}
-          {mode === "studio" && <Panel id="styles" title="Styles rapides" resume={activePreset ? `Modèle : ${PRESETS.find(p => p.id === activePreset)?.label}` : "Modèles prêts · mes modèles · charte"} open={open} setOpen={setOpen}>
-            <div>
-              <p style={secLabel}>Modèles prêts</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(72px,1fr))", gap: 8 }}>
-                {PRESETS.map(p => <PresetThumb key={p.id} preset={p} item={item} on={activePreset === p.id} onClick={() => applyPreset(p)} />)}
-              </div>
-            </div>
-            <div>
-              <p style={secLabel}>Mes modèles</p>
-              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
-                {savedPresets.map(p => (
-                  <span key={p.id} style={{ ...chipStyle(activeSavedId === p.id), padding: "0 4px 0 12px", gap: 2 }}>
-                    <button onClick={() => applyCfg(p.cfg)} style={{ background: "none", border: "none", color: "inherit", font: "inherit", fontWeight: "inherit", cursor: "pointer", padding: "8px 2px 8px 0" }}>{p.name}</button>
-                    <button onClick={() => deletePreset(p.id)} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 8px", opacity: 0.6, fontSize: 15, lineHeight: 1 }}>×</button>
-                  </span>
-                ))}
-                {saving ? (
-                  <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
-                    <input autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveCurrent(); if (e.key === "Escape") { setSaving(false); setSaveName("") } }} placeholder="Nom du modèle…" style={{ ...inputStyle, height: 40, width: 160 }} />
-                    <button onClick={saveCurrent} style={{ ...chipStyle(true), minHeight: 40 }}>OK</button>
-                    <button onClick={() => { setSaving(false); setSaveName("") }} aria-label="Annuler" style={{ ...chipStyle(false), minHeight: 40, padding: "0 12px" }}>×</button>
-                  </span>
-                ) : (
-                  <button onClick={() => setSaving(true)} style={{ ...chipStyle(false), whiteSpace: "nowrap", flexShrink: 0 }}>＋ Enregistrer ce style</button>
-                )}
-              </div>
-            </div>
-            <div>
-              <p style={secLabel}>Ma charte</p>
-              {brandKit && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, padding: "6px 10px", borderRadius: 9, background: C.surfaceUp, border: `1px solid ${C.hairline}` }}>
-                  {brandKit.logo && <img src={brandKit.logo} alt="" style={{ width: 24, height: 24, borderRadius: 5, objectFit: "contain", background: "#fff", flexShrink: 0 }} />}
-                  <span title="Couleur principale" style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, border: `1px solid ${C.hairline}`, background: ACCENTS.find(a => a.id === brandKit!.accent)?.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)" }} />
-                  {brandKit.accent2 && <span title="Couleur secondaire (bouton)" style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, border: `1px solid ${C.hairline}`, background: brandKit.accent2 }} />}
-                  <span style={{ fontSize: 11, color: C.fgMuted, marginLeft: "auto", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{TYPOS.find(t => t.id === brandKit!.typo)?.label || "Du thème"}</span>
-                </div>
-              )}
-              <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
-                {brandKit && <button onClick={applyBrandKit} style={chipStyle(false)}>Appliquer</button>}
-                <button onClick={saveBrandKit} style={{ ...chipStyle(false), whiteSpace: "nowrap" }}>{brandKit ? "Mettre à jour la charte" : "Enregistrer ma charte (logo · couleurs · police)"}</button>
-              </div>
-              <p style={{ margin: "6px 0 0", fontSize: 10.5, color: C.fgFaint }}>Capture le look courant — logo, couleur principale (accent), secondaire (bouton), police.</p>
-            </div>
-          </Panel>}
+          {/* « Styles rapides » fusionné dans « Style » ci-dessous — fin de la redondance Modèles/Styles/Style. */}
 
           {/* ── CONTENU : le QR réutilisé + les textes (audit « Contenu » = ce que vous posez sur le support) ── */}
           <Panel id="contenu" title="Contenu" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen} flash={flashPanel === "contenu"}>
@@ -1220,6 +1177,52 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
           {/* ── STYLE : ambiance + accent ── */}
           <Panel id="style" title="Style" resume={`${style.label} · ${ACCENTS.find(a => a.id === accent)?.label ?? "Auto"}`} open={open} setOpen={setOpen} flash={flashPanel === "style"}>
+            {mode === "studio" && <>
+            <div>
+              <p style={secLabel}>Modèles prêts</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(72px,1fr))", gap: 8 }}>
+                {PRESETS.map(p => <PresetThumb key={p.id} preset={p} item={item} on={activePreset === p.id} onClick={() => applyPreset(p)} />)}
+              </div>
+            </div>
+            <div>
+              <p style={secLabel}>Mes modèles</p>
+              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
+                {savedPresets.map(p => (
+                  <span key={p.id} style={{ ...chipStyle(activeSavedId === p.id), padding: "0 4px 0 12px", gap: 2 }}>
+                    <button onClick={() => applyCfg(p.cfg)} style={{ background: "none", border: "none", color: "inherit", font: "inherit", fontWeight: "inherit", cursor: "pointer", padding: "8px 2px 8px 0" }}>{p.name}</button>
+                    <button onClick={() => deletePreset(p.id)} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 8px", opacity: 0.6, fontSize: 15, lineHeight: 1 }}>×</button>
+                  </span>
+                ))}
+                {saving ? (
+                  <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                    <input autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveCurrent(); if (e.key === "Escape") { setSaving(false); setSaveName("") } }} placeholder="Nom du modèle…" style={{ ...inputStyle, height: 40, width: 160 }} />
+                    <button onClick={saveCurrent} style={{ ...chipStyle(true), minHeight: 40 }}>OK</button>
+                    <button onClick={() => { setSaving(false); setSaveName("") }} aria-label="Annuler" style={{ ...chipStyle(false), minHeight: 40, padding: "0 12px" }}>×</button>
+                  </span>
+                ) : (
+                  <button onClick={() => setSaving(true)} style={{ ...chipStyle(false), whiteSpace: "nowrap", flexShrink: 0 }}>＋ Enregistrer ce style</button>
+                )}
+              </div>
+            </div>
+            <div>
+              <p style={secLabel}>Ma charte</p>
+              {brandKit && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, padding: "6px 10px", borderRadius: 9, background: C.surfaceUp, border: `1px solid ${C.hairline}` }}>
+                  {brandKit.logo && <img src={brandKit.logo} alt="" style={{ width: 24, height: 24, borderRadius: 5, objectFit: "contain", background: "#fff", flexShrink: 0 }} />}
+                  <span title="Couleur principale" style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, border: `1px solid ${C.hairline}`, background: ACCENTS.find(a => a.id === brandKit!.accent)?.hex || "conic-gradient(from 210deg,#C9A84C,#D4483B,#3E9E6E,#3B6FD4,#7A5CD4,#C9A84C)" }} />
+                  {brandKit.accent2 && <span title="Couleur secondaire (bouton)" style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, border: `1px solid ${C.hairline}`, background: brandKit.accent2 }} />}
+                  <span style={{ fontSize: 11, color: C.fgMuted, marginLeft: "auto", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{TYPOS.find(t => t.id === brandKit!.typo)?.label || "Du thème"}</span>
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+                {brandKit && <button onClick={applyBrandKit} style={chipStyle(false)}>Appliquer</button>}
+                <button onClick={saveBrandKit} style={{ ...chipStyle(false), whiteSpace: "nowrap" }}>{brandKit ? "Mettre à jour la charte" : "Enregistrer ma charte (logo · couleurs · police)"}</button>
+              </div>
+              <p style={{ margin: "6px 0 0", fontSize: 10.5, color: C.fgFaint }}>Capture le look courant — logo, couleur principale (accent), secondaire (bouton), police.</p>
+            </div>
+            <div style={{ height: 1, background: C.hairline, margin: "8px 0 2px" }} />
+            <p style={secLabel}>Ambiance &amp; accent</p>
+            </>}
             <Field label="Ambiance">
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
                 {(showAllColors ? STYLES : ambiances.map(a => STYLE_BY_ID[a.rep])).map(s => (

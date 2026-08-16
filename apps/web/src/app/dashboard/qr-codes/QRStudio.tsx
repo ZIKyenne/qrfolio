@@ -2687,8 +2687,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             <ArrowRight size={15} style={{ transform:"rotate(180deg)" }} /> Mes QR codes
           </button>
         )}
-        {/* Section label */}
-        <div style={{ padding:"9px 16px 8px", borderBottom:"1px solid rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
+        {/* Section label — barre allégée sur desktop (~1/3 de hauteur en moins) */}
+        <div style={{ padding:isMobile?"9px 16px 8px":"5px 16px 4px", borderBottom:"1px solid rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
             {/* Label « Aperçu » masqué sur mobile (désencombrement demandé). */}
             {!isMobile && <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Aperçu</p>}
@@ -2704,7 +2704,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
           </div>
           {/* Sélecteur d'aperçu : desktop uniquement — sur mobile on ne garde que la vue QR (Carte/Affiche retirées). */}
           {active && !isMobile && (
-            <SegTabs ariaLabel="Aperçu" width="min(306px, 48vw)" fontSize={12.5}
+            <SegTabs ariaLabel="Aperçu" width="min(306px, 48vw)" fontSize={12.5} dense
               items={[{ key: "none", label: "QR", icon: <QrCode size={14}/> }, { key: "card", label: "Carte", icon: <CreditCard size={14}/> }, { key: "poster", label: "Affiche", icon: <ImageIcon size={14}/> }]}
               value={scene === "card" ? 1 : scene === "poster" ? 2 : 0}
               onChange={(_, k) => setScene(k as any)} />
@@ -2718,7 +2718,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
             <div className="qr-scroll" style={{ display:"flex", flexDirection:"column", height:"100%", overflowY:"auto" }}>
 
               {/* QR Card */}
-              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:isMobile?"14px 16px 16px":"16px 22px 16px", gap:12, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:isMobile?"14px 16px 16px":"12px 22px 12px", gap:isMobile?12:8, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
                 {/* Groupe visuel QR (sélecteur + QR + Agrandir) — placé APRÈS infos/actions sur mobile via order */}
                 <div style={{ order: isMobile ? 3 : 0, width:"100%", display:"flex", flexDirection:"column", alignItems:"center", gap:16 }}>
                 {/* Sélecteur d'aperçu (QR/Carte/Affiche) déplacé dans l'en-tête « Aperçu » (haut droite) → aperçu remonté. */}
@@ -2820,7 +2820,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
                 {/* Nom + URL + statut */}
                 <div style={{ order: isMobile ? 1 : 0, textAlign:"center", width:"100%" }}>
-                  <p style={{ color:"#F5F0E8", fontSize:15, fontWeight:700, margin:"0 0 4px" }}>{active.pages?.title ?? "Sans titre"}</p>
+                  <p style={{ color:"#F5F0E8", fontSize:isMobile?15:14, fontWeight:700, margin:isMobile?"0 0 4px":"0 0 3px" }}>{active.pages?.title ?? "Sans titre"}</p>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, marginBottom:6 }}>
                     <code style={{ color:"var(--accent)", fontSize:10, background:"color-mix(in srgb, var(--accent) 8%, transparent)", padding:"2px 8px", borderRadius:5 }}>
                       /q/{active.short_code}
@@ -2834,7 +2834,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
                   {/* Carte score scannabilité — pédagogique */}
                   {scanScore && (
-                    <div style={{ width:"100%", marginTop:8, padding:"10px 12px", background:"#17140f", border:"1px solid #2a2419", borderRadius:13, display:"flex", flexDirection:"column", gap:8 }}>
+                    <div style={{ width:"100%", marginTop:isMobile?8:6, padding:isMobile?"10px 12px":"8px 11px", background:"#17140f", border:"1px solid #2a2419", borderRadius:13, display:"flex", flexDirection:"column", gap:isMobile?8:7 }}>
                       {/* En-tête cliquable : déplie le détail (contraste / taille / ECC / problèmes).
                           Score = anneau conique bronze (l'info passe par le remplissage, plus par la teinte — DA §01). */}
                       <button type="button" onClick={() => setScanOpen(o => !o)} aria-expanded={scanOpen} style={{ display:"flex", alignItems:"center", gap:10, background:"none", border:"none", padding:0, cursor:"pointer", width:"100%", textAlign:"left" as const }}>
@@ -2916,7 +2916,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       cta = <button type="button" onClick={() => setActiveTab("supports")} className="qb-pill">Créer un support</button>
                     }
                     return (
-                      <div style={{ position: "relative", overflow: "hidden", marginTop: 12, display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "13px 15px", borderRadius: 13, background: "#17140f", border: "1px solid #2e281f" }}>
+                      <div style={{ position: "relative", overflow: "hidden", marginTop: 10, display: "flex", alignItems: "center", gap: 11, textAlign: "left", padding: "11px 14px", borderRadius: 13, background: "#17140f", border: "1px solid #2e281f" }}>
                         {/* Filet doré à gauche + passage lumineux (remplace l'emoji) */}
                         <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 2, background: "linear-gradient(180deg,#e8c877,#c9a24d)" }} />
                         <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 2, overflow: "hidden" }}>

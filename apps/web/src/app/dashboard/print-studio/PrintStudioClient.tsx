@@ -687,7 +687,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null); setBgCredit("")
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor(""); setAdvColor(false); setAdvQr(false)
     setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false)
-    setLibre(false); setFreeEls([]); setSelEl(null); setQrFree(false); setQrFx(0.32); setQrFy(0.55); setPhase("studio")
+    setLibre(true); setFreeEls([]); setSelEl(null); setQrFree(false); setQrFx(0.32); setQrFy(0.55); setPhase("studio")
     undoRef.current = { past: [], future: [], apply: false, last: "", t: null }; setCanUndo(false); setCanRedo(false)
   }
 
@@ -887,7 +887,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   const sel = freeEls.find(e => e.id === selEl)
   const tmpls = filterTemplates(item)   // templates pertinents au support courant (pertinents d'abord)
-  const showFlat = libre && !isMobile   // l'édition libre (drag/calques) est réservée au desktop — mobile = guidé simple
+  // Édition libre TOUJOURS active en mode Studio (desktop) : plus de bascule Aperçu/Édition — on entre direct en édition.
+  const showFlat = libre && mode === "studio" && !isMobile   // réservée au desktop ; mobile = guidé simple
   // Sélection contextuelle (#12/#32) — DESKTOP uniquement (onFocus n'est pas passé sur mobile : le tap y reste « plein écran »).
   // Cliquer un objet de l'aperçu (titre/QR/bouton/fond) ouvre son volet dédié : accordéon + scroll + surlignage.
   function focusPanel(panel: string) {
@@ -902,6 +903,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   function applyMode(m: "simple" | "studio") {
     setMode(m); try { localStorage.setItem("qrowg-print-mode", m) } catch {}
     if (m === "simple") { setLibre(false); setSelEl(null); setOpen(o => (o === "styles" || o === "details" || o === "calques" ? "texte" : o)) }
+    else setLibre(true)   // Studio = édition libre d'office
   }
   // #17 : bottom sheet mobile à positions ancrées. Ouvrir un onglet ouvre la sheet à « half ».
   function openSheet(tab: "theme" | "couleurs" | "texte" | "qr") { setMobileTab(tab); setSheetPos("half"); setSheetOpen(true) }
@@ -980,9 +982,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <div onClick={() => { if (isMobile && sheetOpen && sheetPos !== "peek") setSheetPos("peek"); else setFsOpen(true) }} title="Agrandir l'aperçu" style={{ cursor: "zoom-in" }}><Packshot item={item} scene={scene} {...designProps} box={isMobile ? 520 : 640} onFocus={isMobile ? undefined : focusPanel} /></div>
                 <button onClick={e => { e.stopPropagation(); setFsOpen(true) }} aria-label="Plein écran" title="Plein écran" style={{ position: "absolute", top: isMobile ? 12 : 40, right: isMobile ? 12 : 40, width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", fontSize: 17, lineHeight: 1, zIndex: 2 }}>⛶</button>
               </div>}
-          {!isMobile && mode === "studio" && <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10, flexWrap: "wrap" }}>
-            <button onClick={() => { setLibre(v => !v); setSelEl(null) }} style={chipStyle(libre)}>{libre ? "↩ Aperçu" : "✎ Édition libre"}</button>
-          </div>}
+          {/* Bascule « Aperçu / Édition libre » retirée : en Studio, l'édition libre est active d'office. */}
           {!showFlat && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>}
           {!showFlat && !isMobile && <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "4px 0 0" }}>Cliquez le titre, le QR ou le fond de l'aperçu pour le régler directement.</p>}
           {showFlat && <>

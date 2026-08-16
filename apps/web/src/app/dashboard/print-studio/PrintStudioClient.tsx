@@ -20,7 +20,7 @@ import {
   METIERS, OBJECTIFS, BRANDNAMES, filterItems, ambiancesFor, ITEM_BY_ID, STYLE_BY_ID,
   LAYOUT_BY_ID, LAYOUTS, STYLES, TYPOS, SIZES, MESSAGES, type Item, type Style,
 } from "./catalog"
-import { sceneLayers, paletteFromStyle, scaleFor, SCENES, finishLayer, grad, gradStrong } from "./mockup"
+import { sceneLayers, paletteFromStyle, scaleFor, SCENES, finishLayer, grad, gradStrong, traitInk } from "./mockup"
 import { filterTemplates, type PrintTemplate, type TemplateVariant } from "./templates"
 import { printPreflight, hexContrastRatio } from "../qr-codes/printPreflight"
 import { color as C, radius as R } from "./tokens"
@@ -265,7 +265,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
   const [open, setOpen] = useState<string | null>("modeles")   // un seul volet ouvert (Modèles à l'entrée — templates = primaire)
   const [flashPanel, setFlashPanel] = useState<string | null>(null)   // volet à surligner brièvement après une sélection contextuelle (#12/#32)
-  const [mode, setMode] = useState<"simple" | "studio">("simple")   // #34 : Simple (essentiel) vs Studio (avancé). Desktop uniquement, persisté localStorage.
+  const [mode, setMode] = useState<"simple" | "studio">("studio")   // #34 : Studio (édition libre) par défaut ; Simple = essentiel. Desktop uniquement, persisté localStorage.
   const [moreMenu, setMoreMenu] = useState(false)   // menu « ··· » : actions secondaires (Décliner/Planche) hors du header principal
   useEffect(() => { try { const m = localStorage.getItem("qrowg-print-mode"); if (m === "studio" || m === "simple") setMode(m) } catch {} }, [])
   const [showAllColors, setShowAllColors] = useState(false)
@@ -646,7 +646,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     if (L.eTypo) setETypo(L.eTypo)
     if (t.content.brand) setBrandText(t.content.brand)
     setMessage(t.content.title ?? ""); setSubtitle(t.content.subtitle ?? ""); setCtaText(t.content.cta ?? "")
-    if (t.comp) addComposition(t.comp, STYLE_BY_ID[st])   // couleurs de la composition = style cible (pas l'ancien)
+    // La composition pose des éléments libres, éditables uniquement sur desktop (canvas à plat) → on ne l'injecte pas sur mobile (sinon éléments non déplaçables/supprimables).
+    if (t.comp && !isMobile) addComposition(t.comp, STYLE_BY_ID[st])   // couleurs de la composition = style cible (pas l'ancien)
   }
   function updateEl(id: string, patch: Partial<FreeEl>) { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...patch } : e)) }
   function deleteEl(id: string) { setFreeEls(els => els.filter(e => e.id !== id)); setSelEl(s => (s === id ? null : s)) }
@@ -871,7 +872,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <span style={{ fontSize: 13, fontWeight: 600, color: "#e8e3da" }}>Vous ne trouvez pas votre support ?</span>
               <span style={{ fontSize: 11.5, color: "#8a8177" }}>L'éditeur libre part d'un format A4 : vous posez le QR où vous voulez.</span>
             </div>
-            <button type="button" className="ps2-editeur" onClick={() => openItem("i11")} style={{ marginLeft: "auto", padding: "9px 18px", borderRadius: 999, border: "1px solid rgba(232,200,119,.35)", background: "linear-gradient(135deg, rgba(232,200,119,.16), rgba(201,162,77,.1))", color: "#e8c877", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer" }}>Éditeur libre</button>
+            <button type="button" className="ps2-editeur" onClick={() => { setMode("studio"); try { localStorage.setItem("qrowg-print-mode", "studio") } catch {}; openItem("i11") }} style={{ marginLeft: "auto", padding: "9px 18px", borderRadius: 999, border: "1px solid rgba(232,200,119,.35)", background: "linear-gradient(135deg, rgba(232,200,119,.16), rgba(201,162,77,.1))", color: "#e8c877", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer" }}>Éditeur libre</button>
           </div>
         </div>
       </div>
@@ -1318,6 +1319,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </>}
 
             {mobileTab === "qr" && <>
+              {/* Source du QR — DOIT être accessible sur mobile (sinon export bloqué faute de QR). */}
+              <Field label="Votre QR">
+                <Seg value={qrSource} options={["mine", "png"]} labels={["Mes QR", "Importer un PNG"]} onPick={v => setQrSource(v as "mine" | "png")} />
+                {qrSource === "mine"
+                  ? (myQRs.length > 0
+                      ? <select value={qrPickId} onChange={e => setQrPickId(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer", marginTop: 8 }}>{myQRs.map(q => <option key={q.id} value={q.id}>{q.label}</option>)}</select>
+                      : <p style={{ fontSize: 12, color: C.fgMuted, margin: "8px 0 0", lineHeight: 1.45 }}>Aucun QR — <Link href="/dashboard/qr-codes" style={{ color: C.gold }}>créez-en un</Link> ou importez un PNG.</p>)
+                  : (qrPng
+                      ? <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}><div style={{ width: 42, height: 42, borderRadius: 8, background: "#fff", overflow: "hidden", flexShrink: 0, border: `1px solid ${C.hairline}` }}><img src={qrPng} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div><span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted }}>QR importé.</span><button onClick={() => setQrPng(null)} aria-label="Retirer le QR" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 34, height: 34, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button></div>
+                      : <button onClick={() => qrPngInput.current?.click()} style={{ marginTop: 8, width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer un PNG</button>)}
+                <input ref={qrPngInput} type="file" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+              </Field>
               <Field label="Taille du QR"><RailInline value={sizeId} options={SIZES.map(s => ({ id: s.id, label: s.label, note: s.note }))} onPick={setSizeId} /></Field>
               <Field label="Pastille"><Seg value={qrBadge} options={["carre", "cercle", "aucune"]} onPick={setQrBadge} labels={["Carré", "Cercle", "Aucune"]} /></Field>
               {(() => {
@@ -1699,7 +1712,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const fcur: React.CSSProperties = onFocus ? { cursor: "pointer" } : {}
   const fcls = onFocus ? "ps-foc" : undefined
   const fclick = (panel: string) => onFocus ? (e: React.MouseEvent) => { e.stopPropagation(); onFocus(panel) } : undefined
-  const kickerEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: bandColor, ...clampTxt, ...fcur }}>{brand}</div>
+  const kickerEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: traitInk(bandColor, pal.flat, pal.fg), ...clampTxt, ...fcur }}>{brand}</div>
   const titleEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol, ...clampTxt, ...fcur }}>{shownTitle}</div>
   const subtitleEl = subtitle.trim() ? <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt, ...fcur }}>{subtitle}</div> : null
   // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
@@ -2079,6 +2092,9 @@ function ZoomBar({ zoom, setZoom }: { zoom: number; setZoom: (v: number | ((z: n
    Positions en fraction du support -> l'aperçu packshot et la planche PDF les rendent au même endroit. */
 function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMove, zoom = 1 }: { item: Item; design: any; freeEls: FreeEl[]; setFreeEls: React.Dispatch<React.SetStateAction<FreeEl[]>>; selEl: string | null; setSelEl: (v: string | null) => void; onQrMove: (x: number, y: number) => void; zoom?: number }) {
   const wrapRef = useRef<HTMLDivElement>(null)
+  // Police du corps = celle du thème/typo (pas Inter en dur) → WYSIWYG : même rendu à l'édition et à l'export.
+  const efTypo = TYPOS.find(t => t.id === design.eTypo)
+  const editorBodyFont: string = efTypo?.b ? `"${efTypo.b}",Helvetica,Arial,sans-serif` : (design.pal?.bodyFont || "Inter, system-ui, sans-serif")
   const [avail, setAvail] = useState(460)   // largeur dispo mesurée → l'éditeur TIENT à l'écran à 100 % (mobile inclus)
   useEffect(() => { const m = () => { const cw = wrapRef.current?.clientWidth; if (cw) setAvail(cw) }; m(); window.addEventListener("resize", m); return () => window.removeEventListener("resize", m) }, [])
   const ref = useRef<HTMLDivElement>(null)
@@ -2160,9 +2176,9 @@ function FlatEditor({ item, design, freeEls, setFreeEls, selEl, setSelEl, onQrMo
             onKeyDown={e => { if (e.key === "Escape") e.currentTarget.blur() }}
             onPointerDown={e => e.stopPropagation()}
             rows={Math.max(1, el.text.split("\n").length)}
-            style={{ position: "absolute", left: `${el.x * 100}%`, top: `${el.y * 100}%`, width: `${el.w * 100}%`, fontSize: unit * el.size, color: el.color, textAlign: el.align, fontFamily: el.font || "Inter, system-ui, sans-serif", fontWeight: el.weight, lineHeight: 1.15, background: "rgba(0,0,0,0.18)", border: `1px solid ${C.gold}`, outline: "none", resize: "none", overflow: "hidden", padding: 0, margin: 0, zIndex: 8, boxSizing: "border-box", transform: el.rot ? `rotate(${el.rot}deg)` : undefined, transformOrigin: "top left", opacity: el.opacity ?? 1 }} />
+            style={{ position: "absolute", left: `${el.x * 100}%`, top: `${el.y * 100}%`, width: `${el.w * 100}%`, fontSize: unit * el.size, color: el.color, textAlign: el.align, fontFamily: el.font || editorBodyFont, fontWeight: el.weight, lineHeight: 1.15, background: "rgba(0,0,0,0.18)", border: `1px solid ${C.gold}`, outline: "none", resize: "none", overflow: "hidden", padding: 0, margin: 0, zIndex: 8, boxSizing: "border-box", transform: el.rot ? `rotate(${el.rot}deg)` : undefined, transformOrigin: "top left", opacity: el.opacity ?? 1 }} />
         }
-        return <FreeElView key={el.id} el={el} unit={unit} bodyFont="Inter, system-ui, sans-serif" editable selected={selEl === el.id} onDown={onDown} onEdit={() => { if (!el.locked) setEditingId(el.id) }} />
+        return <FreeElView key={el.id} el={el} unit={unit} bodyFont={editorBodyFont} editable selected={selEl === el.id} onDown={onDown} onEdit={() => { if (!el.locked) setEditingId(el.id) }} />
       })}
       {/* Poignée de redimensionnement (coin bas-droite de l'élément sélectionné). */}
       {(() => {
@@ -2191,6 +2207,10 @@ function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pa
   const support = (
     <SupportVisual {...props} physW={trimWidthMm(item)} w={clampedW} h={clampedH} />
   )
+  // Reflet : QR STATIQUE (FauxQR décoratif) — évite un 2e moteur qr-code-styling live par aperçu.
+  const supportMirror = (
+    <SupportVisual {...props} qrStatic physW={trimWidthMm(item)} w={clampedW} h={clampedH} />
+  )
   return (
     <div style={{ position: "relative", width: "100%", aspectRatio: "1 / 1", maxWidth: box, margin: "0 auto", borderRadius: 20, overflow: "hidden", background: scene.background }}>
       {/* sol */}
@@ -2203,7 +2223,7 @@ function Packshot(props: { item: Item; scene: ReturnType<typeof sceneLayers>; pa
           <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,1)", opacity: scene.castShadow.opacity, filter: `blur(${scene.castShadow.blur}px)`, transform: `translate(${scene.castShadow.dx}px, ${scene.castShadow.dy}px) scaleX(${scene.castShadow.scaleX})`, borderRadius: item.shape === "round" ? "50%" : 10 }} />
           {support}
           {/* reflet */}
-          {scene.mirror > 0 && <div style={{ position: "absolute", top: "100%", left: 0, right: 0, transform: "scaleY(-1)", opacity: scene.mirror, maskImage: "linear-gradient(to bottom, rgba(0,0,0,.5), transparent 60%)", WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,.5), transparent 60%)", pointerEvents: "none" }}>{support}</div>}
+          {scene.mirror > 0 && <div style={{ position: "absolute", top: "100%", left: 0, right: 0, transform: "scaleY(-1)", opacity: scene.mirror, maskImage: "linear-gradient(to bottom, rgba(0,0,0,.5), transparent 60%)", WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,.5), transparent 60%)", pointerEvents: "none" }}>{supportMirror}</div>}
         </div>
       </div>
       {/* lumière + grain */}

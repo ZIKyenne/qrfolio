@@ -22,6 +22,7 @@ import { createQR, updateQR, getQRBlob, downloadBlob, blobToDataUrl, buildAndDow
 import { composeLogo } from "./logoCompose"
 import { BatchQrModal } from "./BatchQrModal"
 import { SegmentedControl } from "./SegmentedControl"
+import { SegTabs } from "./SegTabs"
 import type QRCodeStyling from "qr-code-styling"
 
 // Editeur libre (Fabric.js) : charge uniquement cote client (touche au DOM)
@@ -99,6 +100,8 @@ export const CORNER_STYLE_LIST: { id: QRStyleConfig["cornerStyle"]; label: strin
   { id:"luxury",   label:"Luxury"  },
   { id:"minimal",  label:"Minimal" },
 ]
+// Aperçu de forme (border-radius) par style de coins — hoisté (constant, indexé au rendu).
+const CORNER_PREVIEW_RADIUS: Record<string, string> = { square: "2px", rounded: "4px", circle: "50%", diamond: "2px", luxury: "6px 1px 6px 1px", minimal: "1px" }
 
 export const GRADIENT_OPTS: { id: QRStyleConfig["gradient"]; label: string }[] = [
   { id:"none",     label:"Aucun"    },
@@ -2648,25 +2651,12 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               )
             })()}
           </div>
-          {active && (() => {
-            // Sélecteur de vue — segmented rail doré discret (handoff « Sélecteur de vue »).
-            const views = [["none", "QR", <QrCode size={14}/>], ["card", "Carte", <CreditCard size={14}/>], ["poster", "Affiche", <ImageIcon size={14}/>]] as const
-            const vi = scene === "card" ? 1 : scene === "poster" ? 2 : 0
-            return (
-              <div role="tablist" aria-label="Aperçu" style={{ position: "relative", display: "grid", gridAutoFlow: "column", gridAutoColumns: "1fr", width: "min(306px, 48vw)", flexShrink: 0, padding: 4, borderRadius: 12, background: "#100e0c", border: "1px solid #221f1b", boxShadow: "0 1px 0 rgba(255,255,255,.03) inset, 0 -1px 0 rgba(0,0,0,.5) inset", isolation: "isolate" }}>
-                <div aria-hidden="true" className="qv-ind" style={{ position: "absolute", top: 4, bottom: 4, left: 4, width: "calc((100% - 8px) / 3)", transform: `translateX(calc(${vi} * 100%))`, transition: "transform .38s cubic-bezier(.2,.85,.2,1)", borderRadius: 9, background: "rgba(232,200,119,.07)", border: "1px solid rgba(232,200,119,.34)", boxShadow: "0 0 0 1px rgba(0,0,0,.25)", pointerEvents: "none" }} />
-                {views.map(([k, l, icon], i) => {
-                  const on = vi === i
-                  return (
-                    <button key={k} role="tab" aria-selected={on} type="button" onClick={() => setScene(k as any)} className="qv-tab"
-                      style={{ position: "relative", zIndex: 1, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 8px", borderRadius: 9, fontSize: 12.5, fontWeight: on ? 600 : 500, color: on ? "#e8c877" : "#7d766c", transition: "color .2s ease, font-weight .18s ease", whiteSpace: "nowrap" }}>
-                      <span style={{ display: "inline-flex", transition: "transform .26s cubic-bezier(.2,.8,.2,1)", transform: on ? "scale(1.08)" : "none" }}>{icon}</span> {l}
-                    </button>
-                  )
-                })}
-              </div>
-            )
-          })()}
+          {active && (
+            <SegTabs ariaLabel="Aperçu" width="min(306px, 48vw)" fontSize={12.5}
+              items={[{ key: "none", label: "QR", icon: <QrCode size={14}/> }, { key: "card", label: "Carte", icon: <CreditCard size={14}/> }, { key: "poster", label: "Affiche", icon: <ImageIcon size={14}/> }]}
+              value={scene === "card" ? 1 : scene === "poster" ? 2 : 0}
+              onChange={(_, k) => setScene(k as any)} />
+          )}
         </div>
         {active ? (() => {
           const diag = getDiagnostic(diagFg || fg, diagBg || bg)
@@ -3546,7 +3536,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         else setCorner("square")
                       }}
                             style={{ display:"flex", alignItems:"center", gap:9, padding:"10px 12px", background:isActive?"color-mix(in srgb, var(--accent) 10%, transparent)":"rgba(255,255,255,0.02)", border:`1px solid ${isActive?"color-mix(in srgb, var(--accent) 40%, transparent)":"rgba(255,255,255,0.07)"}`, borderRadius:11, cursor:"pointer", opacity:canAccess?1:0.85, position:"relative" as const }}>
-                            <span aria-hidden="true" style={{ width:13, height:13, flexShrink:0, border:`1.5px solid ${isActive?G:MUTED}`, borderRadius:(({square:"2px",rounded:"4px",circle:"50%",diamond:"2px",luxury:"6px 1px 6px 1px",minimal:"1px"} as Record<string,string>)[cs.id ?? "square"]), transform:(cs.id==="diamond"?"rotate(45deg)":cs.id==="minimal"?"scale(0.8)":"none"), transition:"transform .26s cubic-bezier(.2,.8,.2,1), border-radius .26s ease" }} />
+                            <span aria-hidden="true" style={{ width:13, height:13, flexShrink:0, border:`1.5px solid ${isActive?G:MUTED}`, borderRadius:CORNER_PREVIEW_RADIUS[cs.id ?? "square"], transform:(cs.id==="diamond"?"rotate(45deg)":cs.id==="minimal"?"scale(0.8)":"none"), transition:"transform .26s cubic-bezier(.2,.8,.2,1), border-radius .26s ease" }} />
                             <span style={{ color:isActive?G:"#F5F0E8", fontSize:12, fontWeight:isActive?600:500 }}>{cs.label}</span>
                             {isPro && !canAccess && (
                               <span style={{ position:"absolute", top:4, right:4, display:"inline-flex", alignItems:"center", gap:1, background:G, borderRadius:4, padding:"1px 4px", fontSize:7, color:"#080808", fontWeight:800, boxShadow:"0 2px 6px rgba(0,0,0,0.4)" }}><Sparkles size={6} color="#080808"/>PRO</span>
@@ -3556,22 +3546,10 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       })}
                     </div>
                     <p style={{ color:MUTED, fontSize:10.5, fontWeight:600, textTransform:"uppercase", letterSpacing:1.6, margin:"0 0 8px" }}>Arrondi général</p>
-                    {(() => {
-                      const rounds = [["square","Carré"],["rounded","Arrondi"],["dot","Dots"]] as const
-                      const ri = corner === "rounded" ? 1 : corner === "dot" ? 2 : 0
-                      return (
-                        <div role="tablist" aria-label="Arrondi général" style={{ position:"relative", display:"grid", gridAutoFlow:"column", gridAutoColumns:"1fr", padding:4, borderRadius:12, background:"#100e0c", border:"1px solid #221f1b", boxShadow:"0 1px 0 rgba(255,255,255,.03) inset, 0 -1px 0 rgba(0,0,0,.5) inset", isolation:"isolate" }}>
-                          <div aria-hidden="true" className="qv-ind" style={{ position:"absolute", top:4, bottom:4, left:4, width:"calc((100% - 8px) / 3)", transform:`translateX(calc(${ri} * 100%))`, transition:"transform .38s cubic-bezier(.2,.85,.2,1)", borderRadius:9, background:"rgba(232,200,119,.07)", border:"1px solid rgba(232,200,119,.34)", boxShadow:"0 0 0 1px rgba(0,0,0,.25)", pointerEvents:"none" }} />
-                          {rounds.map(([c,l],i) => {
-                            const on = ri === i
-                            return (
-                              <button key={c} role="tab" aria-selected={on} type="button" onClick={() => setCorner(c)} className="qv-tab"
-                                style={{ position:"relative", zIndex:1, background:"transparent", border:"none", cursor:"pointer", padding:"9px 10px", borderRadius:9, fontSize:13, fontWeight:on?600:500, color:on?"#e8c877":"#7d766c", transition:"color .2s ease, font-weight .18s ease", whiteSpace:"nowrap" }}>{l}</button>
-                            )
-                          })}
-                        </div>
-                      )
-                    })()}
+                    <SegTabs ariaLabel="Arrondi général"
+                      items={[{ key:"square", label:"Carré" }, { key:"rounded", label:"Arrondi" }, { key:"dot", label:"Dots" }]}
+                      value={corner === "rounded" ? 1 : corner === "dot" ? 2 : 0}
+                      onChange={(_, k) => setCorner(k as any)} />
                   </AccSection>
 
                   )}

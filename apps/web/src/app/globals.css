@@ -403,6 +403,31 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
   .dam-primary:hover, .dam-selbar-sec:hover, .dam-selbar-del:hover, .dam-sel:active, .dam-menu:active, .dam-primary:active { transform:none; }
 }
 
+/* ── Page Templates (DA dorée) — recherche, chips, rail de plans, favori (handoff « Boutons Templates ») ── */
+.dat-search { width:100%; max-width:560px; margin:0 auto; box-sizing:border-box; display:flex; align-items:center; gap:11px; padding:0 17px; height:52px; border-radius:14px; background:#141210; border:1px solid #221f1b; transition:border-color .22s ease; }
+.dat-search:focus-within { border-color:rgba(232,200,119,.5); }
+.dat-search input { flex:1; min-width:0; background:transparent; border:none; color:#e8e3da; font-size:14px; font-family:inherit; outline:none; }
+.dat-search input::placeholder { color:#6b6258; }
+.dat-searchicon { color:#8a8177; transition:color .2s ease; flex:none; }
+.dat-search:focus-within .dat-searchicon { color:#e8c877; }
+.dat-chip { display:inline-flex; align-items:center; gap:9px; padding:10px 17px; border-radius:999px; border:1px solid rgba(232,200,119,.24); cursor:pointer; background-color:#14110d; background-image:linear-gradient(135deg, rgba(232,200,119,.1), rgba(201,162,77,.05)); color:#c8bfb2; font-size:13.5px; font-weight:500; white-space:nowrap; font-family:inherit; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.dat-chip:hover { border-color:rgba(232,200,119,.6); color:#f0d590; transform:translateY(-2px); box-shadow:0 10px 22px -12px rgba(201,162,77,.5); }
+.dat-chip:active { transform:scale(.97); }
+.dat-chip.on { background-image:linear-gradient(135deg,#e8c877,#c9a24d); border-color:#e8c877; color:#1a1408; font-weight:700; box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 6px 16px -10px rgba(201,162,77,.7); }
+.dat-chip svg { color:#c9a24d; flex:none; }
+.dat-chip.on svg { color:#1a1408; }
+.dat-chippill { padding:1px 7px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(232,200,119,.14); color:#c9a24d; }
+.dat-chip.on .dat-chippill { background:rgba(26,20,8,.2); color:#1a1408; }
+.dat-rail { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:5px; border-radius:999px; background:#141210; border:1px solid #221f1b; width:fit-content; margin:0 auto; }
+.dat-planpill { display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border-radius:999px; border:none; cursor:pointer; background:transparent; color:#8a8177; font-size:13.5px; font-weight:500; white-space:nowrap; font-family:inherit; transition:background .22s ease, color .2s ease, box-shadow .22s ease; }
+.dat-planpill:hover { color:#e8c877; }
+.dat-planpill.on { background:linear-gradient(135deg,#e8c877,#c9a24d); color:#1a1408; font-weight:700; box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 6px 14px -9px rgba(201,162,77,.7); }
+.dat-fav { display:flex; align-items:center; justify-content:center; border-radius:50%; cursor:pointer; background:rgba(13,11,9,.6); border:1px solid rgba(255,255,255,.16); color:#c8bfb2; backdrop-filter:blur(6px); transition:background .22s ease, border-color .22s ease, color .2s ease, transform .16s cubic-bezier(.2,.8,.2,1); }
+.dat-fav:hover { background:rgba(232,200,119,.22); border-color:#e8c877; color:#f0d590; }
+.dat-fav:active { transform:scale(.9); }
+.dat-fav.on { background:rgba(232,200,119,.18); border-color:#e8c877; color:#e8c877; }
+@media (prefers-reduced-motion: reduce) { .dat-chip:hover, .dat-chip:active, .dat-fav:active { transform:none; } }
+
 /* Corrections DA §09 — onglet Supports : CTA Print Studio en carte bronze (plus d'aplat plein) + vignettes de format */
 .da-suppcta { position:relative; overflow:hidden; cursor:pointer; width:100%; display:flex; align-items:center; gap:13px; padding:15px 17px; border-radius:12px; background:linear-gradient(135deg, rgba(232,200,119,.07), rgba(201,162,77,.02)); border:1px solid rgba(232,200,119,.3); transition:background .3s ease, border-color .3s ease; text-align:left; }
 .da-suppcta:hover { background:linear-gradient(135deg, rgba(232,200,119,.12), rgba(201,162,77,.05)); border-color:rgba(232,200,119,.55); }

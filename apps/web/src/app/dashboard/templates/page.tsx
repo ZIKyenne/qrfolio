@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { PLAN_RANK } from "@/lib/plans"
 import { slugifyBase } from "@/lib/slug"
-import { Sparkles, ArrowRight, Check, X, Lock, Search, Heart, Eye, Clock, Layers, SlidersHorizontal } from "lucide-react"
+import { Sparkles, ArrowRight, Check, X, Lock, Search, Heart, Eye, Clock, Layers, SlidersHorizontal,
+  UtensilsCrossed, Martini, Coffee, Laptop, Target, User, Building2, Megaphone, Music, Camera, Home, Brush, PartyPopper, Rocket, ShoppingBag, Zap, Flame } from "lucide-react"
 import TemplatePreviewModal from "./TemplatePreviewModal"
 import Particles from "@/components/Particles"
 import { useIsMobile } from "@/lib/useIsMobile"
@@ -65,6 +66,16 @@ const BUSINESS_CATEGORIES: Category[] = [
   { id: "SaaS",        label: "SaaS",        emoji: "🚀", color: "#818CF8" },
   { id: "Ecommerce",   label: "E-commerce",  emoji: "🛍️", color: "#FB923C" },
 ]
+
+// Icônes du design system (lucide) par catégorie et par plan — DA dorée, currentColor (handoff Templates).
+const CATEGORY_ICON: Record<string, any> = {
+  Tous: Sparkles, Restaurant: UtensilsCrossed, Bar: Martini, Cafe: Coffee,
+  Freelance: Laptop, Consultant: Target, Coach: User, Agence: Building2,
+  Influenceur: Megaphone, Musicien: Music, Photographe: Camera, Immobilier: Home,
+  Beaute: Brush, Sante: Heart, Evenement: PartyPopper, SaaS: Rocket, Ecommerce: ShoppingBag,
+}
+const PLAN_MARK: Record<string, any> = { free: Sparkles, starter: Zap, pro: Flame }
+const PLAN_CLEAN_LABEL: Record<string, string> = { all: "Tous les plans", free: "Gratuit", starter: "Starter", pro: "Pro" }
 
 // Mapping catégorie → ids templates (extensible)
 const CATEGORY_MAP: Record<string, string[]> = {
@@ -250,21 +261,24 @@ export default function TemplatesPage() {
   const secteurChipEls = useMemo(() => visibleCats.map(cat => {
     const isActive = activeMetier === cat.id
     const count = countByMetier[cat.id] || 0
+    const Icon = CATEGORY_ICON[cat.id] || Sparkles
     return (
-      <button key={cat.id} type="button" onClick={() => setActiveMetier(cat.id)}
-        style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: isActive ? cat.color + "18" : "rgba(255,255,255,0.03)", border: isActive ? "1px solid " + cat.color + "50" : "1px solid rgba(255,255,255,0.07)", borderRadius: 20, color: isActive ? cat.color : MUTED, fontSize: 12, fontWeight: isActive ? 700 : 500, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" as const }}>
-        <span style={{ fontSize: 13 }}>{cat.emoji}</span>
+      <button key={cat.id} type="button" aria-pressed={isActive} onClick={() => setActiveMetier(cat.id)} className={`dat-chip${isActive ? " on" : ""}`}>
+        <Icon size={14} />
         {cat.label}
-        <span style={{ background: isActive ? cat.color + "25" : "rgba(255,255,255,0.06)", color: isActive ? cat.color : "#555", borderRadius: 9, padding: "1px 6px", fontSize: 10, fontWeight: 700, minWidth: 18, textAlign: "center" as const }}>{count}</span>
+        <span className="dat-chippill">{count}</span>
       </button>
     )
   }), [visibleCats, activeMetier, countByMetier])
-  const planChipEls = useMemo(() => PLAN_FILTERS.map(([plan, label, color]) => (
-    <button key={plan} type="button" onClick={() => setActivePlan(plan)}
-      style={{ background: activePlan === plan ? color + "18" : "transparent", border: "1px solid " + (activePlan === plan ? color + "50" : "rgba(255,255,255,0.08)"), borderRadius: 20, padding: "6px 14px", color: activePlan === plan ? color : MUTED, fontSize: 12, fontWeight: activePlan === plan ? 700 : 400, cursor: "pointer", transition: "all 0.15s" }}>
-      {label}
-    </button>
-  )), [activePlan])
+  const planChipEls = useMemo(() => PLAN_FILTERS.map(([plan]) => {
+    const on = activePlan === plan
+    const Mark = PLAN_MARK[plan]
+    return (
+      <button key={plan} type="button" aria-pressed={on} onClick={() => setActivePlan(plan)} className={`dat-planpill${on ? " on" : ""}`}>
+        {PLAN_CLEAN_LABEL[plan] || plan}{Mark && <Mark size={12} />}
+      </button>
+    )
+  }), [activePlan])
 
   return (
     <div style={{ minHeight: "100vh", background: "transparent", paddingBottom: 120, fontFamily: "DM Sans, sans-serif", position: "relative" }}>
@@ -284,16 +298,11 @@ export default function TemplatesPage() {
         </p>
 
         {/* ── Recherche ───────────────────────────────────────────────────── */}
-        <div style={{ position: "relative", maxWidth: 420, margin: "0 auto 24px", width: "100%" }}>
-          <Search size={14} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: MUTED, pointerEvents: "none" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un template, un secteur..."
-            style={{ width: "100%", background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)", borderRadius: 12, padding: "11px 14px 11px 38px", color: "#F5F0E8", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
-          {search && (
-            <button type="button" onClick={() => setSearch("")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: MUTED, padding: 4 }}>
-              <X size={12} />
-            </button>
-          )}
-        </div>
+        <label className="dat-search" style={{ marginBottom: 24 }}>
+          <Search size={15} className="dat-searchicon" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un template, un secteur…" />
+          {search && <button type="button" onClick={() => setSearch("")} aria-label="Effacer la recherche" className="dam-clear" style={{ width: 24, height: 24 }}><X size={14} /></button>}
+        </label>
 
         {!isMobile ? (
           <>
@@ -302,7 +311,7 @@ export default function TemplatesPage() {
               {secteurChipEls}
             </div>
             {/* ── Filtres Plan (desktop) ──────────────────────────────────── */}
-            <div style={{ display: "flex", gap: 7, justifyContent: "center", flexWrap: "wrap", marginBottom: 32 }}>
+            <div className="dat-rail" style={{ marginBottom: 32 }}>
               {planChipEls}
             </div>
           </>
@@ -445,9 +454,10 @@ export default function TemplatesPage() {
                     </div>
 
                     {/* Favori (haut droit) */}
-                    <button type="button" onClick={(e) => toggleFav(template.id, e)}
-                      style={{ position: "absolute", top: 8, right: 8, width: isMobile ? 38 : 28, height: isMobile ? 38 : 28, borderRadius: "50%", background: isFav ? "rgba(239,68,68,0.15)" : "rgba(0,0,0,0.4)", border: "1px solid " + (isFav ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)"), display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.15s", zIndex: 2 }}>
-                      <Heart size={12} fill={isFav ? "#EF4444" : "none"} color={isFav ? "#EF4444" : "#888"} />
+                    <button type="button" aria-pressed={isFav} aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"} onClick={(e) => toggleFav(template.id, e)}
+                      className={`dat-fav${isFav ? " on" : ""}`}
+                      style={{ position: "absolute", top: 8, right: 8, width: isMobile ? 38 : 30, height: isMobile ? 38 : 30, zIndex: 2 }}>
+                      <Heart size={14} fill={isFav ? "currentColor" : "none"} />
                     </button>
 
                     {/* Check si sélectionné */}
@@ -520,18 +530,22 @@ export default function TemplatesPage() {
                     {/* Actions */}
                     <div style={{ display: "flex", gap: 7 }}>
                       {/* Aperçu (masqué sur mobile : tap sur la carte = aperçu) */}
-                      {!isMobile && <button type="button" onClick={(e) => { e.stopPropagation(); setPreview(template.id) }}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, color: MUTED, fontSize: 11, cursor: "pointer", transition: "all 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#F5F0E8" }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = MUTED }}>
-                        <Eye size={11} /> Aperçu
+                      {!isMobile && <button type="button" onClick={(e) => { e.stopPropagation(); setPreview(template.id) }} className="dam-selbar-sec" style={{ flex: "none", padding: "11px 17px", fontSize: 13.5 }}>
+                        <Eye size={14} /> Aperçu
                       </button>}
 
-                      {/* Utiliser */}
+                      {/* Utiliser — primaire or (halo/reflet) hors état verrouillé */}
                       <button type="button" onClick={(e) => { e.stopPropagation(); if (locked) { router.push("/upgrade"); return } setNamingFor(template.id) }}
                         disabled={!!creating}
-                        style={{ flex: isMobile ? 1 : 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: isMobile ? "11px 10px" : "8px 12px", background: locked ? "rgba(255,255,255,0.04)" : isCreating ? "color-mix(in srgb, var(--accent) 20%, transparent)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border: locked ? "1px solid rgba(255,255,255,0.08)" : "none", borderRadius: 9, color: locked ? MUTED : "#080808", fontSize: 11, fontWeight: 700, cursor: creating ? "not-allowed" : "pointer", opacity: creating && !isCreating ? 0.5 : 1, transition: "all 0.15s" }}>
-                        {isCreating ? <><div style={{ width: 10, height: 10, border: "1.5px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> Création...</> : locked ? <><Lock size={10} /> Débloquer</> : <>Utiliser <ArrowRight size={10} /></>}
+                        className={locked ? undefined : "dam-primary"}
+                        style={locked
+                          ? { flex: isMobile ? 1 : 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: isMobile ? "11px 10px" : "11px 16px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 11, color: MUTED, fontSize: 13.5, fontWeight: 700, cursor: "pointer", transition: "all 0.15s" }
+                          : { flex: isMobile ? 1 : 2, padding: isMobile ? "11px 10px" : "11px 16px", fontSize: 13.5, fontWeight: 700, opacity: creating && !isCreating ? 0.5 : 1, cursor: creating ? "not-allowed" : "pointer" }}>
+                        {!locked && <span className="dam-gloss" aria-hidden />}
+                        {!locked && <span className="dam-sheen" aria-hidden />}
+                        <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                          {isCreating ? <><span style={{ width: 12, height: 12, border: "1.5px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> Création…</> : locked ? <><Lock size={13} /> Débloquer</> : <>Utiliser <ArrowRight size={14} /></>}
+                        </span>
                       </button>
                     </div>
                   </div>

@@ -126,7 +126,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
       (pageFilter === "all" || v.page_id === pageFilter)
     ), [pageViews, cutoff, pageFilter])
 
-  const totalViews = filteredViews.length || 1
+  const totalViews = filteredViews.length   // VRAIE valeur (pas de « || 1 » : 0 vue ≠ 1 vue, sinon CTR faux)
 
   // ── Agrégation par lien ───────────────────────────────────────────────────
   const linkData = useMemo(() => {
@@ -235,7 +235,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         {[
           { label: "Clics totaux",  value: totalClicks.toLocaleString(),                    icon: <MousePointerClick size={13} color={G} /> },
-          { label: "Vues totales",  value: (totalViews === 1 ? 0 : totalViews).toLocaleString(), icon: <TrendingUp size={13} color="var(--success)" /> },
+          { label: "Vues totales",  value: totalViews.toLocaleString(), icon: <TrendingUp size={13} color="var(--success)" /> },
           { label: "Liens uniques", value: linkData.length,                                  icon: <Hash size={13} color="#7B61FF" /> },
         ].map((stat, i) => (
           <div key={i} style={{ background: SURFACE, border: "1px solid " + BORDER, borderRadius: 10, padding: "10px 16px", display: "flex", alignItems: "center", gap: 8, flex: "1 1 120px" }}>

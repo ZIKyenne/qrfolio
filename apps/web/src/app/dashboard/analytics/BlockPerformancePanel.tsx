@@ -109,7 +109,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
     blocks.filter(b => pageId === "all" || b.page_id === pageId),
     [blocks, pageId])
 
-  const totalViews = fViews.length || 1
+  const totalViews = fViews.length   // VRAIE valeur (pas de « || 1 » : sinon CTR = clics/1 = 500 %)
 
   const stats = useMemo(() => {
     const clicksById: Record<string, number> = {}
@@ -133,7 +133,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
     return Object.entries(byType).map(([type, d]) => {
       const cfg = getCfg(type)
       const clics = Math.max(d.directClicks, clicksByType[type] || 0)
-      const ctr   = parseFloat(((clics / totalViews) * 100).toFixed(1))
+      const ctr   = totalViews > 0 ? parseFloat(((clics / totalViews) * 100).toFixed(1)) : null
       // CTR réel = clics / impressions (bloc réellement vu). null si pas encore d'impression.
       const realCtr = d.impr > 0 ? Math.min(100, parseFloat(((clics / d.impr) * 100).toFixed(1))) : null
       // CTR affiché = réel (par impression) si mesuré, sinon estimation par vue de page.
@@ -147,7 +147,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
   const sorted = useMemo(() => {
     const arr = [...stats]
     if (sortBy === "clicks") arr.sort((a, b) => b.clics - a.clics)
-    if (sortBy === "ctr")    arr.sort((a, b) => b.effCtr - a.effCtr)
+    if (sortBy === "ctr")    arr.sort((a, b) => (b.effCtr ?? -1) - (a.effCtr ?? -1))
     if (sortBy === "count")  arr.sort((a, b) => b.count - a.count)
     return arr
   }, [stats, sortBy])
@@ -165,7 +165,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
     .map(s => ({
       subject: s.cfg.label,
       Clics:   Math.round((s.clics / radarMax) * 100),
-      CTR:     Math.min(Math.round(s.effCtr * 4), 100),
+      CTR:     Math.min(Math.round((s.effCtr ?? 0) * 4), 100),
     }))
 
   return (
@@ -231,7 +231,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
           { icon: <MousePointerClick size={13} color={G} />,   label: "Interactions",    value: totalClicks.toLocaleString() },
           { icon: <Eye size={13} color="var(--success)" />,           label: "Vues",            value: fViews.length.toLocaleString() },
           { icon: <Layers size={13} color="#A78BFA" />,        label: "Interactifs",     value: String(interactCount) },
-          { icon: <TrendingUp size={13} color="#67E8F9" />,    label: "CTR global",      value: ((totalClicks / totalViews) * 100).toFixed(1) + "%" },
+          { icon: <TrendingUp size={13} color="#67E8F9" />,    label: "CTR global",      value: totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) + "%" : "—" },
         ].map((k, i) => (
           <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
             {k.icon}
@@ -292,7 +292,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
                 <span style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{row.clics}</span>
                 <span title={row.ctrIsReal ? "CTR réel : clics ÷ impressions (bloc réellement vu)" : "Estimation : clics ÷ vues de page (pas encore d'impressions mesurées)"}
                   style={{ color: row.effCtr >= 10 ? "var(--success)" : row.effCtr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
-                  {row.ctrIsReal ? "" : "~"}{row.effCtr}%
+                  {row.effCtr == null ? "—" : `${row.ctrIsReal ? "" : "~"}${row.effCtr}%`}
                 </span>
                 <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: (row.clics / maxClics * 100) + "%", background: row.cfg.color, borderRadius: 3, opacity: 0.75, transition: "width 0.6s" }} />

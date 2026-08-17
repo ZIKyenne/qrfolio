@@ -300,20 +300,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }}>
         {/* Header: Logo + Toggle */}
         <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: collapsed ? "0 14px" : "0 16px 0 20px", borderBottom: "1px solid rgba(201,168,76,0.08)", flexShrink: 0 }}>
-          {/* Logo */}
-          <Link href="/dashboard" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8, overflow: "hidden" }}>
-            {/* Tuile QR (DA §10) : même marque que le header de page, animée (voile lumineux + un module qui s'allume). */}
-            <span style={{ position: "relative", display: "inline-block", overflow: "hidden", width: 30, height: 30, flexShrink: 0, borderRadius: 9, background: "linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 5%, transparent))", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)" }}>
-              <span aria-hidden="true" className="om-sweep" style={{ position: "absolute", top: "-20%", bottom: "-20%", left: 0, width: "26%", background: "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.45), rgba(255,255,255,0))" }} />
-              <span style={{ position: "absolute", left: 7, top: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 6, height: 6, border: "1.3px solid var(--accent)", borderRadius: 1.5 }}><span style={{ width: 1.6, height: 1.6, background: "var(--accent)" }} /></span>
-              <span style={{ position: "absolute", right: 7, top: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 6, height: 6, border: "1.3px solid var(--accent)", borderRadius: 1.5 }}><span style={{ width: 1.6, height: 1.6, background: "var(--accent)" }} /></span>
-              <span style={{ position: "absolute", left: 7, bottom: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 6, height: 6, border: "1.3px solid var(--accent)", borderRadius: 1.5 }}><span style={{ width: 1.6, height: 1.6, background: "var(--accent)" }} /></span>
-              <span aria-hidden="true" className="om-blink" style={{ position: "absolute", right: 7, bottom: 7, width: 2.5, height: 2.5, background: "var(--accent)" }} />
-              <span style={{ position: "absolute", right: 11, bottom: 11, width: 2.5, height: 2.5, background: "color-mix(in srgb, var(--accent) 50%, transparent)" }} />
+          {/* Logo — lockup 1b (handoff « Logo QROWG ») : repère à contour transparent + mot IVOIRE,
+              l'or ne reste que sur le Q ; lueur diagonale confinée au repère. Anime au montage. */}
+          <Link href="/dashboard" aria-label="QROWG — tableau de bord" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 11, overflow: "hidden" }}>
+            {/* Repère QR (30×30) : la lueur est masquée par l'overflow arrondi du repère. */}
+            <span style={{ position: "relative", overflow: "hidden", display: "inline-flex", flexShrink: 0, width: 30, height: 30, borderRadius: 9 }}>
+              <span aria-hidden="true" className="qlogo-glow" style={{ position: "absolute", top: "-60%", bottom: "-60%", left: 0, width: "34%", zIndex: 1, pointerEvents: "none", background: "linear-gradient(90deg, rgba(251,240,207,0), rgba(251,240,207,.4), rgba(251,240,207,0))", transform: "translateX(-170%) rotate(18deg)" }} />
+              <svg viewBox="0 0 32 32" width="30" height="30" style={{ flex: "none" }}>
+                <rect className="qlogo-frame" x=".9" y=".9" width="30.2" height="30.2" rx="9" fill="none" stroke="rgba(232,200,119,.26)" strokeWidth="1.4" style={{ transformBox: "fill-box", transformOrigin: "center" }} />
+                <g className="qlogo-pop" style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: ".1s" }}><rect x="7" y="7" width="7" height="7" rx="2" fill="none" stroke="#e8c877" strokeWidth="1.5" /><rect x="10" y="10" width="1.9" height="1.9" fill="#e8c877" /></g>
+                <g className="qlogo-pop" style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: ".18s" }}><rect x="18" y="7" width="7" height="7" rx="2" fill="none" stroke="rgba(244,239,230,.55)" strokeWidth="1.5" /><rect x="21" y="10" width="1.9" height="1.9" fill="rgba(244,239,230,.55)" /></g>
+                <g className="qlogo-pop" style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: ".26s" }}><rect x="7" y="18" width="7" height="7" rx="2" fill="none" stroke="rgba(244,239,230,.55)" strokeWidth="1.5" /><rect x="10" y="21" width="1.9" height="1.9" fill="rgba(244,239,230,.55)" /></g>
+                <rect className="qlogo-blink" x="19.5" y="19.5" width="2.6" height="2.6" fill="#e8c877" />
+                <rect x="23.4" y="23.4" width="2.6" height="2.6" fill="rgba(244,239,230,.3)" />
+              </svg>
             </span>
             {!collapsed && (
-              <span style={{ color: G, fontFamily: "Fraunces, serif", fontSize: 18, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textTransform: "uppercase" }}>
-                QRowg
+              <span style={{ position: "relative", display: "inline-block", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 18, fontWeight: 600, letterSpacing: ".035em", lineHeight: 1.15, whiteSpace: "nowrap" }}>
+                {/* Couche IVOIRE lisible (une seule pour les lecteurs d'écran) — les lettres montent une à une. */}
+                <span style={{ display: "inline-block", overflow: "hidden", padding: "3px 0", color: "#f4efe6", verticalAlign: "top" }}>
+                  {["Q", "R", "O", "W", "G"].map((ch, i) => (
+                    <span key={i} className="qlogo-rise" style={{ display: "inline-block", animationDelay: `${(0.22 + i * 0.055).toFixed(3)}s` }}>{ch}</span>
+                  ))}
+                </span>
+                {/* Calque OR (décoratif) clipé sur le Q — s'écoule dans le mot puis se retire (omGoldSettle). */}
+                <span aria-hidden="true" className="qlogo-gold" style={{ position: "absolute", left: 0, top: 3, whiteSpace: "nowrap", clipPath: "inset(0 79% 0 0)", background: "linear-gradient(100deg, #c09a45 0%, #fbf0cf 26%, #e8c877 52%, #c09a45 76%, #fbf0cf 100%)", backgroundSize: "220% 100%", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent" }}>QROWG</span>
               </span>
             )}
           </Link>

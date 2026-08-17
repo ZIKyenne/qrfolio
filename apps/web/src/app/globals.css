@@ -339,6 +339,23 @@ button:not(:disabled):active { transform: scale(.97); }
 .om-blink { animation:omBlink 5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .om-sweep, .om-halo, .om-blink { animation:none !important; } .om-sweep { opacity:0 !important; } }
 
+/* Logotype QROWG de la sidebar (handoff « Logo QROWG » — traitement 1b : mot ivoire, or sur le Q,
+   repère à contour transparent, lueur diagonale confinée au repère). Joue au montage de la sidebar. */
+@keyframes omPop        { 0% { transform:scale(.3); opacity:0; } 62% { transform:scale(1.14); opacity:1; } 100% { transform:scale(1); opacity:1; } }
+@keyframes omRise       { from { transform:translateY(112%) skewY(3deg); opacity:0; } to { transform:translateY(0) skewY(0); opacity:1; } }
+@keyframes omGoldSettle { 0% { clip-path:inset(0 100% 0 0); } 46% { clip-path:inset(0 -4% 0 0); } 64% { clip-path:inset(0 -4% 0 0); } 100% { clip-path:inset(0 79% 0 0); } }
+@keyframes omShift      { 0% { background-position:0% 50%; } 100% { background-position:200% 50%; } }
+@keyframes omDiag       { 0% { transform:translateX(-170%) rotate(18deg); } 24% { transform:translateX(360%) rotate(18deg); } 100% { transform:translateX(360%) rotate(18deg); } }
+.qlogo-frame { animation:omPop .52s cubic-bezier(.34,1.4,.5,1) both; }
+.qlogo-pop   { animation:omPop .46s cubic-bezier(.34,1.4,.5,1) both; }
+.qlogo-rise  { animation:omRise .58s cubic-bezier(.2,.85,.2,1) both; }
+.qlogo-gold  { animation:omGoldSettle 2.1s cubic-bezier(.3,.85,.2,1) both, omShift 9s linear infinite; animation-delay:.34s, 2.6s; }
+.qlogo-blink { animation:omBlink 5s ease-in-out infinite; animation-delay:.6s; }
+.qlogo-glow  { animation:omDiag 6.5s cubic-bezier(.42,0,.3,1) infinite both; animation-delay:2.2s; }
+@media (prefers-reduced-motion: reduce) {
+  .qlogo-frame, .qlogo-pop, .qlogo-rise, .qlogo-gold, .qlogo-blink, .qlogo-glow { animation:none !important; }
+}
+
 /* Corrections DA §04 — Recherche & filtres (page QR Codes Studio) : champs charbon chaud, rayon 11, focus doré */
 .da-field { background:#100e0c; border:1px solid #26211a; border-radius:11px; color:#F5F0E8; caret-color:#e8c877; outline:none; transition:border-color .2s ease, box-shadow .2s ease; }
 .da-field::placeholder { color:#7d766c; }

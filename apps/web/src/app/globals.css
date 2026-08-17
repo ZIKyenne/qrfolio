@@ -353,6 +353,56 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .da-pill.on { background:rgba(232,200,119,.1); border-color:rgba(232,200,119,.34); color:#e8c877; }
 .da-pill:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(201,162,77,.3); }
 
+/* ── Page Médias (DA dorée) — boutons & contrôles (handoff « Boutons Médias ») ── */
+@keyframes damSheen { 0% { transform:translateX(-150%) skewX(-18deg); opacity:0; } 14% { opacity:.75; } 100% { transform:translateX(320%) skewX(-18deg); opacity:0; } }
+.dam-halo { position:absolute; inset:-8px; border-radius:14px; background:radial-gradient(60% 120% at 50% 50%, rgba(201,162,77,.18), rgba(201,162,77,0) 70%); filter:blur(16px); animation:omHalo 6s ease-in-out infinite; pointer-events:none; }
+/* Primaire or (Importer / Utiliser) */
+.dam-primary { position:relative; display:inline-flex; align-items:center; gap:10px; padding:13px 24px; border-radius:11px; overflow:hidden; cursor:pointer; border:none; background:linear-gradient(135deg,#e8c877,#c9a24d); color:#1a1408; font-size:14.5px; font-weight:600; font-family:inherit; box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(90,62,20,.4) inset, 0 6px 16px -10px rgba(0,0,0,.8); transition:transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.dam-primary:hover { transform:translateY(-2px); box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(90,62,20,.4) inset, 0 12px 26px -10px rgba(201,162,77,.55); }
+.dam-primary:active { transform:translateY(0) scale(.975); }
+.dam-primary[aria-disabled="true"] { opacity:.55; cursor:default; transform:none; box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(90,62,20,.4) inset, 0 6px 16px -10px rgba(0,0,0,.8); }
+.dam-gloss { position:absolute; inset:0; background:linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 52%); pointer-events:none; }
+.dam-sheen { position:absolute; top:-20%; bottom:-20%; left:0; width:22%; background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.6) 50%, rgba(255,255,255,0)); opacity:0; transform:translateX(-150%) skewX(-18deg); pointer-events:none; }
+.dam-primary:hover .dam-sheen { animation:damSheen .85s cubic-bezier(.3,.7,.3,1) both; }
+/* Onglets segmentés */
+.dam-tabs { display:flex; gap:6px; padding:5px; border-radius:13px; background:#141210; border:1px solid #221f1b; }
+.dam-tab { display:flex; align-items:center; gap:9px; padding:9px 17px; border-radius:9px; border:none; cursor:pointer; font-size:13.5px; font-weight:500; background:transparent; color:#8a8177; font-family:inherit; transition:background .22s ease, color .2s ease, box-shadow .22s ease; }
+.dam-tab:hover { color:#e8c877; }
+.dam-tab.on { background:linear-gradient(135deg,#e8c877,#c9a24d); color:#1a1408; font-weight:700; box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 6px 14px -9px rgba(201,162,77,.7); }
+.dam-tabpill { padding:1px 7px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(232,200,119,.12); color:#c9a24d; }
+.dam-tab.on .dam-tabpill { background:rgba(26,20,8,.18); color:#1a1408; }
+/* Recherche */
+.dam-search { flex:1; min-width:240px; display:flex; align-items:center; gap:10px; padding:0 15px; height:46px; border-radius:12px; background:#141210; border:1px solid #221f1b; transition:border-color .22s ease; box-sizing:border-box; }
+.dam-search:focus-within { border-color:rgba(232,200,119,.5); }
+.dam-search input { flex:1; min-width:0; background:transparent; border:none; color:#e8e3da; font-size:13.5px; font-family:inherit; outline:none; }
+.dam-search input::placeholder { color:#6b6258; }
+.dam-clear { display:flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; border:1px solid #2a251d; background:transparent; color:#8a8177; cursor:pointer; transition:border-color .2s ease, color .2s ease; flex:none; }
+.dam-clear:hover { border-color:rgba(232,200,119,.6); color:#e8c877; }
+/* Contrôles de carte */
+.dam-sel { position:absolute; top:10px; left:10px; display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; cursor:pointer; padding:0; backdrop-filter:blur(6px); background:rgba(13,11,9,.55); border:1.5px solid rgba(255,255,255,.35); transition:background .2s ease, border-color .2s ease, transform .16s cubic-bezier(.2,.8,.2,1); }
+.dam-sel:hover { border-color:#e8c877; }
+.dam-sel:active { transform:scale(.9); }
+.dam-sel.on { background:#e8c877; border-color:#e8c877; }
+.dam-menu { position:absolute; top:10px; right:10px; display:flex; align-items:center; justify-content:center; gap:3px; width:30px; height:26px; border-radius:8px; cursor:pointer; background:rgba(13,11,9,.62); border:1px solid rgba(255,255,255,.14); color:#e8e3da; backdrop-filter:blur(6px); transition:background .22s ease, border-color .22s ease, color .2s ease, transform .16s cubic-bezier(.2,.8,.2,1); }
+.dam-menu:hover { background:rgba(232,200,119,.9); border-color:#e8c877; color:#1a1408; }
+.dam-menu:active { transform:scale(.92); }
+.dam-menu i { width:3px; height:3px; border-radius:50%; background:currentColor; display:block; }
+.dam-card { border:1px solid #221f1b; transition:border-color .24s ease; }
+.dam-card:hover { border-color:rgba(232,200,119,.4); }
+/* Barre de sélection */
+.dam-selbar-sec { display:inline-flex; align-items:center; gap:9px; padding:11px 19px; border-radius:11px; cursor:pointer; background-color:#14110d; background-image:linear-gradient(135deg, rgba(232,200,119,.1), rgba(201,162,77,.05)); border:1px solid rgba(232,200,119,.28); color:#e8c877; font-size:13.5px; font-weight:600; font-family:inherit; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.dam-selbar-sec:hover { border-color:rgba(232,200,119,.7); color:#f0d590; background-image:linear-gradient(135deg, rgba(232,200,119,.22), rgba(201,162,77,.12)); transform:translateY(-2px); box-shadow:0 10px 22px -12px rgba(201,162,77,.6); }
+.dam-selbar-sec:active { transform:scale(.97); }
+.dam-selbar-del { display:inline-flex; align-items:center; gap:9px; padding:11px 19px; border-radius:11px; cursor:pointer; background-color:#170f0e; background-image:linear-gradient(135deg, rgba(212,72,59,.12), rgba(212,72,59,.05)); border:1px solid rgba(212,72,59,.3); color:#e08b82; font-size:13.5px; font-weight:600; font-family:inherit; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.dam-selbar-del:hover { border-color:rgba(212,72,59,.75); color:#ff9b91; background-image:linear-gradient(135deg, rgba(212,72,59,.24), rgba(212,72,59,.12)); transform:translateY(-2px); box-shadow:0 10px 22px -12px rgba(212,72,59,.55); }
+.dam-selbar-del:active { transform:scale(.97); }
+.dam-selbar-del[aria-disabled="true"] { opacity:.5; cursor:default; transform:none; box-shadow:none; }
+@media (prefers-reduced-motion: reduce) {
+  .dam-halo { animation:none !important; }
+  .dam-primary:hover .dam-sheen { animation:none !important; }
+  .dam-primary:hover, .dam-selbar-sec:hover, .dam-selbar-del:hover, .dam-sel:active, .dam-menu:active, .dam-primary:active { transform:none; }
+}
+
 /* Corrections DA §09 — onglet Supports : CTA Print Studio en carte bronze (plus d'aplat plein) + vignettes de format */
 .da-suppcta { position:relative; overflow:hidden; cursor:pointer; width:100%; display:flex; align-items:center; gap:13px; padding:15px 17px; border-radius:12px; background:linear-gradient(135deg, rgba(232,200,119,.07), rgba(201,162,77,.02)); border:1px solid rgba(232,200,119,.3); transition:background .3s ease, border-color .3s ease; text-align:left; }
 .da-suppcta:hover { background:linear-gradient(135deg, rgba(232,200,119,.12), rgba(201,162,77,.05)); border-color:rgba(232,200,119,.55); }

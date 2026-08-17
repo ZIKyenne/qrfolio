@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Images, FileText, Upload, Trash2, Link2, Check, ExternalLink, MoreHorizontal } from "lucide-react"
+import { Images, FileText, Upload, Trash2, Link2, Check, ExternalLink, MoreHorizontal, Search, X } from "lucide-react"
 import { useImageUpload } from "../builder/useImageUpload"
 import { useConfirm } from "@/components/ui/Confirm"
 
@@ -94,40 +94,37 @@ export default function AssetsPage() {
           </h1>
           <p style={{ color: MUTED, fontSize: 13, margin: 0 }}>Toutes vos images et fichiers, réutilisables sur toutes vos pages. {total > 0 ? `${total} média${total > 1 ? "s" : ""}.` : ""}</p>
         </div>
-        <label style={{ display: "inline-flex", alignItems: "center", gap: 8, background: G, color: "#080808", fontSize: 13, fontWeight: 700, borderRadius: 10, padding: "10px 16px", cursor: uploading || busy ? "default" : "pointer", opacity: uploading || busy ? 0.6 : 1 }}>
-          <Upload size={15} /> {uploading || busy ? "En cours…" : "Importer"}
-          <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv" style={{ display: "none" }}
-            disabled={uploading || busy}
-            onChange={e => { onUploadFiles(Array.from(e.target.files || [])); e.target.value = "" }} />
-        </label>
+        <div style={{ position: "relative" }}>
+          <div className="dam-halo" aria-hidden />
+          <label className="dam-primary" aria-disabled={uploading || busy} style={{ pointerEvents: uploading || busy ? "none" : "auto" }}>
+            <span className="dam-gloss" aria-hidden />
+            <span className="dam-sheen" aria-hidden />
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 10 }}>
+              <Upload size={15} /> {uploading || busy ? "En cours…" : "Importer"}
+            </span>
+            <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv" style={{ display: "none" }}
+              disabled={uploading || busy}
+              onChange={e => { onUploadFiles(Array.from(e.target.files || [])); e.target.value = "" }} />
+          </label>
+        </div>
       </div>
 
-      {/* Onglets + recherche */}
+      {/* Onglets + recherche (DA dorée) */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 4, width: "fit-content" }}>
+        <div className="dam-tabs">
           {([["image", "Images", images?.length], ["file", "Fichiers", files?.length]] as const).map(([k, l, n]) => (
-            <button key={k} onClick={() => { setTab(k); clearSel() }}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: tab === k ? G : "transparent", color: tab === k ? "#080808" : MUTED, fontSize: 13, fontWeight: tab === k ? 700 : 500 }}>
-              {k === "image" ? <Images size={14} /> : <FileText size={14} />}{l}{typeof n === "number" ? ` · ${n}` : ""}
+            <button key={k} onClick={() => { setTab(k); clearSel() }} className={`dam-tab${tab === k ? " on" : ""}`}>
+              {k === "image" ? <Images size={15} /> : <FileText size={15} />}{l}
+              <span className="dam-tabpill">{typeof n === "number" ? n : "—"}</span>
             </button>
           ))}
         </div>
-        <input value={query} onChange={e => setQuery(e.target.value)} type="search" placeholder="Rechercher un média…"
-          style={{ flex: 1, minWidth: 180, boxSizing: "border-box", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "9px 13px", color: "#F5F0E8", fontSize: 13, outline: "none" }} />
+        <label className="dam-search">
+          <Search size={14} style={{ color: "#8a8177", flex: "none" }} />
+          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher un média…" />
+          {query && <button className="dam-clear" aria-label="Effacer la recherche" onClick={() => setQuery("")}><X size={13} /></button>}
+        </label>
       </div>
-
-      {/* Barre d'actions groupées (sélection multiple) */}
-      {selCount > 0 && (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14, padding: "10px 14px", background: "rgba(201,168,76,0.08)", border: `1px solid ${G}40`, borderRadius: 12, position: "sticky", top: 8, zIndex: 15, backdropFilter: "blur(6px)" }}>
-          <span style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{selCount} sélectionné{selCount > 1 ? "s" : ""}</span>
-          <button onClick={allSelected ? clearSel : selectAllVisible} style={selBtn}>{allSelected ? "Tout désélectionner" : "Tout sélectionner"}</button>
-          <button onClick={clearSel} style={selBtn}>Annuler</button>
-          <button onClick={bulkDelete} disabled={busy}
-            style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,107,107,0.14)", border: "1px solid rgba(255,107,107,0.4)", color: "var(--danger)", borderRadius: 9, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
-            <Trash2 size={15} /> Supprimer ({selCount})
-          </button>
-        </div>
-      )}
 
       {assets === null ? (
         <p style={{ color: MUTED, fontSize: 13, textAlign: "center", padding: "50px 0" }}>Chargement…</p>
@@ -140,18 +137,17 @@ export default function AssetsPage() {
       ) : tab === "image" ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12 }}>
           {assets.map(a => (
-            <div key={a.url} onClick={() => toggleSel(a)} title="Cliquez pour sélectionner"
-              style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: isSel(a) ? `2px solid ${G}` : "1px solid rgba(255,255,255,0.08)", background: "#0A0A0A", aspectRatio: "1", cursor: "pointer" }}>
+            <div key={a.url} className="dam-card" onClick={() => toggleSel(a)} title="Cliquez pour sélectionner"
+              style={{ position: "relative", borderRadius: 14, overflow: "hidden", border: isSel(a) ? "1px solid rgba(232,200,119,.55)" : undefined, background: "#0A0A0A", aspectRatio: "1", cursor: "pointer" }}>
               <img src={a.url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              {isSel(a) && <div style={{ position: "absolute", inset: 0, background: `${G}26`, pointerEvents: "none" }} />}
-              {/* Case de sélection (clic sur la vignette = sélectionner) */}
-              <div aria-hidden style={{ position: "absolute", top: 6, left: 6, width: 24, height: 24, borderRadius: "50%", background: isSel(a) ? G : "rgba(8,8,8,0.55)", backdropFilter: "blur(6px)", border: `1.5px solid ${isSel(a) ? G : "rgba(255,255,255,0.55)"}`, display: "flex", alignItems: "center", justifyContent: "center", color: "#080808" }}>
-                {isSel(a) && <Check size={15} />}
-              </div>
-              {/* Actions (…) — n'affecte pas la sélection */}
-              <button onClick={e => { e.stopPropagation(); setMenuAsset(a) }} aria-label="Actions du média"
-                style={{ position: "absolute", top: 6, right: 6, width: 34, height: 34, borderRadius: 9, background: "rgba(8,8,8,0.6)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", cursor: "pointer" }}>
-                <MoreHorizontal size={17} />
+              <span aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,0) 34%, rgba(0,0,0,0) 66%, rgba(0,0,0,.4) 100%)", pointerEvents: "none" }} />
+              {/* Pastille de sélection (clic = sélectionner, n'ouvre pas le média) */}
+              <button className={`dam-sel${isSel(a) ? " on" : ""}`} aria-pressed={isSel(a)} aria-label={isSel(a) ? "Désélectionner" : "Sélectionner"} onClick={e => { e.stopPropagation(); toggleSel(a) }}>
+                {isSel(a) && <Check size={15} color="#1a1408" />}
+              </button>
+              {/* Menu … — points en currentColor pour rester visibles sur le survol doré */}
+              <button onClick={e => { e.stopPropagation(); setMenuAsset(a) }} aria-label="Options du média" className="dam-menu">
+                <i /><i /><i />
               </button>
             </div>
           ))}
@@ -169,6 +165,19 @@ export default function AssetsPage() {
               <button onClick={e => { e.stopPropagation(); setMenuAsset(a) }} aria-label="Actions du fichier" style={{ ...rowBtn, width: 38, height: 38 }}><MoreHorizontal size={16} /></button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Barre de sélection (sticky bas) — actions groupées, DA dorée */}
+      {selCount > 0 && (
+        <div style={{ position: "sticky", bottom: 18, zIndex: 15, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", padding: "13px 16px 13px 20px", borderRadius: 14, background: "rgba(20,18,16,.96)", border: "1px solid rgba(232,200,119,.28)", boxShadow: "0 18px 38px -20px rgba(0,0,0,.9)", backdropFilter: "blur(6px)" }}>
+          <span style={{ fontSize: 13.5, fontWeight: 600, color: "#e8c877" }}>{selCount} média{selCount > 1 ? "s" : ""} sélectionné{selCount > 1 ? "s" : ""}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <button className="dam-selbar-sec" onClick={allSelected ? clearSel : selectAllVisible}>{allSelected ? "Tout désélectionner" : "Tout sélectionner"}</button>
+            <button className="dam-selbar-del" aria-disabled={busy} onClick={() => { if (!busy) bulkDelete() }}>
+              <Trash2 size={15} /> Supprimer ({selCount})
+            </button>
+          </div>
         </div>
       )}
 
@@ -196,4 +205,3 @@ export default function AssetsPage() {
 }
 
 const rowBtn: any = { width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: MUTED, flexShrink: 0, textDecoration: "none" }
-const selBtn: any = { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#F5F0E8", borderRadius: 8, padding: "7px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }

@@ -427,6 +427,12 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .da-btn-neutral:active { transform:scale(.97); }
 .da-btn-neutral--sm { padding:9px 16px; font-size:13px; border-radius:10px; }
 .da-btn-neutral:hover .da-ic-x { transform:rotate(90deg); }
+/* 06 — Destructif (Supprimer mon compte, déconnecter tous les appareils) — rouge qui s'intensifie */
+.da-btn-danger { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:9px; padding:12px 20px; border:1px solid rgba(224,107,95,.3); border-radius:11px; background:rgba(224,107,95,.08); color:#e06b5f; font-family:inherit; font-size:14px; font-weight:600; white-space:nowrap; transition:background .22s ease, border-color .22s ease, color .2s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.da-btn-danger:hover { background:rgba(224,107,95,.16); border-color:rgba(224,107,95,.6); color:#f08478; transform:translateY(-2px); box-shadow:0 10px 22px -12px rgba(224,107,95,.55); }
+.da-btn-danger:active { transform:scale(.97); }
+.da-btn-danger--sm { padding:8px 14px; font-size:12px; border-radius:9px; }
+.da-btn-danger:hover .da-ic-trash { transform:rotate(-8deg) scale(1.06); }
 @media (prefers-reduced-motion: reduce) { .da-halo-wrap::before { animation:none !important; } .da-btn-primary::after { display:none; } .da-btn-primary:hover, .da-btn-ghost:hover, .da-btn-neutral:hover { transform:none; } }
 
 /* ── Page Médias (DA dorée) — boutons & contrôles (handoff « Boutons Médias ») ── */

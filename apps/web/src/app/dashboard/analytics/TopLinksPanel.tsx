@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useMemo, useState, type ReactNode } from "react"
+import { useMemo, useState, useEffect, type ReactNode } from "react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { MousePointerClick, ArrowUpDown, TrendingUp, ExternalLink, Hash, Share2, Package, Tag, PartyPopper, Megaphone, Music, Calendar, Camera, MapPin, Link2, Play } from "lucide-react"
 
@@ -23,6 +23,8 @@ interface Props {
   clicks:    Click[]
   pageViews: PageView[]
   pages:     { id: string; title: string }[]
+  page?:       string   // pilotés par la barre de contrôle unique (#2) : si fournis, masquent les sélecteurs internes
+  periodDays?: number
 }
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -103,10 +105,12 @@ function CustomTooltip({ active, payload }: any) {
   )
 }
 
-export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
+export default function TopLinksPanel({ clicks, pageViews, pages, page, periodDays }: Props) {
   const [period,   setPeriod]   = useState(30)
   const [sortBy,   setSortBy]   = useState<"clicks"|"ctr"|"recent">("clicks")
   const [pageFilter, setPageFilter] = useState("all")
+  useEffect(() => { if (page != null) setPageFilter(page) }, [page])        // dedup #2 : la barre du haut pilote
+  useEffect(() => { if (periodDays != null) setPeriod(periodDays) }, [periodDays])
   const [view,     setView]     = useState<"chart"|"table">("table")
 
   // ── Filtrage temporel ─────────────────────────────────────────────────────
@@ -184,8 +188,8 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
         </div>
 
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-          {/* Filtre page */}
-          {pages.length > 1 && (
+          {/* Filtre page (masqué si piloté par la barre du haut) */}
+          {pages.length > 1 && page == null && (
             <select value={pageFilter} onChange={e => setPageFilter(e.target.value)}
               style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 9, color: "#F5F0E8", padding: "5px 10px", fontSize: 11, cursor: "pointer", outline: "none" }}>
               <option value="all">Toutes les pages</option>
@@ -193,7 +197,8 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
             </select>
           )}
 
-          {/* Période */}
+          {/* Période (masquée si pilotée par la barre du haut) */}
+          {periodDays == null && (
           <div style={{ display: "flex", gap: 3, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3 }}>
             {PERIOD_OPTIONS.map(opt => (
               <button key={opt.value} type="button" onClick={() => setPeriod(opt.value)}
@@ -204,6 +209,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
               </button>
             ))}
           </div>
+          )}
 
           {/* Tri */}
           <div style={{ display: "flex", gap: 3, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3 }}>

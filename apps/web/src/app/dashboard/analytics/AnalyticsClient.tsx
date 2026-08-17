@@ -79,6 +79,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function AnalyticsClient({ profile, pages, recentScans, recentViews, clicks = [], blocks = [], geoScans = [], deviceScans = [], pageEvents = [], userEmail = "", supportQrs = [], supportViews = [], supportClicks = [], supportLeads = [] }: Props) {
   const [selectedPage, setSelectedPage] = useState<string>("all")
+  const [period, setPeriod] = useState(30)   // barre de contrôle UNIQUE (#2) : pilote tous les panneaux
   // Onglets (handoff Analytics #1) : remplacent le scroll infini de 11 panneaux empilés.
   const [tab, setTab] = useState<"overview" | "content" | "audience" | "supports" | "reports">("overview")
 
@@ -215,6 +216,13 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             <option value="all">Toutes les pages</option>
             {pages.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
           </select>
+          {/* Période unique : pilote tous les panneaux (dedup #2) */}
+          <div role="group" aria-label="Période" style={{ display: "flex", gap: 3, background: "#141210", border: "1px solid #221f1b", borderRadius: 10, padding: 3 }}>
+            {[7, 30, 90].map(d => (
+              <button key={d} type="button" aria-pressed={period === d} onClick={() => setPeriod(d)}
+                style={{ padding: "7px 13px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: period === d ? 700 : 500, background: period === d ? "var(--accent)" : "transparent", color: period === d ? "#1a1408" : MUTED }}>{d}j</button>
+            ))}
+          </div>
         </div>
 
         {/* ── Onglets (handoff #1) : Vue d'ensemble · Contenu · Audience · Supports · Rapports ── */}
@@ -350,8 +358,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
           {[
             // Sparkline = série PROPRE à la métrique (README #5). Pages actives / Total scans n'ont pas de
             // série journalière -> pas de sparkline (elles n'empruntent pas la courbe des scans).
-            { icon: <QrCode size={18} />, label: "Scans (30j)", value: totalScans30, color: GOLD, spark: dailyData.map((d: any) => d.scans as number) },
-            { icon: <Eye size={18} />, label: "Vues (30j)", value: totalViews30, color: NEON, spark: dailyData.map((d: any) => d.views as number) },
+            { icon: <QrCode size={18} />, label: `Scans (${period}j)`, value: filteredScans.filter(s => Date.now() - new Date(s.scanned_at).getTime() <= period * 864e5).length, color: GOLD, spark: dailyData.map((d: any) => d.scans as number) },
+            { icon: <Eye size={18} />, label: `Vues (${period}j)`, value: filteredViews.filter(v => Date.now() - new Date(v.viewed_at).getTime() <= period * 864e5).length, color: NEON, spark: dailyData.map((d: any) => d.views as number) },
             { icon: <BarChart2 size={18} />, label: "Pages actives", value: pages.filter(p => p.status === "published").length, color: "#7B61FF", spark: undefined as number[] | undefined },
             { icon: <TrendingUp size={18} />, label: "Total scans", value: profile?.total_scans || 0, color: "var(--danger)", spark: undefined as number[] | undefined },
           ].map((kpi, i) => (
@@ -495,6 +503,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             clicks={clicks}
             pageViews={filteredViews}
             pages={pages}
+            page={selectedPage}
+            periodDays={period}
           />
         </div>
 
@@ -506,6 +516,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             pageViews={filteredViews}
             pages={pages}
             events={filteredEvents}
+            page={selectedPage}
+            periodDays={period}
           />
         </div>
 
@@ -535,6 +547,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             scans={geoScans}
             pageViews={filteredViews}
             pages={pages}
+            page={selectedPage}
+            periodDays={period}
           />
         </div>
 
@@ -544,6 +558,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             scans={deviceScans}
             pageViews={filteredViews}
             pages={pages}
+            page={selectedPage}
+            periodDays={period}
           />
         </div>
         </>)}

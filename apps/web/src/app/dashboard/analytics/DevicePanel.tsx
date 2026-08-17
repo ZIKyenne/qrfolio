@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis,
@@ -114,9 +114,11 @@ function BarTip({ active, payload, label }: any) {
 }
 
 // ── Composant principal ───────────────────────────────────────────────────────
-export default function DevicePanel({ scans, pageViews, pages }: Props) {
+export default function DevicePanel({ scans, pageViews, pages, page, periodDays }: Props & { page?: string; periodDays?: number }) {
   const [period, setPeriod] = useState(30)
   const [pageId, setPageId] = useState("all")
+  useEffect(() => { if (page != null) setPageId(page) }, [page])                     // dedup #2 : barre du haut
+  useEffect(() => { if (periodDays != null) setPeriod(periodDays) }, [periodDays])
   const [tab,    setTab]    = useState<"device" | "os" | "browser">("device")
 
   const cutoff = useMemo(() => {
@@ -210,7 +212,7 @@ export default function DevicePanel({ scans, pageViews, pages }: Props) {
         </div>
 
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-          {pages.length > 1 && (
+          {pages.length > 1 && page == null && (
             <select value={pageId} onChange={e => setPageId(e.target.value)}
               style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 9, color: "#F5F0E8", padding: "5px 10px", fontSize: 11, cursor: "pointer", outline: "none" }}>
               <option value="all">Toutes les pages</option>
@@ -218,6 +220,7 @@ export default function DevicePanel({ scans, pageViews, pages }: Props) {
             </select>
           )}
 
+          {periodDays == null && (
           <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3, gap: 3 }}>
             {PERIODS.map(o => (
               <button key={o.v} type="button" onClick={() => setPeriod(o.v)}
@@ -226,6 +229,7 @@ export default function DevicePanel({ scans, pageViews, pages }: Props) {
               </button>
             ))}
           </div>
+          )}
         </div>
       </div>
 

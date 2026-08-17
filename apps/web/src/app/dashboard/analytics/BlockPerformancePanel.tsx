@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useMemo, useState, type ReactNode } from "react"
+import { useMemo, useState, useEffect, type ReactNode } from "react"
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -75,10 +75,12 @@ function Tip({ active, payload, label }: any) {
   )
 }
 
-export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages, events, impressions = {}, dwell = {} }: Props) {
+export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages, events, impressions = {}, dwell = {}, page, periodDays }: Props & { page?: string; periodDays?: number }) {
   const [period, setPeriod] = useState(30)
+  useEffect(() => { if (periodDays != null) setPeriod(periodDays) }, [periodDays])   // dedup #2 : barre du haut
   const [sortBy, setSortBy] = useState("clicks")
   const [pageId, setPageId] = useState("all")
+  useEffect(() => { if (page != null) setPageId(page) }, [page])
   const [mode,   setMode]   = useState<"ranking" | "radar">("ranking")
 
   const cutoff = useMemo(() => {
@@ -188,7 +190,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
         </div>
 
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-          {pages.length > 1 && (
+          {pages.length > 1 && page == null && (
             <select value={pageId} onChange={e => setPageId(e.target.value)}
               style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 9, color: "#F5F0E8", padding: "5px 10px", fontSize: 11, cursor: "pointer", outline: "none" }}>
               <option value="all">Toutes les pages</option>
@@ -196,6 +198,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
             </select>
           )}
 
+          {periodDays == null && (
           <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3, gap: 3 }}>
             {PERIODS.map(o => (
               <button key={o.v} type="button" onClick={() => setPeriod(o.v)}
@@ -204,6 +207,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
               </button>
             ))}
           </div>
+          )}
 
           <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3, gap: 3 }}>
             {SORTS.map(o => (

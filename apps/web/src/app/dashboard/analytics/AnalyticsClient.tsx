@@ -422,14 +422,31 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             {deviceData.length === 0 ? (
               <p style={{ color: MUTED, textAlign: "center", marginTop: 40 }}>Pas encore de données</p>
             ) : (
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={deviceData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                    {deviceData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)", borderRadius: 8 }} />
-                </PieChart>
-              </ResponsiveContainer>
+              /* README #7 : un camembert à une seule part ne dit rien → barres de répartition nommées (part + effectif). */
+              (() => {
+                const total = deviceData.reduce((a, d) => a + (d.value || 0), 0) || 1
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {deviceData.map((d, i) => {
+                      const pct = Math.round((d.value / total) * 100)
+                      const col = COLORS[i % COLORS.length]
+                      return (
+                        <div key={d.name} style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span style={{ width: 9, height: 9, borderRadius: "50%", background: col, flexShrink: 0 }} />
+                            <span style={{ flex: 1, color: "#F5F0E8", fontSize: 13.5, fontWeight: 600 }}>{d.name}</span>
+                            <span style={{ color: GOLD, fontSize: 13, fontWeight: 700 }}>{pct}%</span>
+                            <span style={{ width: 34, textAlign: "right", color: MUTED, fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>{d.value}</span>
+                          </div>
+                          <span style={{ position: "relative", height: 8, borderRadius: 4, background: "rgba(255,255,255,0.06)", overflow: "hidden", display: "block" }}>
+                            <span style={{ position: "absolute", inset: "0 auto 0 0", width: `${pct}%`, borderRadius: 4, background: col }} />
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()
             )}
           </div>
 

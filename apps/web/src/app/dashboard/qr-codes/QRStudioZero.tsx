@@ -296,7 +296,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
             </span>
             <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 9 }}>
               <Link href={`/dashboard/print-studio${active ? `?qr=${active.short_code}` : ""}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, background: "transparent", border: `1px solid ${LINE}`, color: INK, fontSize: 12.5, fontWeight: 700, textDecoration: "none" }}><Printer size={14} /> Créer un support</Link>
-              <button type="button" onClick={() => setDlOpen(true)} disabled={!active} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, background: active ? "linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 78%, #000))" : SURF, border: "none", color: active ? "#080808" : FAINT, fontSize: 12.5, fontWeight: 800, cursor: active ? "pointer" : "default" }}><Download size={14} /> Télécharger</button>
+              <button type="button" onClick={() => setDlOpen(true)} disabled={!active} className="da-btn-primary da-btn-primary--sm"><Download className="da-ic da-ic-dl" size={14} /> <span>Télécharger</span></button>
             </div>
           </div>
 

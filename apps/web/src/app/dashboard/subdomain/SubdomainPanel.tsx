@@ -299,7 +299,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
             )}
             <button type="button" onClick={save}
               disabled={status !== "available" || saving}
-              style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px 20px", background: status==="available" ? "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" : "rgba(255,255,255,0.05)", border:"none", borderRadius:9, color: status==="available" ? "#080808" : MUTED, fontSize:13, fontWeight:700, cursor: status==="available" && !saving ? "pointer" : "not-allowed", opacity:saving?0.7:1, transition:"all 0.15s" }}>
+              className="da-btn-primary da-btn-primary--sm" style={{ flex:1 }}>
               {saving
                 ? <><Loader size={13} style={{ animation:"mo-spin 0.7s linear infinite" }}/> Réservation…</>
                 : <><Check size={13}/> {currentUsername ? "Modifier le sous-domaine" : "Réserver ce sous-domaine"}</>

@@ -155,9 +155,8 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
             Associez chaque sous-domaine à une page différente
           </p>
         </div>
-        <button type="button" onClick={() => setShowForm(true)}
-          style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:9, color:"#080808", fontSize:12, fontWeight:700, cursor:"pointer" }}>
-          <Plus size={13}/> Ajouter une route
+        <button type="button" onClick={() => setShowForm(true)} className="da-btn-primary da-btn-primary--sm">
+          <Plus className="da-ic da-ic-plus" size={13}/> Ajouter une route
         </button>
       </div>
 
@@ -262,13 +261,11 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
             )}
 
             <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
-              <button type="button" onClick={() => { setShowForm(false); setError("") }}
-                style={{ padding:"8px 16px", background:"transparent", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:MUTED, fontSize:12, cursor:"pointer" }}>
+              <button type="button" onClick={() => { setShowForm(false); setError("") }} className="da-btn-neutral da-btn-neutral--sm">
                 Annuler
               </button>
-              <button type="button" onClick={addRoute} disabled={!fDomain || !fPageId || saving}
-                style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:8, color:"#080808", fontSize:12, fontWeight:700, cursor:saving?"wait":"pointer", opacity:saving?0.7:1 }}>
-                {saving ? <><Loader size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Ajout…</> : <><CheckCircle size={12}/> Ajouter la route</>}
+              <button type="button" onClick={addRoute} disabled={!fDomain || !fPageId || saving} className="da-btn-primary da-btn-primary--sm">
+                {saving ? <><Loader size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> <span>Ajout…</span></> : <><CheckCircle size={12}/> <span>Ajouter la route</span></>}
               </button>
             </div>
           </div>

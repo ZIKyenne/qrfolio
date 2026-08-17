@@ -183,7 +183,7 @@ export default function GeoPanel({ scans, pageViews, pages, page, periodDays }: 
         {[
           { icon: <Globe size={13} color={G} />,          label: "Pays",        value: String(byCountry.filter(c => c.code !== "??").length) },
           { icon: <Eye size={13} color="var(--success)" />,       label: "Vues",        value: fViews.length.toLocaleString() },
-          { icon: <QrCode size={13} color="var(--action)" />,    label: "Scans QR",    value: fScans.length.toLocaleString() },
+          { icon: <QrCode size={13} color="var(--accent)" />,    label: "Scans QR",    value: fScans.length.toLocaleString() },
           { icon: <MapPin size={13} color="#F472B6" />,    label: "Villes",      value: String(byCity.length) },
         ].map((k, i) => (
           <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
@@ -226,7 +226,7 @@ export default function GeoPanel({ scans, pageViews, pages, page, periodDays }: 
                   )}
                 </div>
                 <span style={{ color: "var(--success)", fontSize: 12, fontWeight: 700 }}>{row.views}</span>
-                <span style={{ color: "var(--action)", fontSize: 12, fontWeight: 700 }}>{row.scans}</span>
+                <span style={{ color: "var(--accent)", fontSize: 12, fontWeight: 700 }}>{row.scans}</span>
                 <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: (row.total / maxTotal * 100) + "%", background: `linear-gradient(90deg, ${G}, var(--success))`, borderRadius: 3, opacity: 0.7, transition: "width 0.6s" }} />
                 </div>
@@ -257,8 +257,8 @@ export default function GeoPanel({ scans, pageViews, pages, page, periodDays }: 
                       <span style={{ color: MUTED, fontSize: 10, marginLeft: 6 }}>{city.country}</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <QrCode size={10} color="var(--action)" />
-                      <span style={{ color: "var(--action)", fontSize: 12, fontWeight: 700 }}>{city.scans}</span>
+                      <QrCode size={10} color="var(--accent)" />
+                      <span style={{ color: "var(--accent)", fontSize: 12, fontWeight: 700 }}>{city.scans}</span>
                     </div>
                   </div>
                 ))}

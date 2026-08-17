@@ -943,14 +943,14 @@ export default function ProfilePage() {
       { id:"builder_expert", emoji:"🏗",  label:"Builder Expert",     desc:"Publiez 10 pages differentes",              category:"pages",     color:"var(--accent)", unlocked: publishedPages >= 10     },
       { id:"template_master",emoji:"🎨", label:"Template Master",     desc:"Creez 3 pages ou plus",                    category:"pages",     color:"var(--accent)", unlocked: totalPages >= 3          },
       { id:"first_qr",       emoji:"⬛", label:"Premier QR",         desc:"Creez votre premier QR Code",              category:"scans",     color:"var(--accent)", unlocked: qrStats.length >= 1      },
-      { id:"scans_100",      emoji:"📡", label:"100 Scans",          desc:"Atteignez 100 scans au total",             category:"scans",     color:"var(--success)", unlocked: totalScansQR >= 100      },
+      { id:"scans_100",      emoji:"📡", label:"100 Scans",          desc:"Atteignez 100 scans au total",             category:"scans",     color:"var(--accent)", unlocked: totalScansQR >= 100      },
       { id:"scans_1k",       emoji:"🚀", label:"1 000 Scans",        desc:"Atteignez 1 000 scans",                    category:"scans",     color:"var(--accent)", unlocked: totalScansQR >= 1000     },
       { id:"scans_10k",      emoji:"💫", label:"10 000 Scans",       desc:"Top 1% des utilisateurs",                  category:"scans",     color:"var(--accent)", unlocked: totalScansQR >= 10000    },
       { id:"first_ref",      emoji:"🤝", label:"Parrain",            desc:"Validez votre premier parrainage",         category:"referrals", color:"var(--accent)", unlocked: validatedRefs >= 1       },
       { id:"refs_5",         emoji:"🌟", label:"Super Parrain",      desc:"Validez 5 parrainages",                    category:"referrals", color:"var(--accent)", unlocked: validatedRefs >= 5       },
       { id:"pro_user",       emoji:"⚡", label:"Utilisateur Pro",    desc:"Passez au plan Pro ou superieur",          category:"plan",      color:"var(--accent)", unlocked: isPro                   },
-      { id:"business_user",  emoji:"👑", label:"Business",           desc:"Atteignez le plan Business",               category:"plan",      color:"var(--success)", unlocked: isBiz                   },
-      { id:"early_user",     emoji:"🌱", label:"Early User",         desc:"Parmi les premiers utilisateurs",          category:"milestone", color:"var(--success)", unlocked: isEarly                 },
+      { id:"business_user",  emoji:"👑", label:"Business",           desc:"Atteignez le plan Business",               category:"plan",      color:"var(--accent)", unlocked: isBiz                   },
+      { id:"early_user",     emoji:"🌱", label:"Early User",         desc:"Parmi les premiers utilisateurs",          category:"milestone", color:"var(--accent)", unlocked: isEarly                 },
     ]
   }
 
@@ -1663,7 +1663,7 @@ export default function ProfilePage() {
                   {([
                     { id:"whatsapp" as const, label:"WhatsApp", color:"var(--accent)", emoji:"💬" },
                     { id:"email"    as const, label:"Email",    color:"var(--accent)", emoji:"✉" },
-                    { id:"twitter"  as const, label:"X / Twitter", color:"#F5F0E8", emoji:"🐦" },
+                    { id:"twitter"  as const, label:"X / Twitter", color:"var(--accent)", emoji:"🐦" },
                     { id:"linkedin" as const, label:"LinkedIn", color:"var(--accent)", emoji:"💼" },
                   ]).map(btn => (
                     <button key={btn.id} type="button" onClick={() => shareRef(btn.id)}
@@ -1683,10 +1683,11 @@ export default function ProfilePage() {
                   <p style={{ color:MUTED, fontSize:11, margin:"0 0 12px", lineHeight:1.5 }}>
                     Partage ton lien et gagne 1 mois Pro<br/>pour chaque ami qui s'abonne.
                   </p>
-                  <button onClick={copyReferral}
-                    style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 18px", background:`linear-gradient(90deg,var(--accent),#c73b7e)`, border:"none", borderRadius:9, color:"#F5F0E8", fontSize:12, fontWeight:700, cursor:"pointer" }}>
-                    <Share2 size={13}/> Partager maintenant
-                  </button>
+                  <span className="da-halo-wrap">
+                    <button onClick={copyReferral} className="da-btn-primary da-btn-primary--sm">
+                      <Share2 className="da-ic" size={13}/> <span>Partager maintenant</span>
+                    </button>
+                  </span>
                 </div>
               ) : (
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -2336,11 +2337,12 @@ export default function ProfilePage() {
                 {/* Boutons action */}
                 <div style={{ display:"flex", gap:8 }}>
                   {currentPlan !== "business" && (
-                    <a href="/upgrade"
-                      style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px", background:`linear-gradient(90deg,${pc},${pc}cc)`, borderRadius:9, color: pc === MUTED ? "#F5F0E8" : "#080808", textDecoration:"none", fontSize:12, fontWeight:700 }}>
-                      <Activity size={13}/>
-                      {currentPlan==="free"?"Choisir un plan":"Upgrader vers "+nextPlan?.label}
-                    </a>
+                    <span className="da-halo-wrap" style={{ flex:1, display:"flex" }}>
+                      <a href="/upgrade" className="da-btn-primary da-btn-primary--sm" style={{ flex:1, justifyContent:"center" }}>
+                        <Activity className="da-ic" size={13}/>
+                        <span>{currentPlan==="free"?"Choisir un plan":"Upgrader vers "+nextPlan?.label}</span>
+                      </a>
+                    </span>
                   )}
                   {currentPlan !== "free" && (
                     <button type="button"
@@ -2352,7 +2354,7 @@ export default function ProfilePage() {
                           else showToast(data.error || "Portail de facturation indisponible pour le moment.", "err")
                         } catch { showToast("Impossible d'ouvrir le portail de facturation.", "err") }
                       }}
-                      style={{ flex:currentPlan==="business"?1:0, display:"flex", alignItems:"center", justifyContent:"center", gap:6, padding:"10px 14px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, color:MUTED, fontFamily:"inherit", fontSize:12, cursor:"pointer", whiteSpace:"nowrap" as const }}>
+                      className="da-btn-ghost da-btn-ghost--sm" style={{ flex:currentPlan==="business"?1:"0 0 auto", justifyContent:"center" }}>
                       <CreditCard size={13}/> Gerer la facturation
                     </button>
                   )}
@@ -2519,7 +2521,7 @@ export default function ProfilePage() {
 
           {/* 7. RECOMPENSES */}
           {ptab === "parrainage" && (
-          <SectionCard title="Recompenses & Niveau" icon={Star} color="#F59E0B">
+          <SectionCard title="Recompenses & Niveau" icon={Star} color="var(--accent)">
             {(() => {
               const badges  = computeBadges()
               const lvl     = computeLevel()
@@ -2683,9 +2685,8 @@ export default function ProfilePage() {
                     </div>
                   ))}
                 </div>
-                <a href="/upgrade"
-                  style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 20px", background:"linear-gradient(90deg,var(--accent),#6040e0)", border:"none", borderRadius:9, color:"#F5F0E8", textDecoration:"none", fontSize:12, fontWeight:700 }}>
-                  <Activity size={13}/> Passer a Pro ou Business
+                <a href="/upgrade" className="da-btn-primary da-btn-primary--sm">
+                  <Activity className="da-ic" size={13}/> <span>Passer a Pro ou Business</span>
                 </a>
               </div>
             ) : (
@@ -2852,19 +2853,16 @@ export default function ProfilePage() {
                       placeholder="Nom de la cle (ex: Production App)"
                       style={{ flex:1, background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, padding:"10px 12px", color:"#F5F0E8", fontSize:12, outline:"none", boxSizing:"border-box" as const }}
                       onKeyDown={e => e.key==="Enter" && createApiKey()}/>
-                    <button type="button" onClick={createApiKey} disabled={!newKeyName.trim()}
-                      style={{ padding:"0 16px", background:`linear-gradient(90deg,${G},color-mix(in srgb, var(--accent) 75%, #000))`, border:"none", borderRadius:9, color:"#080808", fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0 }}>
-                      Creer
+                    <button type="button" onClick={createApiKey} disabled={!newKeyName.trim()} className="da-btn-primary da-btn-primary--sm" style={{ flexShrink:0 }}>
+                      <span>Creer</span>
                     </button>
-                    <button type="button" onClick={() => setShowNewKey(false)}
-                      style={{ width:38, background:"none", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, color:MUTED, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      <X size={14}/>
+                    <button type="button" onClick={() => setShowNewKey(false)} aria-label="Annuler" className="da-btn-icon" style={{ width:38, height:"auto", flexShrink:0 }}>
+                      <X className="da-ic da-ic-x" size={14}/>
                     </button>
                   </div>
                 ) : (
-                  <button type="button" onClick={() => setShowNewKey(true)}
-                    style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, padding:"10px", background:"rgba(201,162,77,0.08)", border:"1px solid rgba(201,162,77,0.2)", borderRadius:9, color:"var(--accent)", fontSize:12, fontWeight:600, cursor:"pointer" }}>
-                    <Plus size={13}/> Nouvelle cle API
+                  <button type="button" onClick={() => setShowNewKey(true)} className="da-btn-dashed" style={{ padding:12, fontSize:12.5 }}>
+                    <Plus className="da-ic da-ic-plus" size={14}/> <span>Nouvelle cle API</span>
                   </button>
                 )}
 

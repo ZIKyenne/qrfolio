@@ -1,11 +1,11 @@
 ﻿"use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts"
-import { Layers, MousePointerClick, Eye, TrendingUp } from "lucide-react"
+import { Layers, MousePointerClick, Eye, TrendingUp, Share2, MessageCircle, Package, Calendar, Mail, Play, MapPin, Camera, Images, User, FileText, Star, BarChart2, Type, AlignLeft, MoveVertical, Minus } from "lucide-react"
 import { buildBlockImpressions, buildBlockDwell, type PageEvent } from "./analyticsAgg"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -28,28 +28,28 @@ interface Props {
 }
 
 // ── Config par type de bloc ───────────────────────────────────────────────────
-const CFG: Record<string, { label: string; emoji: string; color: string; interactive: boolean }> = {
-  cta_button:     { label: "Bouton CTA",    emoji: "🔘", color: "var(--accent)", interactive: true  },
-  social_links:   { label: "Liens sociaux", emoji: "🔗", color: "var(--action)", interactive: true  },
-  whatsapp:       { label: "WhatsApp",      emoji: "💬", color: "#25D366", interactive: true  },
-  stripe_product: { label: "Produit",       emoji: "📦", color: "var(--success)", interactive: true  },
-  calendly:       { label: "Réservation",   emoji: "📅", color: "#818CF8", interactive: true  },
-  contact_form:   { label: "Contact",       emoji: "📬", color: "#4ADE80", interactive: true  },
-  video:          { label: "Vidéo",         emoji: "▶️", color: "var(--danger)", interactive: true  },
-  google_maps:    { label: "Maps",          emoji: "📍", color: "#34D399", interactive: true  },
-  instagram_feed: { label: "Instagram",     emoji: "📸", color: "#E1306C", interactive: true  },
-  gallery:        { label: "Galerie",       emoji: "🖼️", color: "#A78BFA", interactive: true  },
-  profile:        { label: "Profil",        emoji: "👤", color: "var(--accent)", interactive: false },
-  bio:            { label: "Bio",           emoji: "📝", color: "#A8A190", interactive: false },
-  testimonials:   { label: "Avis",          emoji: "⭐", color: "#FFD700", interactive: false },
-  visit_counter:  { label: "Compteur",      emoji: "📊", color: "#67E8F9", interactive: false },
-  heading:        { label: "Titre",         emoji: "🔤", color: "#A8A190", interactive: false },
-  rich_text:      { label: "Texte",         emoji: "📄", color: "#A8A190", interactive: false },
-  spacer:         { label: "Espaceur",      emoji: "↕️", color: "#333",    interactive: false },
-  divider:        { label: "Séparateur",    emoji: "—",  color: "#444",    interactive: false },
+const CFG: Record<string, { label: string; icon: ReactNode; color: string; interactive: boolean }> = {
+  cta_button:     { label: "Bouton CTA",    icon: <MousePointerClick size={13} />, color: "var(--accent)", interactive: true  },
+  social_links:   { label: "Liens sociaux", icon: <Share2 size={13} />, color: "var(--action)", interactive: true  },
+  whatsapp:       { label: "WhatsApp",      icon: <MessageCircle size={13} />, color: "#25D366", interactive: true  },
+  stripe_product: { label: "Produit",       icon: <Package size={13} />, color: "var(--success)", interactive: true  },
+  calendly:       { label: "Réservation",   icon: <Calendar size={13} />, color: "#818CF8", interactive: true  },
+  contact_form:   { label: "Contact",       icon: <Mail size={13} />, color: "#4ADE80", interactive: true  },
+  video:          { label: "Vidéo",         icon: <Play size={13} />, color: "var(--danger)", interactive: true  },
+  google_maps:    { label: "Maps",          icon: <MapPin size={13} />, color: "#34D399", interactive: true  },
+  instagram_feed: { label: "Instagram",     icon: <Camera size={13} />, color: "#E1306C", interactive: true  },
+  gallery:        { label: "Galerie",       icon: <Images size={13} />, color: "#A78BFA", interactive: true  },
+  profile:        { label: "Profil",        icon: <User size={13} />, color: "var(--accent)", interactive: false },
+  bio:            { label: "Bio",           icon: <FileText size={13} />, color: "#A8A190", interactive: false },
+  testimonials:   { label: "Avis",          icon: <Star size={13} />, color: "#FFD700", interactive: false },
+  visit_counter:  { label: "Compteur",      icon: <BarChart2 size={13} />, color: "#67E8F9", interactive: false },
+  heading:        { label: "Titre",         icon: <Type size={13} />, color: "#A8A190", interactive: false },
+  rich_text:      { label: "Texte",         icon: <AlignLeft size={13} />, color: "#A8A190", interactive: false },
+  spacer:         { label: "Espaceur",      icon: <MoveVertical size={13} />, color: "#333",    interactive: false },
+  divider:        { label: "Séparateur",    icon: <Minus size={13} />,  color: "#444",    interactive: false },
 }
 
-const getCfg = (type: string) => CFG[type] ?? { label: type, emoji: "📦", color: "var(--accent)", interactive: true }
+const getCfg = (type: string) => CFG[type] ?? { label: type, icon: <Package size={13} />, color: "var(--accent)", interactive: true }
 
 const PERIODS = [{ v: 7, l: "7j" }, { v: 30, l: "30j" }, { v: 90, l: "90j" }]
 const SORTS   = [{ v: "clicks", l: "Clics" }, { v: "ctr", l: "CTR" }, { v: "count", l: "Blocs" }]
@@ -64,7 +64,7 @@ function Tip({ active, payload, label }: any) {
   return (
     <div style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)", borderRadius: 8, padding: "10px 14px" }}>
       <p style={{ color: cfg.color, fontWeight: 700, fontSize: 12, margin: "0 0 6px" }}>
-        {cfg.emoji} {cfg.label}
+        {cfg.icon} {cfg.label}
       </p>
       {payload.map((p: any, i: number) => (
         <p key={i} style={{ color: p.color ?? "#F5F0E8", fontSize: 12, fontWeight: 600, margin: "2px 0" }}>
@@ -182,8 +182,8 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
           </div>
           <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>
             {interactCount} blocs interactifs
-            {best && <span> · Top : <span style={{ color: best.cfg.color, fontWeight: 600 }}>{best.cfg.emoji} {best.cfg.label}</span>{best.realCtr != null && <span> ({best.realCtr}% de CTR réel)</span>}</span>}
-            {mostRead?.dwellAvg != null && <span> · Le plus lu : <span style={{ color: mostRead.cfg.color, fontWeight: 600 }}>{mostRead.cfg.emoji} {mostRead.cfg.label}</span> ({mostRead.dwellAvg}s)</span>}
+            {best && <span> · Top : <span style={{ color: best.cfg.color, fontWeight: 600 }}>{best.cfg.icon} {best.cfg.label}</span>{best.realCtr != null && <span> ({best.realCtr}% de CTR réel)</span>}</span>}
+            {mostRead?.dwellAvg != null && <span> · Le plus lu : <span style={{ color: mostRead.cfg.color, fontWeight: 600 }}>{mostRead.cfg.icon} {mostRead.cfg.label}</span> ({mostRead.dwellAvg}s)</span>}
           </p>
         </div>
 
@@ -260,7 +260,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
                 margin={{ top: 0, right: 32, bottom: 0, left: 82 }}>
                 <XAxis type="number" tick={{ fill: MUTED, fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="name" width={80}
-                  tickFormatter={n => { const c = getCfg(n); return c.emoji + " " + c.label }}
+                  tickFormatter={n => getCfg(n).label}
                   tick={{ fill: "#F5F0E8", fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<Tip />} cursor={{ fill: "color-mix(in srgb, var(--accent) 5%, transparent)" }} />
                 <Bar dataKey="Clics" radius={[0, 6, 6, 0]}>
@@ -285,7 +285,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
                   {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "#" + (i + 1)}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, overflow: "hidden" }}>
-                  <span style={{ fontSize: 14, flexShrink: 0 }}>{row.cfg.emoji}</span>
+                  <span style={{ flexShrink: 0, display: "inline-flex", color: row.cfg.color }}>{row.cfg.icon}</span>
                   <span style={{ color: "#F5F0E8", fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.cfg.label}</span>
                 </div>
                 <span style={{ color: MUTED, fontSize: 11 }}>{row.count}x</span>

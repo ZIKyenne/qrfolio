@@ -1,8 +1,8 @@
 ﻿"use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
-import { MousePointerClick, ArrowUpDown, TrendingUp, ExternalLink, Hash } from "lucide-react"
+import { MousePointerClick, ArrowUpDown, TrendingUp, ExternalLink, Hash, Share2, Package, Tag, PartyPopper, Megaphone, Music, Calendar, Camera, MapPin, Link2, Play } from "lucide-react"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Click = {
@@ -53,19 +53,19 @@ const BLOCK_TYPE_LABELS: Record<string, string> = {
   video:           "Vidéo",
 }
 
-const BLOCK_TYPE_EMOJI: Record<string, string> = {
-  cta_button:     "🔘",
-  social_links:   "🔗",
-  product:        "📦",
-  pricing:        "💰",
-  event_info:     "🎉",
-  promo_banner:   "📢",
-  spotify_player: "🎵",
-  calendly:       "📅",
-  instagram_feed: "📸",
-  google_maps:    "📍",
-  link_tree:      "🌿",
-  video:          "▶️",
+const BLOCK_TYPE_ICON: Record<string, ReactNode> = {
+  cta_button:     <MousePointerClick size={13} />,
+  social_links:   <Share2 size={13} />,
+  product:        <Package size={13} />,
+  pricing:        <Tag size={13} />,
+  event_info:     <PartyPopper size={13} />,
+  promo_banner:   <Megaphone size={13} />,
+  spotify_player: <Music size={13} />,
+  calendly:       <Calendar size={13} />,
+  instagram_feed: <Camera size={13} />,
+  google_maps:    <MapPin size={13} />,
+  link_tree:      <Link2 size={13} />,
+  video:          <Play size={13} />,
 }
 
 const CLICK_COLORS = [
@@ -152,7 +152,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
       // CTR = clics / vues : INDÉFINI si 0 vue pistée (jamais ÷0 → « — », pas 500 %).
       ctr:   totalViews > 0 ? parseFloat(((item.clicks / totalViews) * 100).toFixed(1)) : null as number | null,
       label: truncateUrl(item.target),
-      emoji: BLOCK_TYPE_EMOJI[item.blockType] || "🔗",
+      icon: BLOCK_TYPE_ICON[item.blockType] || <Share2 size={13} />,
       typeLabel: BLOCK_TYPE_LABELS[item.blockType] || item.blockType,
     }))
 
@@ -308,7 +308,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
 
               {/* Type bloc */}
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={{ fontSize: 12 }}>{row.emoji}</span>
+                <span style={{ display: "inline-flex", color: "#8a8177", flexShrink: 0 }}>{row.icon}</span>
                 <span style={{ color: MUTED, fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.typeLabel}</span>
               </div>
 

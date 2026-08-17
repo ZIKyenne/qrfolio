@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
+import { rateLimit } from "@/lib/rateLimit"
 
 const RESERVED = ["dashboard","admin","auth","login","signup","pricing","templates","settings","profile","api","legal","privacy","terms","contact","features","examples","qr-codes","upgrade","new"]
 
@@ -14,6 +15,12 @@ export async function GET(req: NextRequest) {
   }
   if (RESERVED.includes(slug)) {
     return NextResponse.json({ status: "reserved", reason: "Ce slug est reserve." })
+  }
+
+  // Rate-limit par IP (audit sécurité 2026-08 : endpoint public service_role → limiter l'énumération en masse).
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon"
+  if (!(await rateLimit("slug-check:" + ip, 60, 60_000))) {
+    return NextResponse.json({ status: "error", reason: "Trop de requetes, reessayez dans un instant." }, { status: 429 })
   }
 
   const supabase = createServerClient(

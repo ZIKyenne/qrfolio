@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyUnique } from "@/lib/slug"
+import { uniqueShortCode } from "@/lib/shortCode"
 import { BLOCK_DEFS, normalizePageTheme } from "@/app/dashboard/builder/types"
 
 // Slug valide (minuscules, accents retires, non-alphanum -> "-", + suffixe
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const shortCode = Math.random().toString(36).slice(2, 10)
+    const shortCode = await uniqueShortCode(supabaseAdmin)   // crypto (audit 2026-08-16) — plus de Math.random prédictible
     await supabaseAdmin.from("qr_codes").insert({
       page_id: newPage.id,
       user_id: user.id,

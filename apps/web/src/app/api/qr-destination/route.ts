@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
     .from("qr_codes")
     .select("id, short_code, page_id, dest_override, dest_history, pages(id, title, slug, status)")
     .eq("id", qrId)
+    .eq("user_id", user.id)   // défense en profondeur (ne pas dépendre que de la RLS) — cf. audit sécurité 2026-08-17
     .single()
 
   if (error || !data) return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
     .from("qr_codes")
     .select("dest_override, dest_history, page_id, pages(title, slug)")
     .eq("id", qr_id)
+    .eq("user_id", user.id)
     .single()
 
   if (!current) return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
@@ -86,6 +88,7 @@ export async function POST(req: NextRequest) {
       updated_at:    new Date().toISOString(),
     })
     .eq("id", qr_id)
+    .eq("user_id", user.id)
     .select("dest_override, dest_history")
     .single()
 
@@ -108,6 +111,7 @@ export async function PATCH(req: NextRequest) {
     .from("qr_codes")
     .select("dest_override, dest_history, page_id")
     .eq("id", qr_id)
+    .eq("user_id", user.id)
     .single()
 
   if (!current) return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
@@ -128,6 +132,7 @@ export async function PATCH(req: NextRequest) {
       updated_at:    new Date().toISOString(),
     })
     .eq("id", qr_id)
+    .eq("user_id", user.id)
 
   return NextResponse.json({ ok: true, restored })
 }
@@ -145,6 +150,7 @@ export async function DELETE(req: NextRequest) {
     .from("qr_codes")
     .select("dest_override, dest_history")
     .eq("id", qr_id)
+    .eq("user_id", user.id)
     .single()
 
   if (!current) return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
@@ -155,6 +161,7 @@ export async function DELETE(req: NextRequest) {
     .from("qr_codes")
     .update({ dest_override: null, dest_history: history, updated_at: new Date().toISOString() })
     .eq("id", qr_id)
+    .eq("user_id", user.id)
 
   return NextResponse.json({ ok: true })
 }

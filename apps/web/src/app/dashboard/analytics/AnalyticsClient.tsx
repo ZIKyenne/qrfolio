@@ -5,7 +5,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts"
-import { QrCode, Eye, TrendingUp, Smartphone, Globe, BarChart2, ChevronDown, Layers, Users, Printer, Calendar } from "lucide-react"
+import { QrCode, Eye, TrendingUp, Smartphone, Globe, BarChart2, ChevronDown, Layers, Users, Printer, Calendar, Lightbulb } from "lucide-react"
 import TrafficSourcesPanel from "./TrafficSourcesPanel"
 import TopLinksPanel from "./TopLinksPanel"
 import BlockPerformancePanel from "./BlockPerformancePanel"
@@ -277,7 +277,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             border: "1px solid color-mix(in srgb, var(--accent) 28%, transparent)" }}>
             <div style={{ position: "absolute", top: -30, right: -20, width: 150, height: 150, borderRadius: "50%", background: "radial-gradient(circle, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%)" }} />
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, position: "relative" }}>
-              <span style={{ flexShrink: 0, fontSize: 20, lineHeight: 1.1 }}>{live.evo > 5 ? "📈" : live.evo < -5 ? "📉" : "📊"}</span>
+              <span style={{ flexShrink: 0, lineHeight: 1.1, color: "var(--accent)" }}>{live.evo < -5 ? <TrendingUp size={19} style={{ transform: "scaleY(-1)" }} /> : <TrendingUp size={19} />}</span>
               <div style={{ minWidth: 0 }}>
                 <p style={{ color: "#F8F4EC", fontSize: 16, fontWeight: 700, margin: "0 0 3px", fontFamily: "Fraunces, serif", letterSpacing: "-0.2px" }}>
                   {live.evo > 5 ? "Votre trafic augmente." : live.evo < -5 ? "Votre trafic ralentit un peu." : "Votre QR est suivi en temps réel."}
@@ -296,7 +296,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
                     : null
                   return advice ? (
                     <p style={{ display: "flex", alignItems: "baseline", gap: 7, color: "var(--accent)", fontSize: 12.5, fontWeight: 600, margin: "9px 0 0", lineHeight: 1.5 }}>
-                      <span style={{ flexShrink: 0 }}>💡</span> {advice}
+                      <Lightbulb size={13} style={{ flexShrink: 0 }} /> {advice}
                     </p>
                   ) : null
                 })()}

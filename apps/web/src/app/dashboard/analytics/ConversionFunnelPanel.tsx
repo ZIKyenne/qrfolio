@@ -1,5 +1,6 @@
 "use client"
 
+import { Target, Lightbulb } from "lucide-react"
 import type { FunnelStep } from "./analyticsAgg"
 
 const GOLD = "var(--accent)"
@@ -18,7 +19,7 @@ export default function ConversionFunnelPanel({ steps, conversionRate, hasEngage
     <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 22px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 4 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <span style={{ fontSize: 17 }}>🎯</span>
+          <Target size={16} color={GOLD} />
           <h3 style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Tunnel de conversion</h3>
         </div>
         {views > 0 && (
@@ -50,7 +51,7 @@ export default function ConversionFunnelPanel({ steps, conversionRate, hasEngage
           ))}
           {!hasEngagementData && (
             <p style={{ color: MUTED, fontSize: 11, margin: "6px 0 0", lineHeight: 1.5 }}>
-              💡 L&apos;étape « engagés » se base sur le défilement — elle se remplit dès vos prochaines visites.
+              <Lightbulb size={12} style={{ verticalAlign: "-1px", marginRight: 4 }} />L&apos;étape « engagés » se base sur le défilement — elle se remplit dès vos prochaines visites.
             </p>
           )}
         </div>

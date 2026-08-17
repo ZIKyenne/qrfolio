@@ -1,5 +1,6 @@
 "use client"
 
+import { AlignLeft } from "lucide-react"
 import type { ScrollStep } from "./analyticsAgg"
 
 const GOLD = "var(--accent)"
@@ -14,7 +15,7 @@ export default function ScrollDepthPanel({ funnel }: Props) {
   return (
     <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 22px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
-        <span style={{ fontSize: 17 }}>📜</span>
+        <AlignLeft size={16} color={GOLD} />
         <h3 style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Profondeur de lecture</h3>
       </div>
       <p style={{ color: MUTED, fontSize: 12, margin: "0 0 16px" }}>Jusqu&apos;où vos visiteurs font défiler la page.</p>
@@ -42,7 +43,7 @@ export default function ScrollDepthPanel({ funnel }: Props) {
             const drop = base > 0 ? Math.round((1 - (funnel[3]?.count || 0) / base) * 100) : 0
             return drop >= 40 ? (
               <p style={{ color: "#FBBF24", fontSize: 11.5, margin: "4px 0 0", lineHeight: 1.5 }}>
-                💡 {drop}% des visiteurs n&apos;atteignent pas le bas de page — placez vos blocs importants (CTA, contact) plus haut.
+<AlignLeft size={12} style={{ verticalAlign: "-1px", marginRight: 4, opacity: .8 }} />{drop}% des visiteurs n&apos;atteignent pas le bas de page — placez vos blocs importants (CTA, contact) plus haut.
               </p>
             ) : null
           })()}

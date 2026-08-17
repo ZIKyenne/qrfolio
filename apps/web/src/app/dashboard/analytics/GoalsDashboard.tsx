@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/Button"
 import {
-  Target, Plus, Trash2, TrendingUp, CheckCircle,
+  Target, Plus, Trash2, TrendingUp, TrendingDown, CheckCircle,
   MessageCircle, Calendar, Phone, Mail, ShoppingBag,
   MousePointerClick, Zap, ArrowRight, Loader, X
 } from "lucide-react"
@@ -83,9 +83,23 @@ function calcConversions(goal: Goal, clicks: ClickRow[], views: ViewRow[]) {
   })
 
   const total     = conversions.length
-  const totalViews = periodViews.length || 1
-  const ctr       = parseFloat(((total / totalViews) * 100).toFixed(1))
+  const totalViews = periodViews.length
+  // Taux de conversion = clics-objectif / vues. Si AUCUNE vue, le taux n'existe pas :
+  // on renvoie null (affiché « — »), jamais un pourcentage fabriqué (division par 1).
+  const ctr       = totalViews > 0 ? parseFloat(((total / totalViews) * 100).toFixed(1)) : null
   const progress  = goal.target_count ? Math.min(Math.round((total / goal.target_count) * 100), 100) : null
+
+  // Allure (§4) : « en bonne voie » ou « en retard » se juge sur le RYTHME, pas sur un seuil fixe.
+  // On compare la part de l'objectif atteinte (conversions/cible) à la part de temps écoulée
+  // (temps depuis la création, plafonné à la période). Sans cible saisie, pas de statut.
+  let pace: "ahead" | "behind" | null = null
+  if (goal.target_count && goal.target_count > 0) {
+    const daysSince    = Math.max(0, (Date.now() - new Date(goal.created_at).getTime()) / 86400000)
+    const elapsedFrac  = Math.min(Math.min(daysSince, goal.period_days) / goal.period_days, 1)
+    const progressFrac = total / goal.target_count
+    // Au tout début (temps écoulé quasi nul), on ne crie pas « en retard » : on attend un peu de recul.
+    pace = elapsedFrac < 0.05 ? null : (progressFrac >= elapsedFrac ? "ahead" : "behind")
+  }
 
   // Données pour le mini graphique (par jour)
   const dailyMap: Record<string, number> = {}
@@ -101,7 +115,7 @@ function calcConversions(goal: Goal, clicks: ClickRow[], views: ViewRow[]) {
     date: date.slice(5), count
   }))
 
-  return { total, ctr, progress, chartData, totalViews }
+  return { total, ctr, progress, chartData, totalViews, pace }
 }
 
 // ── Tooltip mini graphique ────────────────────────────────────────────────────
@@ -182,8 +196,9 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
   )
 
   const totalConv  = allStats.reduce((a, s) => a + s.total, 0)
-  const bestGoal   = goals[allStats.indexOf(allStats.reduce((a, b) => b.total > a.total ? b : a, allStats[0] ?? { total: -1, ctr: 0, progress: 0, chartData: [], totalViews: 0 }) )]
-  const goalsOnTrack = allStats.filter(s => s.progress !== null && s.progress >= 70).length
+  const bestGoal   = goals[allStats.indexOf(allStats.reduce((a, b) => b.total > a.total ? b : a, allStats[0] ?? { total: -1, ctr: null, progress: null, chartData: [], totalViews: 0, pace: null }) )]
+  // « En bonne voie » = objectifs dont l'allure est en avance (§4), pas un seuil fixe de progression.
+  const goalsOnTrack = allStats.filter(s => s.pace === "ahead").length
 
   return (
     <div style={{ fontFamily: "DM Sans, sans-serif", color: "#F5F0E8" }}>
@@ -333,8 +348,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {goals.map((goal, gi) => {
             const cfg   = GOAL_TYPES[goal.goal_type] ?? GOAL_TYPES.custom
-            const stats = allStats[gi] ?? { total: 0, ctr: 0, progress: null, chartData: [], totalViews: 0 }
-            const onTrack = stats.progress !== null && stats.progress >= 70
+            const stats = allStats[gi] ?? { total: 0, ctr: null, progress: null, chartData: [], totalViews: 0, pace: null }
 
             return (
               <div key={goal.id} style={{ background: BG, border: `1px solid ${goal.color}20`, borderRadius: 16, padding: 22, transition: "border-color 0.2s" }}>
@@ -349,7 +363,16 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, flexWrap: "wrap" }}>
                         <h3 style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: 0 }}>{goal.name}</h3>
                         <span style={{ background: `${goal.color}15`, border: `1px solid ${goal.color}30`, borderRadius: 6, padding: "2px 8px", fontSize: 10, color: goal.color, fontWeight: 600 }}>{cfg.label}</span>
-                        {onTrack && <span style={{ background: "rgba(57,255,143,0.1)", borderRadius: 6, padding: "2px 8px", fontSize: 10, color: "var(--success)", fontWeight: 600 }}>✓ En bonne voie</span>}
+                        {stats.pace === "ahead" && (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "color-mix(in srgb, var(--success) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--success) 30%, transparent)", borderRadius: 6, padding: "2px 8px", fontSize: 10, color: "var(--success)", fontWeight: 600 }}>
+                            <TrendingUp size={11} /> En bonne voie
+                          </span>
+                        )}
+                        {stats.pace === "behind" && (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "color-mix(in srgb, var(--warning) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--warning) 30%, transparent)", borderRadius: 6, padding: "2px 8px", fontSize: 10, color: "var(--warning)", fontWeight: 600 }}>
+                            <TrendingDown size={11} /> En retard
+                          </span>
+                        )}
                       </div>
                       {goal.description && <p style={{ color: MUTED, fontSize: 11, margin: "0 0 2px" }}>{goal.description}</p>}
                       <p style={{ color: MUTED, fontSize: 10, margin: 0 }}>
@@ -368,7 +391,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 12, marginBottom: 18 }}>
                   {[
                     { label: "Conversions", value: stats.total.toLocaleString(), color: goal.color },
-                    { label: "Taux de conv.", value: stats.ctr + "%", color: "#F5F0E8" },
+                    { label: "Taux de conv.", value: stats.ctr === null ? "—" : stats.ctr + "%", color: stats.ctr === null ? MUTED : "#F5F0E8" },
                     { label: "Vues",          value: stats.totalViews.toLocaleString(), color: MUTED },
                     ...(goal.target_count ? [{ label: "Objectif", value: goal.target_count.toLocaleString(), color: MUTED }] : []),
                   ].map((m, i) => (

@@ -59,7 +59,7 @@ export function OutlinePanel({ open, onClose, blocks, blockDefs, onSelect, onMov
                   <span style={{ fontSize: 14, flexShrink: 0 }}>{def?.icon}</span>
                   <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13 }}>{name}</span>
                   {b.draft && <Pencil size={12} color="#FBBF24" aria-label="Brouillon" />}
-                  {b.locked && <Lock size={12} color="#818CF8" aria-label="Verrouillé" />}
+                  {b.locked && <Lock size={12} color="#A8A190" aria-label="Verrouillé" />}
                   {!b.visible && <EyeOff size={12} color={MUTED} aria-label="Masqué" />}
                 </button>
                 {iconBtn(i === 0 || !!b.locked, () => onMove(b.id, -1), "Monter", <ChevronUp size={13} />)}

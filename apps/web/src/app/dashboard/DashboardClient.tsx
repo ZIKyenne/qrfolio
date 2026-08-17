@@ -268,10 +268,11 @@ export default function DashboardClient({
               </span>
             </div>
           </div>
-          <Link href="/dashboard/onboarding" className="ui-btn ui-btn--primary ui-btn--md"
-            style={{ flexShrink: 0, textDecoration: "none" }}>
-            <Plus size={16} strokeWidth={2.6} /> Nouvelle page
-          </Link>
+          <span className="da-halo-wrap" style={{ flexShrink: 0 }}>
+            <Link href="/dashboard/onboarding" className="da-btn-primary">
+              <Plus className="da-ic da-ic-plus" size={17} strokeWidth={2.4} /> <span>Nouvelle page</span>
+            </Link>
+          </span>
         </div>
 
         {/* Soft-cap quota de vues : alerte (jamais de blocage des pages publiques) */}
@@ -361,8 +362,8 @@ export default function DashboardClient({
                         {!s.done && <p style={{ color: MUTED, fontSize: 11.5, margin: "1px 0 0" }}>{s.desc}</p>}
                       </div>
                       {isCurrent && (
-                        <Link href={s.cta.href} className={"ui-btn ui-btn--primary ui-btn--sm" + (isMobile ? " ui-btn--full" : "")} style={{ flexShrink: 0, textDecoration: "none" }}>
-                          <s.cta.Icon size={14} strokeWidth={2.5} /> {s.cta.label}
+                        <Link href={s.cta.href} className="da-btn-primary da-btn-primary--sm" style={{ flexShrink: 0, width: isMobile ? "100%" : "auto", justifyContent: "center" }}>
+                          <s.cta.Icon size={14} strokeWidth={2.5} /> <span>{s.cta.label}</span>
                         </Link>
                       )}
                     </div>
@@ -428,8 +429,8 @@ export default function DashboardClient({
           <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, overflow: "hidden", position: "relative" }}>
             <div style={{ padding: "16px 20px", borderBottom: `1px solid ${HAIR}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <p style={{ color: "#F8F4EC", fontSize: 15.5, fontWeight: 700, margin: 0, letterSpacing: "-0.2px" }}>Mes pages <span style={{ color: MUTED, fontWeight: 500 }}>({pages.length})</span></p>
-              <Link href="/dashboard/templates" className="ui-btn ui-btn--primary ui-btn--sm" style={{ textDecoration: "none" }}>
-                <Plus size={12} strokeWidth={2.8} /> Nouvelle
+              <Link href="/dashboard/templates" className="da-btn-ghost">
+                <Plus className="da-ic da-ic-plus" size={15} strokeWidth={2.4} /> Nouvelle
               </Link>
             </div>
             {pages.length === 0 ? (
@@ -437,8 +438,8 @@ export default function DashboardClient({
                 <span style={{ width: 44, height: 44, margin: "0 auto 12px", borderRadius: 12, background: "color-mix(in srgb, var(--accent) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)", display: "flex", alignItems: "center", justifyContent: "center" }}><FileText size={20} color={G} /></span>
                 <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 6px" }}>Aucune page</p>
                 <p style={{ color: MUTED, fontSize: 12, margin: "0 0 16px" }}>Créez votre première page avec un modèle</p>
-                <Link href="/dashboard/templates" className="ui-btn ui-btn--primary ui-btn--sm" style={{ textDecoration: "none" }}>
-                  Choisir un modèle
+                <Link href="/dashboard/templates" className="da-btn-primary da-btn-primary--sm">
+                  <span>Choisir un modèle</span>
                 </Link>
               </div>
             ) : (
@@ -467,22 +468,23 @@ export default function DashboardClient({
                       </div>
                     </div>
 
-                    {/* Action principale : Modifier */}
-                    <Link href={"/dashboard/builder/" + page.id} className="dz-cta" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 5, padding: isMobile ? "9px 12px" : "7px 12px", background: "color-mix(in srgb, var(--accent) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)", borderRadius: 9, color: G, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
-                      <Edit3 size={13} />{!isMobile && " Modifier"}
+                    {/* Action principale : Modifier (contour doré, jamais or plein dans une liste) */}
+                    <Link href={"/dashboard/builder/" + page.id} className="da-btn-ghost da-btn-ghost--sm" style={{ flexShrink: 0 }}>
+                      <Edit3 className="da-ic da-ic-edit" size={14} />{!isMobile && "Modifier"}
                     </Link>
 
                     {/* Menu secondaire (bottom sheet -> echappe l'overflow de la carte) */}
-                    <button onClick={() => setMenuPage(page)} aria-label="Plus d'actions"
-                      style={{ flexShrink: 0, width: isMobile ? 40 : 32, height: isMobile ? 40 : 32, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, color: MUTED, cursor: "pointer" }}>
+                    <button onClick={() => setMenuPage(page)} aria-label="Plus d'actions" className="da-btn-icon" style={{ flexShrink: 0 }}>
                       <MoreHorizontal size={17} />
                     </button>
                   </div>
                 )})}
                 {pages.length > 3 && (
-                  <Link href="/dashboard/qr-codes" className="dz-row" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px", textDecoration: "none", color: G, fontSize: 12.5, fontWeight: 700, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                    Voir toutes mes pages ({pages.length}) <ArrowRight className="dz-arrow" size={13} />
-                  </Link>
+                  <div style={{ display: "flex", justifyContent: "center", borderTop: `1px solid ${HAIR}`, padding: "6px 0 4px" }}>
+                    <Link href="/dashboard/qr-codes" className="da-btn-link">
+                      Voir toutes mes pages ({pages.length}) <ArrowRight className="da-ic da-ic-arrow" size={15} />
+                    </Link>
+                  </div>
                 )}
               </div>
             )}
@@ -497,8 +499,8 @@ export default function DashboardClient({
                   <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700, margin: 0 }}>Passez à Starter — {fmtPrice(getPlan("starter").priceMonthly)}€/mois</p>
                 </div>
                 <p style={{ color: MUTED, fontSize: 12, margin: "0 0 12px", lineHeight: 1.5 }}>{getPlan("starter").limits.pages} pages, {getPlan("starter").limits.views!.toLocaleString("fr-FR")} vues/mois, QR personnalisés, sans branding</p>
-                <Link href="/upgrade" className="ui-btn ui-btn--primary ui-btn--sm ui-btn--full" style={{ textDecoration: "none" }}>
-                  Voir les offres <ArrowRight size={13} />
+                <Link href="/upgrade" className="da-btn-primary da-btn-primary--sm" style={{ width: "100%", justifyContent: "center" }}>
+                  <span>Voir les offres</span> <ArrowRight className="da-ic da-ic-arrow" size={13} />
                 </Link>
               </div>
             )}

@@ -283,8 +283,8 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
           </p>
         </div>
         {(goals.length > 0 || showForm) && (
-          <button type="button" onClick={openNew} className="ui-btn ui-btn--primary ui-btn--sm">
-            <Plus size={15} /> Nouvel objectif
+          <button type="button" onClick={openNew} className="da-btn-primary da-btn-primary--sm">
+            <Plus className="da-ic da-ic-plus" size={15} strokeWidth={2.4} /> <span>Nouvel objectif</span>
           </button>
         )}
       </div>

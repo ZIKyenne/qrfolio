@@ -28,8 +28,8 @@ export default function NextStepCard({
       <span style={{ width: 36, height: 36, flexShrink: 0, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "var(--accent)", background: "color-mix(in srgb, var(--accent) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)" }}>{icon}</span>
       <p style={{ flex: 1, minWidth: 160, margin: 0, color: "#C9C3B6", fontSize: 13.5, lineHeight: 1.5 }}>{children}</p>
       {href
-        ? <Link href={href} className="ui-btn ui-btn--primary ui-btn--sm" style={cta}>{ctaLabel} <ArrowRight size={14} strokeWidth={2.5} /></Link>
-        : <button type="button" onClick={onClick} className="ui-btn ui-btn--primary ui-btn--sm">{ctaLabel} <ArrowRight size={14} strokeWidth={2.5} /></button>}
+        ? <Link href={href} className="da-btn-primary da-btn-primary--sm" style={cta}><span>{ctaLabel}</span> <ArrowRight className="da-ic da-ic-arrow" size={14} strokeWidth={2.5} /></Link>
+        : <button type="button" onClick={onClick} className="da-btn-primary da-btn-primary--sm"><span>{ctaLabel}</span> <ArrowRight className="da-ic da-ic-arrow" size={14} strokeWidth={2.5} /></button>}
     </div>
   )
 }

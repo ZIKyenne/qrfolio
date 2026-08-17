@@ -374,6 +374,8 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .da-ic { transition:transform .26s cubic-bezier(.2,.8,.2,1); }
 .da-btn-primary:hover .da-ic-plus, .da-btn-ghost:hover .da-ic-plus { transform:rotate(90deg) scale(1.1); }
 .da-btn-primary:hover .da-ic-arrow, .da-btn-link:hover .da-ic-arrow { transform:translateX(3px); }
+.da-btn-primary:hover .da-ic-dl { transform:translateY(2px); }
+.da-ic-dl { transition:transform .26s cubic-bezier(.2,.8,.2,1); }
 .da-btn-link:hover .da-ic-arrow { transform:translateX(4px); }
 .da-btn-ghost:hover .da-ic-edit { transform:rotate(-12deg) scale(1.08); }
 /* 02 — Secondaire contour doré (actions de liste) */
@@ -388,6 +390,37 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 /* 04 — Lien doré (« Voir toutes ») */
 .da-btn-link { cursor:pointer; display:inline-flex; align-items:center; gap:9px; padding:10px 4px; border:none; background:transparent; font-family:inherit; font-size:13.5px; font-weight:600; color:#e8c877; text-decoration:none; transition:color .2s ease; }
 .da-btn-link:hover { color:#f0d590; }
+/* Bouton icône — variantes : taille + DANGER (Supprimer = seule action rouge du site :
+   gris au repos, ne rougit qu'au survol) */
+.da-btn-icon--lg { width:40px; height:40px; border-radius:11px; }
+.da-btn-icon:hover .da-ic-edit { transform:rotate(-12deg) scale(1.08); }
+.da-btn-icon--danger { border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.02); color:rgba(239,233,223,.45); }
+.da-btn-icon--danger:hover { border-color:rgba(224,107,95,.5); color:#e06b5f; background:rgba(224,107,95,.12); }
+.da-btn-icon--danger:hover .da-ic-trash { transform:rotate(-8deg) scale(1.06); }
+.da-ic-trash, .da-ic-edit { transition:transform .26s cubic-bezier(.2,.8,.2,1); }
+
+/* Tuile de type (choix unique) — repos neutre, actif or */
+.da-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; padding:16px 12px; border-radius:12px; cursor:pointer; border:1px solid rgba(255,255,255,.07); background:#100e0c; color:rgba(239,233,223,.62); font-family:inherit; font-size:12.5px; font-weight:600; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.da-tile:hover { background:rgba(255,255,255,.05); border-color:rgba(232,200,119,.38); color:#efe9df; transform:translateY(-2px); box-shadow:0 10px 22px -16px rgba(0,0,0,.9); }
+.da-tile svg { transition:transform .26s cubic-bezier(.2,.8,.2,1); }
+.da-tile:hover svg { transform:translateY(-1px); }
+.da-tile.on { background:rgba(232,200,119,.14); border-color:rgba(232,200,119,.7); color:#f0d590; box-shadow:0 0 0 3px rgba(201,162,77,.1), 0 10px 24px -14px rgba(201,162,77,.5); }
+.da-tile.on svg { transform:scale(1.08); }
+
+/* Pastille couleur (swatch) */
+.da-swatch { padding:0; border-radius:12px; cursor:pointer; border:1px solid rgba(255,255,255,.14); transition:box-shadow .24s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1); }
+.da-swatch:hover { border-color:rgba(232,200,119,.5); box-shadow:0 0 0 3px rgba(201,162,77,.12); transform:translateY(-2px); }
+.da-swatch.on { border-color:rgba(232,200,119,.9); box-shadow:0 0 0 3px rgba(201,162,77,.28); }
+
+/* Upload en pointillés doré */
+.da-btn-dashed { display:flex; align-items:center; justify-content:center; gap:11px; width:100%; box-sizing:border-box; padding:18px; border:1px dashed rgba(232,200,119,.26); border-radius:12px; cursor:pointer; background:rgba(255,255,255,.015); color:rgba(232,200,119,.8); font-family:inherit; font-size:14px; font-weight:600; transition:background .24s ease, border-color .22s ease, color .2s ease, transform .16s cubic-bezier(.2,.8,.2,1); }
+.da-btn-dashed:hover { background:rgba(232,200,119,.09); border-color:rgba(232,200,119,.6); color:#f0d590; }
+.da-btn-dashed svg { transition:transform .26s cubic-bezier(.2,.8,.2,1); }
+.da-btn-dashed:hover svg { transform:translateY(-3px); }
+
+/* Primaire VERROUILLÉ : teinte dorée désaturée, sans hover ni ombre — annonce une limite, pas une action */
+.da-btn-locked { display:flex; align-items:center; justify-content:center; gap:11px; box-sizing:border-box; padding:16px 20px; border:1px solid rgba(232,200,119,.22); border-radius:12px; background:rgba(232,200,119,.09); color:rgba(232,200,119,.5); font-family:inherit; font-size:14.5px; font-weight:600; cursor:not-allowed; }
+
 /* 05 — Neutre en contour (Annuler / Fermer) — jamais d'or, se réchauffe en blanc au survol */
 .da-btn-neutral { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:9px; padding:14px 24px; border:1px solid rgba(255,255,255,.1); border-radius:11px; background:transparent; color:rgba(239,233,223,.6); font-family:inherit; font-size:14.5px; font-weight:600; white-space:nowrap; transition:color .2s ease, border-color .22s ease, background .22s ease, transform .16s cubic-bezier(.2,.8,.2,1); }
 .da-btn-neutral:hover { border-color:rgba(255,255,255,.22); color:#efe9df; background:rgba(255,255,255,.05); }

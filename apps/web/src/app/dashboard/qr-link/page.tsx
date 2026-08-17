@@ -394,8 +394,8 @@ export default function QrLinkPage() {
   const secRowLabel: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, color: "#D8D2C6", fontSize: 12.5, width: 110, flexShrink: 0 }
   const secBtn: React.CSSProperties = { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 8, color: "#F5F0E8", fontSize: 11.5, fontWeight: 600, cursor: "pointer", padding: "6px 10px", flexShrink: 0 }
   const swatch = (c: string, on: boolean, onClick: () => void, aria: string) => (
-    <button key={c} onClick={onClick} aria-label={aria}
-      style={{ width: 38, height: 38, borderRadius: 11, background: c, border: on ? `2.5px solid ${G}` : "2px solid rgba(255,255,255,0.14)", boxShadow: on ? `0 0 0 3px ${G}22` : "none", cursor: "pointer", flexShrink: 0, transition: "all .15s" }} />
+    <button key={c} onClick={onClick} aria-label={aria} className={`da-swatch${on ? " on" : ""}`}
+      style={{ width: 40, height: 40, background: c, flexShrink: 0 }} />
   )
 
   const previewLabel =
@@ -407,15 +407,25 @@ export default function QrLinkPage() {
     : normalizeUrl(url).replace(/^https?:\/\//, "")
 
   // Boutons de téléchargement PNG/SVG (fichier statique). `primary` = mis en avant.
+  const spin = (size = 16) => <span aria-hidden style={{ width: size, height: size, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin .8s linear infinite" }} />
   const downloadRow = (primary: boolean) => (
     <div style={{ display: "flex", gap: 10 }}>
-      <Button variant={primary ? "primary" : "secondary"} size="lg" onClick={() => download("png")} loading={busy === "png"} disabled={!ready || busy !== null || staticBlocked}
-        leftIcon={staticBlocked ? <Lock size={18} /> : done ? <Check size={18} /> : <Download size={18} />} style={{ flex: 1 }}>
-        {staticBlocked ? "Limite atteinte" : done ? "Téléchargé" : "Télécharger PNG"}
-      </Button>
-      <Button variant="secondary" size="lg" onClick={() => download("svg")} loading={busy === "svg"} disabled={!ready || busy !== null || staticBlocked}>
-        SVG
-      </Button>
+      {staticBlocked ? (
+        <button disabled className="da-btn-locked" style={{ flex: 1 }}><Lock size={17} /> <span>Limite atteinte</span></button>
+      ) : primary ? (
+        <span className="da-halo-wrap" style={{ flex: 1, display: "flex" }}>
+          <button onClick={() => download("png")} disabled={!ready || busy !== null} className="da-btn-primary" style={{ flex: 1, justifyContent: "center" }}>
+            {busy === "png" ? spin(18) : done ? <Check size={18} /> : <Download className="da-ic da-ic-dl" size={18} />}<span>{done ? "Téléchargé" : "Télécharger PNG"}</span>
+          </button>
+        </span>
+      ) : (
+        <button onClick={() => download("png")} disabled={!ready || busy !== null} className="da-btn-ghost" style={{ flex: 1, justifyContent: "center", padding: "15px 16px", fontSize: 14 }}>
+          {busy === "png" ? spin() : done ? <Check size={16} /> : <Download size={16} />}<span>{done ? "Téléchargé" : "Télécharger PNG"}</span>
+        </button>
+      )}
+      <button onClick={() => download("svg")} disabled={!ready || busy !== null || staticBlocked} className="da-btn-ghost" style={{ justifyContent: "center", padding: "15px 22px", fontSize: 14 }}>
+        {busy === "svg" ? spin() : <span>SVG</span>}
+      </button>
     </div>
   )
 
@@ -458,8 +468,7 @@ export default function QrLinkPage() {
           const on = qrType === t.k
           const Icon = t.icon
           return (
-            <button key={t.k} onClick={() => setQrType(t.k)}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, minHeight: 60, borderRadius: 13, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : "rgba(255,255,255,0.09)"}`, color: on ? G : MUTED, fontSize: 12.5, fontWeight: on ? 800 : 600, transition: "all .15s" }}>
+            <button key={t.k} onClick={() => setQrType(t.k)} className={`da-tile${on ? " on" : ""}`} style={{ minHeight: 60 }}>
               <Icon size={19} /> {t.label}
             </button>
           )
@@ -592,11 +601,11 @@ export default function QrLinkPage() {
                   <img src={logo} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                 </div>
                 <span style={{ flex: 1, color: MUTED, fontSize: 11.5, lineHeight: 1.4 }}>Logo ajouté — correction d&apos;erreur portée au maximum pour rester scannable.</span>
-                <button onClick={() => setLogo(null)} aria-label="Retirer le logo" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, width: 38, height: 38, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><X size={16} /></button>
+                <button onClick={() => setLogo(null)} aria-label="Retirer le logo" className="da-btn-icon da-btn-icon--danger" style={{ width: 38, height: 38, flexShrink: 0 }}><X className="da-ic da-ic-trash" size={16} /></button>
               </div>
             ) : (
-              <button onClick={() => logoInput.current?.click()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 46, borderRadius: 11, border: "1.5px dashed rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.04)", color: G, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                <Upload size={16} /> Ajouter un logo
+              <button onClick={() => logoInput.current?.click()} className="da-btn-dashed" style={{ minHeight: 46, padding: 14 }}>
+                <Upload size={16} /> <span>Ajouter un logo</span>
               </button>
             )}
             <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onLogoFile(f); e.target.value = "" }} />
@@ -647,9 +656,15 @@ export default function QrLinkPage() {
           téléchargement en repli. Statique (WiFi/Contact) : téléchargement en avant, enregistrement en repli. */}
       <div style={{ ...card, marginBottom: hasSaved || history.length > 0 ? 4 : 14 }}>
         {dynamic ? (<>
-          <Button onClick={createDynamic} disabled={!ready || saveBusy || dynBlocked} size="lg" leftIcon={dynBlocked ? <Lock size={17} /> : <Zap size={17} />} style={{ width: "100%" }}>
-            {dynBlocked ? `Limite de ${DYN_FREE_TRIALS_PER_MONTH} essais/mois atteinte` : saveBusy ? "Création…" : "Créer le QR dynamique — essai 30 j"}
-          </Button>
+          {dynBlocked ? (
+            <button disabled className="da-btn-locked" style={{ width: "100%" }}><Lock size={17} /> <span>Limite de {DYN_FREE_TRIALS_PER_MONTH} essais/mois atteinte</span></button>
+          ) : (
+            <span className="da-halo-wrap" style={{ display: "flex" }}>
+              <button onClick={createDynamic} disabled={!ready || saveBusy} className="da-btn-primary" style={{ flex: 1, justifyContent: "center" }}>
+                {saveBusy ? spin(17) : <Zap size={17} />}<span>{saveBusy ? "Création…" : "Créer le QR dynamique — essai 30 j"}</span>
+              </button>
+            </span>
+          )}
           <p style={{ color: MUTED, fontSize: 11.5, margin: "9px 2px 0", lineHeight: 1.5 }}>
             Modifiable après impression + suivi des scans. Gratuit <strong style={{ color: "#FBBF24" }}>30 jours</strong> (2/mois), puis <Link href="/dashboard/qr-dynamique" style={{ color: G, fontWeight: 700, textDecoration: "none" }}>un abonnement</Link> pour rester actif.
             {qrType === "text" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 3 }}>Ouvre une page au scan (Internet requis).</span>}
@@ -668,9 +683,9 @@ export default function QrLinkPage() {
             <span style={{ color: "#6E685E", fontSize: 11, fontWeight: 600 }}>ou enregistrer dans mon compte</span>
             <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.09)" }} />
           </div>
-          <Button variant="secondary" onClick={saveInstant} loading={saveBusy} disabled={!ready} leftIcon={<Save size={16} />} style={{ width: "100%" }}>
-            Enregistrer ce QR
-          </Button>
+          <button onClick={saveInstant} disabled={!ready || saveBusy} className="da-btn-ghost" style={{ width: "100%", justifyContent: "center", padding: "15px", fontSize: 14 }}>
+            {saveBusy ? spin() : <Save size={16} />}<span>Enregistrer ce QR</span>
+          </button>
           <p style={{ color: "#6E685E", fontSize: 11, margin: "8px 2px 0", lineHeight: 1.45 }}>
             QR statique — fonctionne hors ligne, sans expiration ({qrType === "wifi" ? "auto-connexion WiFi" : "ajout du contact"} au scan).
           </p>
@@ -711,8 +726,8 @@ export default function QrLinkPage() {
                     </div>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
-                    <button onClick={e => { e.stopPropagation(); editDest(s) }} title="Modifier la destination" aria-label="Modifier la destination" style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.28)", borderRadius: 9, color: G, cursor: "pointer", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center" }}><Pencil size={14} /></button>
-                    <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, width: 34, height: 34, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={14} /></button>
+                    <button onClick={e => { e.stopPropagation(); editDest(s) }} title="Modifier la destination" aria-label="Modifier la destination" className="da-btn-icon" style={{ width: 34, height: 34 }}><Pencil className="da-ic da-ic-edit" size={14} /></button>
+                    <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer" className="da-btn-icon da-btn-icon--danger" style={{ width: 34, height: 34 }}><Trash2 className="da-ic da-ic-trash" size={14} /></button>
                   </div>
                 </div>
               ) })}
@@ -729,8 +744,8 @@ export default function QrLinkPage() {
                     <QRCanvas value={s.payload || "https://qrowg.com"} size={82} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
                   <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || s.kind}</span>
-                  <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer ce QR"
-                    style={{ position: "absolute", top: 5, right: 5, background: "rgba(239,68,68,0.15)", border: "none", borderRadius: 7, width: 24, height: 24, color: "var(--danger)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Trash2 size={12} /></button>
+                  <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer ce QR" className="da-btn-icon da-btn-icon--danger"
+                    style={{ position: "absolute", top: 5, right: 5, width: 26, height: 26, borderRadius: 8 }}><Trash2 className="da-ic da-ic-trash" size={13} /></button>
                 </div>
               ))}
             </div>

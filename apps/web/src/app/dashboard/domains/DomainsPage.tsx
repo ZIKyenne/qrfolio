@@ -155,10 +155,9 @@ export default function DomainsPage({ pages, plan }: Props) {
             <p style={{ color:MUTED, fontSize:13, margin:"0 0 24px", lineHeight:1.6 }}>
               Connectez emilien.fr, monrestaurant.com…<br/>directement à vos pages QRowg.
             </p>
-            <a href="/upgrade"
-              style={{ display:"inline-block", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius:10, padding:"11px 26px", color:"#080808", fontSize:13, fontWeight:700, textDecoration:"none" }}>
-              Passer au Pro
-            </a>
+            <span className="da-halo-wrap">
+              <a href="/upgrade" className="da-btn-primary da-btn-primary--sm"><span>Passer au Pro</span></a>
+            </span>
           </div>
         ) : (
           <div>
@@ -216,8 +215,10 @@ export default function DomainsPage({ pages, plan }: Props) {
                   )}
 
                   <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-                    <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); setError("") }}>Annuler</Button>
-                    <Button variant="primary" size="sm" onClick={addDomain} loading={saving} disabled={!fDomain} leftIcon={<Globe size={13} />}>Ajouter</Button>
+                    <button type="button" onClick={() => { setShowForm(false); setError("") }} className="da-btn-neutral da-btn-neutral--sm">Annuler</button>
+                    <button type="button" onClick={addDomain} disabled={saving || !fDomain} className="da-btn-primary da-btn-primary--sm">
+                      {saving ? <span aria-hidden style={{ width:13, height:13, border:"2px solid currentColor", borderTopColor:"transparent", borderRadius:"50%", animation:"mo-spin .8s linear infinite" }}/> : <Globe size={13} />}<span>Ajouter</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -240,9 +241,9 @@ export default function DomainsPage({ pages, plan }: Props) {
                   <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--success)", flexShrink:0 }}/>
                   <span style={{ color:"#F5F0E8", fontSize:13, fontWeight:600, fontFamily:"monospace" }}>votreentreprise.fr</span>
                 </div>
-                <div>
-                  <Button variant="primary" onClick={() => setShowForm(true)} leftIcon={<Plus size={14} />}>Ajouter mon domaine</Button>
-                </div>
+                <span className="da-halo-wrap">
+                  <button type="button" onClick={() => setShowForm(true)} className="da-btn-primary da-btn-primary--sm"><Plus className="da-ic da-ic-plus" size={14} /> <span>Ajouter mon domaine</span></button>
+                </span>
               </div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:12 }}>

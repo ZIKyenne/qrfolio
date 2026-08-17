@@ -29,9 +29,10 @@ interface Props {
 const G     = "var(--accent)"
 const MUTED = "#A8A190"
 
+// 301/302 ne se distinguent plus par du vert/bleu mais par l'OR de sélection (301) vs neutre (302).
 const TYPE_CFG = {
-  301: { color: "var(--success)", bg: "rgba(57,255,143,0.1)",  border: "rgba(57,255,143,0.25)",  label: "301 Permanent",  desc: "SEO transféré vers la destination" },
-  302: { color: "var(--action)", bg: "rgba(56,189,248,0.1)",  border: "rgba(56,189,248,0.25)",  label: "302 Temporaire", desc: "Le SEO reste sur la source" },
+  301: { color: "var(--accent)", bg: "color-mix(in srgb, var(--accent) 12%, transparent)",  border: "color-mix(in srgb, var(--accent) 28%, transparent)",  label: "301 Permanent",  desc: "SEO transféré vers la destination" },
+  302: { color: "#C8BFB2", bg: "rgba(255,255,255,0.04)",  border: "rgba(255,255,255,0.12)",  label: "302 Temporaire", desc: "Le SEO reste sur la source" },
 }
 
 export default function RedirectsPanel({ userDomains }: Props) {
@@ -145,9 +146,9 @@ export default function RedirectsPanel({ userDomains }: Props) {
               Redirigez des domaines ou chemins vers de nouvelles destinations
             </p>
           </div>
-          <button type="button" onClick={() => setShowForm(true)}
-            style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 20px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:11, color:"#080808", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-            <Plus size={15}/> Ajouter une redirection
+          {/* Add dupliqué : secondaire tant que l'état vide (avec son primaire) est affiché. */}
+          <button type="button" onClick={() => setShowForm(true)} className={redirects.length === 0 ? "da-btn-ghost da-btn-ghost--sm" : "da-btn-primary da-btn-primary--sm"}>
+            <Plus className="da-ic da-ic-plus" size={15}/> Ajouter une redirection
           </button>
         </div>
 
@@ -158,7 +159,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
               { icon:<ArrowRight size={14} color={G}/>,            label:"Total",    value:redirects.length },
               { icon:<CheckCircle size={14} style={{ color:"var(--success)" }}/>,     label:"Actives",  value:active },
               { icon:<ToggleLeft size={14} color={MUTED}/>,        label:"Inactives",value:inactive },
-              { icon:<MousePointerClick size={14} color="#818CF8"/>,label:"Clics total",value:redirects.reduce((a,r)=>a+r.hit_count,0).toLocaleString() },
+              { icon:<MousePointerClick size={14} color={G}/>,label:"Clics total",value:redirects.reduce((a,r)=>a+r.hit_count,0).toLocaleString() },
             ].map((k,i) => (
               <div key={i} style={{ background:"#0F0E0B", border:"1px solid color-mix(in srgb, var(--accent) 10%, transparent)", borderRadius:11, padding:"12px 14px", display:"flex", alignItems:"center", gap:9 }}>
                 {k.icon}
@@ -175,12 +176,12 @@ export default function RedirectsPanel({ userDomains }: Props) {
         {showForm && (
           <div style={{ background:"#0F0E0B", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:14, padding:22, marginBottom:24 }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18 }}>
-              <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:700, margin:0 }}>
-                {editId ? "✏️ Modifier la redirection" : "➕ Nouvelle redirection"}
+              <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:700, margin:0, display:"flex", alignItems:"center", gap:8 }}>
+                {editId ? <Pencil size={15} color={G}/> : <Plus size={15} color={G}/>}
+                {editId ? "Modifier la redirection" : "Nouvelle redirection"}
               </p>
-              <button type="button" onClick={resetForm}
-                style={{ background:"none", border:"none", color:MUTED, cursor:"pointer" }}>
-                <X size={16}/>
+              <button type="button" onClick={resetForm} aria-label="Fermer" className="da-btn-icon">
+                <X className="da-ic da-ic-x" size={16}/>
               </button>
             </div>
 
@@ -193,8 +194,8 @@ export default function RedirectsPanel({ userDomains }: Props) {
                   const sel = fType === t
                   return (
                     <button key={t} type="button" onClick={() => setFType(t)}
-                      style={{ flex:1, padding:"12px 14px", background: sel ? cfg.bg : "rgba(255,255,255,0.02)", border: sel ? `1px solid ${cfg.border}` : "1px solid rgba(255,255,255,0.07)", borderRadius:10, cursor:"pointer", textAlign:"left" as const, transition:"all 0.15s" }}>
-                      <p style={{ color: sel ? cfg.color : "#F5F0E8", fontSize:13, fontWeight:700, margin:"0 0 3px" }}>{cfg.label}</p>
+                      style={{ flex:1, padding:"12px 14px", background: sel ? "color-mix(in srgb, var(--accent) 13%, transparent)" : "rgba(255,255,255,0.02)", border: sel ? "1px solid color-mix(in srgb, var(--accent) 55%, transparent)" : "1px solid rgba(255,255,255,0.07)", borderRadius:10, cursor:"pointer", textAlign:"left" as const, boxShadow: sel ? "0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent)" : "none", transition:"all 0.15s" }}>
+                      <p style={{ color: sel ? "#f0d590" : "#F5F0E8", fontSize:13, fontWeight:700, margin:"0 0 3px" }}>{cfg.label}</p>
                       <p style={{ color:MUTED, fontSize:11, margin:0 }}>{cfg.desc}</p>
                     </button>
                   )
@@ -251,8 +252,10 @@ export default function RedirectsPanel({ userDomains }: Props) {
             )}
 
             <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
-              <Button variant="ghost" size="sm" onClick={resetForm}>Annuler</Button>
-              <Button variant="primary" size="sm" onClick={save} loading={saving} disabled={!fTo} leftIcon={<CheckCircle size={13} />}>{editId ? "Modifier" : "Créer la redirection"}</Button>
+              <button type="button" onClick={resetForm} className="da-btn-neutral da-btn-neutral--sm">Annuler</button>
+              <button type="button" onClick={save} disabled={saving || !fTo} className="da-btn-primary da-btn-primary--sm">
+                {saving ? <span aria-hidden style={{ width:13, height:13, border:"2px solid currentColor", borderTopColor:"transparent", borderRadius:"50%", animation:"mo-spin .8s linear infinite" }}/> : <CheckCircle size={13} />}<span>{editId ? "Modifier" : "Créer la redirection"}</span>
+              </button>
             </div>
           </div>
         )}
@@ -269,10 +272,9 @@ export default function RedirectsPanel({ userDomains }: Props) {
             <p style={{ color:MUTED, fontSize:12, margin:"0 0 20px", lineHeight:1.6 }}>
               Redirigez ancien-site.fr → nouveau-site.fr<br/>ou /page-a → /page-b
             </p>
-            <button type="button" onClick={() => setShowForm(true)}
-              style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 20px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:10, color:"#080808", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-              <Plus size={14}/> Créer une redirection
-            </button>
+            <span className="da-halo-wrap">
+              <button type="button" onClick={() => setShowForm(true)} className="da-btn-primary da-btn-primary--sm"><Plus className="da-ic da-ic-plus" size={14}/> <span>Créer une redirection</span></button>
+            </span>
           </div>
         ) : (
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
@@ -347,10 +349,10 @@ export default function RedirectsPanel({ userDomains }: Props) {
               <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:700, margin:"0 0 6px" }}>301 vs 302 — Lequel choisir ?</p>
               <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
                 <p style={{ color:MUTED, fontSize:11, margin:0 }}>
-                  <strong style={{ color:"var(--success)" }}>301 Permanent</strong> — Le domaine/page a définitivement changé. Google transfère le PageRank vers la nouvelle URL. À utiliser pour les migrations définitives.
+                  <strong style={{ color:"var(--accent)" }}>301 Permanent</strong> — Le domaine/page a définitivement changé. Google transfère le PageRank vers la nouvelle URL. À utiliser pour les migrations définitives.
                 </p>
                 <p style={{ color:MUTED, fontSize:11, margin:0 }}>
-                  <strong style={{ color:"var(--action)" }}>302 Temporaire</strong> — La redirection est temporaire. Google garde le SEO sur l'URL source. À utiliser pour des tests ou des promotions limitées.
+                  <strong style={{ color:"rgba(239,233,223,0.85)" }}>302 Temporaire</strong> — La redirection est temporaire. Google garde le SEO sur l'URL source. À utiliser pour des tests ou des promotions limitées.
                 </p>
               </div>
             </div>

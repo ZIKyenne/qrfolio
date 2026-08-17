@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
-import { Users, Mail, Trash2, ShieldCheck, Pencil, Crown, Loader2, LogOut, Sparkles } from "lucide-react"
+import { Users, Mail, Trash2, ShieldCheck, Pencil, Crown, Loader2, LogOut, Sparkles, ArrowRight } from "lucide-react"
 import { useToast } from "@/components/Toast"
 import { useConfirm } from "@/components/ui/Confirm"
 import { Button } from "@/components/ui/Button"
@@ -146,7 +146,11 @@ export default function TeamPage() {
             <div style={{ ...card, borderColor: "rgba(201,168,76,0.35)", background: "linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.02))" }}>
               <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: "0 0 8px", display: "flex", alignItems: "center", gap: 8 }}><Sparkles size={16} color={GOLD} /> Invitez votre équipe</p>
               <p style={{ color: "#B8B2A4", fontSize: 14, margin: "0 0 16px", lineHeight: 1.6 }}>La collaboration en équipe est incluse dans le plan <strong style={{ color: GOLD }}>Business</strong> (jusqu'à 5 membres). Passez à Business pour inviter des éditeurs et admins.</p>
-              <Link href="/upgrade?reason=team" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 10, background: "linear-gradient(135deg,#EBCE72,#C9A84C)", color: "#0A0A0A", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>Passer à Business →</Link>
+              <span className="da-halo-wrap">
+                <Link href="/upgrade?reason=team" className="da-btn-primary da-btn-primary--sm">
+                  <span>Passer à Business</span> <ArrowRight className="da-ic da-ic-arrow" size={15} />
+                </Link>
+              </span>
             </div>
           )}
 
@@ -174,7 +178,7 @@ export default function TeamPage() {
                 Membres{data.teamLimit ? <span style={{ color: "#8A8478", fontWeight: 600, marginLeft: 8, fontSize: 12.5 }}>{data.seatsUsed} / {data.teamLimit}</span> : null}
               </p>
               {data.myRole && data.myRole !== "owner" && (
-                <Button variant="danger" size="sm" onClick={leaveTeam} leftIcon={<LogOut size={13} />}>Quitter l'équipe</Button>
+                <button type="button" onClick={leaveTeam} className="da-btn-danger da-btn-danger--sm"><LogOut size={13} /> Quitter l'équipe</button>
               )}
             </div>
             {/* Propriétaire */}
@@ -227,8 +231,7 @@ export default function TeamPage() {
                     <div style={{ color: "#8A8478", fontSize: 12 }}>Invité·e comme {ROLE_LABEL[inv.role]}</div>
                   </div>
                   {canManage && (
-                    <button type="button" onClick={() => cancelInvite(inv.id)}
-                      style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "#8A8478", fontSize: 12.5, cursor: "pointer" }}>
+                    <button type="button" onClick={() => cancelInvite(inv.id)} className="da-btn-neutral da-btn-neutral--sm">
                       Annuler
                     </button>
                   )}

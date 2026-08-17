@@ -162,10 +162,11 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
           </span>
         </div>
 
+        {/* Action dupliquée : secondaire tant qu'un état vide (avec son primaire) est affiché,
+            redevient primaire dès qu'une liste existe. */}
         {canAdd && (
-          <button type="button" onClick={onAddClick}
-            style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:9, color:"#080808", fontSize:12, fontWeight:700, cursor:"pointer" }}>
-            <Plus size={13}/> Ajouter un domaine
+          <button type="button" onClick={onAddClick} className={domains.length === 0 ? "da-btn-ghost da-btn-ghost--sm" : "da-btn-primary da-btn-primary--sm"}>
+            <Plus className="da-ic da-ic-plus" size={13}/> Ajouter un domaine
           </button>
         )}
       </div>
@@ -180,7 +181,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
             </span>
           </div>
           <div style={{ height:5, background:"rgba(255,255,255,0.06)", borderRadius:3, overflow:"hidden" }}>
-            <div style={{ height:"100%", width:`${Math.min((domains.length/planInfo.max)*100, 100)}%`, background: atLimit ? "var(--danger)" : "linear-gradient(90deg,var(--accent),var(--success))", borderRadius:3, transition:"width 0.5s" }}/>
+            <div style={{ height:"100%", width:`${Math.min((domains.length/planInfo.max)*100, 100)}%`, background: atLimit ? "var(--danger)" : "linear-gradient(90deg,#c9a24d,#e8c877)", borderRadius:3, transition:"width 0.5s" }}/>
           </div>
           {atLimit && (
             <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:7, padding:"8px 12px", background:"color-mix(in srgb, var(--accent) 6%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 15%, transparent)", borderRadius:8 }}>
@@ -222,7 +223,7 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
               Domaines secondaires ({secondary.length})
             </p>
             {primary && (
-              <span style={{ color:"var(--action)", fontSize:10 }}>301 → {primary.domain}</span>
+              <span style={{ color:G, fontSize:10 }}>301 → {primary.domain}</span>
             )}
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -249,10 +250,9 @@ export default function MultiBrandDomainsPanel({ domains, pages, plan, onSetPrim
           <p style={{ color:"#F5F0E8", fontSize:13, fontWeight:600, margin:"0 0 5px" }}>Aucun domaine</p>
           <p style={{ color:MUTED, fontSize:12, margin:"0 0 16px" }}>Ajoutez votre premier domaine personnalisé</p>
           {canAdd && (
-            <button type="button" onClick={onAddClick}
-              style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"9px 18px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:9, color:"#080808", fontSize:12, fontWeight:700, cursor:"pointer" }}>
-              <Plus size={13}/> Ajouter un domaine
-            </button>
+            <span className="da-halo-wrap">
+              <button type="button" onClick={onAddClick} className="da-btn-primary da-btn-primary--sm"><Plus className="da-ic da-ic-plus" size={13}/> <span>Ajouter un domaine</span></button>
+            </span>
           )}
         </div>
       )}

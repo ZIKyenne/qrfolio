@@ -250,7 +250,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
 
       {linkData.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 20px", color: MUTED }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>🖱️</div>
+          <div style={{ marginBottom: 10, color: "#5c554b" }}><MousePointerClick size={34} /></div>
           <p style={{ margin: "0 0 6px", fontSize: 14 }}>Aucun clic sur cette période</p>
           <p style={{ margin: 0, fontSize: 12 }}>Les clics apparaissent en temps réel</p>
         </div>
@@ -292,7 +292,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
 
               {/* Rang */}
               <span style={{ color: i < 3 ? G : MUTED, fontSize: 12, fontWeight: 700, textAlign: "center" }}>
-                {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+                {`#${i + 1}`}
               </span>
 
               {/* Lien */}

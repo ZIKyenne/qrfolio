@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { useState, useCallback } from "react"
-import { Download, Calendar, Lock, CheckCircle, Loader } from "lucide-react"
+import { Download, Calendar, Lock, CheckCircle, Loader, Eye, QrCode, Link2, Layers, Globe } from "lucide-react"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ViewRow    = { viewed_at: string; device: string; source: string | null; country: string | null; page_id: string }
@@ -23,12 +23,12 @@ interface Props {
 
 // ── Datasets exportables ──────────────────────────────────────────────────────
 const DATASETS = [
-  { id: "visits",    label: "Visites",    emoji: "👁️", desc: "Toutes les vues de page avec source, device, pays" },
-  { id: "scans",     label: "Scans QR",   emoji: "◼",  desc: "Scans avec device, OS, navigateur, pays, ville" },
-  { id: "links",     label: "Liens cliqués", emoji: "🔗", desc: "Clics sur liens avec URL cible et type de bloc" },
-  { id: "blocks",    label: "Blocs",      emoji: "🧱", desc: "Inventaire des blocs par type et page" },
-  { id: "geo",       label: "Géographie", emoji: "🌍", desc: "Pays et villes avec compteur visites + scans" },
-] as const
+  { id: "visits",    label: "Visites",    icon: <Eye size={14} />,    desc: "Toutes les vues de page avec source, device, pays" },
+  { id: "scans",     label: "Scans QR",   icon: <QrCode size={14} />, desc: "Scans avec device, OS, navigateur, pays, ville" },
+  { id: "links",     label: "Liens cliqués", icon: <Link2 size={14} />, desc: "Clics sur liens avec URL cible et type de bloc" },
+  { id: "blocks",    label: "Blocs",      icon: <Layers size={14} />, desc: "Inventaire des blocs par type et page" },
+  { id: "geo",       label: "Géographie", icon: <Globe size={14} />,  desc: "Pays et villes avec compteur visites + scans" },
+]
 
 type DatasetId = typeof DATASETS[number]["id"]
 
@@ -285,7 +285,7 @@ export default function ExportPanel({ plan, pages, views, scans, clicks, blocks,
                     </div>
                     <div>
                       <p style={{ color: "#F5F0E8", fontSize: 12, fontWeight: 600, margin: "0 0 2px" }}>
-                        {ds.emoji} {ds.label}
+                        {ds.icon} {ds.label}
                       </p>
                       <p style={{ color: MUTED, fontSize: 10, margin: 0, lineHeight: 1.4 }}>{ds.desc}</p>
                     </div>
@@ -333,7 +333,7 @@ export default function ExportPanel({ plan, pages, views, scans, clicks, blocks,
                 {selected.size} fichier{selected.size > 1 ? "s" : ""} · {PERIODS.find(p => p.id === period)?.label}
               </p>
               <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>
-                {[...selected].map(id => DATASETS.find(d => d.id === id)?.emoji + " " + DATASETS.find(d => d.id === id)?.label).join(" · ")}
+                {[...selected].map(id => DATASETS.find(d => d.id === id)?.label).filter(Boolean).join(" · ")}
               </p>
             </div>
             <button type="button" onClick={doExport} disabled={exporting || selected.size === 0}

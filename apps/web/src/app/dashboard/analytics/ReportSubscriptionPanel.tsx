@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { useState, useEffect } from "react"
-import { Mail, Calendar, Bell, BellOff, CheckCircle, Clock, Loader, ChevronRight } from "lucide-react"
+import { Mail, Calendar, Bell, BellOff, CheckCircle, Clock, Loader, ChevronRight, BarChart2 } from "lucide-react"
 
 type Subscription = {
   id:           string
@@ -22,14 +22,14 @@ const FREQ_CONFIG = {
   weekly: {
     label:   "Hebdomadaire",
     desc:    "Chaque lundi — résumé de la semaine passée",
-    emoji:   "📅",
+    icon:    <Calendar size={16} />,
     detail:  "Visites · Scans · Liens · Croissance",
     color:   "var(--accent)",
   },
   monthly: {
     label:   "Mensuel",
     desc:    "Le 1er de chaque mois — bilan du mois",
-    emoji:   "📊",
+    icon:    <BarChart2 size={16} />,
     detail:  "Tendances · Top pages · Top liens · Évolution",
     color:   "var(--success)",
   },
@@ -107,7 +107,7 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
       {!isPaid ? (
         /* Paywall */
         <div style={{ textAlign: "center", padding: "32px 20px", background: "rgba(255,255,255,0.02)", borderRadius: 12, border: "1px dashed rgba(255,255,255,0.1)" }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>📬</div>
+          <div style={{ marginBottom: 12, color: "#5c554b" }}><Mail size={30} /></div>
           <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 600, margin: "0 0 6px" }}>
             Rapports disponibles en Pro et Business
           </p>
@@ -169,7 +169,7 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
 
                       <div style={{ display: "flex", gap: 12, flex: 1 }}>
                         <div style={{ width: 40, height: 40, background: on ? `${cfg.color}15` : "rgba(255,255,255,0.04)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
-                          {cfg.emoji}
+                          {cfg.icon}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>

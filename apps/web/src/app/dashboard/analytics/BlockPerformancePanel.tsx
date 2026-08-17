@@ -245,7 +245,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
 
       {sorted.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 20px", color: MUTED }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>🧱</div>
+          <div style={{ marginBottom: 10, color: "#5c554b" }}><Layers size={34} /></div>
           <p style={{ margin: "0 0 6px", fontSize: 14 }}>Aucune interaction enregistrée</p>
           <p style={{ margin: 0, fontSize: 12 }}>Les données apparaissent après les premiers clics</p>
         </div>
@@ -282,7 +282,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
             {sorted.slice(0, 8).map((row, i) => (
               <div key={row.type} style={{ display: "grid", gridTemplateColumns: "28px 1fr 60px 70px 70px 110px", gap: 8, alignItems: "center", padding: "9px 8px", background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent", borderRadius: 8, marginTop: 2 }}>
                 <span style={{ color: i < 3 ? G : MUTED, fontSize: 11, fontWeight: 700, textAlign: "center" }}>
-                  {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "#" + (i + 1)}
+                  {"#" + (i + 1)}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, overflow: "hidden" }}>
                   <span style={{ flexShrink: 0, display: "inline-flex", color: row.cfg.color }}>{row.cfg.icon}</span>

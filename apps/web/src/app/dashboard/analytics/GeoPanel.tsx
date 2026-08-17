@@ -194,7 +194,7 @@ export default function GeoPanel({ scans, pageViews, pages }: Props) {
 
       {byCountry.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 20px", color: MUTED }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>🌍</div>
+          <div style={{ marginBottom: 10, color: "#5c554b" }}><Globe size={34} /></div>
           <p style={{ margin: "0 0 6px", fontSize: 14 }}>Aucune donnée géographique</p>
           <p style={{ margin: 0, fontSize: 12 }}>Les pays apparaissent dès les premières visites</p>
         </div>
@@ -246,7 +246,7 @@ export default function GeoPanel({ scans, pageViews, pages }: Props) {
                 {byCity.map((city, i) => (
                   <div key={city.city} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 6px", background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent", borderRadius: 7 }}>
                     <span style={{ color: i < 3 ? G : MUTED, fontSize: 11, fontWeight: 700, minWidth: 22, textAlign: "center" }}>
-                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "#" + (i + 1)}
+                      {"#" + (i + 1)}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ color: "#F5F0E8", fontSize: 12, fontWeight: 600 }}>{city.city}</span>

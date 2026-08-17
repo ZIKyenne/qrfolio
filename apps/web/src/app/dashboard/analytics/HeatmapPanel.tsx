@@ -1,5 +1,7 @@
 "use client"
 
+import { Flame } from "lucide-react"
+
 // Carte de chaleur des clics : où les visiteurs cliquent/tapent réellement sur la page.
 // Grille normalisée (buildTapGrid) rendue dans un cadre « téléphone » + classement des blocs les plus touchés.
 // Le rendu de la vraie page n'est pas reproduit ici : on montre l'intensité par zone (haut/milieu/bas × gauche/droite).
@@ -51,7 +53,7 @@ export default function HeatmapPanel({ grid, byBlock, total, blocks }: Props) {
   return (
     <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 22px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
-        <span style={{ fontSize: 17 }}>🔥</span>
+        <Flame size={16} color={GOLD} />
         <h3 style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Carte de chaleur des clics</h3>
       </div>
       <p style={{ color: MUTED, fontSize: 12, margin: "0 0 16px" }}>Où vos visiteurs cliquent vraiment sur la page.</p>
@@ -94,7 +96,7 @@ export default function HeatmapPanel({ grid, byBlock, total, blocks }: Props) {
                     <div key={id}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
                         <span style={{ color: type ? "#F5F0E8" : MUTED, fontSize: 12, fontWeight: 600 }}>
-                          {i === 0 ? "🥇 " : i === 1 ? "🥈 " : i === 2 ? "🥉 " : ""}{name}
+                          {name}
                         </span>
                         <span style={{ color: GOLD, fontSize: 12, fontWeight: 700 }}>{n}</span>
                       </div>
@@ -107,7 +109,7 @@ export default function HeatmapPanel({ grid, byBlock, total, blocks }: Props) {
               </div>
             )}
             <p style={{ color: MUTED, fontSize: 10.5, margin: "12px 0 0", lineHeight: 1.5 }}>
-              💡 Un bloc très cliqué mérite d&apos;être remonté ou mis en avant. Un bloc jamais cliqué peut être simplifié ou déplacé.
+              Un bloc très cliqué mérite d&apos;être remonté ou mis en avant. Un bloc jamais cliqué peut être simplifié ou déplacé.
             </p>
           </div>
         </div>

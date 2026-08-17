@@ -245,7 +245,7 @@ export default function DevicePanel({ scans, pageViews, pages }: Props) {
 
       {activeData.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 20px", color: MUTED }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>📱</div>
+          <div style={{ marginBottom: 10, color: "#5c554b" }}><Smartphone size={34} /></div>
           <p style={{ margin: 0, fontSize: 14 }}>Aucune donnée sur cette période</p>
         </div>
       ) : (

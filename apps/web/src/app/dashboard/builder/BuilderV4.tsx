@@ -4,7 +4,8 @@
   import {
     X, ChevronUp, ChevronDown, Trash2,
     Eye, Plus, Settings, Check, Search, Copy, EyeOff,
-    ExternalLink, GripVertical, QrCode, MoreHorizontal, Undo2, Redo2, Sparkles
+    ExternalLink, GripVertical, QrCode, MoreHorizontal, Undo2, Redo2, Sparkles,
+    Pencil, Palette, Lightbulb, Globe, Send, Smartphone, RefreshCw, Lock, Unlock
   } from "lucide-react"
   import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, normalizePageTheme, type Block, type BlockContent, type PageTheme } from "./types"
   import { PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, type PageTemplate } from "./page-templates"
@@ -1215,7 +1216,7 @@
           {/* Modèles de page complets (icone seule sur mobile pour degager la barre) */}
           <button onClick={() => setShowTemplates(true)} title="Partir d'un modèle de page complet"
             style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: isMobile ? "5px 9px" : "5px 10px", color: G, fontSize: 10, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
-            ✨{!isMobile && " Modèles"}
+            <Sparkles size={12} />{!isMobile && " Modèles"}
           </button>
 
           {/* Bouton Focus Mode (desktop uniquement — panneaux redimensionnables) */}
@@ -1312,8 +1313,8 @@
                 <div style={{ position: "absolute", top: "calc(100% + 12px)", right: 0, background: "#0F0F0F", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 20, padding: "24px", zIndex: 200, boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,168,76,0.1)", width: 320 }}>
                   {/* Header */}
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 12, background: pageStatus==="published" ? "rgba(57,255,143,0.12)" : "rgba(201,168,76,0.12)", border: `1px solid ${pageStatus==="published" ? "rgba(57,255,143,0.3)" : "rgba(201,168,76,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
-                      {pageStatus==="published" ? "🌐" : "🚀"}
+                    <div style={{ width: 42, height: 42, borderRadius: 12, background: pageStatus==="published" ? "rgba(57,255,143,0.12)" : "rgba(201,168,76,0.12)", border: `1px solid ${pageStatus==="published" ? "rgba(57,255,143,0.3)" : "rgba(201,168,76,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {pageStatus==="published" ? <Globe size={20} color="var(--success)" /> : <Send size={20} color={G} />}
                     </div>
                     <div>
                       <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>{pageStatus==="published" ? "Page en ligne" : "Publier la page"}</p>
@@ -1352,7 +1353,7 @@
                     </div>
                     <div style={{ background: "rgba(57,255,143,0.06)", border: "1px solid rgba(57,255,143,0.15)", borderRadius: 10, padding: "10px", textAlign: "center" }}>
                       <p style={{ color: "var(--success)", fontSize: 20, fontWeight: 700, margin: 0, fontFamily: "Fraunces, serif" }}>{pageStats.scans}</p>
-                      <p style={{ color: MUTED, fontSize: 9, margin: 0 }}>📱 Scans</p>
+                      <p style={{ color: MUTED, fontSize: 9, margin: 0, display: "inline-flex", alignItems: "center", gap: 3 }}><Smartphone size={9} /> Scans</p>
                     </div>
                   </div>
 
@@ -1368,9 +1369,9 @@
                       </span>
                     ) : publishSuccess ? (
                       <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
-                        <span style={{fontSize:16}}>✓</span> {publishWasUpdate ? "Page à jour !" : "Page publiée !"}
+                        <Check size={15} /> {publishWasUpdate ? "Page à jour !" : "Page publiée !"}
                       </span>
-                    ) : pageStatus==="published" ? "🔄 Mettre à jour la page" : "🚀 Publier maintenant"}
+                    ) : pageStatus==="published" ? <><RefreshCw size={14} /> Mettre à jour la page</> : <><Send size={14} /> Publier maintenant</>}
                   </button>
 
                   {/* Erreur publication */}
@@ -1630,7 +1631,7 @@
                                       </button>
                                       {/* Modèles par métier : 1 clic crée une identité adaptée */}
                                       <div style={{ margin: "0 0 10px" }}>
-                                        <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><span style={{ fontSize: 14 }}>✨</span> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
+                                        <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><Sparkles size={13} /> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
                                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                                           {metierOpen && IDENTITY_PRESETS.map(p => (
                                             <button key={p.key} type="button" onClick={() => generateIdentityPreset(p)} title={`Crée : ${p.blocks.map(b => (BLOCK_DEFS as any)[b.type]?.label || b.type).join(", ")}`}
@@ -1659,7 +1660,7 @@
                                 : activeCategory === "actions"
                                 ? (<>
                                     <div style={{ margin: "2px 0 10px" }}>
-                                      <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><span style={{ fontSize: 14 }}>✨</span> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
+                                      <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><Sparkles size={13} /> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
                                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                                         {metierOpen && ACTION_PRESETS.map(p => (
                                           <button key={p.key} type="button" onClick={() => generateActionPreset(p)} title={`Crée : ${p.blocks.map(b => (BLOCK_DEFS as any)[b.type]?.label || b.type).join(", ")}`}
@@ -1678,7 +1679,7 @@
                                 : activeCategory === "media"
                                 ? (<>
                                     <div style={{ margin: "2px 0 10px" }}>
-                                      <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><span style={{ fontSize: 14 }}>✨</span> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
+                                      <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><Sparkles size={13} /> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
                                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                                         {metierOpen && MEDIA_PRESETS.map(p => (
                                           <button key={p.key} type="button" onClick={() => generateMediaPreset(p)} title={`Crée : ${p.blocks.map(b => (BLOCK_DEFS as any)[b.type]?.label || b.type).join(", ")}`}
@@ -1697,7 +1698,7 @@
                                 : activeCategory === "commerce"
                                 ? (<>
                                     <div style={{ margin: "2px 0 10px" }}>
-                                      <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><span style={{ fontSize: 14 }}>✨</span> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
+                                      <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><Sparkles size={13} /> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
                                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                                         {metierOpen && COMMERCE_PRESETS.map(p => (
                                           <button key={p.key} type="button" onClick={() => generateCommercePreset(p)} title={`Crée : ${p.blocks.map(b => (BLOCK_DEFS as any)[b.type]?.label || b.type).join(", ")}`}
@@ -1716,7 +1717,7 @@
                                 : activeCategory === "social"
                                 ? (<>
                                     <div style={{ margin: "2px 0 10px" }}>
-                                      <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><span style={{ fontSize: 14 }}>✨</span> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
+                                      <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><Sparkles size={13} /> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
                                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                                         {metierOpen && SOCIAL_PRESETS.map(p => (
                                           <button key={p.key} type="button" onClick={() => generateSocialPreset(p)} title={`Crée un bloc Liens sociaux : ${p.networks.join(", ")}`}
@@ -1753,7 +1754,7 @@
                                     return (<>
                                       {/* Modèles par métier : 1 clic crée une section informative complète */}
                                       <div style={{ margin: "2px 0 10px" }}>
-                                        <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><span style={{ fontSize: 14 }}>✨</span> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
+                                        <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><Sparkles size={13} /> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>
                                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                                           {metierOpen && INFO_PRESETS.map(p => (
                                             <button key={p.key} type="button" onClick={() => generateInfoPreset(p)} title={`Crée : ${p.blocks.map(b => (BLOCK_DEFS as any)[b.type]?.label || b.type).join(", ")}`}
@@ -1934,10 +1935,10 @@
                           setBlocks(p => p.map(b => ids.includes(b.id) ? {...b, locked: !allLocked} : b))
                         }}
                         title={allLocked ? "Déverrouiller" : `Verrouiller${lockedCount>0?` (${lockedCount} déjà verrouillé${lockedCount>1?"s":""})`:""}`}
-                        style={{ display: "flex", alignItems: "center", gap: 5, background: allLocked ? "rgba(99,102,241,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${allLocked ? "rgba(99,102,241,0.3)" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "6px 11px", color: allLocked ? "#818CF8" : MUTED, fontSize: 11, cursor: "pointer", transition: "all 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.background="rgba(99,102,241,0.15)"; e.currentTarget.style.color="#818CF8" }}
-                        onMouseLeave={e => { e.currentTarget.style.background=allLocked?"rgba(99,102,241,0.12)":"rgba(255,255,255,0.05)"; e.currentTarget.style.color=allLocked?"#818CF8":MUTED }}>
-                        <span style={{ fontSize: 11 }}>{allLocked ? "🔓" : "🔒"}</span>
+                        style={{ display: "flex", alignItems: "center", gap: 5, background: allLocked ? "rgba(201,168,76,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${allLocked ? "rgba(201,168,76,0.3)" : "rgba(255,255,255,0.1)"}`, borderRadius: 8, padding: "6px 11px", color: allLocked ? G : MUTED, fontSize: 11, cursor: "pointer", transition: "all 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background="rgba(201,168,76,0.15)"; e.currentTarget.style.color=G }}
+                        onMouseLeave={e => { e.currentTarget.style.background=allLocked?"rgba(201,168,76,0.12)":"rgba(255,255,255,0.05)"; e.currentTarget.style.color=allLocked?G:MUTED }}>
+                        {allLocked ? <Unlock size={11} /> : <Lock size={11} />}
                         <span>{allLocked ? "Déverrouiller" : "Verrouiller"}</span>
                       </button>
 
@@ -1982,8 +1983,8 @@
                 <span style={{ fontSize: 9, letterSpacing: 2, textTransform: "uppercase", color: "#8A8478" }}>CANVAS</span>
                 <span style={{ background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 6, padding: "1px 6px", fontSize: 10, color: G }}>{blocks.length} bloc{blocks.length!==1?"s":""}</span>
                 {blocks.filter(b => b.draft).length > 0 && (
-                  <span style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: 6, padding: "1px 6px", fontSize: 10, color: "#FBBF24" }}>
-                    ✏ {blocks.filter(b => b.draft).length} brouillon{blocks.filter(b => b.draft).length > 1 ? "s" : ""}
+                  <span style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: 6, padding: "1px 6px", fontSize: 10, color: "#FBBF24", display: "inline-flex", alignItems: "center", gap: 3 }}>
+                    <Pencil size={9} /> {blocks.filter(b => b.draft).length} brouillon{blocks.filter(b => b.draft).length > 1 ? "s" : ""}
                   </span>
                 )}
                 {!pageId && <span style={{ color: "#8A8478", fontSize: 9, marginLeft: "auto" }}>Mode démo</span>}
@@ -2015,7 +2016,7 @@
                     onClick={(e) => handleBlockClick(e, block.id, idx)}
                     onDragOver={dragIdx === null ? undefined : (e) => { e.preventDefault(); const r = e.currentTarget.getBoundingClientRect(); const nb = (e.clientY - r.top) < r.height / 2 ? idx : idx + 1; setDropBefore(p => p === nb ? p : nb) }}
                     onDrop={dragIdx === null ? undefined : (e) => { e.preventDefault(); if (dragIdx === null) return; const ib = dropBefore ?? idx; const from = dragIdx; setBlocks(prev => reorderArray(prev, from, ib)); setDragIdx(null); setDropBefore(null) }}
-                    style={{ fontFamily: theme.fontBody || "DM Sans, sans-serif", position: "relative", marginBottom: 0, border: "none", borderRadius: isSelected ? 10 : 0, overflow: "visible", cursor: block.locked ? "default" : "pointer", transition: "box-shadow 0.15s, background 0.1s", opacity: idx === dragIdx ? 0.4 : (block.visible ? (block.draft ? 0.6 : 1) : 0.35), background: isSelected ? "rgba(201,168,76,0.05)" : isMultiSelected ? "rgba(201,168,76,0.06)" : block.draft ? "rgba(251,191,36,0.03)" : "transparent", boxShadow: isSelected ? `inset 0 0 0 2px ${G}, 0 0 0 4px ${G}1f` : isMultiSelected ? `inset 3px 0 0 ${G}80` : block.draft ? "inset 3px 0 0 rgba(251,191,36,0.5)" : block.locked ? "inset 3px 0 0 rgba(99,102,241,0.5)" : "none" }}
+                    style={{ fontFamily: theme.fontBody || "DM Sans, sans-serif", position: "relative", marginBottom: 0, border: "none", borderRadius: isSelected ? 10 : 0, overflow: "visible", cursor: block.locked ? "default" : "pointer", transition: "box-shadow 0.15s, background 0.1s", opacity: idx === dragIdx ? 0.4 : (block.visible ? (block.draft ? 0.6 : 1) : 0.35), background: isSelected ? "rgba(201,168,76,0.05)" : isMultiSelected ? "rgba(201,168,76,0.06)" : block.draft ? "rgba(251,191,36,0.03)" : "transparent", boxShadow: isSelected ? `inset 0 0 0 2px ${G}, 0 0 0 4px ${G}1f` : isMultiSelected ? `inset 3px 0 0 ${G}80` : block.draft ? "inset 3px 0 0 rgba(251,191,36,0.5)" : block.locked ? "inset 3px 0 0 rgba(168,161,144,0.55)" : "none" }}
                     onMouseEnter={e => {
                       if (!isSelected) e.currentTarget.style.boxShadow = `inset 3px 0 0 rgba(201,168,76,0.3)`
                       const overlay = e.currentTarget.querySelector(".block-overlay") as HTMLElement
@@ -2072,14 +2073,14 @@
                     )}
                     {block.draft && !block.locked && (
                       <div style={{ position: "absolute", top: 6, left: 22, display: "flex", alignItems: "center", gap: 4, background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.35)", borderRadius: 5, padding: "2px 7px", zIndex: 10, pointerEvents: "none" }}>
-                        <span style={{ fontSize: 8 }}>✏️</span>
+                        <Pencil size={8} color="#FBBF24" />
                         <span style={{ color: "#FBBF24", fontSize: 8, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" as const }}>Brouillon</span>
                       </div>
                     )}
                     {block.locked && (
-                      <div style={{ position: "absolute", top: 6, right: 8, display: "flex", alignItems: "center", gap: 3, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: 5, padding: "2px 6px", zIndex: 10, pointerEvents: "none" }}>
-                        <span style={{ fontSize: 8 }}>🔒</span>
-                        <span style={{ color: "#818CF8", fontSize: 8, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" as const }}>Verrouillé</span>
+                      <div style={{ position: "absolute", top: 6, right: 8, display: "flex", alignItems: "center", gap: 3, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 5, padding: "2px 6px", zIndex: 10, pointerEvents: "none" }}>
+                        <Lock size={8} color="#A8A190" />
+                        <span style={{ color: "#A8A190", fontSize: 8, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" as const }}>Verrouillé</span>
                       </div>
                     )}
                     {clickCounts[block.id] > 0 && (
@@ -2113,7 +2114,7 @@
               {!preview && <button onClick={() => setShowTemplates(true)}
                 style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "transparent", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", marginTop: 10 }}
                 onMouseEnter={e => e.currentTarget.style.color = G} onMouseLeave={e => e.currentTarget.style.color = MUTED}>
-                ✨ ou partir d&apos;un modèle de page complet
+                <Sparkles size={13} /> ou partir d&apos;un modèle de page complet
               </button>}
               </div>
             </div>
@@ -2146,7 +2147,7 @@
                     {(["edit","theme"] as const).map(tab => (
                       <button key={tab} onClick={() => { setRightTab(tab); setRightCollapsed(false) }}
                         style={{ padding: "14px 4px", background: "transparent", border: "none", borderLeft: `2px solid ${rightTab===tab ? G : "transparent"}`, color: rightTab===tab ? G : MUTED, fontSize: 9, fontWeight: rightTab===tab ? 700 : 400, cursor: "pointer", writingMode: "vertical-rl" as const, textOrientation: "mixed" as const, letterSpacing: 1 }}>
-                        {tab==="edit" ? "✏" : "🎨"}
+                        {tab==="edit" ? <Pencil size={13} /> : <Palette size={13} />}
                       </button>
                     ))}
                     <button onClick={toggleRight} style={{ padding: "12px 4px", background: "none", border: "none", color: MUTED, cursor: "pointer", fontSize: 14, marginTop: "auto" }}>›</button>
@@ -2440,8 +2441,8 @@
         {/* Barre flottante en mode Apercu : sortir + voir en direct (#02) */}
         {isMobile && preview && (
           <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 60, display: "flex", gap: 10, padding: "10px 14px calc(10px + env(safe-area-inset-bottom))", background: "rgba(12,11,9,0.9)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(201,168,76,0.2)" }}>
-            <button onClick={() => setPreview(false)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, minHeight: 48, background: "linear-gradient(90deg,var(--accent,#C9A84C),color-mix(in srgb, var(--accent,#C9A84C) 75%, #000))", border: "none", borderRadius: 12, color: "#080808", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>
-              <ChevronDown size={16} style={{ transform: "rotate(90deg)" }} /> Modifier
+            <button onClick={() => setPreview(false)} className="da-btn-primary da-btn-primary--sm" style={{ flex: 1, minHeight: 48, justifyContent: "center" }}>
+              <ChevronDown size={16} style={{ transform: "rotate(90deg)" }} /> <span>Modifier</span>
             </button>
             {pageSlug && <a href={`/${pageSlug}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 48, padding: "0 16px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, color: "#F5F0E8", fontSize: 13, fontWeight: 700, textDecoration: "none" }}><ExternalLink size={14} /> Voir en direct</a>}
           </div>
@@ -2476,9 +2477,9 @@
           const items: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }[] = [
             { icon: <Copy size={17} />, label: "Dupliquer", onClick: () => { duplicateBlock(b.id); setBlockMenu(null) } },
             { icon: b.visible ? <EyeOff size={17} /> : <Eye size={17} />, label: b.visible ? "Masquer" : "Afficher", onClick: () => { toggleVisible(b.id); setBlockMenu(null) } },
-            { icon: <span style={{ fontSize: 15 }}>{b.locked ? "🔓" : "🔒"}</span>, label: b.locked ? "Déverrouiller" : "Verrouiller", onClick: () => { toggleLock(b.id); setBlockMenu(null) } },
-            ...(b.locked ? [] : [{ icon: <span style={{ fontSize: 15 }}>✏</span>, label: b.draft ? "Retirer du brouillon" : "Mettre en brouillon", onClick: () => { toggleDraft(b.id); setBlockMenu(null) } }]),
-            ...(b.locked ? [] : [{ icon: <span style={{ fontSize: 15 }}>↺</span>, label: "Réinitialiser", onClick: () => { resetBlock(b.id); setBlockMenu(null) } }]),
+            { icon: b.locked ? <Unlock size={16} /> : <Lock size={16} />, label: b.locked ? "Déverrouiller" : "Verrouiller", onClick: () => { toggleLock(b.id); setBlockMenu(null) } },
+            ...(b.locked ? [] : [{ icon: <Pencil size={16} />, label: b.draft ? "Retirer du brouillon" : "Mettre en brouillon", onClick: () => { toggleDraft(b.id); setBlockMenu(null) } }]),
+            ...(b.locked ? [] : [{ icon: <RefreshCw size={16} />, label: "Réinitialiser", onClick: () => { resetBlock(b.id); setBlockMenu(null) } }]),
             ...(b.locked ? [] : [{ icon: <Trash2 size={17} color="#EF4444" />, label: "Supprimer", danger: true, onClick: () => { deleteBlock(b.id); setBlockMenu(null) } }]),
           ]
           return (
@@ -2534,13 +2535,13 @@
                       {hint.preview}
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                      <span style={{ fontSize: 9 }}>💡</span>
+                      <Lightbulb size={10} />
                       <span style={{ color: def.color, fontSize: 10, fontWeight: 500 }}>{hint.hint}</span>
                     </div>
                   </>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ fontSize: 9 }}>💡</span>
+                    <Lightbulb size={10} />
                     <span style={{ color: MUTED, fontSize: 10 }}>Cliquez pour ajouter à la page</span>
                   </div>
                 )}
@@ -2566,7 +2567,7 @@
               style={{ width: "100%", maxWidth: 860, maxHeight: "88vh", background: "#111", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 16, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(0,0,0,0.6)" }}>
               {/* En-tête */}
               <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 20 }}>✨</span>
+                <Sparkles size={20} color={G} />
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, color: "#F5F0E8", fontSize: 15, fontWeight: 700 }}>Modèles de page</p>
                   <p style={{ margin: 0, color: MUTED, fontSize: 11 }}>Une page complète et cohérente en un clic — personnalisable ensuite.</p>
@@ -2593,7 +2594,7 @@
                     className="da-btn-primary da-btn-primary--sm" style={{ flexShrink: 0, alignSelf: "stretch", minHeight: isMobile ? 48 : undefined, minWidth: isMobile ? undefined : 120, justifyContent: "center" }}>
                     {aiGenLoading
                       ? <><span style={{ width: 13, height: 13, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.7s linear infinite" }} /> Génération…</>
-                      : <>✨ Générer ma page</>}
+                      : <><Sparkles size={14} /> Générer ma page</>}
                   </button>
                 </div>
                 {aiGenError && (aiGenSoon

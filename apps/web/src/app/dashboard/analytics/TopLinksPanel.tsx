@@ -98,7 +98,7 @@ function CustomTooltip({ active, payload }: any) {
         {d.label}
       </p>
       <p style={{ color: G, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{d.clicks} clics</p>
-      <p style={{ color: "var(--success)", fontSize: 11, margin: 0 }}>CTR : {d.ctr}%</p>
+      <p style={{ color: "var(--success)", fontSize: 11, margin: 0 }}>CTR : {d.ctr == null ? "—" : `${d.ctr}%`}</p>
     </div>
   )
 }
@@ -149,7 +149,8 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
 
     const items = Object.values(map).map(item => ({
       ...item,
-      ctr:   parseFloat(((item.clicks / totalViews) * 100).toFixed(1)),
+      // CTR = clics / vues : INDÉFINI si 0 vue pistée (jamais ÷0 → « — », pas 500 %).
+      ctr:   totalViews > 0 ? parseFloat(((item.clicks / totalViews) * 100).toFixed(1)) : null as number | null,
       label: truncateUrl(item.target),
       emoji: BLOCK_TYPE_EMOJI[item.blockType] || "🔗",
       typeLabel: BLOCK_TYPE_LABELS[item.blockType] || item.blockType,
@@ -158,7 +159,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
     // Tri
     items.sort((a, b) => {
       if (sortBy === "clicks") return b.clicks - a.clicks
-      if (sortBy === "ctr")    return b.ctr - a.ctr
+      if (sortBy === "ctr")    return (b.ctr ?? -1) - (a.ctr ?? -1)
       return b.lastClick.localeCompare(a.lastClick)
     })
 
@@ -178,7 +179,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
             <h3 style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Top 10 liens</h3>
           </div>
           <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>
-            {totalClicks} clics · CTR global {((totalClicks / totalViews) * 100).toFixed(1)}%
+            {totalClicks} clics · CTR global {totalViews > 0 ? `${((totalClicks / totalViews) * 100).toFixed(1)}%` : "— (aucune vue pistée)"}
           </p>
         </div>
 
@@ -314,9 +315,9 @@ export default function TopLinksPanel({ clicks, pageViews, pages }: Props) {
               {/* Clics */}
               <span style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{row.clicks.toLocaleString()}</span>
 
-              {/* CTR */}
-              <span style={{ color: row.ctr >= 10 ? "var(--success)" : row.ctr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
-                {row.ctr}%
+              {/* CTR — « — » quand aucune vue pistée (jamais un pourcentage inventé) */}
+              <span title={row.ctr == null ? "CTR non calculable : aucune vue de page pistée" : undefined} style={{ color: row.ctr == null ? MUTED : row.ctr >= 10 ? "var(--success)" : row.ctr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
+                {row.ctr == null ? "—" : `${row.ctr}%`}
               </span>
 
               {/* Barre */}

@@ -75,7 +75,12 @@ export function buildScrollFunnel(events: PageEvent[]): ScrollStep[] {
   for (const e of events) {
     if (e.kind === "scroll" && counts[e.ref] !== undefined) counts[e.ref]++
   }
+  // Série rendue MONOTONE DÉCROISSANTE : un palier ne peut pas être atteint plus souvent que le
+  // précédent (sinon 50 % > 25 % ⇒ « 106 % »). On plafonne chaque palier au précédent.
+  let prevCount = Infinity
+  for (const m of ["25", "50", "75", "100"]) { counts[m] = Math.min(counts[m], prevCount); prevCount = counts[m] }
   const base = counts["25"] || 0
+  // pct relatif à la MÊME base (1er palier) pour tous ⇒ libellé et barre cohérents, jamais > 100 %.
   return ["25", "50", "75", "100"].map(m => ({
     depth: `${m}%`,
     count: counts[m],

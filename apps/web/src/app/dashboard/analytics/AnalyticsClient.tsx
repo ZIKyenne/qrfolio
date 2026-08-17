@@ -348,10 +348,12 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
         {!noData && tab === "overview" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 13, marginBottom: 22 }}>
           {[
-            { icon: <QrCode size={18} />, label: "Scans (30j)", value: totalScans30, color: GOLD },
-            { icon: <Eye size={18} />, label: "Vues (30j)", value: totalViews30, color: NEON },
-            { icon: <BarChart2 size={18} />, label: "Pages actives", value: pages.filter(p => p.status === "published").length, color: "#7B61FF" },
-            { icon: <TrendingUp size={18} />, label: "Total scans", value: profile?.total_scans || 0, color: "var(--danger)" },
+            // Sparkline = série PROPRE à la métrique (README #5). Pages actives / Total scans n'ont pas de
+            // série journalière -> pas de sparkline (elles n'empruntent pas la courbe des scans).
+            { icon: <QrCode size={18} />, label: "Scans (30j)", value: totalScans30, color: GOLD, spark: dailyData.map((d: any) => d.scans as number) },
+            { icon: <Eye size={18} />, label: "Vues (30j)", value: totalViews30, color: NEON, spark: dailyData.map((d: any) => d.views as number) },
+            { icon: <BarChart2 size={18} />, label: "Pages actives", value: pages.filter(p => p.status === "published").length, color: "#7B61FF", spark: undefined as number[] | undefined },
+            { icon: <TrendingUp size={18} />, label: "Total scans", value: profile?.total_scans || 0, color: "var(--danger)", spark: undefined as number[] | undefined },
           ].map((kpi, i) => (
             <div key={i} className="az az-card" style={{
               animationDelay: `${120 + i * 60}ms`,
@@ -367,6 +369,14 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
                 <p style={{ color: "#C9C3B6", fontSize: 11.5, margin: 0, fontWeight: 500 }}>{kpi.label}</p>
                 <p style={{ color: "#F8F4EC", fontSize: 28, fontWeight: 700, margin: 0, fontFamily: "Fraunces, serif", lineHeight: 1.1 }}>{(kpi.value as number).toLocaleString("fr-FR")}</p>
               </div>
+              {kpi.spark && (() => {
+                const arr = kpi.spark.slice(-14); const m = Math.max(...arr, 1)
+                return (
+                  <div aria-hidden style={{ marginLeft: "auto", display: "flex", alignItems: "flex-end", gap: 2, height: 30 }}>
+                    {arr.map((v, j) => <span key={j} style={{ width: 4, height: Math.max(2, (v / m) * 30), borderRadius: 1.5, background: v ? kpi.color : "#26211a" }} />)}
+                  </div>
+                )
+              })()}
             </div>
           ))}
         </div>

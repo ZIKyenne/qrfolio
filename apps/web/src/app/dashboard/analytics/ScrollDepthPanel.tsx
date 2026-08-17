@@ -13,7 +13,7 @@ type Props = { funnel: ScrollStep[] }
 export default function ScrollDepthPanel({ funnel }: Props) {
   const base = funnel[0]?.count || 0
   return (
-    <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 22px" }}>
+    <div style={{ background: "#141210", border: "1px solid #221f1b", borderRadius: 16, padding: "20px 22px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
         <AlignLeft size={16} color={GOLD} />
         <h3 style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Profondeur de lecture</h3>

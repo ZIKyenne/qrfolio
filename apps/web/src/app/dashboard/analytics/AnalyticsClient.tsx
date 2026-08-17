@@ -1,12 +1,11 @@
 ﻿"use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts"
 import { QrCode, Eye, TrendingUp, Smartphone, Globe, BarChart2, ChevronDown, Layers, Users, Printer, Calendar, Lightbulb } from "lucide-react"
-import TrafficSourcesPanel from "./TrafficSourcesPanel"
 import TopLinksPanel from "./TopLinksPanel"
 import BlockPerformancePanel from "./BlockPerformancePanel"
 import GeoPanel from "./GeoPanel"
@@ -82,6 +81,19 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
   const [period, setPeriod] = useState(30)   // barre de contrôle UNIQUE (#2) : pilote tous les panneaux
   // Onglets (handoff Analytics #1) : remplacent le scroll infini de 11 panneaux empilés.
   const [tab, setTab] = useState<"overview" | "content" | "audience" | "supports" | "reports">("overview")
+  // État dans l'URL (?tab=&period=) : partage + retour arrière. Lecture au montage, écriture à chaque changement.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search)
+    const t = p.get("tab")
+    if (t && ["overview", "content", "audience", "supports", "reports"].includes(t)) setTab(t as any)
+    const per = Number(p.get("period"))
+    if ([7, 30, 90].includes(per)) setPeriod(per)
+  }, [])
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search)
+    p.set("tab", tab); p.set("period", String(period))
+    try { window.history.replaceState(null, "", `${window.location.pathname}?${p.toString()}`) } catch {}
+  }, [tab, period])
 
   const filteredScans = useMemo(() =>
     selectedPage === "all" ? recentScans : recentScans.filter(s => s.page_id === selectedPage),

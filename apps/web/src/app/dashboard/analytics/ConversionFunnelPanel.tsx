@@ -16,7 +16,7 @@ export default function ConversionFunnelPanel({ steps, conversionRate, hasEngage
   const COLORS = [GOLD, "var(--action)", NEON]
 
   return (
-    <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 22px" }}>
+    <div style={{ background: "#141210", border: "1px solid #221f1b", borderRadius: 16, padding: "20px 22px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 4 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <Target size={16} color={GOLD} />

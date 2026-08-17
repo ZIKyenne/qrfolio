@@ -253,7 +253,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
                 {Object.entries(GOAL_TYPES).map(([key, cfg]) => (
                   <button key={key} type="button" onClick={() => { setFType(key); setFMatch(cfg.autoMatch) }}
                     style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 10px", background: fType === key ? `${cfg.color}15` : "rgba(255,255,255,0.02)", border: fType === key ? `1px solid ${cfg.color}40` : "1px solid rgba(255,255,255,0.07)", borderRadius: 8, color: fType === key ? cfg.color : MUTED, fontSize: 11, fontWeight: fType === key ? 700 : 500, cursor: "pointer", textAlign: "left" }}>
-                    <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
+                    <span style={{ display: "inline-flex" }}>{cfg.icon}</span>
                     {cfg.label}
                   </button>
                 ))}
@@ -342,8 +342,8 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
 
                   {/* Identité */}
                   <div style={{ display: "flex", gap: 12, flex: 1, minWidth: 0 }}>
-                    <div style={{ width: 44, height: 44, background: `${goal.color}15`, border: `1.5px solid ${goal.color}30`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>
-                      {cfg.emoji}
+                    <div style={{ width: 44, height: 44, background: `${goal.color}15`, border: `1.5px solid ${goal.color}30`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", color: goal.color, flexShrink: 0 }}>
+                      {cfg.icon}
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, flexWrap: "wrap" }}>

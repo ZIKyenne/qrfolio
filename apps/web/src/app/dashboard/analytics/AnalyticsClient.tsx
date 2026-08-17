@@ -5,7 +5,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts"
-import { QrCode, Eye, TrendingUp, Smartphone, Globe, BarChart2, ChevronDown } from "lucide-react"
+import { QrCode, Eye, TrendingUp, Smartphone, Globe, BarChart2, ChevronDown, Layers, Users, Printer, Calendar } from "lucide-react"
 import TrafficSourcesPanel from "./TrafficSourcesPanel"
 import TopLinksPanel from "./TopLinksPanel"
 import BlockPerformancePanel from "./BlockPerformancePanel"
@@ -79,7 +79,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function AnalyticsClient({ profile, pages, recentScans, recentViews, clicks = [], blocks = [], geoScans = [], deviceScans = [], pageEvents = [], userEmail = "", supportQrs = [], supportViews = [], supportClicks = [], supportLeads = [] }: Props) {
   const [selectedPage, setSelectedPage] = useState<string>("all")
-  const [showFull, setShowFull] = useState(false) // analyse détaillée repliée par défaut
+  // Onglets (handoff Analytics #1) : remplacent le scroll infini de 11 panneaux empilés.
+  const [tab, setTab] = useState<"overview" | "content" | "audience" | "supports" | "reports">("overview")
 
   const filteredScans = useMemo(() =>
     selectedPage === "all" ? recentScans : recentScans.filter(s => s.page_id === selectedPage),
@@ -216,6 +217,27 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
           </select>
         </div>
 
+        {/* ── Onglets (handoff #1) : Vue d'ensemble · Contenu · Audience · Supports · Rapports ── */}
+        {!noData && (
+          <div role="tablist" aria-label="Sections analytics" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", borderBottom: "1px solid #1c1917", marginBottom: 16 }}>
+            {[
+              { id: "overview" as const, label: "Vue d'ensemble", icon: <BarChart2 size={14} /> },
+              { id: "content" as const, label: "Contenu", icon: <Layers size={14} /> },
+              { id: "audience" as const, label: "Audience", icon: <Users size={14} /> },
+              { id: "supports" as const, label: "Supports", icon: <Printer size={14} /> },
+              { id: "reports" as const, label: "Rapports", icon: <Calendar size={14} /> },
+            ].map(t => {
+              const on = tab === t.id
+              return (
+                <button key={t.id} role="tab" aria-selected={on} onClick={() => setTab(t.id)} style={{ position: "relative", display: "flex", alignItems: "center", gap: 9, padding: "11px 16px 13px", cursor: "pointer", fontSize: 13.5, fontWeight: on ? 700 : 500, color: on ? "#e8c877" : "#8a8177", background: "none", border: "none", fontFamily: "inherit", transition: "color .2s ease", whiteSpace: "nowrap" }}>
+                  {t.icon} {t.label}
+                  {on && <span aria-hidden style={{ position: "absolute", left: 10, right: 10, bottom: -1, height: 2, borderRadius: 2, background: "linear-gradient(90deg,#e8c877,#c9a24d)" }} />}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
         {/* État vide pédagogique : aucune donnée encore */}
         {noData && (
           <div className="az" style={{ marginBottom: 14, padding: "22px 24px", borderRadius: 16, position: "relative", overflow: "hidden",
@@ -249,7 +271,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
         )}
 
         {/* ── Synthèse narrative (storytelling) ──────────────────────────── */}
-        {!noData && story && (
+        {!noData && tab === "overview" && story && (
           <div className="az" style={{ marginBottom: 14, padding: "18px 20px", borderRadius: 16, position: "relative", overflow: "hidden",
             background: "linear-gradient(135deg, color-mix(in srgb, var(--accent) 11%, #100F0A), #100F0A)",
             border: "1px solid color-mix(in srgb, var(--accent) 28%, transparent)" }}>
@@ -284,7 +306,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
         )}
 
         {/* ── Bandeau TEMPS RÉEL (masque tant qu'aucune donnee : pas de zeros — audit #04) ── */}
-        {!noData && (
+        {!noData && tab === "overview" && (
         <div className="az" style={{ animationDelay: "60ms", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 13, marginBottom: 13 }}>
           {/* Visiteurs actifs (hero live) */}
           <div className="az-card" style={{ background: "linear-gradient(135deg, color-mix(in srgb,var(--success) 11%,#0E0D09), #0E0D09)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 14, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
@@ -323,7 +345,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
         )}
 
         {/* KPI Cards (masques tant qu'aucune donnee : audit #04) */}
-        {!noData && (
+        {!noData && tab === "overview" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 13, marginBottom: 22 }}>
           {[
             { icon: <QrCode size={18} />, label: "Scans (30j)", value: totalScans30, color: GOLD },
@@ -352,7 +374,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
 
         {/* Sections détaillées — masquées tant qu'il n'y a aucune donnée */}
         {!noData && (<>
-        {/* Graphique principal — scans + vues */}
+        {/* ── VUE D'ENSEMBLE : graphique Scans & Vues ── */}
+        {tab === "overview" && (
         <div className="az" style={{
           animationDelay: "360ms",
           background: "linear-gradient(180deg,#13110B,#100F0A)", border: "1px solid color-mix(in srgb, var(--accent) 18%, transparent)",
@@ -383,21 +406,10 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             </AreaChart>
           </ResponsiveContainer>
         </div>
+        )}
 
-        {/* Bascule : analyse détaillée repliée par défaut (page courte) */}
-        <div style={{ display: "flex", justifyContent: "center", margin: "4px 0 22px" }}>
-          <button type="button" onClick={() => setShowFull(v => !v)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 24, cursor: "pointer", fontSize: 13, fontWeight: 700,
-              background: showFull ? "rgba(255,255,255,0.04)" : "color-mix(in srgb, var(--accent) 12%, transparent)",
-              border: "1px solid " + (showFull ? "rgba(255,255,255,0.1)" : "color-mix(in srgb, var(--accent) 32%, transparent)"),
-              color: showFull ? "#C9C3B6" : "var(--accent)" }}>
-            {showFull ? "Réduire l’analyse" : "Voir l’analyse complète"}
-            <ChevronDown size={15} style={{ transform: showFull ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
-          </button>
-        </div>
-
-        {showFull && (<>
-        {/* Row : Device + Source */}
+        {/* ── AUDIENCE : appareils + sources ── */}
+        {tab === "audience" && (<>
         <div className="dash-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
           {/* Device */}
           <div style={{
@@ -447,7 +459,10 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
           </div>
         </div>
 
-        {/* ── Top liens ─────────────────────────────────────────────────── */}
+        </>)}
+
+        {/* ── CONTENU : liens + blocs + tunnel/profondeur ── */}
+        {tab === "content" && (<>
         <div style={{ marginBottom: 24 }}>
           <TopLinksPanel
             clicks={clicks}
@@ -472,13 +487,17 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
           <ConversionFunnelPanel steps={funnel.steps} conversionRate={funnel.conversionRate} hasEngagementData={funnel.hasEngagementData} />
           <ScrollDepthPanel funnel={scrollFunnel} />
         </div>
+        </>)}
 
-        {/* ── Performance par support physique (funnel scan→vue→clic→conversion par QR) ── */}
+        {/* ── SUPPORTS : ROI par support physique ── */}
+        {tab === "supports" && (
         <div style={{ marginBottom: 24 }}>
           <SupportPanel qrs={filteredSupportQrs} scans={filteredScans} views={supportViews} clicks={supportClicks} leads={supportLeads} />
         </div>
+        )}
 
-        {/* ── Carte de chaleur des clics ────────────────────────────────── */}
+        {/* ── AUDIENCE (suite) : carte de chaleur + géo + appareils ── */}
+        {tab === "audience" && (<>
         <div style={{ marginBottom: 24 }}>
           <HeatmapPanel grid={tapGrid} byBlock={tapsByBlock} total={tapTotal} blocks={blocks} />
         </div>
@@ -500,8 +519,10 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             pages={pages}
           />
         </div>
+        </>)}
 
-        {/* ── Export CSV ──────────────────────────────────────────────────────── */}
+        {/* ── RAPPORTS : export CSV + abonnements ── */}
+        {tab === "reports" && (<>
         <div style={{ marginBottom: 24 }}>
           <ExportPanel
             plan={profile?.plan ?? "free"}
@@ -521,8 +542,10 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             plan={profile?.plan ?? "free"}
           />
         </div>
+        </>)}
 
-        {/* Top pages */}
+        {/* ── VUE D'ENSEMBLE (suite) : Top pages ── */}
+        {tab === "overview" && (
         <div style={{
           background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
           borderRadius: 12, padding: "24px"
@@ -555,7 +578,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
             </div>
           )}
         </div>
-        </>)}
+        )}
         </>)}
 
       </div>

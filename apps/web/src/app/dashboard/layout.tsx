@@ -136,7 +136,7 @@ const NAV_GROUPS = [
   ] },
   { label: "Mesure", items: [
     { href: "/dashboard/analytics", glyph: "analytics", label: "Analytics" },
-    { href: "/dashboard/goals", glyph: "goals", label: "Objectifs" },
+    // « Objectifs » n'est plus une page : la section vit en bas du Dashboard (#objectifs).
     { href: "/dashboard/leads", glyph: "messages", label: "Messages" },
   ] },
   { label: "Compte", items: [

@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import DashboardClient from "./DashboardClient"
+import GoalsShell from "./goals/GoalsShell"
 import { accessibleOwnerIds } from "@/lib/team"
 
 // Rendu SERVEUR des données initiales du dashboard : évite le 2e getUser() côté
@@ -40,13 +41,31 @@ export default async function DashboardPage() {
     weekViews = buckets
   }
 
+  // Objectifs : la section vit désormais EN BAS du Dashboard (#objectifs), plus de page dédiée.
+  // Données 90 j (clics + vues) sur les pages de l'utilisateur/équipe — mêmes que l'ancienne page.
+  const since90 = new Date(); since90.setDate(since90.getDate() - 90)
+  let goalClicks: any[] = [], goalViews: any[] = []
+  if (ids.length) {
+    const [gc, gv] = await Promise.all([
+      supabase.from("block_clicks").select("block_id, click_target, clicked_at, page_id, blocks(type)").in("page_id", ids).gte("clicked_at", since90.toISOString()).order("clicked_at", { ascending: false }),
+      supabase.from("page_views").select("viewed_at, page_id").in("page_id", ids).gte("viewed_at", since90.toISOString()),
+    ])
+    goalClicks = (gc.data || []).map((c: any) => ({ block_id: c.block_id, click_target: c.click_target, clicked_at: c.clicked_at, page_id: c.page_id, block_type: c.blocks?.type || "cta_button" }))
+    goalViews = gv.data || []
+  }
+
   return (
-    <DashboardClient
-      initialProfile={(prof as any) ?? null}
-      initialPages={(pgs as any) ?? []}
-      initialMonthViews={monthViews}
-      initialTodayViews={todayViews}
-      initialWeekViews={weekViews}
-    />
+    <>
+      <DashboardClient
+        initialProfile={(prof as any) ?? null}
+        initialPages={(pgs as any) ?? []}
+        initialMonthViews={monthViews}
+        initialTodayViews={todayViews}
+        initialWeekViews={weekViews}
+      />
+      <section id="objectifs" style={{ scrollMarginTop: 20, maxWidth: 1180, margin: "0 auto", padding: "0 clamp(16px, 4vw, 24px) 60px" }}>
+        <GoalsShell clicks={goalClicks} pageViews={goalViews as any} pages={(pgs ?? []).map((p: any) => ({ id: p.id, title: p.title, slug: p.slug }))} />
+      </section>
+    </>
   )
 }

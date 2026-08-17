@@ -388,7 +388,13 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 /* 04 — Lien doré (« Voir toutes ») */
 .da-btn-link { cursor:pointer; display:inline-flex; align-items:center; gap:9px; padding:10px 4px; border:none; background:transparent; font-family:inherit; font-size:13.5px; font-weight:600; color:#e8c877; text-decoration:none; transition:color .2s ease; }
 .da-btn-link:hover { color:#f0d590; }
-@media (prefers-reduced-motion: reduce) { .da-halo-wrap::before { animation:none !important; } .da-btn-primary::after { display:none; } .da-btn-primary:hover, .da-btn-ghost:hover { transform:none; } }
+/* 05 — Neutre en contour (Annuler / Fermer) — jamais d'or, se réchauffe en blanc au survol */
+.da-btn-neutral { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:9px; padding:14px 24px; border:1px solid rgba(255,255,255,.1); border-radius:11px; background:transparent; color:rgba(239,233,223,.6); font-family:inherit; font-size:14.5px; font-weight:600; white-space:nowrap; transition:color .2s ease, border-color .22s ease, background .22s ease, transform .16s cubic-bezier(.2,.8,.2,1); }
+.da-btn-neutral:hover { border-color:rgba(255,255,255,.22); color:#efe9df; background:rgba(255,255,255,.05); }
+.da-btn-neutral:active { transform:scale(.97); }
+.da-btn-neutral--sm { padding:9px 16px; font-size:13px; border-radius:10px; }
+.da-btn-neutral:hover .da-ic-x { transform:rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .da-halo-wrap::before { animation:none !important; } .da-btn-primary::after { display:none; } .da-btn-primary:hover, .da-btn-ghost:hover, .da-btn-neutral:hover { transform:none; } }
 
 /* ── Page Médias (DA dorée) — boutons & contrôles (handoff « Boutons Médias ») ── */
 @keyframes damSheen { 0% { transform:translateX(-150%) skewX(-18deg); opacity:0; } 14% { opacity:.75; } 100% { transform:translateX(320%) skewX(-18deg); opacity:0; } }
@@ -447,14 +453,17 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .dat-search input::placeholder { color:#6b6258; }
 .dat-searchicon { color:#8a8177; transition:color .2s ease; flex:none; }
 .dat-search:focus-within .dat-searchicon { color:#e8c877; }
-.dat-chip { display:inline-flex; align-items:center; gap:9px; padding:10px 17px; border-radius:999px; border:1px solid rgba(232,200,119,.24); cursor:pointer; background-color:#14110d; background-image:linear-gradient(135deg, rgba(232,200,119,.1), rgba(201,162,77,.05)); color:#c8bfb2; font-size:13.5px; font-weight:500; white-space:nowrap; font-family:inherit; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
-.dat-chip:hover { border-color:rgba(232,200,119,.6); color:#f0d590; transform:translateY(-2px); box-shadow:0 10px 22px -12px rgba(201,162,77,.5); }
+/* Chips secteur : repos NEUTRE (l'or est réservé au survol + à l'actif — discipline « l'or a du sens ») */
+.dat-chip { display:inline-flex; align-items:center; gap:9px; padding:10px 17px; border-radius:999px; border:1px solid rgba(255,255,255,.08); cursor:pointer; background:#14110d; color:rgba(239,233,223,.72); font-size:13.5px; font-weight:600; white-space:nowrap; font-family:inherit; transition:background .24s ease, color .2s ease, border-color .22s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
+.dat-chip:hover { background:rgba(232,200,119,.1); border-color:rgba(232,200,119,.5); color:#f0d590; transform:translateY(-1px); box-shadow:0 8px 18px -12px rgba(201,162,77,.5); }
 .dat-chip:active { transform:scale(.97); }
-.dat-chip.on { background-image:linear-gradient(135deg,#e8c877,#c9a24d); border-color:#e8c877; color:#1a1408; font-weight:700; box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 6px 16px -10px rgba(201,162,77,.7); }
-.dat-chip svg { color:#c9a24d; flex:none; }
+.dat-chip.on { background:linear-gradient(135deg,#e8c877,#c9a24d); border-color:transparent; color:#1a1408; font-weight:700; box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 8px 20px -10px rgba(201,162,77,.6); }
+.dat-chip svg { color:rgba(239,233,223,.45); flex:none; transition:color .2s ease; }
+.dat-chip:hover svg { color:#e8c877; }
 .dat-chip.on svg { color:#1a1408; }
-.dat-chippill { padding:1px 7px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(232,200,119,.14); color:#c9a24d; }
-.dat-chip.on .dat-chippill { background:rgba(26,20,8,.2); color:#1a1408; }
+.dat-chippill { padding:1px 7px; border-radius:999px; font-size:11.5px; font-weight:700; background:rgba(255,255,255,.06); color:rgba(239,233,223,.5); transition:background .22s ease, color .22s ease; }
+.dat-chip:hover .dat-chippill { background:rgba(232,200,119,.16); color:#f0d590; }
+.dat-chip.on .dat-chippill { background:rgba(26,20,8,.16); color:#1a1408; }
 .dat-rail { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:5px; border-radius:999px; background:#141210; border:1px solid #221f1b; width:fit-content; margin:0 auto; }
 .dat-planpill { display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border-radius:999px; border:none; cursor:pointer; background:transparent; color:#8a8177; font-size:13.5px; font-weight:500; white-space:nowrap; font-family:inherit; transition:background .22s ease, color .2s ease, box-shadow .22s ease; }
 .dat-planpill:hover { color:#e8c877; }

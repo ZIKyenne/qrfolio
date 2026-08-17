@@ -350,9 +350,8 @@ export default function TemplatesPage() {
             <p style={{ color: MUTED, fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", margin: "0 0 12px" }}>Plan</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 26 }}>{planChipEls}</div>
 
-            <button type="button" onClick={() => setFiltersOpen(false)}
-              style={{ width: "100%", padding: 14, borderRadius: 13, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 800, color: "#080808", background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" }}>
-              Voir {filtered.length} template{filtered.length > 1 ? "s" : ""}
+            <button type="button" onClick={() => setFiltersOpen(false)} className="da-btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+              <span>Voir {filtered.length} template{filtered.length > 1 ? "s" : ""}</span>
             </button>
           </div>
         </div>
@@ -589,12 +588,11 @@ export default function TemplatesPage() {
             <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: 0 }}>{selectedTemplate.name}</p>
             <p style={{ color: MUTED, fontSize: 10, margin: 0 }}>{(TEMPLATE_BLOCKS[selected] || []).length} blocs · {SETUP_TIME[selected] || "5 min"}</p>
           </div>
-          <button type="button" onClick={() => setSelected(null)} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, padding: "9px 14px", color: MUTED, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: 12 }}>
-            <X size={12} /> Annuler
+          <button type="button" onClick={() => setSelected(null)} className="da-btn-neutral da-btn-neutral--sm">
+            <X className="da-ic da-ic-x" size={13} /> Annuler
           </button>
-          <button type="button" onClick={() => setNamingFor(selected!)} disabled={!!creating}
-            style={{ display: "flex", alignItems: "center", gap: 7, background: creating ? "color-mix(in srgb, var(--accent) 20%, transparent)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border: "none", borderRadius: 9, padding: "9px 20px", color: "#080808", fontSize: 13, fontWeight: 700, cursor: creating ? "wait" : "pointer", opacity: creating ? 0.7 : 1 }}>
-            {creating === selected ? "Création en cours..." : <><ArrowRight size={12} /> Utiliser ce template</>}
+          <button type="button" onClick={() => setNamingFor(selected!)} disabled={!!creating} className="da-btn-primary da-btn-primary--sm">
+            {creating === selected ? <span>Création en cours...</span> : <><span>Utiliser ce template</span> <ArrowRight className="da-ic da-ic-arrow" size={14} /></>}
           </button>
         </div>
       )}
@@ -816,11 +814,13 @@ export function NamingModal({ template, blockCount, onClose, onCreate,
 
         {/* Boutons */}
         <div style={{ display: "flex", gap: 9 }}>
-          <button onClick={onClose} style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "11px", color: MUTED, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
-          <button onClick={handleCreate} disabled={!canSubmit}
-            style={{ flex: 2, background: canSubmit ? "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" : "color-mix(in srgb, var(--accent) 20%, transparent)", border: "none", borderRadius: 10, padding: "11px", color: canSubmit ? "#080808" : MUTED, fontSize: 13, fontWeight: 700, cursor: canSubmit ? "pointer" : "not-allowed" }}>
-            {submitting ? "Creation…" : "Creer ma page"}
-          </button>
+          <button onClick={onClose} className="da-btn-neutral da-btn-neutral--sm" style={{ flex: 1 }}>Annuler</button>
+          {/* Halo réservé au bouton primaire actif ; retiré tant que le formulaire est incomplet. */}
+          <span className={canSubmit ? "da-halo-wrap" : undefined} style={{ flex: 2, display: "flex" }}>
+            <button onClick={handleCreate} disabled={!canSubmit} className="da-btn-primary da-btn-primary--sm" style={{ flex: 1, justifyContent: "center" }}>
+              <span>{submitting ? "Création…" : "Créer ma page"}</span>{!submitting && <ArrowRight className="da-ic da-ic-arrow" size={15} />}
+            </button>
+          </span>
         </div>
         <p style={{ color: MUTED, fontSize: 10, margin: "12px 0 0", textAlign: "center" }}>Tu pourras modifier ce nom plus tard.</p>
       </div>

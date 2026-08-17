@@ -2818,16 +2818,17 @@ export default function TemplatePreviewModal({
           {/* Action principale — sticky en bas sur mobile (toujours accessible sans scroller) */}
           <div style={{ marginTop: "auto", display: "flex", gap: 10,
             ...(isMobile ? { position: "sticky" as const, bottom: 0, margin: "12px -20px 0", padding: "12px 20px calc(4px + env(safe-area-inset-bottom))", background: "rgba(16,15,10,0.92)", backdropFilter: "blur(8px)", borderTop: "1px solid rgba(255,255,255,0.08)", zIndex: 3 } : {}) }}>
-            <button type="button" onClick={onClose} style={{ padding: "12px 16px", background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 11, color: MUTED, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-              <X size={12} /> Fermer
+            <button type="button" onClick={onClose} className="da-btn-neutral da-btn-neutral--sm">
+              <X className="da-ic da-ic-x" size={13} /> Fermer
             </button>
             <button type="button" onClick={onUse} disabled={!!isCreating}
-              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", background: canUse ? "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))" : "rgba(255,255,255,0.05)", border: canUse ? "none" : "1px solid rgba(255,255,255,0.08)", borderRadius: 11, color: canUse ? "#080808" : MUTED, fontSize: 13, fontWeight: 700, cursor: isCreating ? "wait" : canUse ? "pointer" : "not-allowed", opacity: isCreating ? 0.7 : 1, transition: "all 0.15s" }}>
+              className={canUse ? "da-btn-primary da-btn-primary--sm" : "da-btn-neutral da-btn-neutral--sm"}
+              style={{ flex: 1, justifyContent: "center" }}>
               {isCreating
-                ? <><div style={{ width: 12, height: 12, border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> Création...</>
+                ? <><span style={{ width: 12, height: 12, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> <span>Création...</span></>
                 : canUse
-                  ? <><ArrowRight size={14} /> Utiliser ce template</>
-                  : <><Lock size={12} /> Plan {PLAN_LABELS[template.plan]} requis</>
+                  ? <><span>Utiliser ce template</span> <ArrowRight className="da-ic da-ic-arrow" size={14} /></>
+                  : <><Lock size={12} /> <span>Plan {PLAN_LABELS[template.plan]} requis</span></>
               }
             </button>
           </div>

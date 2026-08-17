@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "azure-compliance": {
+      "source": "microsoft/azure-skills",
+      "sourceType": "github",
+      "skillPath": "skills/azure-compliance/SKILL.md",
+      "computedHash": "63f3fd7befe634c7da76a0bc25e2d65a089586a20c84b027737565559c189244"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase/SKILL.md",
+      "computedHash": "c4cbf2d313f6afb1ff810623b732961752bb64638f648c7a355449eb6aac9530"
+    }
+  }
+}

@@ -1,0 +1,74 @@
+diff --git a/apps/web/src/app/q/[code]/route.ts b/apps/web/src/app/q/[code]/route.ts
+index 9a49114..0392c06 100644
+--- a/apps/web/src/app/q/[code]/route.ts
++++ b/apps/web/src/app/q/[code]/route.ts
+@@ -3,6 +3,7 @@
+ 
+ import { createAdminClient } from "@/lib/supabase/server"
+ import { NextRequest, NextResponse } from "next/server"
++import { createHash } from "node:crypto"
+ import { resolveOverrideDest, detectDevice, escapeHtml, type OverrideDest } from "./qrResolve"
+ import { rateLimit, ipOf } from "@/lib/rateLimit"
+ import { parseDevice } from "@/lib/scanStats"
+@@ -18,6 +19,26 @@ function redirectNoStore(url: string | URL, status = 302): NextResponse {
+   })
+ }
+ 
++// Déduit OS + navigateur depuis le User-Agent (best-effort, pour les stats de scan).
++// Ordre important : Edge (Edg/) et Opera (OPR/) AVANT Chrome car leur UA contient "Chrome" ;
++// Safari en dernier et seulement si pas Chrome (le UA Chrome contient aussi "Safari").
++function parseUserAgent(ua: string): { os: string | null; browser: string | null } {
++  const s = ua || ""
++  let os: string | null = null
++  if (/Windows NT/i.test(s)) os = "Windows"
++  else if (/iPhone|iPad|iPod/i.test(s)) os = "iOS"
++  else if (/Mac OS X|Macintosh/i.test(s)) os = "macOS"
++  else if (/Android/i.test(s)) os = "Android"
++  else if (/Linux/i.test(s)) os = "Linux"
++  let browser: string | null = null
++  if (/Edg\//i.test(s)) browser = "Edge"
++  else if (/OPR\/|Opera/i.test(s)) browser = "Opera"
++  else if (/Chrome\//i.test(s) && !/Chromium/i.test(s)) browser = "Chrome"
++  else if (/Firefox\//i.test(s)) browser = "Firefox"
++  else if (/Safari\//i.test(s) && !/Chrome/i.test(s)) browser = "Safari"
++  return { os, browser }
++}
++
+ function pausedHtml(message: string, appUrl: string): string {
+   return `<!DOCTYPE html>
+ <html lang="fr"><head><meta charset="UTF-8">
+@@ -255,6 +276,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
+     const ua     = req.headers.get("user-agent") ?? ""
+     const device = detectDevice(ua)
+ 
++    // ── Enrichissement du scan (géo Vercel + UA + empreinte anonyme RGPD) ──
++    // country/city viennent des en-têtes edge de Vercel ; os/browser du User-Agent.
++    // ip_hash = SHA-256(ip + ua + sel) : l'IP n'est JAMAIS stockée en clair, mais on
++    // peut compter les visiteurs uniques (count distinct ip_hash) côté analytics.
++    const rawIp    = ipOf(req)
++    const country  = req.headers.get("x-vercel-ip-country") || null
++    const cityHdr  = req.headers.get("x-vercel-ip-city")
++    const city     = cityHdr ? (() => { try { return decodeURIComponent(cityHdr) } catch { return cityHdr } })() : null
++    const referrer = (req.headers.get("referer") || "").slice(0, 300) || null
++    const { os, browser } = parseUserAgent(ua)
++    const ipHash   = rawIp
++      ? createHash("sha256").update(`${rawIp}|${ua}|${process.env.SCAN_IP_SALT ?? "qrowg-scan-v1"}`).digest("hex")
++      : null
++
+     // Le comptage (qr_codes.total_scans + last_scan_at, pages.total_views,
+     // profiles.total_scans) est fait par le trigger `increment_scan_counters`
+     // sur l'INSERT de scan ci-dessous. L'ancien UPDATE manuel etait casse
+@@ -263,8 +298,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
+     // Anti-abus best-effort : au-delà de 20 scans/min pour un même code+IP, on
+     // n'enregistre plus (évite le gonflage des stats/quotas par bouclage d'un
+     // short_code). NON bloquant : la redirection n'attend pas ce check.
+-    rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
+-      if (allow) supabase.from("scans").insert({ qr_code_id: qr.id, page_id: qr.page_id, device }).then(() => {}, () => {})
++    rateLimit(`scan:${code}:${rawIp}`, 20, 60_000).then((allow) => {
++      if (allow) supabase.from("scans").insert({
++        qr_code_id: qr.id, page_id: qr.page_id, device,
++        country, city, os, browser, referrer, ip_hash: ipHash,
++      }).then(() => {}, () => {})
+     })
+ 
+     // ── Résolution destination (override ou page) ─────────────────────────

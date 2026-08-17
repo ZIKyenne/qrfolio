@@ -35,7 +35,8 @@ const COUNTRY_NAMES: Record<string, string> = {
 }
 
 const getName = (code: string | null) =>
-  code ? (COUNTRY_NAMES[code.toUpperCase()] ?? code.toUpperCase()) : "Inconnu"
+  // « ?? »/vide = pays non résolu (README #8 : jamais « ?? », on dit pourquoi).
+  (!code || code === "??") ? "Pays non détecté" : (COUNTRY_NAMES[code.toUpperCase()] ?? code.toUpperCase())
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
 

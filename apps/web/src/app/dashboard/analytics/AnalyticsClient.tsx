@@ -275,8 +275,8 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
               Vous verrez en temps réel : <strong style={{ color: "#F5F0E8" }}>scans &amp; vues</strong>, <strong style={{ color: "#F5F0E8" }}>pays &amp; villes</strong>, <strong style={{ color: "#F5F0E8" }}>appareils</strong>, <strong style={{ color: "#F5F0E8" }}>sources de trafic</strong> et vos <strong style={{ color: "#F5F0E8" }}>pages les plus performantes</strong>. Lancez-vous pour activer le suivi.
             </p>
             <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-              <a href="/dashboard/qr-codes" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", color: "#080808", textDecoration: "none", fontSize: 13, fontWeight: 800, boxShadow: "0 6px 20px color-mix(in srgb, var(--accent) 25%, transparent)" }}>
-                <QrCode size={15} strokeWidth={2.4} /> Tester mon QR code
+              <a href="/dashboard/qr-codes" className="da-btn-primary da-btn-primary--sm">
+                <QrCode className="da-ic" size={15} strokeWidth={2.4} /> <span>Tester mon QR code</span>
               </a>
               {pages.find(p => p.status === "published") && (
                 <a href={"/" + pages.find(p => p.status === "published")!.slug} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#F5F0E8", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>

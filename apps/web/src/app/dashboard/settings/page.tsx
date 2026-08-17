@@ -228,8 +228,8 @@ export default function SettingsPage() {
               <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: "0 0 2px", textTransform: "capitalize" as const }}>Plan {profile?.plan || "free"}</p>
               <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>Factures et reçus envoyés par e-mail à chaque paiement.</p>
             </div>
-            <a href="/upgrade" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: `linear-gradient(90deg,${G},color-mix(in srgb, var(--accent) 75%, #000))`, color: "#080808", textDecoration: "none", fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
-              {profile?.plan === "free" ? "Découvrir les offres" : "Gérer mon abonnement"} <ArrowRight size={14} />
+            <a href="/upgrade" className="da-btn-primary da-btn-primary--sm" style={{ flexShrink: 0 }}>
+              <span>{profile?.plan === "free" ? "Découvrir les offres" : "Gérer mon abonnement"}</span> <ArrowRight className="da-ic da-ic-arrow" size={14} />
             </a>
           </div>
         </Section>

@@ -550,22 +550,21 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .ui-btn--md { min-height: 46px; padding: 0 18px; font-size: 14.5px; gap: 8px; }
 .ui-btn--lg { min-height: 54px; padding: 0 24px; font-size: 15.5px; gap: 9px; }
 
-/* Primary — dégradé d'accent + liseré interne lumineux (profondeur premium) */
+/* Primary — aligné sur la famille DA (.da-btn-primary) : or plein 135°, texte #1a1408,
+   liseré interne + halo doux. Un seul lieu -> tous les <Button variant="primary"> suivent. */
 .ui-btn--primary {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 90%, #fff 10%), var(--accent) 55%, color-mix(in srgb, var(--accent) 90%, #000 10%));
-  color: #080808;
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 26%, transparent),
-              inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent);
+  background: linear-gradient(135deg, #e8c877, #c9a24d);
+  color: #1a1408;
+  box-shadow: 0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(90,62,20,.4) inset, 0 6px 16px -10px rgba(0,0,0,.8);
 }
 .ui-btn--primary:not(:disabled):hover {
-  box-shadow: 0 11px 28px color-mix(in srgb, var(--accent) 40%, transparent),
-              inset 0 1px 0 color-mix(in srgb, #fff 34%, transparent);
-  filter: brightness(1.04) saturate(1.03);
+  box-shadow: 0 1px 0 rgba(255,255,255,.45) inset, 0 -2px 6px rgba(90,62,20,.4) inset, 0 12px 26px -10px rgba(201,162,77,.55);
+  filter: brightness(1.02);
 }
 
-/* Secondary — surface + bord accent, se réchauffe au survol */
-.ui-btn--secondary { background: var(--surface); color: var(--ink); border-color: color-mix(in srgb, var(--accent) 22%, transparent); }
-.ui-btn--secondary:not(:disabled):hover { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 48%, transparent); box-shadow: 0 4px 14px rgba(0,0,0,.28); }
+/* Secondary — contour doré (aligné sur .da-btn-ghost) : jamais d'or plein, se réchauffe au survol */
+.ui-btn--secondary { background-color: #14110d; background-image: linear-gradient(135deg, rgba(232,200,119,.1), rgba(201,162,77,.05)); color: #e8c877; border-color: rgba(232,200,119,.28); }
+.ui-btn--secondary:not(:disabled):hover { background-image: linear-gradient(135deg, rgba(232,200,119,.22), rgba(201,162,77,.12)); border-color: rgba(232,200,119,.7); color: #f0d590; box-shadow: 0 10px 22px -12px rgba(201,162,77,.6); }
 
 /* Ghost — discret, révèle un fond au survol */
 .ui-btn--ghost { background: transparent; color: var(--ink); border-color: rgba(255,255,255,0.10); }

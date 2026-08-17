@@ -14,3 +14,10 @@ test-results/
 .auth/
 .env.e2e
 e2e/**/*-snapshots/
+
+# Nettoyage : fichiers scratch/caches ajoutes par erreur
+.claude/
+skills-lock.json
+mcp-server/*.patch
+print-studio-*
+apps/web/src/.cap-coll.mjs

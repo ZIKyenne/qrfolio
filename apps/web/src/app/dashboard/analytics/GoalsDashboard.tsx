@@ -283,8 +283,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
           </p>
         </div>
         {(goals.length > 0 || showForm) && (
-          <button type="button" onClick={openNew}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 72%, #000))", border: "none", borderRadius: 11, color: "#1a1408", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 6px 18px -8px color-mix(in srgb, var(--accent) 60%, transparent)" }}>
+          <button type="button" onClick={openNew} className="ui-btn ui-btn--primary ui-btn--sm">
             <Plus size={15} /> Nouvel objectif
           </button>
         )}

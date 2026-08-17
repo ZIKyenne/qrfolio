@@ -268,8 +268,8 @@ export default function DashboardClient({
               </span>
             </div>
           </div>
-          <Link href="/dashboard/onboarding" className="dz-cta"
-            style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius: 12, padding: "11px 22px", color: "#080808", textDecoration: "none", fontSize: 14, fontWeight: 800, boxShadow: "0 6px 22px color-mix(in srgb, var(--accent) 28%, transparent)", flexShrink: 0 }}>
+          <Link href="/dashboard/onboarding" className="ui-btn ui-btn--primary ui-btn--md"
+            style={{ flexShrink: 0, textDecoration: "none" }}>
             <Plus size={16} strokeWidth={2.6} /> Nouvelle page
           </Link>
         </div>
@@ -361,7 +361,7 @@ export default function DashboardClient({
                         {!s.done && <p style={{ color: MUTED, fontSize: 11.5, margin: "1px 0 0" }}>{s.desc}</p>}
                       </div>
                       {isCurrent && (
-                        <Link href={s.cta.href} className="dz-cta" style={{ flexShrink: 0, width: isMobile ? "100%" : "auto", justifyContent: "center", display: "flex", alignItems: "center", gap: 6, padding: isMobile ? "11px 15px" : "8px 15px", borderRadius: 9, background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", color: "#080808", textDecoration: "none", fontSize: 12.5, fontWeight: 800, boxShadow: "0 5px 16px color-mix(in srgb, var(--accent) 25%, transparent)" }}>
+                        <Link href={s.cta.href} className={"ui-btn ui-btn--primary ui-btn--sm" + (isMobile ? " ui-btn--full" : "")} style={{ flexShrink: 0, textDecoration: "none" }}>
                           <s.cta.Icon size={14} strokeWidth={2.5} /> {s.cta.label}
                         </Link>
                       )}
@@ -428,8 +428,8 @@ export default function DashboardClient({
           <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, overflow: "hidden", position: "relative" }}>
             <div style={{ padding: "16px 20px", borderBottom: `1px solid ${HAIR}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <p style={{ color: "#F8F4EC", fontSize: 15.5, fontWeight: 700, margin: 0, letterSpacing: "-0.2px" }}>Mes pages <span style={{ color: MUTED, fontWeight: 500 }}>({pages.length})</span></p>
-              <Link href="/dashboard/templates" className="dz-cta" style={{ display: "flex", alignItems: "center", gap: 5, color: "#1a1408", background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", padding: "6px 12px", borderRadius: 9, fontSize: 11, fontWeight: 800, textDecoration: "none" }}>
-                <Plus size={11} strokeWidth={2.8} /> Nouvelle
+              <Link href="/dashboard/templates" className="ui-btn ui-btn--primary ui-btn--sm" style={{ textDecoration: "none" }}>
+                <Plus size={12} strokeWidth={2.8} /> Nouvelle
               </Link>
             </div>
             {pages.length === 0 ? (
@@ -437,7 +437,7 @@ export default function DashboardClient({
                 <span style={{ width: 44, height: 44, margin: "0 auto 12px", borderRadius: 12, background: "color-mix(in srgb, var(--accent) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)", display: "flex", alignItems: "center", justifyContent: "center" }}><FileText size={20} color={G} /></span>
                 <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 6px" }}>Aucune page</p>
                 <p style={{ color: MUTED, fontSize: 12, margin: "0 0 16px" }}>Créez votre première page avec un modèle</p>
-                <Link href="/dashboard/templates" style={{ display: "inline-block", background: "linear-gradient(90deg," + G + ",color-mix(in srgb, var(--accent) 75%, #000))", color: "#1a1408", textDecoration: "none", padding: "8px 16px", borderRadius: 9, fontSize: 12, fontWeight: 700 }}>
+                <Link href="/dashboard/templates" className="ui-btn ui-btn--primary ui-btn--sm" style={{ textDecoration: "none" }}>
                   Choisir un modèle
                 </Link>
               </div>
@@ -497,8 +497,8 @@ export default function DashboardClient({
                   <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700, margin: 0 }}>Passez à Starter — {fmtPrice(getPlan("starter").priceMonthly)}€/mois</p>
                 </div>
                 <p style={{ color: MUTED, fontSize: 12, margin: "0 0 12px", lineHeight: 1.5 }}>{getPlan("starter").limits.pages} pages, {getPlan("starter").limits.views!.toLocaleString("fr-FR")} vues/mois, QR personnalisés, sans branding</p>
-                <Link href="/upgrade" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "linear-gradient(90deg," + G + ",color-mix(in srgb, var(--accent) 75%, #000))", color: "#1a1408", textDecoration: "none", padding: "9px", borderRadius: 9, fontSize: 12, fontWeight: 700 }}>
-                  Voir les offres <ArrowRight size={11} />
+                <Link href="/upgrade" className="ui-btn ui-btn--primary ui-btn--sm ui-btn--full" style={{ textDecoration: "none" }}>
+                  Voir les offres <ArrowRight size={13} />
                 </Link>
               </div>
             )}

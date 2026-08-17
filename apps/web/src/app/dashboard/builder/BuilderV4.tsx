@@ -4,7 +4,7 @@
   import {
     X, ChevronUp, ChevronDown, Trash2,
     Eye, Plus, Settings, Check, Search, Copy, EyeOff,
-    ExternalLink, GripVertical, QrCode, MoreHorizontal, Undo2, Redo2
+    ExternalLink, GripVertical, QrCode, MoreHorizontal, Undo2, Redo2, Sparkles
   } from "lucide-react"
   import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, normalizePageTheme, type Block, type BlockContent, type PageTheme } from "./types"
   import { PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, type PageTemplate } from "./page-templates"
@@ -1125,10 +1125,9 @@
             <p style={{ fontSize: 13, color: "#8A8478", margin: "0 0 22px", lineHeight: 1.6 }}>{info.sub}</p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               {loadState === "error" && (
-                <button onClick={() => { setLoadState("loading"); setLoadNonce(n => n + 1) }}
-                  style={{ background: `linear-gradient(90deg,${G},#b8953f)`, border: "none", borderRadius: 10, padding: "11px 20px", color: "#080808", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Réessayer</button>
+                <button onClick={() => { setLoadState("loading"); setLoadNonce(n => n + 1) }} className="da-btn-primary da-btn-primary--sm"><span>Réessayer</span></button>
               )}
-              <a href="/dashboard" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "11px 20px", color: "#F5F0E8", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Retour au tableau de bord</a>
+              <a href="/dashboard" className="da-btn-neutral da-btn-neutral--sm">Retour au tableau de bord</a>
             </div>
           </div>
         </div>
@@ -1301,8 +1300,11 @@
 
           <div style={{ position: "relative", flexShrink: 0 }}>
             <button onClick={() => setShowPublishPopup(p => !p)}
-              style={{ display: "flex", alignItems: "center", gap: 6, background: pageStatus==="published" ? "rgba(57,255,143,0.12)" : `linear-gradient(90deg,${G},#b8953f)`, border: pageStatus==="published" ? "1px solid rgba(57,255,143,0.35)" : "none", borderRadius: 9, padding: "8px 18px", color: pageStatus==="published" ? "var(--success)" : "#080808", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: pageStatus==="published" ? "none" : `0 4px 16px rgba(201,168,76,0.3)` }}>
-              {pageStatus==="published" ? <><Check size={13} /> Publié</> : "Publier"}
+              className={pageStatus === "published" ? undefined : "da-btn-primary da-btn-primary--sm"}
+              style={pageStatus === "published"
+                ? { display: "flex", alignItems: "center", gap: 6, background: "rgba(57,255,143,0.12)", border: "1px solid rgba(57,255,143,0.35)", borderRadius: 9, padding: "8px 18px", color: "var(--success)", fontSize: 14, fontWeight: 700, cursor: "pointer" }
+                : undefined}>
+              {pageStatus==="published" ? <><Check size={13} /> Publié</> : <span>Publier</span>}
             </button>
             {showPublishPopup && (
               <>
@@ -1358,7 +1360,7 @@
                       (déjà publiée : réenregistre + revalide le cache ISR pour rendre les
                       derniers changements visibles immédiatement). */}
                   <button onClick={handlePublish} disabled={publishing || !IS_UUID(liveId)} aria-busy={publishing}
-                    style={{ width: "100%", background: `linear-gradient(90deg,${G},#b8953f)`, border: "none", borderRadius: 12, padding: "14px", color: "#080808", fontSize: 14, fontWeight: 700, cursor: publishing ? "default" : "pointer", opacity: publishing ? 0.7 : 1, marginBottom: pageSlug ? 10 : 0, boxShadow: "0 4px 20px rgba(201,168,76,0.3)" }}>
+                    className="da-btn-primary" style={{ width: "100%", justifyContent: "center", marginBottom: pageSlug ? 10 : 0 }}>
                     {publishing ? (
                       <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
                         <span style={{display:"inline-block",width:14,height:14,border:"2px solid #08080880",borderTopColor:"#080808",borderRadius:"50%",animation:"mo-spin 0.7s linear infinite"}} />
@@ -1623,8 +1625,8 @@
                                     const rest = catBlocks.filter(([t]) => !grouped.includes(t)) // blocs identité non classés -> "Autres"
                                     return (<>
                                       <button type="button" onClick={generateBaseIdentity} title="Ajoute profil + bio + compétences + disponibilité, prêts à éditer"
-                                        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px", margin: "2px 0 8px", borderRadius: 9, border: "none", cursor: "pointer", background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", color: "#080808", fontSize: 12, fontWeight: 800 }}>
-                                        ✨ Générer une identité de base
+                                        className="da-btn-primary da-btn-primary--sm" style={{ width: "100%", justifyContent: "center", margin: "2px 0 8px" }}>
+                                        <Sparkles size={13} /> <span>Générer une identité de base</span>
                                       </button>
                                       {/* Modèles par métier : 1 clic crée une identité adaptée */}
                                       <div style={{ margin: "0 0 10px" }}>
@@ -2588,9 +2590,9 @@
                     style={{ flex: 1, resize: "vertical", minHeight: isMobile ? 76 : 60, background: "rgba(0,0,0,0.35)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 10, color: "#F5F0E8", fontSize: 12.5, padding: "10px 12px", lineHeight: 1.45, fontFamily: "inherit", width: "100%", boxSizing: "border-box" as const }}
                   />
                   <button onClick={generateWithAI} disabled={aiGenLoading}
-                    style={{ flexShrink: 0, alignSelf: "stretch", minHeight: isMobile ? 48 : undefined, minWidth: isMobile ? undefined : 120, padding: "0 18px", borderRadius: 10, border: "none", cursor: aiGenLoading ? "wait" : "pointer", background: aiGenLoading ? "rgba(201,168,76,0.4)" : `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: aiGenLoading ? "none" : "0 4px 14px rgba(201,168,76,0.3)" }}>
+                    className="da-btn-primary da-btn-primary--sm" style={{ flexShrink: 0, alignSelf: "stretch", minHeight: isMobile ? 48 : undefined, minWidth: isMobile ? undefined : 120, justifyContent: "center" }}>
                     {aiGenLoading
-                      ? <><span style={{ width: 13, height: 13, border: "2px solid rgba(8,8,8,0.3)", borderTopColor: "#080808", borderRadius: "50%", animation: "mo-spin 0.7s linear infinite" }} /> Génération…</>
+                      ? <><span style={{ width: 13, height: 13, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.7s linear infinite" }} /> Génération…</>
                       : <>✨ Générer ma page</>}
                   </button>
                 </div>

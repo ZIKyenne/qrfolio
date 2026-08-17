@@ -63,8 +63,9 @@ Tiramisu;6,50€;Fait maison`
               </div>
               <div style={{ display: "flex", gap: 9 }}>
                 <button type="button" onClick={copyPrompt}
-                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "none", background: copied ? "rgba(57,255,143,0.15)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 75%,#000))", color: copied ? "var(--success)" : "#080808", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                  {copied ? <><Check size={15} /> Copié !</> : <><Copy size={15} /> Copier le prompt</>}
+                  className={copied ? undefined : "da-btn-primary da-btn-primary--sm"}
+                  style={copied ? { flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "none", background: "rgba(57,255,143,0.15)", color: "var(--success)", fontSize: 13, fontWeight: 700, cursor: "pointer" } : { flex: 1, justifyContent: "center" }}>
+                  {copied ? <><Check size={15} /> Copié !</> : <><Copy size={15} /> <span>Copier le prompt</span></>}
                 </button>
                 <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer"
                   style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#F5F0E8", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
@@ -126,9 +127,8 @@ Tiramisu;6,50€;Fait maison`
               placeholder={"Margherita\t11€\tTomate, mozzarella\nRegina\t13€\tJambon, champignons"}
               style={{ ...inputStyle, fontFamily: "monospace", whiteSpace: "pre", resize: "vertical" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button type="button" onClick={doImport} disabled={!text.trim()}
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 9, border: "none", background: text.trim() ? "linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 75%,#000))" : "rgba(201,168,76,0.2)", color: text.trim() ? "#080808" : MUTED, fontSize: 12.5, fontWeight: 700, cursor: text.trim() ? "pointer" : "not-allowed" }}>
-                <Plus size={15} /> Importer les plats
+              <button type="button" onClick={doImport} disabled={!text.trim()} className="da-btn-primary da-btn-primary--sm">
+                <Plus size={15} /> <span>Importer les plats</span>
               </button>
               {msg && <span style={{ color: msg.includes("✓") ? "var(--success)" : "var(--warning)", fontSize: 11.5, fontWeight: 600 }}>{msg}</span>}
             </div>

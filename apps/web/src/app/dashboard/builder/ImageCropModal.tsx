@@ -121,10 +121,10 @@ export default function ImageCropModal({ file, onCancel, onConfirm, initialAspec
         </div>
 
         <div style={{ display: "flex", gap: 9 }}>
-          <button onClick={onCancel} style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "11px", color: MUTED, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+          <button onClick={onCancel} className="da-btn-neutral da-btn-neutral--sm" style={{ flex: 1 }}>Annuler</button>
           <button onClick={apply} disabled={!natural.w || busy} data-testid="crop-apply"
-            style={{ flex: 2, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, background: natural.w ? "linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 75%,#000))" : "rgba(201,168,76,0.2)", border: "none", borderRadius: 10, padding: "11px", color: "#080808", fontSize: 13, fontWeight: 700, cursor: natural.w ? "pointer" : "not-allowed" }}>
-            <Check size={15} /> {busy ? "Traitement…" : "Appliquer"}
+            className="da-btn-primary da-btn-primary--sm" style={{ flex: 2, justifyContent: "center" }}>
+            <Check size={15} /> <span>{busy ? "Traitement…" : "Appliquer"}</span>
           </button>
         </div>
       </div>

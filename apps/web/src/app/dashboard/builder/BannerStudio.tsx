@@ -192,7 +192,7 @@ function CropEditor({ content, set, onClose }: { content: Record<string, any>; s
           <button onClick={() => quick(100)} style={miniBtn}>Bas</button>
           <button onClick={reset} style={{ ...miniBtn, color: MUTED }}>Reset</button>
         </div>
-        <button onClick={onClose} style={{ marginTop: 14, width: "100%", background: `linear-gradient(90deg,${G},${G}cc)`, border: "none", borderRadius: 10, padding: "11px", color: "#080808", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Terminé</button>
+        <button onClick={onClose} className="da-btn-primary da-btn-primary--sm" style={{ marginTop: 14, width: "100%", justifyContent: "center" }}><span>Terminé</span></button>
       </div>
     </div>
   )

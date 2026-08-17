@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
-import { Plus, QrCode, BarChart2, Eye, Zap, ArrowRight, Globe, Trash2, ExternalLink, Edit3, AlertTriangle, X, Check, MoreHorizontal } from "lucide-react"
+import { Plus, QrCode, BarChart2, Eye, Zap, ArrowRight, Globe, Trash2, ExternalLink, Edit3, AlertTriangle, Check, MoreHorizontal, Printer, Settings, FileText } from "lucide-react"
 import { getPlan, fmtPrice } from "@/lib/plans"
 import Particles from "@/components/Particles"
 import { useIsMobile } from "@/lib/useIsMobile"
@@ -157,6 +157,9 @@ export default function DashboardClient({
 
   const planCfg = PLAN_CONFIG[profile?.plan || "free"]
   const G = "var(--accent)"; const MUTED = "#A8A190"
+  // Tokens DA doré (identiques à la section Objectifs / Analytics) : surfaces plates,
+  // plus de dégradés verts ni de barres de gradient.
+  const CARD = "#141210"; const PANEL = "#100e0c"; const BORDER = "#221f1b"; const HAIR = "rgba(255,255,255,0.06)"
   const publishedCount = pages.filter(p => p.status === "published").length
   // Parcours guidé : tant qu'aucun scan, on montre la prochaine meilleure action
   const totalScans = profile?.total_scans || 0
@@ -300,8 +303,8 @@ export default function DashboardClient({
         {!guide && !nearViews && !overViews && (() => {
           const onePage = pages.length === 1
           const tip = onePage
-            ? { icon: "➕", text: <>Créez une 2ᵉ page pour un autre usage (menu, événement, promo).</>, label: "Nouvelle page", href: "/dashboard/templates" }
-            : { icon: "🖨️", text: <><strong style={{ color: "#F5F0E8" }}>{totalScans.toLocaleString("fr-FR")}</strong> scan{totalScans > 1 ? "s" : ""} — créez un support imprimable pour booster vos scans.</>, label: "Créer un support", href: "/dashboard/qr-codes" }
+            ? { icon: <Plus size={17} />, text: <>Créez une 2ᵉ page pour un autre usage (menu, événement, promo).</>, label: "Nouvelle page", href: "/dashboard/templates" }
+            : { icon: <Printer size={17} />, text: <><strong style={{ color: "#F5F0E8" }}>{totalScans.toLocaleString("fr-FR")}</strong> scan{totalScans > 1 ? "s" : ""} — créez un support imprimable pour booster vos scans.</>, label: "Créer un support", href: "/dashboard/qr-codes" }
           return (
             <div className="dz" style={{ marginBottom: 20 }}>
               <NextStepCard icon={tip.icon} ctaLabel={tip.label} href={tip.href} animationDelay="40ms">{tip.text}</NextStepCard>
@@ -371,22 +374,20 @@ export default function DashboardClient({
         })()}
 
         {/* Cockpit : 1 métrique héro + stats secondaires (au lieu de 4 cartes concurrentes) */}
-        <div className="dz dz-card" style={{ animationDelay: "120ms", marginBottom: 20, background: "linear-gradient(135deg, color-mix(in srgb,var(--success) 7%,#13110B), #100F0A)", border: "1px solid rgba(57,255,143,0.22)", borderRadius: 16, padding: "18px 22px", position: "relative", overflow: "hidden", boxShadow: "0 8px 30px rgba(0,0,0,0.25)" }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, var(--success), transparent)" }} />
-          <div aria-hidden style={{ position: "absolute", top: -30, right: -20, width: 170, height: 170, borderRadius: "50%", background: "radial-gradient(circle,var(--success)18,transparent 70%)", pointerEvents: "none" }} />
+        <div className="dz dz-card" style={{ animationDelay: "120ms", marginBottom: 20, background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: "18px 22px", position: "relative", overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", position: "relative" }}>
 
             {/* HÉRO : scans totaux */}
             <div style={{ flex: "1 1 190px", minWidth: 150 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ color: "var(--success)", background: "var(--success)1a", borderRadius: 9, padding: 8, display: "flex" }}><QrCode size={18} /></span>
+                <span style={{ color: "var(--success)", background: "color-mix(in srgb, var(--success) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--success) 26%, transparent)", borderRadius: 9, padding: 8, display: "flex" }}><QrCode size={18} /></span>
                 <span style={{ color: "#C9C3B6", fontSize: 12.5, fontWeight: 600 }}>Scans totaux</span>
               </div>
               <p style={{ color: "#F8F4EC", fontSize: 44, fontWeight: 700, margin: "8px 0 0", fontFamily: "Fraunces, serif", lineHeight: 1 }}>{(profile?.total_scans || 0).toLocaleString("fr-FR")}</p>
-              <p style={{ color: "var(--success)b0", fontSize: 11, margin: "2px 0 0" }}>tous temps</p>
+              <p style={{ color: MUTED, fontSize: 11, margin: "2px 0 0" }}>tous temps</p>
             </div>
 
-            {!isMobile && <div aria-hidden style={{ width: 1, alignSelf: "stretch", minHeight: 64, background: "rgba(255,255,255,0.07)" }} />}
+            {!isMobile && <div aria-hidden style={{ width: 1, alignSelf: "stretch", minHeight: 64, background: HAIR }} />}
 
             {/* SECONDAIRES : vues / pages / publiées */}
             <div style={{ display: "flex", gap: 24, flexWrap: "wrap", flex: "2 1 300px" }}>
@@ -410,7 +411,7 @@ export default function DashboardClient({
                     )}
                   </div>
                   <p style={{ color: "#F8F4EC", fontSize: 26, fontWeight: 700, margin: "6px 0 0", fontFamily: "Fraunces, serif", lineHeight: 1 }}>{s.value}</p>
-                  <p style={{ color: s.color + "b0", fontSize: 10, margin: "2px 0 0", whiteSpace: "nowrap" }}>{s.sub}</p>
+                  <p style={{ color: MUTED, fontSize: 10, margin: "2px 0 0", whiteSpace: "nowrap" }}>{s.sub}</p>
                 </div>
               ))}
             </div>
@@ -424,21 +425,20 @@ export default function DashboardClient({
         <div className="dz dash-2col" style={{ animationDelay: "180ms", display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 14 }}>
 
           {/* Pages (PRINCIPAL) */}
-          <div style={{ background: "linear-gradient(180deg,#13110B,#100F0A)", border: "1px solid color-mix(in srgb, var(--accent) 22%, transparent)", borderRadius: 16, overflow: "hidden", boxShadow: "0 8px 30px rgba(0,0,0,0.25)", position: "relative" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, var(--accent), transparent)" }} />
-            <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, overflow: "hidden", position: "relative" }}>
+            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${HAIR}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <p style={{ color: "#F8F4EC", fontSize: 15.5, fontWeight: 700, margin: 0, letterSpacing: "-0.2px" }}>Mes pages <span style={{ color: MUTED, fontWeight: 500 }}>({pages.length})</span></p>
-              <Link href="/dashboard/templates" className="dz-cta" style={{ display: "flex", alignItems: "center", gap: 5, color: "#080808", background: "color-mix(in srgb, var(--accent) 90%, #fff)", padding: "5px 11px", borderRadius: 8, fontSize: 11, fontWeight: 800, textDecoration: "none" }}>
+              <Link href="/dashboard/templates" className="dz-cta" style={{ display: "flex", alignItems: "center", gap: 5, color: "#1a1408", background: "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", padding: "6px 12px", borderRadius: 9, fontSize: 11, fontWeight: 800, textDecoration: "none" }}>
                 <Plus size={11} strokeWidth={2.8} /> Nouvelle
               </Link>
             </div>
             {pages.length === 0 ? (
               <div style={{ padding: "32px 20px", textAlign: "center" }}>
-                <p style={{ fontSize: 32, margin: "0 0 10px" }}>📄</p>
+                <span style={{ width: 44, height: 44, margin: "0 auto 12px", borderRadius: 12, background: "color-mix(in srgb, var(--accent) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)", display: "flex", alignItems: "center", justifyContent: "center" }}><FileText size={20} color={G} /></span>
                 <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 6px" }}>Aucune page</p>
-                <p style={{ color: MUTED, fontSize: 12, margin: "0 0 16px" }}>Cree ta premiere page avec un template</p>
-                <Link href="/dashboard/templates" style={{ background: "linear-gradient(90deg," + G + ",color-mix(in srgb, var(--accent) 75%, #000))", color: "#080808", textDecoration: "none", padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
-                  Choisir un template
+                <p style={{ color: MUTED, fontSize: 12, margin: "0 0 16px" }}>Créez votre première page avec un modèle</p>
+                <Link href="/dashboard/templates" style={{ display: "inline-block", background: "linear-gradient(90deg," + G + ",color-mix(in srgb, var(--accent) 75%, #000))", color: "#1a1408", textDecoration: "none", padding: "8px 16px", borderRadius: 9, fontSize: 12, fontWeight: 700 }}>
+                  Choisir un modèle
                 </Link>
               </div>
             ) : (
@@ -491,13 +491,13 @@ export default function DashboardClient({
           {/* Actions rapides */}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {profile?.plan === "free" && (
-              <div style={{ background: "linear-gradient(135deg,color-mix(in srgb, var(--accent) 10%, transparent),rgba(57,255,143,0.05))", border: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)", borderRadius: 14, padding: "16px 18px" }}>
+              <div style={{ background: CARD, border: "1px solid color-mix(in srgb, var(--accent) 22%, #221f1b)", borderRadius: 14, padding: "16px 18px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                   <Zap size={16} color={G} />
-                  <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700, margin: 0 }}>Passe a Starter — {fmtPrice(getPlan("starter").priceMonthly)}€/mois</p>
+                  <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700, margin: 0 }}>Passez à Starter — {fmtPrice(getPlan("starter").priceMonthly)}€/mois</p>
                 </div>
-                <p style={{ color: MUTED, fontSize: 12, margin: "0 0 12px", lineHeight: 1.5 }}>{getPlan("starter").limits.pages} pages, {getPlan("starter").limits.views!.toLocaleString("fr-FR")} vues/mois, QR personnalises, sans branding</p>
-                <Link href="/upgrade" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "linear-gradient(90deg," + G + ",color-mix(in srgb, var(--accent) 75%, #000))", color: "#080808", textDecoration: "none", padding: "9px", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+                <p style={{ color: MUTED, fontSize: 12, margin: "0 0 12px", lineHeight: 1.5 }}>{getPlan("starter").limits.pages} pages, {getPlan("starter").limits.views!.toLocaleString("fr-FR")} vues/mois, QR personnalisés, sans branding</p>
+                <Link href="/upgrade" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "linear-gradient(90deg," + G + ",color-mix(in srgb, var(--accent) 75%, #000))", color: "#1a1408", textDecoration: "none", padding: "9px", borderRadius: 9, fontSize: 12, fontWeight: 700 }}>
                   Voir les offres <ArrowRight size={11} />
                 </Link>
               </div>
@@ -505,17 +505,17 @@ export default function DashboardClient({
 
             {/* Raccourcis : uniquement les destinations PAS deja dans la nav / le sheet Creer
                 (Templates, Analytics, QR y sont deja -> on ne les duplique plus ici). */}
-            <div style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 12%, transparent)", borderRadius: 14, overflow: "hidden" }}>
-              <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+            <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, overflow: "hidden" }}>
+              <div style={{ padding: "14px 18px", borderBottom: `1px solid ${HAIR}` }}>
                 <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: 0 }}>Raccourcis</p>
               </div>
               {[
-                { icon: "🌐", label: "Domaines perso", href: "/dashboard/domains", color: "var(--success)" },
-                { icon: "⚙️", label: "Paramètres", href: "/dashboard/settings", color: MUTED },
+                { icon: <Globe size={16} />, label: "Domaines perso", href: "/dashboard/domains", color: "var(--success)" },
+                { icon: <Settings size={16} />, label: "Paramètres", href: "/dashboard/settings", color: MUTED },
               ].map((action, i, arr) => (
                 <Link key={i} href={action.href} className="dz-row dz-act"
-                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 18px", textDecoration: "none", borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none" }}>
-                  <span style={{ width: 32, height: 32, borderRadius: 8, background: action.color + "14", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>{action.icon}</span>
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 18px", textDecoration: "none", borderBottom: i < arr.length - 1 ? `1px solid ${HAIR}` : "none" }}>
+                  <span style={{ width: 32, height: 32, borderRadius: 9, background: `color-mix(in srgb, ${action.color} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${action.color} 26%, transparent)`, display: "flex", alignItems: "center", justifyContent: "center", color: action.color, flexShrink: 0 }}>{action.icon}</span>
                   <span style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 500 }}>{action.label}</span>
                   <ArrowRight className="dz-arrow" size={14} color={action.color} style={{ marginLeft: "auto" }} />
                 </Link>

@@ -48,6 +48,14 @@ export async function POST(req: NextRequest) {
   const validErr = validateDest(type as DestType, value)
   if (validErr) return NextResponse.json({ error: validErr }, { status: 400 })
 
+  // IDOR : pour une destination de type "page", exiger que la page cible
+  // appartienne à l'utilisateur (parité avec api/v1/qr/[code]/destination).
+  if (type === "page") {
+    const { data: ownPage } = await supabase
+      .from("pages").select("id").eq("id", String(value).trim()).eq("user_id", user.id).maybeSingle()
+    if (!ownPage) return NextResponse.json({ error: "Page introuvable" }, { status: 404 })
+  }
+
   // Récupérer l'état actuel
   const { data: current } = await supabase
     .from("qr_codes")

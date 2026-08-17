@@ -9,6 +9,23 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-DNS-Prefetch-Control", value: "on" },
+  // CSP en Report-Only : NE BLOQUE RIEN (aucun risque de casse), mais fait
+  // remonter les violations dans la console → on observe, puis on durcit vers
+  // une CSP à nonces (retirer 'unsafe-inline', passer en "Content-Security-Policy").
+  {
+    key: "Content-Security-Policy-Report-Only",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://*.supabase.co",
+      "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+      "frame-src https://js.stripe.com",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "object-src 'none'",
+    ].join("; "),
+  },
 ]
 
 const nextConfig = {

@@ -2322,9 +2322,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         </div>
         <h2 style={{ fontFamily:"Fraunces, serif", fontSize:24, color:"#F5F0E8", fontWeight:700, margin:"0 0 10px" }}>Aucun QR code</h2>
         <p style={{ color:MUTED, fontSize:14, lineHeight:1.7, margin:"0 0 28px" }}>Crée ta première page pour générer automatiquement un QR code.</p>
-        <a href="/dashboard" style={{ background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", color:"#080808", textDecoration:"none", fontSize:14, fontWeight:700, padding:"14px 28px", borderRadius:10, display:"inline-block" }}>
-          Créer ma première page
-        </a>
+        <span className="da-halo-wrap">
+          <a href="/dashboard" className="da-btn-primary da-btn-primary--sm"><span>Créer ma première page</span></a>
+        </span>
       </div>
     )
   }
@@ -2383,9 +2383,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
             {/* Actions */}
             <div style={{ display:"flex", gap:10, width:"100%", maxWidth:400 }}>
-              <button type="button" onClick={() => downloadPNG(1200)}
-                style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"11px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:10, color:"#080808", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-                <Download size={14}/> PNG HD
+              <button type="button" onClick={() => downloadPNG(1200)} className="da-btn-primary da-btn-primary--sm" style={{ flex:1, justifyContent:"center" }}>
+                <Download className="da-ic da-ic-dl" size={14}/> <span>PNG HD</span>
               </button>
               <button type="button" onClick={() => copy("short")}
                 style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"11px", background: copied==="short"?"rgba(57,255,143,0.12)":"rgba(255,255,255,0.05)", border:`1px solid ${copied==="short"?"rgba(57,255,143,0.3)":"rgba(255,255,255,0.1)"}`, borderRadius:10, color:copied==="short"?"var(--success)":"#F5F0E8", fontSize:13, cursor:"pointer" }}>
@@ -3108,8 +3107,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         Annuler
                       </button>
                       <button type="button" onClick={() => destValue ? setDestConfirm(true) : null} disabled={!destValue || destLoading}
-                        style={{ flex:2, padding:"8px", background:destValue?"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))":"rgba(255,255,255,0.05)", border:"none", borderRadius:8, color:destValue?"#080808":"#A8A190", fontSize:11, fontWeight:700, cursor:destValue&&!destLoading?"pointer":"not-allowed", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                        {destLoading ? <><Loader2 size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/> Enregistrement...</> : destSaved ? <><Check size={11}/> Applique !</> : "Appliquer la destination"}
+                        className="da-btn-primary da-btn-primary--sm" style={{ flex:2, justifyContent:"center", fontSize:11 }}>
+                        {destLoading ? <><Loader2 size={11} style={{ animation:"mo-spin 0.8s linear infinite" }}/> <span>Enregistrement...</span></> : destSaved ? <><Check size={11}/> <span>Applique !</span></> : <span>Appliquer la destination</span>}
                       </button>
                     </div>
 
@@ -3282,9 +3281,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   <p style={{ color:"#F5F0E8", fontSize:15, fontWeight:700, margin:"0 0 6px" }}>Bienvenue dans QR Codes Studio</p>
                   <p style={{ color:MUTED, fontSize:12, margin:0, lineHeight:1.6 }}>Créez votre première page pour générer<br/>un QR Code personnalisable.</p>
                 </div>
-                <a href="/dashboard" style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"11px 20px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius:10, color:"#080808", fontSize:13, fontWeight:700, textDecoration:"none", boxShadow:"0 4px 14px color-mix(in srgb, var(--accent) 20%, transparent)" }}>
-                  <Plus size={15}/> Créer ma première page
-                </a>
+                <span className="da-halo-wrap">
+                  <a href="/dashboard" className="da-btn-primary da-btn-primary--sm"><Plus className="da-ic da-ic-plus" size={15}/> <span>Créer ma première page</span></a>
+                </span>
               </>
             ) : (
               <div style={{ textAlign:"center" as const }}>
@@ -4193,8 +4192,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 <div style={{ padding:"12px 14px", background:"color-mix(in srgb, var(--accent) 5%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 15%, transparent)", borderRadius:10 }}>
                   <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:600, margin:"0 0 4px" }}>Formats HD + SVG + PDF</p>
                   <p style={{ color:MUTED, fontSize:10, margin:"0 0 8px" }}>Pro: PNG alpha, WEBP, SVG . Business: PDF A4</p>
-                  <a href="/upgrade" style={{ display:"block", textAlign:"center" as const, padding:"7px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius:7, color:"#080808", fontSize:11, fontWeight:700, textDecoration:"none" }}>
-                    Voir les plans
+                  <a href="/upgrade" className="da-btn-primary da-btn-primary--sm" style={{ width:"100%", justifyContent:"center", padding:"9px", fontSize:11 }}>
+                    <span>Voir les plans</span>
                   </a>
                 </div>
               )}

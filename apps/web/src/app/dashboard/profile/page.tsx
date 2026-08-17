@@ -1338,13 +1338,11 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <div style={{ display:"flex", gap:8 }}>
-                      <button onClick={() => { setCropMode(false); setCropSrc(null) }}
-                        style={{ flex:1, padding:"10px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, color:"#A8A190", fontSize:13, cursor:"pointer" }}>
+                      <button onClick={() => { setCropMode(false); setCropSrc(null) }} className="da-btn-neutral da-btn-neutral--sm" style={{ flex:1 }}>
                         Annuler
                       </button>
-                      <button onClick={() => uploadAvatar(cropSrc)}
-                        style={{ flex:2, padding:"10px", background:"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:9, color:"#080808", fontSize:13, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
-                        <Camera size={13}/> Utiliser cette photo
+                      <button onClick={() => uploadAvatar(cropSrc)} className="da-btn-primary da-btn-primary--sm" style={{ flex:2, justifyContent:"center" }}>
+                        <Camera size={13}/> <span>Utiliser cette photo</span>
                       </button>
                     </div>
                   </div>
@@ -1870,8 +1868,8 @@ export default function ProfilePage() {
                       <p style={{ color:"#F5F0E8", fontSize:11, fontWeight:600, margin:"0 0 2px" }}>Top page & Top QR</p>
                       <p style={{ color:MUTED, fontSize:10, margin:0 }}>Disponible en plan Pro</p>
                     </div>
-                    <a href="/upgrade" style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", background:`linear-gradient(90deg,${G},color-mix(in srgb, var(--accent) 75%, #000))`, borderRadius:7, color:"#080808", textDecoration:"none", fontSize:11, fontWeight:700, flexShrink:0 }}>
-                      Upgrade
+                    <a href="/upgrade" className="da-btn-primary da-btn-primary--sm" style={{ flexShrink:0 }}>
+                      <span>Upgrade</span>
                     </a>
                   </div>
                 )}
@@ -2506,9 +2504,8 @@ export default function ProfilePage() {
                           {" "}&middot; {nextPlan?.price_monthly}./mois
                         </p>
                       </div>
-                      <a href="/upgrade"
-                        style={{ display:"flex", alignItems:"center", gap:5, padding:"8px 14px", background:`linear-gradient(90deg,${nextPlan?.color || G},${nextPlan?.color || G}cc)`, borderRadius:8, color:"#080808", textDecoration:"none", fontSize:11, fontWeight:700, flexShrink:0 }}>
-                        <Activity size={11}/> Upgrader
+                      <a href="/upgrade" className="da-btn-primary da-btn-primary--sm" style={{ flexShrink:0 }}>
+                        <Activity size={11}/> <span>Upgrader</span>
                       </a>
                     </div>
                   </div>
@@ -2716,7 +2713,8 @@ export default function ProfilePage() {
                         </button>
                         <button type="button" disabled={!!regenKeyId || !!deletingKey}
                           onClick={() => confirmRegen ? regenerateApiKey(confirmRegen) : confirmRevoke ? revokeApiKey(confirmRevoke) : null}
-                          style={{ flex:2, padding:"9px", background:confirmRevoke?"linear-gradient(90deg,var(--danger),#e05555)":"linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", border:"none", borderRadius:9, color:confirmRevoke?"#F5F0E8":"#080808", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+                          className={confirmRevoke ? undefined : "da-btn-primary da-btn-primary--sm"}
+                          style={confirmRevoke ? { flex:2, padding:"9px", background:"linear-gradient(90deg,var(--danger),#e05555)", border:"none", borderRadius:9, color:"#F5F0E8", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 } : { flex:2, justifyContent:"center", fontSize:12 }}>
                           {regenKeyId || deletingKey
                             ? <><div style={{ width:13, height:13, border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#F5F0E8", borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/> Traitement...</>
                             : confirmRevoke ? "Revoquer" : "Regenerer"}
@@ -2927,9 +2925,8 @@ export default function ProfilePage() {
                 <p style={{ color:MUTED, fontSize:11, margin:"0 0 14px", lineHeight:1.5 }}>
                   Connectez votre propre domaine<br/>a vos pages QRowg.
                 </p>
-                <a href="/upgrade"
-                  style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 18px", background:`linear-gradient(90deg,${G},color-mix(in srgb, var(--accent) 75%, #000))`, border:"none", borderRadius:9, color:"#080808", textDecoration:"none", fontSize:12, fontWeight:700 }}>
-                  <Activity size={13}/> Passer a Starter ou Pro
+                <a href="/upgrade" className="da-btn-primary da-btn-primary--sm">
+                  <Activity size={13}/> <span>Passer a Starter ou Pro</span>
                 </a>
               </div>
             ) : domainsLoading ? (

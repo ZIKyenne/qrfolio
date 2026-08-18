@@ -5,7 +5,7 @@
     X, ChevronUp, ChevronDown, Trash2,
     Eye, Plus, Settings, Check, Search, Copy, EyeOff,
     ExternalLink, GripVertical, QrCode, MoreHorizontal, Undo2, Redo2, Sparkles,
-    Pencil, Palette, Lightbulb, Globe, Send, Smartphone, RefreshCw, Lock, Unlock
+    Pencil, Palette, Lightbulb, Globe, Send, Smartphone, RefreshCw, Lock, Unlock, Square, Layers
   } from "lucide-react"
   import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, PRESET_CATEGORIES, SOCIAL_NETWORKS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, SOCIAL_PRESETS, INFO_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, BLOCK_STYLE_PRESETS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, normalizePageTheme, type Block, type BlockContent, type PageTheme } from "./types"
   import { PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, type PageTemplate } from "./page-templates"
@@ -2227,11 +2227,11 @@
                             <Segmented value={bc[k] || def} options={options} onChange={v => set(k, v)} active={G} muted={MUTED} />
                           </div>
                         )
-                        const toggle = (k: string, label: string, icon: string) => {
+                        const toggle = (k: string, label: string, icon: React.ReactNode) => {
                           const on = bc[k] === "Oui"
                           return (
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0" }}>
-                              <span style={{ color: "#F5F0E8", fontSize: 12, display: "flex", alignItems: "center", gap: 7 }}><span>{icon}</span>{label}</span>
+                              <span style={{ color: "#F5F0E8", fontSize: 12, display: "flex", alignItems: "center", gap: 7 }}><span style={{ display: "inline-flex" }}>{icon}</span>{label}</span>
                               <button onClick={() => set(k, on ? "" : "Oui")}
                                 style={{ width: 42, height: 24, borderRadius: 12, background: on ? G : "rgba(255,255,255,0.12)", border: "none", cursor: "pointer", position: "relative", transition: "background .2s", flexShrink: 0 }}>
                                 <span style={{ position: "absolute", top: 3, left: on ? 21 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
@@ -2349,11 +2349,11 @@
                                       <p style={{ color: MUTED, fontSize: 9.5, margin: "4px 0 0" }}>« Léger » laisse transparaître le fond de la page — plus doux, texte toujours lisible.</p>
                                     </div>
                                   )}
-                                  {toggle("__border", "Bordure", "⬜")}
+                                  {toggle("__border", "Bordure", <Square size={12} />)}
                                   {sel("__radius", "Coins arrondis", BLOCK_RADIUS_OPTIONS, "Défaut")}
                                   {sel("__shadow", "Ombre", BLOCK_SHADOW_OPTIONS, "Non")}
-                                  {toggle("__glow", "Halo lumineux (glow)", "✨")}
-                                  {toggle("__glass", "Effet verre (flou)", "🧊")}
+                                  {toggle("__glow", "Halo lumineux (glow)", <Sparkles size={12} />)}
+                                  {toggle("__glass", "Effet verre (flou)", <Layers size={12} />)}
                                 </div>
                               </div>
                             )}

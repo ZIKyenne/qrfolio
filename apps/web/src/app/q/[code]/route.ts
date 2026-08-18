@@ -211,7 +211,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         }
 
         // Scan best-effort (anti-abus + incrément non bloquant) — pour TOUS les types.
-        rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
+        const instDevice = parseDevice(req.headers.get("user-agent"))
+        const instCountry = req.headers.get("x-vercel-ip-country") || null
+        const instReferrer = (req.headers.get("referer") || "").slice(0, 300) || null
+        after(() => rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
           if (!allow) return
           const nowIso = new Date().toISOString()
           supabase.from("instant_qrs").update({ total_scans: (inst.total_scans ?? 0) + 1, last_scan_at: nowIso }).eq("id", inst.id).then(() => {}, () => {})
@@ -220,11 +223,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
             instant_qr_id: inst.id,
             user_id: inst.user_id,
             scanned_at: nowIso,
-            device: parseDevice(req.headers.get("user-agent")),
-            country: req.headers.get("x-vercel-ip-country") || null,
-            referrer: (req.headers.get("referer") || "").slice(0, 300) || null,
+            device: instDevice,
+            country: instCountry,
+            referrer: instReferrer,
           }).then(() => {}, () => {})
-        })
+        }))
 
         // Résolution selon le type. Redirigeables : lien (http), appel (tel:), email (mailto:).
         // Non redirigeables (texte/WiFi/contact) : page de contenu (le QR encode /q/<code>).

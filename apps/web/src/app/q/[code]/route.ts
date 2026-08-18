@@ -290,7 +290,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       ? createHash("sha256").update(`${rawIp}|${ua}|${process.env.SCAN_IP_SALT ?? "qrowg-scan-v1"}`).digest("hex")
       : null
     // UTM lus MAINTENANT (requête encore vive) — pas dans after() où req est détaché.
-    const utmSp = req.nextUrl.searchParams
+    console.log("[scan-utm]", req.url)
+    const utmSp = new URL(req.url).searchParams
     const utmSource = (utmSp.get("utm_source")||"").slice(0,80)||null
     const utmCampaign = (utmSp.get("utm_campaign")||"").slice(0,120)||null
     const utmMedium = (utmSp.get("utm_medium")||"").slice(0,80)||null

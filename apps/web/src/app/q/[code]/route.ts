@@ -2,7 +2,7 @@
 // Résolution QR avec gestion des statuts
 
 import { createAdminClient } from "@/lib/supabase/server"
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse, after } from "next/server"
 import { createHash } from "node:crypto"
 import { resolveOverrideDest, detectDevice, escapeHtml, type OverrideDest } from "./qrResolve"
 import { rateLimit, ipOf } from "@/lib/rateLimit"
@@ -298,13 +298,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     // Anti-abus best-effort : au-delà de 20 scans/min pour un même code+IP, on
     // n'enregistre plus (évite le gonflage des stats/quotas par bouclage d'un
     // short_code). NON bloquant : la redirection n'attend pas ce check.
-    rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
-      if (allow) supabase.from("scans").insert({
+    after(() => rateLimit(`scan:${code}:${ipOf(req)}`, 20, 60_000).then((allow) => {
+      if (allow) return supabase.from("scans").insert({
         qr_code_id: qr.id, page_id: qr.page_id, device,
         country, city, os, browser, referrer, ip_hash: ipHash,
         utm_source: (req.nextUrl.searchParams.get("utm_source")||"").slice(0,80)||null, utm_campaign: (req.nextUrl.searchParams.get("utm_campaign")||"").slice(0,120)||null, utm_medium: (req.nextUrl.searchParams.get("utm_medium")||"").slice(0,80)||null,
       }).then(() => {}, () => {})
-    })
+    }))
 
     // ── Résolution destination (override ou page) ─────────────────────────
     const override = qr.dest_override as OverrideDest

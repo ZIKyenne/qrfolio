@@ -289,6 +289,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     const ipHash   = rawIp
       ? createHash("sha256").update(`${rawIp}|${ua}|${process.env.SCAN_IP_SALT ?? "qrowg-scan-v1"}`).digest("hex")
       : null
+    // UTM lus MAINTENANT (requête encore vive) — pas dans after() où req est détaché.
+    const utmSp = req.nextUrl.searchParams
+    const utmSource = (utmSp.get("utm_source")||"").slice(0,80)||null
+    const utmCampaign = (utmSp.get("utm_campaign")||"").slice(0,120)||null
+    const utmMedium = (utmSp.get("utm_medium")||"").slice(0,80)||null
 
     // Le comptage (qr_codes.total_scans + last_scan_at, pages.total_views,
     // profiles.total_scans) est fait par le trigger `increment_scan_counters`
@@ -302,7 +307,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       if (allow) return supabase.from("scans").insert({
         qr_code_id: qr.id, page_id: qr.page_id, device,
         country, city, os, browser, referrer, ip_hash: ipHash,
-        utm_source: (req.nextUrl.searchParams.get("utm_source")||"").slice(0,80)||null, utm_campaign: (req.nextUrl.searchParams.get("utm_campaign")||"").slice(0,120)||null, utm_medium: (req.nextUrl.searchParams.get("utm_medium")||"").slice(0,80)||null,
+        utm_source: utmSource, utm_campaign: utmCampaign, utm_medium: utmMedium,
       }).then(() => {}, () => {})
     }))
 

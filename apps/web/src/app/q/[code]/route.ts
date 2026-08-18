@@ -302,6 +302,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       if (allow) supabase.from("scans").insert({
         qr_code_id: qr.id, page_id: qr.page_id, device,
         country, city, os, browser, referrer, ip_hash: ipHash,
+        utm_source: (req.nextUrl.searchParams.get("utm_source")||"").slice(0,80)||null, utm_campaign: (req.nextUrl.searchParams.get("utm_campaign")||"").slice(0,120)||null, utm_medium: (req.nextUrl.searchParams.get("utm_medium")||"").slice(0,80)||null,
       }).then(() => {}, () => {})
     })
 

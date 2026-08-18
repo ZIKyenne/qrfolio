@@ -306,13 +306,15 @@ Tiramisu;6,50€;Fait maison`
 
   // Contrôle segmenté sombre (pastilles) — remplace les <select> natifs. `on` gère les valeurs
   // héritées via optionLabel (ex: "warning" -> pastille "Attention").
-  export function Segmented({ value, options, onChange, active = "#C9A84C", muted = "#9A948A" }: { value: string; options: string[]; onChange: (v: string) => void; active?: string; muted?: string }) {
+  export function Segmented({ value, options, onChange, active = "var(--accent)", muted = "#9A948A" }: { value: string; options: string[]; onChange: (v: string) => void; active?: string; muted?: string }) {
+    // Segmenteur DA : conteneur charbon + bord, segment actif OR 135° (texte #1a1408), inactif doré au survol.
+    // Source unique -> tous les segmenteurs de l'inspecteur (Afficher/Masquer, coins, largeur, ECC…) suivent.
     return (
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 9, padding: 3 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, background: "#100e0c", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 11, padding: 4 }}>
         {options.map(o => {
           const on = value === o || optionLabel(value) === o
-          return <button key={o} type="button" onClick={() => onChange(o)}
-            style={{ flex: "1 1 auto", minWidth: 0, padding: "6px 9px", borderRadius: 7, border: "none", cursor: "pointer", background: on ? active : "transparent", color: on ? "#080808" : muted, fontSize: 11, fontWeight: on ? 700 : 500, whiteSpace: "nowrap", transition: "all .12s" }}>{optionLabel(o)}</button>
+          return <button key={o} type="button" onClick={() => onChange(o)} className={on ? undefined : "da-seg-btn"}
+            style={{ flex: "1 1 auto", minWidth: 0, padding: "7px 9px", borderRadius: 8, border: "none", cursor: "pointer", background: on ? `linear-gradient(135deg, color-mix(in srgb, ${active} 88%, #fff), ${active})` : "transparent", color: on ? "#1a1408" : muted, fontSize: 11, fontWeight: on ? 700 : 500, whiteSpace: "nowrap", boxShadow: on ? "0 1px 0 rgba(255,255,255,.4) inset, 0 6px 16px -10px rgba(201,162,77,.7)" : "none", transition: "background .18s ease, color .18s ease" }}>{optionLabel(o)}</button>
         })}
       </div>
     )

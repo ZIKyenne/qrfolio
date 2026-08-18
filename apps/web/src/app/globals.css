@@ -450,6 +450,10 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .da-btn-danger:active { transform:scale(.97); }
 .da-btn-danger--sm { padding:8px 14px; font-size:12px; border-radius:9px; }
 .da-btn-danger:hover .da-ic-trash { transform:rotate(-8deg) scale(1.06); }
+/* Segment inactif : se dore au survol (segmenteur DA du builder) */
+.da-seg-btn:hover { background:rgba(255,255,255,0.06) !important; color:#f0d590 !important; }
+/* Chip de catégorie (bibliothèque builder) au repos : se dore au survol */
+.da-cat:not(.on):hover { border-color:rgba(232,200,119,0.34) !important; color:#e8e3da !important; }
 @media (prefers-reduced-motion: reduce) { .da-halo-wrap::before { animation:none !important; } .da-btn-primary::after { display:none; } .da-btn-primary:hover, .da-btn-ghost:hover, .da-btn-neutral:hover { transform:none; } }
 
 /* ── Page Médias (DA dorée) — boutons & contrôles (handoff « Boutons Médias ») ── */

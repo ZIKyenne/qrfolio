@@ -1456,10 +1456,11 @@
                   )}
                   {BLOCK_CATEGORIES.map(cat => (
                     <button key={cat.id} onClick={() => setActiveCategory(cat.id)} title={cat.desc}
-                      style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, alignItems: "center", gap: isMobile ? 3 : 7, minWidth: 0, background: activeCategory===cat.id ? cat.color+"18" : "rgba(255,255,255,0.03)", border: `1px solid ${activeCategory===cat.id ? cat.color+"50" : "rgba(255,255,255,0.06)"}`, borderRadius: 10, padding: isMobile ? "5px 3px" : "9px 11px", color: activeCategory===cat.id ? cat.color : MUTED, fontSize: 12, fontWeight: activeCategory===cat.id ? 700 : 500, cursor: "pointer", transition: "all 0.15s", textAlign: "left" as const }}>
+                      className={activeCategory===cat.id ? "da-cat on" : "da-cat"}
+                      style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, alignItems: "center", gap: isMobile ? 3 : 7, minWidth: 0, background: activeCategory===cat.id ? `color-mix(in srgb, ${cat.color} 15%, transparent)` : "#14110d", border: `1px solid ${activeCategory===cat.id ? `color-mix(in srgb, ${cat.color} 46%, transparent)` : "rgba(255,255,255,0.08)"}`, borderRadius: 10, padding: isMobile ? "5px 3px" : "9px 11px", color: activeCategory===cat.id ? cat.color : MUTED, fontSize: 12, fontWeight: activeCategory===cat.id ? 700 : 500, cursor: "pointer", transition: "background .18s ease, border-color .18s ease, color .18s ease", textAlign: "left" as const }}>
                       <span style={{ fontSize: isMobile ? 16 : 15, flexShrink: 0 }}>{cat.icon}</span>
                       <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: isMobile ? "normal" as const : "nowrap", fontSize: isMobile ? 9.5 : undefined, textAlign: isMobile ? "center" as const : undefined, lineHeight: isMobile ? 1.15 : undefined, width: isMobile ? "100%" : undefined }}>{cat.label}</span>
-                      <span style={{ display: isMobile ? "none" : undefined, marginLeft: "auto", flexShrink: 0, background: activeCategory===cat.id ? cat.color+"20" : "rgba(255,255,255,0.06)", color: activeCategory===cat.id ? cat.color : MUTED, borderRadius: 10, padding: "0px 6px", fontSize: 9.5, fontWeight: 700, lineHeight: "17px" }}>
+                      <span style={{ display: isMobile ? "none" : undefined, marginLeft: "auto", flexShrink: 0, background: activeCategory===cat.id ? `color-mix(in srgb, ${cat.color} 22%, transparent)` : "rgba(255,255,255,0.06)", color: activeCategory===cat.id ? cat.color : MUTED, borderRadius: 999, padding: "0px 7px", fontSize: 9.5, fontWeight: 700, lineHeight: "17px" }}>
                         {search && searchCounts ? (searchCounts[cat.id] || 0) : (catCounts[cat.id] || 0)}
                       </span>
                     </button>
@@ -2251,10 +2252,10 @@
                           <>
                             {/* Onglets d'édition du bloc — visibles seulement en mode Expert (audit #10 : un seul contexte) */}
                             {expertMode && (
-                            <div style={{ display: "flex", gap: 3, background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 3, margin: "0 0 14px" }}>
+                            <div style={{ display: "flex", gap: 4, background: "#100e0c", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 11, padding: 4, margin: "0 0 14px" }}>
                               {TABS.map(t => (
-                                <button key={t.k} onClick={() => setEditTab(t.k)}
-                                  style={{ flex: 1, minHeight: isMobile ? 42 : undefined, padding: isMobile ? "10px 3px" : "7px 3px", borderRadius: 8, border: "none", cursor: "pointer", background: editTab===t.k ? G : "transparent", color: editTab===t.k ? "#080808" : MUTED, fontSize: isMobile ? 11.5 : 10, fontWeight: editTab===t.k ? 800 : 600, transition: "all .15s", whiteSpace: "nowrap" as const }}>{t.label}</button>
+                                <button key={t.k} onClick={() => setEditTab(t.k)} className={editTab===t.k ? undefined : "da-seg-btn"}
+                                  style={{ flex: 1, minHeight: isMobile ? 42 : undefined, padding: isMobile ? "10px 3px" : "8px 3px", borderRadius: 8, border: "none", cursor: "pointer", background: editTab===t.k ? "linear-gradient(135deg, color-mix(in srgb, var(--accent) 88%, #fff), var(--accent))" : "transparent", color: editTab===t.k ? "#1a1408" : MUTED, fontSize: isMobile ? 11.5 : 10, fontWeight: editTab===t.k ? 800 : 600, boxShadow: editTab===t.k ? "0 1px 0 rgba(255,255,255,.4) inset, 0 6px 16px -10px rgba(201,162,77,.7)" : "none", transition: "background .18s ease, color .18s ease", whiteSpace: "nowrap" as const }}>{t.label}</button>
                               ))}
                             </div>
                             )}

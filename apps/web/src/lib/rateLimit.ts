@@ -12,6 +12,8 @@
 // est AUTORISÉ. Les `max` premiers appels de la fenêtre passent, le (max+1)ᵉ est
 // bloqué. La fenêtre expire `windowMs` ms après le premier appel.
 
+import crypto from "node:crypto"
+
 const buckets = new Map<string, { count: number; reset: number }>()
 
 function memoryAllow(key: string, max: number, windowMs: number): boolean {
@@ -87,5 +89,9 @@ export function ipOf(req: Request): string {
 export function hasInternalToken(req: Request): boolean {
   const secret = process.env.CRON_SECRET
   if (!secret) return false
-  return req.headers.get("x-internal-token") === secret
+  const token = req.headers.get("x-internal-token")
+  if (!token) return false
+  const actual = crypto.createHash('sha256').update(token).digest()
+  const expected = crypto.createHash('sha256').update(secret).digest()
+  return crypto.timingSafeEqual(actual, expected)
 }

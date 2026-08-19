@@ -1,6 +1,7 @@
-﻿// app/api/reports/unsubscribe/route.ts
+﻿﻿// app/api/reports/unsubscribe/route.ts
 // Désabonnement one-click depuis le lien email
 
+import crypto from "node:crypto"
 import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -29,7 +30,9 @@ export async function GET(req: NextRequest) {
     }
 
     const expectedToken = Buffer.from(sub.id).toString("base64url")
-    if (token !== expectedToken) {
+    const actual = crypto.createHash('sha256').update(token).digest()
+    const expected = crypto.createHash('sha256').update(expectedToken).digest()
+    if (!crypto.timingSafeEqual(actual, expected)) {
       return new NextResponse("Token invalide", { status: 401 })
     }
 

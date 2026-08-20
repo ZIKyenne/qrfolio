@@ -3526,7 +3526,7 @@ export default function HomePage() {
       {/* HERO */}
       <section style={{
         minHeight: "100vh", display: "flex", alignItems: "center",
-        padding: "120px 48px 80px", position: "relative", zIndex: 1, overflow: "hidden"
+        padding: "104px 48px 72px", position: "relative", zIndex: 1, overflow: "hidden"
       }}>
         {/* Ambiance cinématographique — halo doré lumineux + profondeur + vignette */}
         <div aria-hidden="true" style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
@@ -3547,8 +3547,8 @@ export default function HomePage() {
         </div>
         <div className="hero-grid" style={{
           maxWidth: 1140, width: "100%", margin: "0 auto", position: "relative", zIndex: 1,
-          display: "grid", gridTemplateColumns: "1fr 1fr",
-          gap: 64, alignItems: "center"
+          display: "grid", gridTemplateColumns: "1.1fr 0.9fr",
+          gap: 52, alignItems: "center"
         }}>
           {/* Left: texte */}
           <div>
@@ -3557,7 +3557,7 @@ export default function HomePage() {
               display: "inline-flex", alignItems: "center", gap: 9,
               background: "rgba(201,168,76,0.08)",
               border: "1px solid rgba(201,168,76,0.28)",
-              borderRadius: 11, padding: "8px 15px", marginBottom: 30,
+              borderRadius: 11, padding: "8px 15px", marginBottom: 20,
               fontSize: 11, color: "#D8BE72", letterSpacing: 2,
               textTransform: "uppercase", fontWeight: 700,
               animation: "mo-fade-up 0.6s ease 0.1s both"
@@ -3570,9 +3570,9 @@ export default function HomePage() {
                 Les 2 premieres lignes posent le produit, la 3e (or) porte le differenciateur. */}
             <h1 style={{
               fontFamily: "Fraunces, serif",
-              fontSize: "clamp(42px, 5.2vw, 78px)",
-              color: "#F5F0E8", fontWeight: 800, lineHeight: 1.02,
-              margin: "0 0 26px", letterSpacing: "-0.035em",
+              fontSize: "clamp(30px, 3.4vw, 52px)",
+              color: "#F5F0E8", fontWeight: 800, lineHeight: 1.06,
+              margin: "0 0 18px", letterSpacing: "-0.02em",
             }}>
               <span style={{ display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both" }}>
                 Votre page pro et son
@@ -3590,8 +3590,8 @@ export default function HomePage() {
 
             {/* Sous-titre — benefice d'abord, phrases courtes, tres lisible */}
             <p style={{
-              color: "rgba(226,220,206,0.92)", fontSize: 18.5, lineHeight: 1.6,
-              margin: "0 0 38px", maxWidth: 468, fontWeight: 400,
+              color: "rgba(226,220,206,0.92)", fontSize: 16.5, lineHeight: 1.58,
+              margin: "0 0 26px", maxWidth: 452, fontWeight: 400,
               animation: "mo-fade-up 0.7s ease 0.6s both"
             }}>
               Pour les <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>commerçants, indépendants et créateurs</strong> : créez votre page (menu, portfolio, liens…), générez son <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>QR&nbsp;code dynamique</strong>, imprimez-le — puis <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>suivez chaque scan</strong>. Modifiable à tout moment, sans jamais réimprimer.

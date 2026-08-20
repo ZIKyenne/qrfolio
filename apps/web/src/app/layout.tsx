@@ -19,6 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
+  verification: { google: "j0SKDePzohMoahiN7B09kpx5RGpZaNMdW1N-s-M1IPg" },
   title: {
     default: "QRowg — Carte de visite numérique & QR code dynamique pro",
     template: "%s | QRowg",

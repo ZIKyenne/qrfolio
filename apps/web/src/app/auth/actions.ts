@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -22,6 +22,19 @@ async function createClient() {
       },
     }
   )
+}
+
+// Traduit les erreurs Supabase Auth (anglais) en messages FR courts pour le tunnel d'inscription.
+function frAuthError(e: { message?: string } | null): string {
+  const m = (e?.message || '').toLowerCase()
+  if (m.includes('already registered') || m.includes('already been registered')) return 'Cet email a déjà un compte. Connectez-vous.'
+  if (m.includes('invalid login')) return 'Email ou mot de passe incorrect.'
+  if (m.includes('email not confirmed')) return 'Confirmez votre email via le lien reçu par mail.'
+  if (m.includes('password should be at least')) return 'Le mot de passe doit contenir au moins 6 caractères.'
+  if (m.includes('unable to validate email') || m.includes('invalid email') || m.includes('invalid format')) return 'Adresse email invalide.'
+  if (m.includes('rate limit') || m.includes('too many') || m.includes('for security purposes')) return 'Trop de tentatives. Réessayez dans quelques minutes.'
+  if (m.includes('signups not allowed') || m.includes('signup is disabled')) return 'Les inscriptions sont momentanément indisponibles.'
+  return 'Une erreur est survenue. Veuillez réessayer.'
 }
 
 export async function signUp(formData: FormData) {
@@ -52,7 +65,7 @@ export async function signUp(formData: FormData) {
       })
     } catch {}
   }
-  if (error) redirect('/auth/signup?error=' + encodeURIComponent(error.message))
+  if (error) redirect('/auth/signup?error=' + encodeURIComponent(frAuthError(error)))
   // Redirection interne sûre (ex. deep-link SEO -> onboarding par objectif) ; sinon,
   // par défaut on envoie les nouveaux inscrits vers l'onboarding « par objectif » qui
   // fabrique une page + un QR en 2 clics (meilleur chemin vers la première valeur).
@@ -67,7 +80,7 @@ export async function signIn(formData: FormData) {
 
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-  if (error) redirect('/auth/login?error=' + encodeURIComponent(error.message))
+  if (error) redirect('/auth/login?error=' + encodeURIComponent(frAuthError(error)))
   // Redirection interne sûre (ex. lien d'invitation) ; sinon dashboard.
   const to = (formData.get('redirect') as string | null) || ''
   redirect(to.startsWith('/') && !to.startsWith('//') ? to : '/dashboard')

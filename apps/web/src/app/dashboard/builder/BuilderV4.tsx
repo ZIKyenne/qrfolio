@@ -1299,7 +1299,7 @@
 
 
 
-          {pageId && pageSlug && !isMobile && (
+          {pageId && pageSlug && pageStatus === "published" && !isMobile && (
             <a href={`/${pageSlug}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 7, padding: "5px 11px", color: G, textDecoration: "none", fontSize: 11, fontWeight: 600 }}>
               <ExternalLink size={11} /> Voir en direct
             </a>
@@ -1389,7 +1389,7 @@
                     </div>
                   )}
                   {/* Voir la page */}
-                  {pageSlug && (
+                  {pageSlug && pageStatus === "published" && (
                     <a href={`/${pageSlug}`} target="_blank" rel="noopener noreferrer"
                       style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px", color: MUTED, textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
                       <ExternalLink size={13} /> Voir la page
@@ -2031,9 +2031,13 @@
                 <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", backdropFilter: `blur(${(theme as any).blur_amount||4}px)`, WebkitBackdropFilter: `blur(${(theme as any).blur_amount||4}px)` }} />
               )}
               {blocks.length===0 ? (
-                <div style={{ padding: "60px 30px", textAlign: "center" }}>
+                <div style={{ padding: "56px 30px 60px", textAlign: "center" }}>
                   <p style={{ color: "#8A8478", fontSize: 28, margin: "0 0 8px" }}>✦</p>
-                  <p style={{ color: MUTED, fontSize: 13, margin: 0 }}>Page vide — ajoute des blocs depuis la bibliothèque</p>
+                  <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: "0 0 4px" }}>Votre page est vide</p>
+                  <p style={{ color: MUTED, fontSize: 13, margin: "0 0 16px" }}>Ajoutez un premier bloc pour démarrer.</p>
+                  <button type="button" onClick={() => { if (isMobile) setMobileTab("blocks"); else addBlock("profile") }} className="da-btn-primary da-btn-primary--sm" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <Plus size={14} /> Ajouter un bloc
+                  </button>
                 </div>
               ) : blocks.map((block, idx) => {
                 const def = BLOCK_DEFS[block.type]

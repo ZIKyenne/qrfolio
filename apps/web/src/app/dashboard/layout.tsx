@@ -404,8 +404,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Carte plan (DA §10) : bordure bronze, pastille « Actif », jauge de quota RÉELLE (QR actifs / limite du plan). */}
           {(() => {
             const plan = profile?.plan || "free"
-            const isPaid = plan === "pro" || plan === "business"
-            const planLabel = plan === "business" ? "Business" : plan === "pro" ? "Plan Pro" : "Passer au Pro"
+            const isPaid = plan === "pro" || plan === "business" || plan === "starter"
+            const planLabel = plan === "business" ? "Business" : plan === "pro" ? "Plan Pro" : plan === "starter" ? "Starter" : "Passer au Pro"
             const planLimit = pageLimit(plan)
             const pct = planLimit && qrActive != null ? Math.min(100, Math.round((qrActive / planLimit) * 100)) : 0
             return (

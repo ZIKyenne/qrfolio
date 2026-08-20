@@ -3093,13 +3093,15 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
           )
         })}
 
-        {/* Footer branding — retire sur les plans payants ("Sans branding") */}
+        {/* Footer branding — boucle virale. Un vrai CTA (pas juste un backlink discret)
+            qui invite le visiteur à créer sa propre page. Retiré sur les plans payants. */}
         {showBranding && (
-          <div style={{ padding: "20px 24px 32px", textAlign: "center", borderTop: `1px solid ${theme.primary}10`, marginTop: 8 }}>
-            <a href="https://qrowg.com" target="_blank" rel="noopener noreferrer"
-              style={{ color: theme.muted, fontSize: 11, textDecoration: "none", opacity: 0.5, letterSpacing: 1, fontFamily: theme.fontBody }}>
-              Cree avec QRowg
+          <div style={{ padding: "22px 24px 34px", textAlign: "center", borderTop: `1px solid ${theme.primary}10`, marginTop: 8 }}>
+            <a href="https://qrowg.com/?utm_source=badge&utm_medium=public_page&utm_campaign=made_with_qrowg" target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 15px", borderRadius: 999, background: `${theme.primary}14`, border: `1px solid ${theme.primary}33`, color: theme.primary, fontSize: 12.5, fontWeight: 800, textDecoration: "none", fontFamily: theme.fontBody }}>
+              <span aria-hidden style={{ fontSize: 13 }}>⚡</span> Créez votre page + QR code gratuitement
             </a>
+            <div style={{ marginTop: 8, fontSize: 10.5, letterSpacing: 0.8, color: theme.muted, opacity: 0.75, fontFamily: theme.fontBody }}>Créé avec QRowg</div>
           </div>
         )}
       </div>

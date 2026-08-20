@@ -53,9 +53,11 @@ export async function signUp(formData: FormData) {
     } catch {}
   }
   if (error) redirect('/auth/signup?error=' + encodeURIComponent(error.message))
-  // Redirection interne sûre (ex. deep-link SEO -> onboarding par objectif) ; sinon dashboard.
+  // Redirection interne sûre (ex. deep-link SEO -> onboarding par objectif) ; sinon,
+  // par défaut on envoie les nouveaux inscrits vers l'onboarding « par objectif » qui
+  // fabrique une page + un QR en 2 clics (meilleur chemin vers la première valeur).
   const to = (formData.get('redirect') as string | null) || ''
-  redirect(to.startsWith('/') && !to.startsWith('//') ? to : '/dashboard')
+  redirect(to.startsWith('/') && !to.startsWith('//') ? to : '/dashboard/onboarding')
 }
 
 export async function signIn(formData: FormData) {

@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { redirect } from "next/navigation"
 import Link from "next/link"
 import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
@@ -35,10 +34,12 @@ const STEPS = [
 ]
 
 export default async function GeneratorPage() {
-  // Accès réservé aux comptes : on ne veut plus de création anonyme illimitée.
+  // Ouvert à tous : un visiteur anonyme peut générer ET télécharger un QR STATIQUE
+  // (le rendu se fait à 100% dans le navigateur). Le compte n'est requis que pour le
+  // QR dynamique, la sauvegarde dans le compte et le suivi des scans.
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/auth/signup")
+  const authed = !!user
 
   const appLd = {
     "@context": "https://schema.org", "@type": "WebApplication",
@@ -85,7 +86,7 @@ export default async function GeneratorPage() {
 
         {/* L'outil (îlot client) */}
         <section aria-label="Générateur de QR code" style={{ marginBottom: 52 }}>
-          <GeneratorClient />
+          <GeneratorClient authed={authed} />
         </section>
 
         {/* Comment ça marche */}

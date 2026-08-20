@@ -43,7 +43,7 @@ const ECC_OPTS: { k: "L" | "M" | "Q" | "H"; label: string }[] = [
 const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 50, background: "#0A0A0A", border: `1px solid ${BOR}`, borderRadius: 12, color: INK, fontSize: 16, padding: "0 15px", outline: "none" }
 const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: `1px solid ${BOR}`, borderRadius: 18, padding: 18 }
 
-export default function GeneratorClient({ defaultType = "link" }: { defaultType?: QrType }) {
+export default function GeneratorClient({ defaultType = "link", authed = false }: { defaultType?: QrType; authed?: boolean }) {
   const [qrType, setQrType] = useState<QrType>(defaultType)
   const [url, setUrl] = useState("")
   const [text, setText] = useState("")
@@ -69,13 +69,14 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
   const [dynPlan, setDynPlan] = useState("none")
 
   useEffect(() => {
+    if (!authed) return // anonyme : aucun compte, donc aucun quota à charger
     fetch("/api/qr-instant").then(r => (r.ok ? r.json() : null)).then(d => {
       if (!d) return
       if (Array.isArray(d.items)) setUsage(d.items)
       if (d.plan) setPlan(d.plan)
       if (d.dyn_plan) setDynPlan(d.dyn_plan)
     }).catch(() => {})
-  }, [])
+  }, [authed])
 
   const data = useMemo(() => {
     if (qrType === "text") return text.trim()
@@ -134,6 +135,8 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
   // modifiable, essai 30 j) ; statique → contenu brut. Erreur 403 = quota atteint (upsell).
   async function createAndDownload(ext: "png" | "svg") {
     if (!ready || busy) return
+    // QR dynamique = compte requis (il faut un lien serveur /q/<code>). Anonyme -> inscription.
+    if (isDyn && !authed) { window.location.href = "/auth/signup"; return }
     // Quota atteint : on ne tente même pas la création/téléchargement (défense en
     // profondeur ; le serveur renvoie de toute façon 403). Re-download d'un QR déjà
     // créé (isSavedCurrent) autorisé car `blocked` est déjà faux dans ce cas.
@@ -141,22 +144,26 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
     setErr(null); setBusy(ext)
     try {
       let enc = data
-      if (saved && saved.sig === sig) {
-        enc = saved.encoded
-      } else {
-        const style = { dotStyle: preset.dotStyle, cornerStyle: preset.cornerStyle }
-        const body = isDyn
-          ? { kind: "link", dynamic: true, dest: data, style }
-          : { kind: qrType, payload: data, style }
-        const res = await fetch("/api/qr-instant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
-        if (res.status === 401) { window.location.href = "/auth/login"; return }
-        const d = await res.json().catch(() => ({} as any))
-        if (!res.ok) { setErr({ msg: d?.error || "Création impossible pour le moment.", upgrade: !!d?.upgrade, dyn: isDyn }); return }
-        enc = isDyn ? (d?.item?.payload || data) : data
-        setSaved({ sig, encoded: enc })
-        // Le QR vient d'être créé : on incrémente le compteur local pour que la
-        // PROCHAINE création (autre design) bascule l'aperçu en « limite atteinte ».
-        setUsage(u => [{ dynamic: isDyn, expires_at: isDyn ? new Date().toISOString() : null, created_at: new Date().toISOString() }, ...u])
+      // Connecté : on enregistre le QR dans le compte (consomme le quota) puis on télécharge.
+      // Anonyme + statique : aucun appel serveur, on encode directement le contenu (enc = data).
+      if (authed) {
+        if (saved && saved.sig === sig) {
+          enc = saved.encoded
+        } else {
+          const style = { dotStyle: preset.dotStyle, cornerStyle: preset.cornerStyle }
+          const body = isDyn
+            ? { kind: "link", dynamic: true, dest: data, style }
+            : { kind: qrType, payload: data, style }
+          const res = await fetch("/api/qr-instant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+          if (res.status === 401) { window.location.href = "/auth/login"; return }
+          const d = await res.json().catch(() => ({} as any))
+          if (!res.ok) { setErr({ msg: d?.error || "Création impossible pour le moment.", upgrade: !!d?.upgrade, dyn: isDyn }); return }
+          enc = isDyn ? (d?.item?.payload || data) : data
+          setSaved({ sig, encoded: enc })
+          // Le QR vient d'être créé : on incrémente le compteur local pour que la
+          // PROCHAINE création (autre design) bascule l'aperçu en « limite atteinte ».
+          setUsage(u => [{ dynamic: isDyn, expires_at: isDyn ? new Date().toISOString() : null, created_at: new Date().toISOString() }, ...u])
+        }
       }
       const opts: QROptions = { data: enc, fg, bg, ecc: effectiveEcc, style: qrStyle, size: 1024 }
       const blob = await getQRBlob(opts, ext)
@@ -304,7 +311,7 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
             </span>
             <span style={{ minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6, color: INK, fontSize: 13, fontWeight: 700 }}><Zap size={14} color={G} /> QR dynamique</span>
-              <span style={{ display: "block", color: MUT, fontSize: 11.5, lineHeight: 1.4, marginTop: 2 }}>Modifiable après impression + suivi des scans. Gratuit 30 j (2/mois).</span>
+              <span style={{ display: "block", color: MUT, fontSize: 11.5, lineHeight: 1.4, marginTop: 2 }}>{authed ? "Modifiable après impression + suivi des scans. Gratuit 30 j (2/mois)." : "Modifiable après impression + suivi des scans. Créez un compte gratuit pour l'activer."}</span>
             </span>
           </button>
         )}
@@ -322,7 +329,7 @@ export default function GeneratorClient({ defaultType = "link" }: { defaultType?
           </button>
           <button type="button" onClick={() => createAndDownload("svg")} disabled={!ready || busy !== null || blocked} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${BOR}`, background: "rgba(255,255,255,0.04)", color: INK, fontSize: 14, fontWeight: 700, cursor: (ready && !blocked) ? "pointer" : "default", opacity: blocked ? 0.5 : 1 }}>{busy === "svg" ? "…" : "SVG"}</button>
         </div>
-        <p style={{ color: "#6E685E", fontSize: 11.5, textAlign: "center", margin: 0 }}>{isDyn ? "Enregistré dans votre compte · le QR pointe vers un lien traçable." : "Enregistré dans votre compte · haute résolution, prêt à imprimer."}</p>
+        <p style={{ color: "#6E685E", fontSize: 11.5, textAlign: "center", margin: 0 }}>{isDyn ? "Enregistré dans votre compte · le QR pointe vers un lien traçable." : authed ? "Enregistré dans votre compte · haute résolution, prêt à imprimer." : "Téléchargement direct · aucun compte requis · haute résolution, prêt à imprimer."}</p>
 
         {/* Explication contextuelle */}
         <div style={{ ...card, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)" }}>

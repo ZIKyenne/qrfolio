@@ -3691,13 +3691,9 @@ export default function HomePage() {
       <TemplatesSection />
       <SectionSeam delay={1.05} />
 
-      {/* BUILDER — « voici comme c'est facile à le faire et à le modifier ». */}
-      <BuilderSection />
-      <SectionSeam delay={1.4} />
+      {/* BuilderSection retiree (declutter accueil) — composant conserve, non rendu. */}
 
-      {/* PARCOURS NARRATIF (démo animée « Voyez-le en action »). */}
-      <StoryFlow />
-      <SectionSeam delay={2.1} />
+      {/* StoryFlow retiree (declutter accueil) — composant conserve, non rendu. */}
 
       {/* QR STUDIO LIVE — démo interactive (vrai QR généré en local, aperçu en direct) */}
       <QRStudioLive />
@@ -3710,21 +3706,15 @@ export default function HomePage() {
       <AnalyticsSection />
       <SectionSeam delay={3.5} />
 
-      {/* PRINT STUDIO — supports imprimables */}
-      <PrintStudioSection />
-      <SectionSeam delay={0.5} />
+      {/* PrintStudioSection retiree (declutter accueil) — composant conserve, non rendu. */}
 
       {/* USE CASES */}
       <UseCasesSection />
       <SectionSeam delay={1.0} />
 
-      {/* MARQUE PRO */}
-      <BrandProSection />
-      <SectionSeam delay={1.8} />
+      {/* BrandProSection retiree (declutter accueil) — le "Sans branding" reste dans les tarifs. */}
 
-      {/* COMPARAISON — Qrowg vs Linktree vs carte papier */}
-      <ComparisonSection />
-      <SectionSeam delay={2.2} />
+      {/* ComparisonSection retiree (declutter accueil) — composant conserve, non rendu. */}
 
       {/* PRICING */}
       <PricingSection />

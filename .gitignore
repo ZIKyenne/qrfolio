@@ -4,6 +4,8 @@
 .turbo
 *.ps1
 temp.zip
+*.zip
+setup-dashboard.html
 schema.sql
 *.tsbuildinfo
 

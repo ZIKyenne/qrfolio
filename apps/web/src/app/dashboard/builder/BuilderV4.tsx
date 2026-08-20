@@ -22,6 +22,7 @@
   import { EditPanel, ThemePanel, Segmented, STYLE_COPY_KEYS } from "./builderPanels"
   import { BuilderStatus } from "./BuilderStatus"
   import { BlockLibrary } from "./BlockLibrary"
+  import { essentialsForContext } from "./builderLibrary"
   import { BlockSettingsPanel } from "./BlockSettingsPanel"
   import { CanvasToolbar } from "./CanvasToolbar"
   import { MobileBuilderShell } from "./MobileBuilderShell"
@@ -190,7 +191,7 @@
         setAiGenLoading(false)
       }
     }
-    const [activeCategory, setActiveCategory] = useState("identity")
+    const [activeCategory, setActiveCategory] = useState("essentials")
     const [search, setSearch] = useState("")
     const [dayMode, setDayMode] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -1007,6 +1008,13 @@
 
     const filteredBlocks = (() => {
       if (!search) {
+        if (activeCategory === "essentials") {
+          // ~20 blocs les plus utiles (contextuels + universels). Les 143 restent
+          // accessibles via les categories et la recherche. (QWG-0017b)
+          return essentialsForContext("default")
+            .filter(type => BLOCK_DEFS[type])
+            .map(type => [type, BLOCK_DEFS[type]] as [string, (typeof BLOCK_DEFS)[string]])
+        }
         if (activeCategory === "recents") {
           return recentBlocks
             .filter(type => BLOCK_DEFS[type])
@@ -1441,6 +1449,12 @@
             {!search && !blocksCollapsed && (
               <div style={{ padding: "8px 10px 6px", borderBottom: "1px solid rgba(255,255,255,0.04)", flexShrink: 0 }}>
                 <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(4, minmax(0, 1fr))" : "1fr 1fr", gap: isMobile ? 5 : 6 }}>
+                  {/* Essentiels — vue par defaut (~20 blocs les plus utiles). QWG-0017b */}
+                  <button onClick={() => setActiveCategory("essentials")} title="Les blocs les plus utiles pour demarrer"
+                    style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, alignItems: "center", gap: isMobile ? 3 : 7, minWidth: 0, background: activeCategory==="essentials" ? "rgba(201,168,76,0.16)" : "rgba(255,255,255,0.03)", border: `1px solid ${activeCategory==="essentials" ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.06)"}`, borderRadius: 10, padding: isMobile ? "5px 3px" : "9px 11px", color: activeCategory==="essentials" ? "#C9A84C" : MUTED, fontSize: 12, fontWeight: activeCategory==="essentials" ? 700 : 500, cursor: "pointer", transition: "all 0.15s", textAlign: "left" as const }}>
+                    <span style={{ fontSize: isMobile ? 16 : 15, flexShrink: 0 }}>✨</span>
+                    <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: isMobile ? "normal" as const : "nowrap", fontSize: isMobile ? 9.5 : undefined, textAlign: isMobile ? "center" as const : undefined, lineHeight: isMobile ? 1.15 : undefined, width: isMobile ? "100%" : undefined }}>Essentiels</span>
+                  </button>
                   {/* Catégorie Récents — visible seulement si au moins 1 récent */}
                   {recentBlocks.length > 0 && (
                     <button onClick={() => setActiveCategory("recents")} title="Blocs récemment utilisés"
@@ -1471,7 +1485,7 @@
                   ))}
                 </div>
                 <p style={{ color: MUTED, fontSize: 11.5, margin: "6px 0 0", paddingLeft: 2 }}>
-                  {activeCategory==="recents" ? `${recentBlocks.length} bloc${recentBlocks.length>1?"s":""} récent${recentBlocks.length>1?"s":""}` : activeCategory==="favorites" ? `${favorites.length} bloc${favorites.length>1?"s":""} favori${favorites.length>1?"s":""}` : BLOCK_CATEGORIES.find(c => c.id===activeCategory)?.desc}
+                  {activeCategory==="essentials" ? "Les blocs les plus utiles pour démarrer — parcours les catégories pour tout voir." : activeCategory==="recents" ? `${recentBlocks.length} bloc${recentBlocks.length>1?"s":""} récent${recentBlocks.length>1?"s":""}` : activeCategory==="favorites" ? `${favorites.length} bloc${favorites.length>1?"s":""} favori${favorites.length>1?"s":""}` : BLOCK_CATEGORIES.find(c => c.id===activeCategory)?.desc}
                 </p>
               </div>
             )}

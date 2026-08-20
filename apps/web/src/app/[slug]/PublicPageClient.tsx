@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState, useRef, Component } from "react"
 import { ExternalLink } from "lucide-react"
@@ -2870,6 +2870,10 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
     link.setAttribute("data-qf-font", "1")
     document.head.appendChild(link)
   }, [theme.fontDisplay, theme.fontBody])
+
+  // Vue de page (analytics) : comptee une fois par page, cote client.
+  // dedup StrictMode + navigation client-side gere dans trackPageView().
+  useEffect(() => { trackPageView(page.id) }, [page.id])
 
   // Engagement (RGPD, sans PII) : impressions + profondeur de scroll + temps d'attention par bloc.
   useEffect(() => {

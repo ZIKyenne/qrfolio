@@ -1472,9 +1472,11 @@
                       style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, alignItems: "center", gap: isMobile ? 3 : 7, minWidth: 0, background: activeCategory===cat.id ? `color-mix(in srgb, ${cat.color} 15%, transparent)` : "#14110d", border: `1px solid ${activeCategory===cat.id ? `color-mix(in srgb, ${cat.color} 46%, transparent)` : "rgba(255,255,255,0.08)"}`, borderRadius: 10, padding: isMobile ? "5px 3px" : "9px 11px", color: activeCategory===cat.id ? cat.color : MUTED, fontSize: 12, fontWeight: activeCategory===cat.id ? 700 : 500, cursor: "pointer", transition: "background .18s ease, border-color .18s ease, color .18s ease", textAlign: "left" as const }}>
                       <span style={{ fontSize: isMobile ? 16 : 15, flexShrink: 0 }}>{cat.icon}</span>
                       <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: isMobile ? "normal" as const : "nowrap", fontSize: isMobile ? 9.5 : undefined, textAlign: isMobile ? "center" as const : undefined, lineHeight: isMobile ? 1.15 : undefined, width: isMobile ? "100%" : undefined }}>{cat.label}</span>
+                      {search && searchCounts ? (
                       <span style={{ display: isMobile ? "none" : undefined, marginLeft: "auto", flexShrink: 0, background: activeCategory===cat.id ? `color-mix(in srgb, ${cat.color} 22%, transparent)` : "rgba(255,255,255,0.06)", color: activeCategory===cat.id ? cat.color : MUTED, borderRadius: 999, padding: "0px 7px", fontSize: 9.5, fontWeight: 700, lineHeight: "17px" }}>
-                        {search && searchCounts ? (searchCounts[cat.id] || 0) : (catCounts[cat.id] || 0)}
+                        {searchCounts[cat.id] || 0}
                       </span>
+                      ) : null}
                     </button>
                   ))}
                 </div>

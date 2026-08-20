@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useMemo, useState, useEffect } from "react"
 import {
@@ -13,6 +13,7 @@ import DevicePanel from "./DevicePanel"
 import ExportPanel from "./ExportPanel"
 import ReportSubscriptionPanel from "./ReportSubscriptionPanel"
 import { buildDailyData, buildDeviceData, buildSourceData, buildScrollFunnel, buildFunnel, buildTapGrid, buildTapsByBlock, countTaps } from "./analyticsAgg"
+import { OverviewChart, TopPagesCard } from "./OverviewCards"
 import ScrollDepthPanel from "./ScrollDepthPanel"
 import ConversionFunnelPanel from "./ConversionFunnelPanel"
 import HeatmapPanel from "./HeatmapPanel"
@@ -406,36 +407,9 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
         {!noData && (<>
         {/* ── VUE D'ENSEMBLE : graphique Scans & Vues ── */}
         {tab === "overview" && (
-        <div className="az" style={{
-          animationDelay: "360ms",
-          background: "linear-gradient(180deg,#13110B,#100F0A)", border: "1px solid color-mix(in srgb, var(--accent) 18%, transparent)",
-          borderRadius: 16, padding: "22px 24px", marginBottom: 18, boxShadow: "0 8px 30px rgba(0,0,0,0.25)"
-        }}>
-          <h2 style={{ color: "#F8F4EC", fontSize: 18, fontWeight: 700, marginBottom: 18, marginTop: 0, letterSpacing: "-0.2px", display: "flex", alignItems: "center", gap: 9 }}>
-            <TrendingUp size={17} color={GOLD} /> Scans &amp; Vues <span style={{ color: MUTED, fontWeight: 500, fontSize: 14 }}>— 30 jours</span>
-          </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={dailyData}>
-              <defs>
-                <linearGradient id="gScans" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={GOLD} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={GOLD} stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={NEON} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={NEON} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="date" tick={{ fill: MUTED, fontSize: 11 }} axisLine={false} tickLine={false} interval={4} />
-              <YAxis tick={{ fill: MUTED, fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: MUTED, fontSize: 13 }} />
-              <Area type="monotone" dataKey="scans" name="Scans QR" stroke={GOLD} strokeWidth={2.4} fill="url(#gScans)" animationDuration={1100} dot={false} activeDot={{ r: 4, fill: GOLD }} />
-              <Area type="monotone" dataKey="views" name="Vues page" stroke={NEON} strokeWidth={2.4} fill="url(#gViews)" animationDuration={1100} animationBegin={200} dot={false} activeDot={{ r: 4, fill: NEON }} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+          <div className="az" style={{ animationDelay: "360ms", marginBottom: 18 }}>
+            <OverviewChart daily={dailyData} />
+          </div>
         )}
 
         {/* ── AUDIENCE : appareils + sources ── */}
@@ -601,38 +575,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
 
         {/* ── VUE D'ENSEMBLE (suite) : Top pages ── */}
         {tab === "overview" && (
-        <div style={{
-          background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
-          borderRadius: 12, padding: "24px"
-        }}>
-          <h2 style={{ color: "#F5F0E8", fontSize: 16, fontWeight: 600, marginBottom: 20, marginTop: 0 }}>
-            Top Pages
-          </h2>
-          {pages.length === 0 ? (
-            <p style={{ color: MUTED }}>Aucune page créée</p>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {pages.slice(0, 5).map((page, i) => {
-                const maxViews = pages[0]?.total_views || 1
-                const pct = Math.max(4, (page.total_views / maxViews) * 100)
-                return (
-                  <div key={page.id} style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <span style={{ color: MUTED, fontSize: 13, width: 20, textAlign: "right" }}>#{i + 1}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                        <span style={{ color: "#F5F0E8", fontSize: 14 }}>{page.title}</span>
-                        <span style={{ color: GOLD, fontSize: 13, fontWeight: 600 }}>{page.total_views} vues</span>
-                      </div>
-                      <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3 }}>
-                        <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${GOLD}, ${NEON})`, borderRadius: 3, transition: "width 0.8s ease" }} />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+          <TopPagesCard pages={pages} />
         )}
         </>)}
 

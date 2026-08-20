@@ -9,7 +9,7 @@ import { useMemo, useRef, useState, useCallback, useEffect } from "react"
 import { BUILDER_UI } from "./builderUi"
 import {
   buildLibraryItems, searchLibrary, libraryCategories, nearbyCategories, premiumInfo,
-  isDuplicateAdd, pushRecentType, type BlockLibraryItem, type RecoContext, recommendedForContext,
+  isDuplicateAdd, pushRecentType, type BlockLibraryItem, type RecoContext, essentialsForContext,
 } from "./builderLibrary"
 import { BlockLibraryCard } from "./BlockLibraryCard"
 
@@ -33,7 +33,9 @@ export interface BlockLibraryProps {
 
 export function BlockLibrary(props: BlockLibraryProps) {
   const { favorites, recents, mobile, onToggleFavorite, onRequestClose } = props
-  const recommended = useMemo(() => recommendedForContext(props.recoContext ?? "default"), [props.recoContext])
+  // "Essentiels" = ~20 blocs par defaut (contextuels + universels). Les 143 restent
+  // accessibles via "Tout", les categories et la recherche. (QWG-0017)
+  const recommended = useMemo(() => essentialsForContext(props.recoContext ?? "default"), [props.recoContext])
   const items = useMemo(
     () => buildLibraryItems({ favorites, recents, recommended }),
     [favorites, recents, recommended],
@@ -81,7 +83,7 @@ export function BlockLibrary(props: BlockLibraryProps) {
   useEffect(() => { if (detail && !byType.has(detail)) setDetail(null) }, [detail, byType])
 
   const quickTabs: { id: Tab; label: string; show: boolean }[] = [
-    { id: "recommended", label: "Recommandés", show: recommended.length > 0 },
+    { id: "recommended", label: "Essentiels", show: recommended.length > 0 },
     { id: "recent", label: "Récents", show: recents.length > 0 },
     { id: "favorites", label: "Favoris", show: favorites.length > 0 },
     { id: "all", label: "Tout", show: true },

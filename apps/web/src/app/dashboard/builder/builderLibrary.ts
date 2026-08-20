@@ -255,6 +255,29 @@ export function recommendedForContext(context: RecoContext = "default"): string[
   return (RECO_MAP[context] ?? RECO_MAP.default).filter(t => known.has(t))
 }
 
+// ── Essentiels : vue PAR DEFAUT de la bibliotheque (QWG-0017) ────────────────
+// ~20 blocs presentes au debutant pour ne pas le noyer sous les 143 : les
+// recommandations contextuelles EN PREMIER, completees par les blocs universels
+// les plus utiles (dedupliques, plafonnes a 20). Les 143 blocs restent TOUS
+// accessibles via l'onglet "Tout", les categories et la recherche.
+const UNIVERSAL_CORE: string[] = [
+  "profile", "bio", "cta_button", "heading", "social_links", "gallery",
+  "image", "video", "services_list", "pricing", "testimonials", "contact_form",
+  "opening_hours", "google_maps", "faq", "product", "promo_banner", "menu_section",
+  "portfolio_work", "countdown",
+]
+
+export function essentialsForContext(context: RecoContext = "default"): string[] {
+  const known = new Set(Object.keys(BLOCK_DEFS))
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const t of [...(RECO_MAP[context] ?? RECO_MAP.default), ...UNIVERSAL_CORE]) {
+    if (known.has(t) && !seen.has(t)) { seen.add(t); out.push(t) }
+    if (out.length >= 20) break
+  }
+  return out
+}
+
 // ── Insertion + garde anti-double-ajout (§17) ────────────────────────────────
 // Résout l'index d'insertion (undefined = fin). Borne à [0, total].
 export function resolveInsertIndex(total: number, at?: number): number {

@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
     const qs = str(body.qrSource, 40)
     if (type === "view") {
       await insertTracked(admin, "page_views", {
+        country: (req.headers.get("x-vercel-ip-country") || "").slice(0, 2).toUpperCase() || null,
         page_id: pageId,
         source: str(body.source, 40),
         referrer: str(body.referrer, 200),

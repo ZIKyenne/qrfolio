@@ -3575,16 +3575,16 @@ export default function HomePage() {
               margin: "0 0 26px", letterSpacing: "-0.035em",
             }}>
               <span style={{ display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both" }}>
-                Transformez le physique
-              </span>
-              <span style={{ display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.30s both" }}>
-                en expérience digitale.
+                Votre page pro et son
               </span>
               <span style={{
-                display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.45s both",
+                display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.30s both",
                 color: "#C9A84C",
               }}>
-                Mesurez chaque scan.
+                QR code dynamique,
+              </span>
+              <span style={{ display: "block", animation: "mo-fade-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.45s both" }}>
+                prêts en 5 minutes.
               </span>
             </h1>
 
@@ -3594,8 +3594,7 @@ export default function HomePage() {
               margin: "0 0 38px", maxWidth: 468, fontWeight: 400,
               animation: "mo-fade-up 0.7s ease 0.6s both"
             }}>
-              Créez la page (menu, portfolio, promo…), générez son <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>QR&nbsp;code dynamique</strong>, imprimez-le sur vos supports — puis <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>suivez chaque scan</strong>.
-              Modifiable à tout moment, sans jamais réimprimer.
+              Pour les <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>commerçants, indépendants et créateurs</strong> : créez votre page (menu, portfolio, liens…), générez son <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>QR&nbsp;code dynamique</strong>, imprimez-le — puis <strong style={{ color: "#F5F0E8", fontWeight: 600 }}>suivez chaque scan</strong>. Modifiable à tout moment, sans jamais réimprimer.
             </p>
 
             {/* CTAs */}
@@ -3605,7 +3604,7 @@ export default function HomePage() {
             }}>
               <Link href="/auth/signup" style={{
                 background: "linear-gradient(90deg, #C9A84C, #d4a843, #b8953f)",
-                backgroundSize: "200% 200%", animation: "gradientShift 3s ease infinite, ctaPulse 3.4s ease-in-out infinite",
+                backgroundSize: "200% 200%", animation: "gradientShift 3s ease infinite",
                 color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 700,
                 padding: "15px 32px", borderRadius: 12, display: "inline-block",
                 boxShadow: "0 4px 28px rgba(201,168,76,0.45), 0 0 0 0 rgba(201,168,76,0)",
@@ -3624,7 +3623,7 @@ export default function HomePage() {
                 }}>
                 Créer ma page gratuitement <span aria-hidden="true">→</span>
               </Link>
-              <Link href="#story" style={{
+              <Link href="#qr-studio" style={{
                 background: "transparent",
                 border: "1px solid rgba(201,168,76,0.2)",
                 color: "rgba(245,240,232,0.7)", textDecoration: "none", fontSize: 15,
@@ -3818,12 +3817,11 @@ export default function HomePage() {
               fontSize:16, fontWeight:800,
               padding:"16px 40px", borderRadius:13,
               letterSpacing:0.2,
-              animation:"ctaPulse 3.4s ease-in-out infinite",
               transition:"transform 0.25s var(--mo-ease-spring), box-shadow 0.25s",
             }}
               onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-3px) scale(1.03)";el.style.animation="none";el.style.boxShadow="0 8px 40px rgba(201,168,76,0.55)"}}
-              onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.animation="ctaPulse 3.4s ease-in-out infinite"}}>
-              Commencer gratuitement
+              onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none"}}>
+              Créer ma page gratuitement
               <span style={{ fontSize:18 }}>→</span>
             </Link>
 

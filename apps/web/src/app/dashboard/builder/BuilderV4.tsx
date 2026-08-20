@@ -803,14 +803,8 @@
       if (isMobile) setMobileTab("canvas")   // mobile : on montre la page fraîchement générée
     }
 
-    // Génère une identité de base (curated, sans IA) : profil + bio + compétences + disponibilité
-    function generateBaseIdentity() {
-      const mk = (type: string, ov: Record<string, string>) => ({ ...(BLOCK_DEFS[type]?.defaultContent || {}), ...ov })
-      if (!blocks.some(b => b.type === "profile")) addBlock("profile", mk("profile", { name: "Votre nom", tagline: "Consultant freelance", badge: "Disponible" }))
-      addBlock("bio", mk("bio", { text: "Je vous accompagne dans vos projets avec expertise et proximité. Écrivez-moi pour en discuter.", align: "center" }))
-      addBlock("skills", mk("skills", { title: "Mes compétences", tags: "Conseil, Accompagnement, Stratégie" }))
-      addBlock("availability", mk("availability", { message: "Ouvert aux nouvelles missions" }))
-    }
+    // (Bouton "Generer une identite de base" retire — QWG-0019 : la page part deja
+    //  pre-remplie et les "Modeles par metier" couvrent ce besoin.)
 
     function generateIdentityPreset(preset: typeof IDENTITY_PRESETS[number]) {
       const mk = (type: string, ov: Record<string, string>) => ({ ...(BLOCK_DEFS[type]?.defaultContent || {}), ...ov })
@@ -1644,10 +1638,6 @@
                                     const grouped = IDENTITY_GROUPS.flatMap(g => g.keys)
                                     const rest = catBlocks.filter(([t]) => !grouped.includes(t)) // blocs identité non classés -> "Autres"
                                     return (<>
-                                      <button type="button" onClick={generateBaseIdentity} title="Ajoute profil + bio + compétences + disponibilité, prêts à éditer"
-                                        className="da-btn-primary da-btn-primary--sm" style={{ width: "100%", justifyContent: "center", margin: "2px 0 8px" }}>
-                                        <Sparkles size={13} /> <span>Générer une identité de base</span>
-                                      </button>
                                       {/* Modèles par métier : 1 clic crée une identité adaptée */}
                                       <div style={{ margin: "0 0 10px" }}>
                                         <button type="button" onClick={() => setMetierOpen(o => !o)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, width: "100%", background: metierOpen ? "rgba(201,168,76,0.05)" : "rgba(201,168,76,0.09)", border: `1px solid ${metierOpen ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.3)"}`, borderRadius: 9, cursor: "pointer", padding: "9px 12px", margin: "8px 0" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: "#F5F0E8", fontSize: 12.5, fontWeight: 700 }}><Sparkles size={13} /> Modèles par métier</span><ChevronDown size={15} color={G} style={{ transform: metierOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>

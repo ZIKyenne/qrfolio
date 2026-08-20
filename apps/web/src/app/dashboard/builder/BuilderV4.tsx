@@ -25,6 +25,7 @@
   import { BlockSettingsPanel } from "./BlockSettingsPanel"
   import { CanvasToolbar } from "./CanvasToolbar"
   import { MobileBuilderShell } from "./MobileBuilderShell"
+  import BuilderWelcome from "./BuilderWelcome"
   import { InsertBetweenBlocks } from "./InsertBetweenBlocks"
   import { deviceFrameWidth, deviceLabel, canvasChrome, fitZoom, stepZoom, toggleOrientation, type CanvasDevice, type CanvasOrientation, type CanvasMode } from "./builderCanvas"
   import { useBuilderRedesign } from "./builderFlags"
@@ -1137,6 +1138,9 @@
 
     return (
       <div className="builder-root" style={{ height: "100dvh", background: "#080808", display: "flex", flexDirection: "column", fontFamily: "DM Sans, sans-serif", color: "#F5F0E8", overflow: "hidden", position: "relative" }}>
+
+        {/* Guide de bienvenue au 1er lancement (auto-gere via localStorage) — QWG-0016 */}
+        {!preview && <BuilderWelcome mobile={isMobile} />}
 
         {/* C05 — Shell mobile dédié (flag ON + viewport mobile). Recouvre le Builder desktop-compressé.
             Flag OFF ou desktop = interface historique strictement inchangée (zéro régression). */}

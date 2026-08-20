@@ -1549,6 +1549,24 @@
                 : (
                   /* Mode normal — accordéon par catégorie */
                   <>
+                    {/* Essentiels — liste plate des ~20 blocs les plus utiles (QWG-0019b) */}
+                    {activeCategory==="essentials" && filteredBlocks.map(([type, def]) => (
+                      <button key={type} onClick={() => addBlock(type)}
+                        style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 9px", background: "transparent", border: "1px solid transparent", borderRadius: 8, color: MUTED, fontSize: 12, cursor: "pointer", textAlign: "left" as const, marginBottom: 2 }}
+                        onMouseEnter={e => { const el = e.currentTarget; el.style.background = def.color+"10"; el.style.color = "#F5F0E8" }}
+                        onMouseLeave={e => { const el = e.currentTarget; el.style.background = "transparent"; el.style.color = MUTED }}>
+                        <div style={{ width: 30, height: 30, borderRadius: 8, background: def.color+"12", border: `1px solid ${def.color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>{def.icon}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "inherit", lineHeight: 1.2 }}>{def.label}</p>
+                          <p style={{ margin: 0, fontSize: 10.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{def.description}</p>
+                        </div>
+                        <button onClick={e => { e.stopPropagation(); toggleFav(type) }} title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                          style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", flexShrink: 0, fontSize: 13, opacity: isFav(type) ? 1 : 0, color: isFav(type) ? "#FFD700" : MUTED }}
+                          className="fav-star">
+                          {isFav(type) ? "⭐" : "☆"}
+                        </button>
+                      </button>
+                    ))}
                     {/* Récents */}
                     {activeCategory==="recents" && recentBlocks.length > 0 && filteredBlocks.map(([type, def]) => (
                       <button key={type} onClick={() => addBlock(type)}

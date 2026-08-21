@@ -1367,12 +1367,12 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
             ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.image} alt="" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
             : <div style={{ height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(249,115,22,0.06)", fontSize: 48 }}>⭐</div>}
           <div style={{ padding: "16px" }}>
-            <p style={{ color: TEXT, fontSize: 18, fontWeight: 700, margin: "0 0 6px", fontFamily: FONT_D }}>{c.name || "Mon produit phare"}</p>
+            {c.name && <p style={{ color: TEXT, fontSize: 18, fontWeight: 700, margin: "0 0 6px", fontFamily: FONT_D }}>{c.name}</p>}
             {c.description && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 12px", lineHeight: 1.5, fontFamily: FONT_B }}>{c.description}</p>}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: c.cta_label ? 14 : 0 }}>
-              <span style={{ color: G, fontSize: 24, fontWeight: 700 }}>{c.price || "99€"}</span>
+              {c.price && <span style={{ color: G, fontSize: 24, fontWeight: 700 }}>{c.price}</span>}
               {c.old_price && <span style={{ color: MUTED, fontSize: 15, textDecoration: "line-through" }}>{c.old_price}</span>}
-              {(() => { const d = priceDiscount(c.price || "99€", c.old_price); return c.old_price ? <span style={{ background: "#EF4444", color: "#fff", borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{d ? d.label : "Promo"}</span> : null })()}
+              {(() => { const d = priceDiscount(c.price || "", c.old_price); return c.old_price ? <span style={{ background: "#EF4444", color: "#fff", borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{d ? d.label : "Promo"}</span> : null })()}
             </div>
             {(() => { const st = stockStatus(c.stock); return st ? <p style={{ color: st.color, fontSize: 12, fontWeight: 700, margin: "0 0 12px", fontFamily: FONT_B }}>{st.state === "in" ? "✓ " : st.state === "out" ? "⛔ " : "🔥 "}{st.label}</p> : null })()}
             {c.cta_label && (() => { const out = stockStatus(c.stock)?.soldOut; return out
@@ -1485,10 +1485,10 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
         <div style={{ padding: "10px 24px 14px" }}>
           {(c.avg_rating || c.title) && (
             <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 13, padding: "12px 14px", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 11 }}>
-              <div style={{ textAlign: "center" }}>
-                <p style={{ color: "#FBBF24", fontSize: 30, fontWeight: 700, margin: 0, fontFamily: FONT_D }}>{c.avg_rating || "5.0"}</p>
-                <StarRow fills={starRow(c.avg_rating || 5)} size={11} />
-              </div>
+              {c.avg_rating && (<div style={{ textAlign: "center" }}>
+                <p style={{ color: "#FBBF24", fontSize: 30, fontWeight: 700, margin: 0, fontFamily: FONT_D }}>{c.avg_rating}</p>
+                <StarRow fills={starRow(c.avg_rating)} size={11} />
+              </div>)}
               <div>
                 <p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.title || "Avis clients"}</p>
                 {c.total_reviews && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{c.total_reviews} avis</p>}

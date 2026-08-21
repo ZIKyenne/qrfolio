@@ -13,6 +13,7 @@ import RecentLeadsCard from "./RecentLeadsCard"
 import { useToast } from "@/components/Toast"
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
+import PostCheckoutBanner from "@/components/PostCheckoutBanner"
 
 type Page = { id: string; title: string; slug: string; status: string; total_views: number; created_at: string }
 type Profile = { full_name: string | null; plan: string; total_scans: number; total_pages: number; avatar_url: string | null }
@@ -204,6 +205,7 @@ export default function DashboardClient({
 
   return (
     <div style={{ minHeight: "100dvh", background: "radial-gradient(1200px 600px at 70% -10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%), #080808", padding: isMobile ? "22px 16px 40px" : "30px 28px 48px", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
+      <PostCheckoutBanner param="upgraded" message="Bienvenue ! Votre abonnement est actif. 🎉" />
       <Particles />
       <style>{`
         .dz{animation:mo-fade-up .5s var(--mo-ease-standard) backwards}

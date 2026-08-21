@@ -17,6 +17,7 @@ import QRCanvas from "../qr-codes/QRCanvas"
 import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
+import PostCheckoutBanner from "@/components/PostCheckoutBanner"
 import { Button } from "@/components/ui/Button"
 
 const G = "#C9A84C"
@@ -431,6 +432,7 @@ export default function QrLinkPage() {
 
   return (
     <div className="rpad" style={{ position: "relative", minHeight: "100dvh", maxWidth: 1000, margin: "0 auto", padding: "18px 18px calc(40px + env(safe-area-inset-bottom))" }}>
+      <PostCheckoutBanner param="dyn_upgraded" message="Paiement confirmé — votre QR Dynamique est actif. 🎉" />
       <Particles behind />
       <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUTED, textDecoration: "none", fontSize: 13, marginBottom: 16 }}>
         <ArrowLeft size={16} /> Retour

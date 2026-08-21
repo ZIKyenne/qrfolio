@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -129,7 +129,7 @@ export default function SettingsPage() {
       const blob = await res.blob()
       const a = document.createElement("a")
       a.href = URL.createObjectURL(blob)
-      a.download = `qrfolio-export-${new Date().toISOString().slice(0, 10)}.json`
+      a.download = `qrowg-export-${new Date().toISOString().slice(0, 10)}.json`
       a.click()
       URL.revokeObjectURL(a.href)
     } catch {

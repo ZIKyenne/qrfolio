@@ -2321,9 +2321,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
           <QrCode size={32} color={G}/>
         </div>
         <h2 style={{ fontFamily:"Fraunces, serif", fontSize:24, color:"#F5F0E8", fontWeight:700, margin:"0 0 10px" }}>Aucun QR code</h2>
-        <p style={{ color:MUTED, fontSize:14, lineHeight:1.7, margin:"0 0 28px" }}>Crée ta première page pour générer automatiquement un QR code.</p>
+        <p style={{ color:MUTED, fontSize:14, lineHeight:1.7, margin:"0 0 28px" }}>Créez votre première page pour générer automatiquement un QR code.</p>
         <span className="da-halo-wrap">
-          <a href="/dashboard" className="da-btn-primary da-btn-primary--sm"><span>Créer ma première page</span></a>
+          <a href="/dashboard/templates" className="da-btn-primary da-btn-primary--sm"><span>Créer ma première page</span></a>
         </span>
       </div>
     )

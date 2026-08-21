@@ -520,10 +520,10 @@ function EventRegisterPublic({ block, pageId, TEXT, MUTED, ownerEmail }: { block
       {c.description && <p style={{ color: "#EC4899", fontSize: 12, margin: "0 0 13px", fontWeight: 600 }}>⚡ {c.description}</p>}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e => setHp(e.target.value)} style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0, pointerEvents: "none" }} />
-        <input placeholder="Prénom & Nom" autoComplete="name" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
-        <input placeholder="Email" type="email" inputMode="email" autoComplete="email" autoCapitalize="off" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
-        {c.show_phone === "yes" && <input placeholder="Téléphone" type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} />}
-        {c.show_company === "yes" && <input placeholder="Société" autoComplete="organization" value={company} onChange={e => setCompany(e.target.value)} style={inputStyle} />}
+        <input placeholder="Prénom & Nom" aria-label="Prénom & Nom" autoComplete="name" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+        <input placeholder="Email" aria-label="Email" type="email" inputMode="email" autoComplete="email" autoCapitalize="off" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
+        {c.show_phone === "yes" && <input placeholder="Téléphone" aria-label="Téléphone" type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} />}
+        {c.show_company === "yes" && <input placeholder="Société" aria-label="Société" autoComplete="organization" value={company} onChange={e => setCompany(e.target.value)} style={inputStyle} />}
         {email.trim() && !emailOk && <p style={{ color: "#F59E0B", fontSize: 12, margin: 0 }}>Adresse email invalide.</p>}
         {status === "error" && <p style={{ color: "#EF4444", fontSize: 12, margin: 0 }}>Une erreur est survenue. Réessayez.</p>}
         <button onClick={submit} disabled={!canSubmit} style={{ background: "linear-gradient(90deg,#EC4899,#F472B6)", borderRadius: 10, padding: "13px", textAlign: "center", fontSize: 14, fontWeight: 700, color: "#fff", border: "none", cursor: canSubmit ? "pointer" : "not-allowed", opacity: canSubmit ? 1 : 0.55 }}>{status === "sending" ? "Envoi…" : (c.button_label || "Je m'inscris")}</button>
@@ -582,8 +582,8 @@ function LeadFormPublic({ block, pageId, ownerEmail, leadType, title, descriptio
           value={hp} onChange={e => setHp(e.target.value)}
           style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0, pointerEvents: "none" }} />
         {fields.map(f => f.area
-          ? <textarea key={f.key} placeholder={f.label} value={vals[f.key] || ""} onChange={e => set(f.key, e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
-          : <input key={f.key} {...fieldProps(f.key)} placeholder={f.label} value={vals[f.key] || ""} onChange={e => set(f.key, e.target.value)} style={inputStyle} />)}
+          ? <textarea key={f.key} placeholder={f.label} aria-label={f.label} value={vals[f.key] || ""} onChange={e => set(f.key, e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+          : <input key={f.key} {...fieldProps(f.key)} placeholder={f.label} aria-label={f.label} value={vals[f.key] || ""} onChange={e => set(f.key, e.target.value)} style={inputStyle} />)}
         {emailVal && !emailOk && <p style={{ color: "#F59E0B", fontSize: 12, margin: 0 }}>Adresse email invalide.</p>}
         {status === "error" && <p style={{ color: "#EF4444", fontSize: 12, margin: 0 }}>Une erreur est survenue. Réessayez.</p>}
         <button onClick={submit} disabled={!ready || status === "sending"} style={{ background: accent, borderRadius: 10, padding: "13px", textAlign: "center", fontSize: 14, fontWeight: 700, color: buttonTextColor, border: "none", cursor: ready && status !== "sending" ? "pointer" : "not-allowed", opacity: ready && status !== "sending" ? 1 : 0.55 }}>{status === "sending" ? "Envoi…" : button}</button>
@@ -714,6 +714,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     }
 
     case "cta_button": {
+      if (!c.label && !c.url) return null
       const { style: s, className } = ctaButtonStyle(c.style, { G, accent: theme.accent, text: TEXT })
       return (
         <div style={{ padding: "6px 24px 12px" }}>
@@ -794,6 +795,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       ) : null
     }
     case "heading": {
+      if (!c.text) return null
       const sizes: Record<string, number> = { small: 18, medium: 24, large: 32, xl: 42 }
       const hColors: Record<string, string> = { default: TEXT, primary: G, accent: theme.accent || "var(--success)", muted: MUTED }
       return (
@@ -1042,7 +1044,8 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
     }
 
     case "visit_counter": {
-      const views = typeof totalViews === "number" && totalViews > 0 ? totalViews : 1234
+      const views = typeof totalViews === "number" && totalViews > 0 ? totalViews : 0
+      if (views <= 0) return null
       const fmt = String(views).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
       return (
         <div style={{ padding: "12px 24px 16px", textAlign: "center" }}>
@@ -3096,6 +3099,14 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
             </AnimatedBlock>
           )
         })}
+
+        {blocks.length === 0 && (
+          <div style={{ padding: "84px 28px", textAlign: "center", fontFamily: theme.fontBody }}>
+            <p style={{ fontSize: 30, margin: "0 0 12px", color: theme.primary, opacity: 0.6 }}>✦</p>
+            <p style={{ fontSize: 15.5, fontWeight: 700, margin: "0 0 6px", color: theme.primary }}>Cette page est en préparation</p>
+            <p style={{ fontSize: 13, margin: 0, color: theme.muted }}>Revenez bientôt, le contenu arrive.</p>
+          </div>
+        )}
 
         {/* Footer branding — boucle virale. Un vrai CTA (pas juste un backlink discret)
             qui invite le visiteur à créer sa propre page. Retiré sur les plans payants. */}

@@ -852,7 +852,7 @@ export default function ProfilePage() {
             api_keys: apiKeys.map(k => ({ id:k.id, name:k.name, key_preview:k.key_preview, is_active:k.is_active, created_at:k.created_at, last_used_at:k.last_used_at })),
             activity: activityLog.map(e => ({ id:e.id, event_type:e.event_type, title:e.title, description:e.description, created_at:e.created_at })),
           }
-          const fn = `qrfolio-export-complet-${slug}-${ts}.json`
+          const fn = `qrowg-export-complet-${slug}-${ts}.json`
           downloadBlob(JSON.stringify(data, null, 2), fn, "application/json")
           setJobStatus(jobId, "done", fn)
           setExportHistory(h => [{ date:new Date().toISOString(), label:"Export complet", format:"JSON" }, ...h].slice(0,10))
@@ -862,7 +862,7 @@ export default function ProfilePage() {
         case "pages": {
           // Pages en CSV
           const rows = allPages.map(p => ({ titre:p.title, slug:p.slug, statut:p.status, vues:p.total_views, visiteurs_uniques:p.unique_views, cree_le:p.created_at, modifie_le:p.updated_at }))
-          const fn   = `qrfolio-pages-${slug}-${ts}.csv`
+          const fn   = `qrowg-pages-${slug}-${ts}.csv`
           downloadBlob("\uFEFF" + arrayToCsv(rows), fn, "text/csv;charset=utf-8")
           setJobStatus(jobId, "done", fn)
           setExportHistory(h => [{ date:new Date().toISOString(), label:"Pages", format:"CSV" }, ...h].slice(0,10))
@@ -872,7 +872,7 @@ export default function ProfilePage() {
         case "qrcodes": {
           // QR Codes en CSV
           const rows = qrStats.map(q => ({ short_code:q.short_code, page:(q.pages as any)?.title||"", total_scans:q.total_scans, statut:q.status||"active" }))
-          const fn   = `qrfolio-qrcodes-${slug}-${ts}.csv`
+          const fn   = `qrowg-qrcodes-${slug}-${ts}.csv`
           downloadBlob("\uFEFF" + arrayToCsv(rows), fn, "text/csv;charset=utf-8")
           setJobStatus(jobId, "done", fn)
           setExportHistory(h => [{ date:new Date().toISOString(), label:"QR Codes", format:"CSV" }, ...h].slice(0,10))
@@ -882,7 +882,7 @@ export default function ProfilePage() {
         case "analytics": {
           // Analytics pages en CSV
           const rows = allPages.map(p => ({ page:p.title, slug:p.slug, vues_total:p.total_views, visiteurs_uniques:p.unique_views }))
-          const fn   = `qrfolio-analytics-${slug}-${ts}.csv`
+          const fn   = `qrowg-analytics-${slug}-${ts}.csv`
           downloadBlob("\uFEFF" + arrayToCsv(rows), fn, "text/csv;charset=utf-8")
           setJobStatus(jobId, "done", fn)
           setExportHistory(h => [{ date:new Date().toISOString(), label:"Analytics", format:"CSV" }, ...h].slice(0,10))
@@ -892,7 +892,7 @@ export default function ProfilePage() {
         case "activity": {
           // Historique activite en JSON
           const data = activityLog.map(e => ({ type:e.event_type, titre:e.title, detail:e.description, date:e.created_at }))
-          const fn   = `qrfolio-activite-${slug}-${ts}.json`
+          const fn   = `qrowg-activite-${slug}-${ts}.json`
           downloadBlob(JSON.stringify(data, null, 2), fn, "application/json")
           setJobStatus(jobId, "done", fn)
           setExportHistory(h => [{ date:new Date().toISOString(), label:"Activite", format:"JSON" }, ...h].slice(0,10))

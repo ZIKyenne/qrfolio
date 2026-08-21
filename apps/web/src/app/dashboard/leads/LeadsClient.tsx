@@ -87,7 +87,7 @@ export default function LeadsClient({ leads: initialLeads, pages, setupNeeded }:
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n")
     const url = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }))
     const a = document.createElement("a")
-    a.href = url; a.download = `messages-qrfolio.csv`; a.click()
+    a.href = url; a.download = `messages-qrowg.csv`; a.click()
     URL.revokeObjectURL(url)
   }
 

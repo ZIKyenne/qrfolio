@@ -395,7 +395,7 @@ export default function DashboardClient({
               {[
                 { icon: <BarChart2 size={15} />, label: "Vues ce mois", value: monthViews.toLocaleString("fr-FR"), sub: viewsLimit ? `/ ${viewsLimit.toLocaleString("fr-FR")}` : "illimitées", color: overViews ? "var(--danger)" : "#7B61FF", spark: true },
                 { icon: <Eye size={15} />, label: "Pages créées", value: profile?.total_pages || 0, sub: publishedCount + " publiée" + (publishedCount > 1 ? "s" : ""), color: G, spark: false },
-                { icon: <Globe size={15} />, label: "Publiées", value: publishedCount, sub: "sur " + pages.length, color: "var(--action)", spark: false, hideMobile: true },
+                { icon: <Globe size={15} />, label: "Publiées", value: publishedCount, sub: "sur " + (profile?.total_pages ?? pages.length), color: "var(--action)", spark: false, hideMobile: true },
               ].map((s, i) => (
                 <div key={i} className={(s as any).hideMobile ? "dash-stat-hide-mobile" : undefined} style={{ minWidth: 92 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -428,7 +428,7 @@ export default function DashboardClient({
           {/* Pages (PRINCIPAL) */}
           <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, overflow: "hidden", position: "relative" }}>
             <div style={{ padding: "16px 20px", borderBottom: `1px solid ${HAIR}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <p style={{ color: "#F8F4EC", fontSize: 15.5, fontWeight: 700, margin: 0, letterSpacing: "-0.2px" }}>Mes pages <span style={{ color: MUTED, fontWeight: 500 }}>({pages.length})</span></p>
+              <p style={{ color: "#F8F4EC", fontSize: 15.5, fontWeight: 700, margin: 0, letterSpacing: "-0.2px" }}>Mes pages <span style={{ color: MUTED, fontWeight: 500 }}>({profile?.total_pages ?? pages.length})</span></p>
               <Link href="/dashboard/templates" className="da-btn-ghost">
                 <Plus className="da-ic da-ic-plus" size={15} strokeWidth={2.4} /> Nouvelle
               </Link>
@@ -482,7 +482,7 @@ export default function DashboardClient({
                 {pages.length > 3 && (
                   <div style={{ display: "flex", justifyContent: "center", borderTop: `1px solid ${HAIR}`, padding: "6px 0 4px" }}>
                     <Link href="/dashboard/qr-codes" className="da-btn-link">
-                      Voir toutes mes pages ({pages.length}) <ArrowRight className="da-ic da-ic-arrow" size={15} />
+                      Voir toutes mes pages ({profile?.total_pages ?? pages.length}) <ArrowRight className="da-ic da-ic-arrow" size={15} />
                     </Link>
                   </div>
                 )}

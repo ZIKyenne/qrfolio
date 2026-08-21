@@ -95,6 +95,38 @@ p{font-size:14px;line-height:1.7;color:#8A8478;margin-bottom:28px}
 </body></html>`
 }
 
+// Notice visiteur (introuvable / brouillon / erreur) : on informe au lieu de rediriger
+// silencieusement vers la page marketing (sinon le scan est perdu, aucun message).
+function noticeHtml(icon: string, title: string, message: string, appUrl: string): string {
+  return `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:#080808;color:#F5F0E8;font-family:'DM Sans',Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#0F0E0B;border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:40px 32px;max-width:400px;width:100%;text-align:center}
+.icon{font-size:48px;margin-bottom:16px}
+h1{font-size:22px;font-weight:700;margin-bottom:10px;color:#F5F0E8}
+p{font-size:14px;line-height:1.7;color:#8A8478;margin-bottom:28px}
+.link{color:#C9A84C;text-decoration:none;font-size:13px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">${icon}</div>
+  <h1>${title}</h1>
+  <p>${message}</p>
+  <a class="link" href="${appUrl}">Créer votre propre QR Code →</a>
+</div>
+</body></html>`
+}
+function noticeResponse(icon: string, title: string, message: string, appUrl: string, status: number): NextResponse {
+  return new NextResponse(noticeHtml(icon, title, message, appUrl), {
+    status, headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store, must-revalidate" },
+  })
+}
+
 // Page de saisie du mot de passe (sécurité du lien, Pro+). Formulaire GET vers la même URL
 // (?pw=…) : à la validation, le redirect vérifie et résout. `wrong` = tentative précédente erronée.
 function passwordPromptHtml(appUrl: string, wrong: boolean): string {
@@ -239,7 +271,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         if (kind === "text" || kind === "wifi" || kind === "contact") return htmlNoStore(instantContentHtml(kind, content, appUrl), 200)
         if (/^https?:\/\//i.test(content)) return redirectNoStore(content) // repli
       }
-      return redirectNoStore(new URL("/?qr=notfound", appUrl))
+      return noticeResponse("🔍", "QR Code introuvable", "Ce QR Code n'existe pas ou n'est plus actif.", appUrl, 404)
     }
 
     const qrStatus = qr.status ?? "active"
@@ -270,7 +302,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       case "draft":
         // Draft accessible uniquement si paramètre preview (pour le dashboard)
         if (!req.nextUrl.searchParams.has("preview")) {
-          return redirectNoStore(new URL("/?qr=draft", appUrl))
+          return noticeResponse("🚧", "Page en préparation", "Cette page n'est pas encore publiée. Revenez bientôt !", appUrl, 404)
         }
         break
     }
@@ -336,9 +368,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       if (pg?.slug) return redirectNoStore(`${appUrl}/${pg.slug}?s=${encodeURIComponent(code)}`)
     }
 
-    return redirectNoStore(new URL("/?qr=error", appUrl))
+    return noticeResponse("⚠️", "Une erreur est survenue", "Impossible d'ouvrir ce QR Code pour le moment. Réessayez plus tard.", appUrl, 500)
   } catch (e) {
     console.error("[qr-redirect]", e)
-    return redirectNoStore(new URL("/?qr=error", appUrl))
+    return noticeResponse("⚠️", "Une erreur est survenue", "Impossible d'ouvrir ce QR Code pour le moment. Réessayez plus tard.", appUrl, 500)
   }
 }

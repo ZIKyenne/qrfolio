@@ -267,7 +267,7 @@ export default function QrLinkPage() {
         body: JSON.stringify({ kind: qrType, dynamic: true, payload: data, dest: qrType === "link" ? url : data, label: previewLabel || null, inputs, style: { fg, bg, ecc: effectiveEcc, styleKey } }),
       })
       const d = await res.json().catch(() => ({}))
-      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setDetail(d.item); setSaveMsg({ text: "QR créé ✓ — essai 30 jours", ok: true }) }
+      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setDetail(d.item); setSaveMsg({ text: dynSubscribed ? "QR permanent créé ✓" : "QR créé ✓ — essai 30 jours", ok: true }) }
       else setSaveMsg({ text: d.error || "Création impossible", ok: false })
     } catch { setSaveMsg({ text: "Erreur réseau", ok: false }) }
     finally { setSaveBusy(false); setTimeout(() => setSaveMsg(null), 4000) }
@@ -661,12 +661,12 @@ export default function QrLinkPage() {
           ) : (
             <span className="da-halo-wrap" style={{ display: "flex" }}>
               <button onClick={createDynamic} disabled={!ready || saveBusy} className="da-btn-primary" style={{ flex: 1, justifyContent: "center" }}>
-                {saveBusy ? spin(17) : <Zap size={17} />}<span>{saveBusy ? "Création…" : "Créer le QR dynamique — essai 30 j"}</span>
+                {saveBusy ? spin(17) : <Zap size={17} />}<span>{saveBusy ? "Création…" : (dynSubscribed ? "Créer le QR dynamique" : "Créer le QR dynamique — essai 30 j")}</span>
               </button>
             </span>
           )}
           <p style={{ color: MUTED, fontSize: 11.5, margin: "9px 2px 0", lineHeight: 1.5 }}>
-            Modifiable après impression + suivi des scans. Gratuit <strong style={{ color: "#FBBF24" }}>30 jours</strong> (2/mois), puis <Link href="/dashboard/qr-dynamique" style={{ color: G, fontWeight: 700, textDecoration: "none" }}>un abonnement</Link> pour rester actif.
+            Modifiable après impression + suivi des scans.{!dynSubscribed && <> Gratuit <strong style={{ color: "#FBBF24" }}>30 jours</strong> (2/mois), puis <Link href="/dashboard/qr-dynamique" style={{ color: G, fontWeight: 700, textDecoration: "none" }}>un abonnement</Link> pour rester actif.</>}
             {qrType === "text" && <span style={{ display: "block", color: "#6E685E", fontSize: 11, marginTop: 3 }}>Ouvre une page au scan (Internet requis).</span>}
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "15px 0 13px" }}>

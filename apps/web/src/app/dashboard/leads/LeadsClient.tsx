@@ -116,11 +116,10 @@ export default function LeadsClient({ leads: initialLeads, pages, setupNeeded }:
 
       {setupNeeded && (
         <div style={{ marginTop: 20, padding: "18px 20px", background: "var(--warning-bg)", border: "1px solid var(--warning-border)", borderRadius: 14 }}>
-          <p style={{ color: "var(--warning)", fontSize: 14, fontWeight: 700, margin: "0 0 6px" }}>⚙ Messagerie à activer</p>
+          <p style={{ color: "var(--warning)", fontSize: 14, fontWeight: 700, margin: "0 0 6px" }}>⚙ Messagerie indisponible</p>
           <p style={{ color: MUTED, fontSize: 13, margin: "0 0 10px", lineHeight: 1.6 }}>
-            La table <code style={{ color: TEXT }}>leads</code> n&apos;existe pas encore en base. Exécutez la migration <code style={{ color: TEXT }}>016_leads</code> dans Supabase (SQL Editor) pour recevoir et stocker les messages de vos pages. Les notifications par email nécessitent en plus la variable <code style={{ color: TEXT }}>RESEND_API_KEY</code> sur Vercel.
+            La messagerie n&apos;est pas encore disponible sur votre compte. Réessayez plus tard, ou contactez le support si le problème persiste.
           </p>
-          <p style={{ color: "#8A8478", fontSize: 11, margin: 0 }}>Fichier : supabase/migrations/20260701_016_leads.sql</p>
         </div>
       )}
 

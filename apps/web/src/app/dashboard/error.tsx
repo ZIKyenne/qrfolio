@@ -53,9 +53,9 @@ export default function DashboardError({ error, reset }: { error: Error & { dige
             <ArrowLeft size={15} /> Tableau de bord
           </a>
         </div>
-        {(error?.message || error?.digest) && (
+        {error?.digest && (
           <p style={{ color: "#6F6A60", fontSize: 11, margin: "18px 0 0", fontFamily: "monospace", wordBreak: "break-word" }}>
-            {error.message || ""}{error.digest ? ` (réf. ${error.digest})` : ""}
+            réf. {error.digest}
           </p>
         )}
       </div>

@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -9,6 +9,7 @@ import { DYN_PLANS, DYN_PAID_PLANS, DYN_TRIAL_DAYS, dynMonthlyLabel, dynAnnualTo
 import { useAccent } from "@/lib/useAccent"
 import Particles from "@/components/Particles"
 import SubscribeButton from "@/components/SubscribeButton"
+import CheckoutErrorBanner from "@/components/CheckoutErrorBanner"
 
 // UI par plan (icône, CTA, mise en avant) ; les DONNÉES viennent de lib/plans
 const PLAN_UI = {
@@ -38,6 +39,7 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState<string | null>(null)
   const [annual, setAnnual] = useState(false)
   const [showComparison, setShowComparison] = useState(false)
+  const [payErr, setPayErr] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -78,7 +80,7 @@ export default function UpgradePage() {
       body: JSON.stringify({ plan: plan.id, annual, userId: user.id }),
     })
     const data = await res.json()
-    if (!data.url) throw new Error("URL de paiement manquante")
+    if (!data.url) throw new Error(data.error || "Le paiement n'a pas pu démarrer. Réessayez.")
     return data.url as string
   }
 
@@ -93,7 +95,7 @@ export default function UpgradePage() {
       body: JSON.stringify({ product: "dynamic", plan: planId, annual, userId: user.id }),
     })
     const data = await res.json()
-    if (!data.url) throw new Error("URL de paiement manquante")
+    if (!data.url) throw new Error(data.error || "Le paiement n'a pas pu démarrer. Réessayez.")
     return data.url as string
   }
 
@@ -109,6 +111,7 @@ export default function UpgradePage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#080808", fontFamily: "DM Sans, sans-serif", padding: "0 24px 80px", position: "relative", isolation: "isolate" }}>
+      <CheckoutErrorBanner error={payErr} onClose={() => setPayErr(null)} />
       <Particles behind />
       <style>{``}</style>
 
@@ -213,7 +216,7 @@ export default function UpgradePage() {
                     minScanMs={1600}
                     height={48}
                     onSubscribe={() => checkoutUrl(plan)}
-                    onError={() => setLoading(null)}
+                    onError={(e) => { setLoading(null); setPayErr(e instanceof Error ? e.message : "Le paiement n'a pas pu démarrer. Réessayez.") }}
                   />
                 ) : (
                   <button onClick={() => handleUpgrade(plan)} disabled={loading === plan.id || isCurrentPlan || plan.ctaDisabled}
@@ -274,7 +277,7 @@ export default function UpgradePage() {
                       minScanMs={1600}
                       height={44}
                       onSubscribe={() => dynCheckoutUrl(p.id as DynPlanId)}
-                      onError={() => {}}
+                      onError={(e) => { setPayErr(e instanceof Error ? e.message : "Le paiement n'a pas pu démarrer. Réessayez.") }}
                     />
                   )}
                 </div>

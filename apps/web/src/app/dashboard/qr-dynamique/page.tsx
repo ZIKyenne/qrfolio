@@ -10,6 +10,7 @@ import Link from "next/link"
 import { DYN_PAID_PLANS, DYN_TRIAL_DAYS, dynAnnualTotalLabel, dynMonthlyLabel, type DynPlanId } from "@/lib/dynamicPlans"
 import Particles from "@/components/Particles"
 import SubscribeButton from "@/components/SubscribeButton"
+import CheckoutErrorBanner from "@/components/CheckoutErrorBanner"
 
 const G = "#C9A84C"
 const MUTED = "#A8A190"
@@ -25,6 +26,7 @@ export default function QrDynamiquePage() {
   const [current, setCurrent] = useState<string>("none")
   const [annual, setAnnual] = useState(false)
   const [canceled, setCanceled] = useState(false)
+  const [payErr, setPayErr] = useState<string | null>(null)
 
   useEffect(() => {
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("canceled")) setCanceled(true)
@@ -55,6 +57,7 @@ export default function QrDynamiquePage() {
 
   return (
     <div className="rpad" style={{ position: "relative", minHeight: "100dvh", maxWidth: 1040, margin: "0 auto", padding: "18px 18px calc(40px + env(safe-area-inset-bottom))" }}>
+      <CheckoutErrorBanner error={payErr} onClose={() => setPayErr(null)} />
       <Particles behind />
 
       <Link href="/dashboard/qr-link" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUTED, textDecoration: "none", fontSize: 13, marginBottom: 16 }}>
@@ -132,7 +135,7 @@ export default function QrDynamiquePage() {
                     minScanMs={1600}
                     height={46}
                     onSubscribe={() => dynCheckoutUrl(p.id)}
-                    onError={() => {}}
+                    onError={(e) => { setPayErr(e instanceof Error ? e.message : "Le paiement n'a pas pu démarrer. Réessayez.") }}
                   />
                 </div>
               )}

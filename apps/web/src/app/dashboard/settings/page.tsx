@@ -276,14 +276,14 @@ export default function SettingsPage() {
         </Section>
 
         {/* Notifications */}
-        <Section title="Notifications" subtitle="Gère les e-mails que tu reçois" icon={<Bell size={16} />}>
+        <Section title="Notifications" subtitle="Gérez les e-mails que vous recevez" icon={<Bell size={16} />}>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <Toggle value={notifs.email_leads} onChange={v => setNotifs(n => ({ ...n, email_leads: v }))}
-              label="Nouveaux messages" description="Reçois un e-mail à chaque demande (devis, réservation, inscription, RSVP...)" />
+              label="Nouveaux messages" description="Recevez un e-mail à chaque demande (devis, réservation, inscription, RSVP...)" />
             <Toggle value={notifs.scan_alert} onChange={v => setNotifs(n => ({ ...n, scan_alert: v }))}
-              label="Alertes de scans" description="Reçois un e-mail quand ton QR code est scanné" />
+              label="Alertes de scans" description="Recevez un e-mail quand votre QR code est scanné" />
             <Toggle value={notifs.weekly_report} onChange={v => setNotifs(n => ({ ...n, weekly_report: v }))}
-              label="Rapport hebdomadaire" description="Résumé de tes stats chaque lundi" />
+              label="Rapport hebdomadaire" description="Résumé de vos stats chaque lundi" />
             <Toggle value={notifs.product_updates} onChange={v => setNotifs(n => ({ ...n, product_updates: v }))}
               label="Nouveautés produit" description="Nouvelles fonctionnalités et mises à jour" />
             <Toggle value={notifs.marketing} onChange={v => setNotifs(n => ({ ...n, marketing: v }))}
@@ -302,10 +302,10 @@ export default function SettingsPage() {
             pas de réglage qui ne fait rien. À réintroduire quand ils seront câblés. */}
 
         {/* Mes donnees — droit RGPD a la portabilite */}
-        <Section title="Mes données" subtitle="Exporte une copie de tes données" icon={<DatabaseBackup size={16} />}>
+        <Section title="Mes données" subtitle="Exportez une copie de vos données" icon={<DatabaseBackup size={16} />}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <p style={{ color: MUTED, fontSize: 13, margin: 0, lineHeight: 1.6 }}>
-              Télécharge l&apos;ensemble de tes données (profil, pages, blocs, QR codes et messages reçus) dans un fichier JSON lisible et réutilisable.
+              Téléchargez l&apos;ensemble de vos données (profil, pages, blocs, QR codes et messages reçus) dans un fichier JSON lisible et réutilisable.
             </p>
             {exportError && (
               <div style={{ display: "flex", gap: 7, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, padding: "9px 12px" }}>

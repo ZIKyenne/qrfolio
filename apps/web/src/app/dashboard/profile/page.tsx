@@ -1602,7 +1602,7 @@ export default function ProfilePage() {
               {/* Etapes visuelles */}
               <div style={{ display:"flex", alignItems:"center", gap:0 }}>
                 {([
-                  { emoji:"🔗", step:"1", label:"Partage",     desc:"Tu envoies ton lien"          },
+                  { emoji:"🔗", step:"1", label:"Partage",     desc:"Vous envoyez votre lien"          },
                   { emoji:"👤", step:"2", label:"Inscription",  desc:"Un ami cree son compte"       },
                   { emoji:"🎁", step:"3", label:"Recompense",   desc:"+1 mois Pro offert"            },
                 ] as const).map((s, i) => (
@@ -1639,13 +1639,13 @@ export default function ProfilePage() {
                   Comment gagner un mois Pro ?
                 </p>
                 <p style={{ color:MUTED, fontSize:10, margin:0, lineHeight:1.6 }}>
-                  Ton filleul doit s'inscrire via ton lien et <strong style={{ color:"#F5F0E8" }}>souscrire a un plan payant</strong> dans les 30 jours. La recompense est creditee automatiquement.
+                  Votre filleul doit s'inscrire via votre lien et <strong style={{ color:"#F5F0E8" }}>souscrire a un plan payant</strong> dans les 30 jours. La recompense est creditee automatiquement.
                 </p>
               </div>
 
               {/* Lien + actions partage */}
               <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
-                <label style={{ color:MUTED, fontSize:10, fontWeight:500 }}>Ton lien de parrainage</label>
+                <label style={{ color:MUTED, fontSize:10, fontWeight:500 }}>Votre lien de parrainage</label>
                 <div style={{ display:"flex", gap:7 }}>
                   <div style={{ flex:1, background:SURF2, border:`1px solid color-mix(in srgb, var(--accent) 13%, transparent)`, borderRadius:9, padding:"9px 12px", color:G, fontSize:11, fontFamily:"monospace", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, display:"flex", alignItems:"center" }}>
                     {referralLink}
@@ -1679,7 +1679,7 @@ export default function ProfilePage() {
                   <Gift size={28} color={MUTED} style={{ marginBottom:8 }}/>
                   <p style={{ color:"#F5F0E8", fontSize:13, fontWeight:600, margin:"0 0 5px" }}>Aucun filleul pour l'instant</p>
                   <p style={{ color:MUTED, fontSize:11, margin:"0 0 12px", lineHeight:1.5 }}>
-                    Partage ton lien et gagne 1 mois Pro<br/>pour chaque ami qui s'abonne.
+                    Partagez votre lien et gagnez 1 mois Pro<br/>pour chaque ami qui s'abonne.
                   </p>
                   <span className="da-halo-wrap">
                     <button onClick={copyReferral} className="da-btn-primary da-btn-primary--sm">

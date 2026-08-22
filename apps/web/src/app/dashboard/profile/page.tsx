@@ -1007,7 +1007,7 @@ export default function ProfilePage() {
   const validatedRefs = referrals.filter(r => r.status === "validated" || r.status === "rewarded").length
   const expiredRefs   = referrals.filter(r => r.status === "expired").length
   const totalMonths   = referrals.reduce((s, r) => s + (r.reward_months || 0), 0)
-  const referralLink  = `https://qrowg.com?ref=${profile?.ref_code || profile?.id?.slice(0, 8) || ""}`
+  const referralLink  = `https://qrowg.com/auth/signup?ref=${profile?.ref_code || profile?.id?.slice(0, 8) || ""}`
   const filteredRefs  = refFilter === "all" ? referrals
     : referrals.filter(r => refFilter === "validated"
       ? (r.status === "validated" || r.status === "rewarded")

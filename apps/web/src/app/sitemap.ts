@@ -1,9 +1,9 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { VERTICAL_ORDER } from "./qr-code/verticals"
 import { GUIDE_ORDER } from "./guides/guides"
 
 export default async function sitemap() {
-  const supabase = await createServerSupabaseClient()
+  const supabase = createAdminClient()
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 
   // Pages statiques indexables (les pages /auth/* sont volontairement exclues :

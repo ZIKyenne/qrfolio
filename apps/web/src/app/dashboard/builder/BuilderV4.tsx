@@ -613,7 +613,7 @@
           setPageName(pg.title); setPageSlug(pg.slug); setPageStatus(pg.status || "draft")
           setTheme(normTheme)
           setPageStats(s => ({ ...s, views: pg.total_views || 0 }))
-          if (blks?.length) {
+          if (blks) {
             const loaded = blks.map(b => { const c = b.content || {}; return { id: b.id, type: b.type, content: c, visible: c.__visible !== undefined ? c.__visible !== false : (b.is_visible !== false), draft: c.__draft || false, locked: c.__locked || false } })
             setBlocksRaw(loaded)
             // Repart de l'état chargé (blocs + thème + nom) : évite l'undo->démo qui
@@ -1395,6 +1395,19 @@
                       style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px", color: MUTED, textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
                       <ExternalLink size={13} /> Voir la page
                     </a>
+                  )}
+                  {/* QR de la page publiée, affiché ICI pour être atteignable aussi sur
+                      mobile (le panneau QR de la barre du haut est masqué sous 1024 px)
+                      et parce que c'est le moment où il sert : la page vient d'être mise
+                      en ligne, l'étape suivante est de l'imprimer. */}
+                  {pageStatus === "published" && qrTarget && (
+                    <div style={{ marginTop: 10, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                      <p style={{ color: MUTED, fontSize: 10, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 1, textAlign: "center" }}>Votre QR code</p>
+                      <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 8, marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <QRCanvas value={qrTarget} size={132} />
+                      </div>
+                      <button onClick={downloadQrPng} style={{ width: "100%", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 10, padding: "11px", color: G, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>↓ Télécharger le QR (PNG)</button>
+                    </div>
                   )}
                 </div>
               </>

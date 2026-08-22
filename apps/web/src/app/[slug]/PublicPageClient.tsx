@@ -51,7 +51,7 @@ class BlockBoundary extends Component<{ children: React.ReactNode }, { failed: b
 function AnimatedBlock({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const { ref, inView } = useInView()
   return (
-    <div ref={ref} style={{ transition: `opacity 0.5s ease ${delay}ms, transform 0.5s ease ${delay}ms`, opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(20px)" }}>
+    <div ref={ref} className={inView ? "qf-ab qf-ab-in" : "qf-ab"} style={{ transitionDelay: `${delay}ms` }}>
       {children}
     </div>
   )
@@ -1273,9 +1273,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
         </>
       )
     }
-    case "directions_button": { const href = directionsLink(c.address, c.provider); return (c.address || c.label) ? (
+    case "directions_button": { const href = directionsLink(c.address, c.provider); return href ? (
       <div style={{ padding: "6px 24px 10px" }}>
-        <a href={href || "#"} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, "directions")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(66,133,244,0.12)", border: "1.5px solid rgba(66,133,244,0.35)", borderRadius: 13, padding: "15px 18px", textDecoration: "none" }}>
+        <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, "directions")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "rgba(66,133,244,0.12)", border: "1.5px solid rgba(66,133,244,0.35)", borderRadius: 13, padding: "15px 18px", textDecoration: "none" }}>
           <span style={{ fontSize: 17 }}>🧭</span>
           <span style={{ color: "#4285F4", fontSize: 15, fontWeight: 700, fontFamily: FONT_B }}>{c.label || "Obtenir l'itinéraire"}</span>
         </a>
@@ -2281,7 +2281,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
         </a>
       </div>
     ) : null
-    case "reservation_form": return <LeadFormPublic block={block} pageId={pageId} ownerEmail={ownerEmail} leadType="reservation" title={c.title || "Réserver"} fields={[{ key: "name", label: "Nom" }, { key: "date", label: "Date souhaitée" }, { key: "people", label: "Nb personnes" }]} button={c.button_label || "Réserver"} accent="linear-gradient(90deg,#EF4444,#dc2626)" subject={`Réservation: ${c.title || ""}`} TEXT={TEXT} MUTED={MUTED} />
+    case "reservation_form": return <LeadFormPublic block={block} pageId={pageId} ownerEmail={ownerEmail} leadType="reservation" title={c.title || "Réserver"} fields={[{ key: "name", label: "Nom" }, { key: "phone", label: "Téléphone" }, { key: "date", label: "Date souhaitée" }, { key: "people", label: "Nb personnes" }]} button={c.button_label || "Réserver"} accent="linear-gradient(90deg,#EF4444,#dc2626)" subject={`Réservation: ${c.title || ""}`} TEXT={TEXT} MUTED={MUTED} />
     case "quote_form": return <LeadFormPublic block={block} pageId={pageId} ownerEmail={ownerEmail} leadType="quote" title={c.title || "Demander un devis"} description={c.description} fields={[{ key: "name", label: "Nom complet" }, { key: "email", label: "Email" }, ...(c.show_phone !== "no" ? [{ key: "phone", label: "Téléphone" }] : []), ...(c.show_budget === "yes" ? [{ key: "budget", label: "Budget estimé" }] : []), { key: "project", label: "Description du projet", area: true }]} button={c.button_label || "Envoyer ma demande"} accent={`linear-gradient(90deg,${G},${G}cc)`} buttonTextColor="#080808" subject="Demande de devis" TEXT={TEXT} MUTED={MUTED} />
     case "booking_request": return <LeadFormPublic block={block} pageId={pageId} ownerEmail={ownerEmail} leadType="booking" title={c.title || "Réserver pour un événement"} description={c.description} fields={[{ key: "name", label: "Nom / Organisation" }, { key: "email", label: "Email" }, { key: "type", label: "Type d'événement" }, { key: "date", label: "Date souhaitée" }, { key: "message", label: "Message", area: true }]} button={c.button_label || "Envoyer ma demande"} accent="linear-gradient(90deg,#9146FF,#7B3FCC)" subject="Demande de réservation événement" TEXT={TEXT} MUTED={MUTED} />
     case "quick_contact": {
@@ -3050,6 +3050,12 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
         .qf-anim-ready .qf-a-left { transform: translateX(34px); }
         .qf-anim-ready .qf-a-right { transform: translateX(-34px); }
         .qf-anim-ready .qf-a-zoom { transform: scale(.9); }
+        /* Blocs animés : masqués UNIQUEMENT quand JS a posé .qf-anim-ready. Sans JS
+           (ou avant hydratation) aucune règle d'opacité ne s'applique -> contenu visible
+           immédiatement dans le HTML serveur. */
+        .qf-ab { transition: opacity .5s ease, transform .5s ease; }
+        .qf-anim-ready .qf-ab { opacity: 0; transform: translateY(20px); }
+        .qf-anim-ready .qf-ab.qf-ab-in { opacity: 1; transform: none; }
         .qf-anim-ready .qf-a-zoomout { transform: scale(1.07); }
         .qf-anim-ready .qf-a-rotate { transform: rotate(-4deg) scale(.95); }
         .qf-anim-ready .qf-a-blur { filter: blur(9px); }

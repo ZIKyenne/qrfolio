@@ -697,9 +697,9 @@ function BrandProSection() {
 // Pricing landing : derive de la source unique (lib/plans) -> 4 plans, Pro en avant
 const PLAN_LANDING_UI = {
   free:     { cta: "Commencer gratuitement",     href: "/auth/signup",                 badge: null,                note: null },
-  starter:  { cta: "Démarrer l'essai gratuit",    href: "/auth/signup?plan=starter",  badge: "Meilleur rapport Q/P", note: null },
-  pro:      { cta: "Démarrer l'essai gratuit",    href: "/auth/signup?plan=pro",      badge: "Le plus populaire",   note: "7 jours d'essai gratuit · Sans engagement · Annulable en 1 clic" },
-  business: { cta: "Démarrer l'essai gratuit",     href: "/auth/signup?plan=business", badge: null,                note: null },
+  starter:  { cta: "Démarrer l'essai gratuit",    href: "/auth/signup?plan=starter",  badge: "Meilleur rapport Q/P", note: "7 jours d'essai · Sans carte bancaire · Annulable en 1 clic" },
+  pro:      { cta: "Choisir Pro",                 href: "/auth/signup?plan=pro",      badge: "Le plus populaire",   note: "Sans engagement · Annulable en 1 clic" },
+  business: { cta: "Choisir Business",            href: "/auth/signup?plan=business", badge: null,                note: "Sans engagement · Annulable en 1 clic" },
 } as Record<string, { cta: string; href: string; badge: string | null; note: string | null }>
 
 // Bénéfices orientés résultat (Pb 12) — on vend ce que ça apporte, pas une liste de specs.

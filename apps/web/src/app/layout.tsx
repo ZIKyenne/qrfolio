@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import { PLAN_LIST } from "@/lib/plans"
 import { serializeJsonLd } from "@/lib/jsonLd"
+import { Analytics } from "@vercel/analytics/next"
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 // Origine du stockage Supabase (avatars, galeries, produits) — preconnect pour eviter
@@ -117,7 +118,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>{children}<Analytics /></body>
     </html>
   )
 }

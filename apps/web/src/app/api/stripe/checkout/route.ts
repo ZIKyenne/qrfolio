@@ -65,11 +65,10 @@ export async function POST(req: NextRequest) {
       success_url: `${appUrl}/dashboard?upgraded=true`,
       cancel_url: `${appUrl}/upgrade?canceled=true`,
       ...(plan === "starter" ? { payment_method_collection: "if_required" as const } : {}),
-      ...(plan === "starter" ? { payment_method_collection: "if_required" as const } : {}),
       metadata: { userId, plan, priceId, billing },
       subscription_data: {
         metadata: { userId, plan, priceId, billing },
-                ...(plan === "starter" ? {         ...(plan === "starter" ? {         ...(plan === "starter" ? {         ...(plan === "starter" ? { trial_period_days: 7, trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } } : {}), trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } } : {}), trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } } : {}), trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } } : {}),
+        ...(plan === "starter" ? { trial_period_days: 7, trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } } : {}),
       },
       allow_promotion_codes: true,
     })

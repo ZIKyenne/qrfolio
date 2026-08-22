@@ -1307,7 +1307,7 @@
           )}
 
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <button onClick={() => setShowPublishPopup(p => !p)}
+            <button onClick={() => { setShowPublishPopup(true); if (pageStatus !== "published" && !publishing && IS_UUID(liveId)) void handlePublish() }}
               className={pageStatus === "published" ? undefined : "da-btn-primary da-btn-primary--sm"}
               style={pageStatus === "published"
                 ? { display: "flex", alignItems: "center", gap: 6, background: "rgba(57,255,143,0.12)", border: "1px solid rgba(57,255,143,0.35)", borderRadius: 9, padding: "8px 18px", color: "var(--success)", fontSize: 14, fontWeight: 700, cursor: "pointer" }

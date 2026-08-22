@@ -210,7 +210,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     // la requête -> data null -> redirection à tort vers l'accueil pour TOUS les QR.
     const { data: qr, error: qrErr } = await supabase
       .from("qr_codes")
-      .select("*, pages(slug)")
+      .select("*, pages(slug, status)")
       .eq("short_code", code)
       .maybeSingle()
 
@@ -360,6 +360,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
     }
 
     if (qr.page_id) {
+            if ((qr as any).pages?.status && (qr as any).pages.status !== "published" && !req.nextUrl.searchParams.has("preview")) return noticeResponse("🚧", "Page en préparation", "Cette page n'est pas encore publiée. Revenez bientôt !", appUrl, 404)
       // Slug déjà joint au lookup initial (pages(slug)) -> pas de 2ᵉ aller-retour DB
       // sur le chemin le plus fréquent. Repli sur une requête si l'embed manque.
       const joinedSlug = (qr as any).pages?.slug as string | undefined

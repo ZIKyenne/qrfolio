@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 const FIELD: React.CSSProperties = {
   width: "100%", height: 52, boxSizing: "border-box",
   background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.14)",
-  borderRadius: 12, padding: "0 15px", color: "#F5F0E8", fontSize: 15,
+  borderRadius: 12, padding: "0 15px", color: "#F5F0E8", fontSize: 16,
   outline: "none", fontFamily: "DM Sans, sans-serif",
 }
 const LABEL: React.CSSProperties = {

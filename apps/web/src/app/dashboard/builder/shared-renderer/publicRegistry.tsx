@@ -56,6 +56,42 @@ import { PublicAlbumBlock } from "./blocks/album_block/PublicAlbumBlock"
 import { PublicDiscography } from "./blocks/discography/PublicDiscography"
 import { PublicPodcastLinks } from "./blocks/podcast_links/PublicPodcastLinks"
 import { PublicProductCatalog } from "./blocks/product_catalog/PublicProductCatalog"
+// Vague LAYOUT — blocs « Création libre » (une vue partagée, deux adapters d'une ligne).
+import { PublicFreeSection } from "./blocks/free_section"
+import { PublicImageText } from "./blocks/image_text"
+import { PublicSplitPanel } from "./blocks/split_panel"
+import { PublicOverlayCard } from "./blocks/overlay_card"
+import { PublicFrameBox } from "./blocks/frame_box"
+import { PublicBannerStrip } from "./blocks/banner_strip"
+import { PublicFullBleedImage } from "./blocks/full_bleed_image"
+import { PublicStackCards } from "./blocks/stack_cards"
+import { PublicFreeGrid } from "./blocks/free_grid"
+import { PublicColumnsText } from "./blocks/columns_text"
+import { PublicImageMosaic } from "./blocks/image_mosaic"
+import { PublicLogoMarquee } from "./blocks/logo_marquee"
+import { PublicAvatarRow } from "./blocks/avatar_row"
+import { PublicShapeDivider } from "./blocks/shape_divider"
+import { PublicDecorLine } from "./blocks/decor_line"
+import { PublicMarqueeText } from "./blocks/marquee_text"
+import { PublicRibbonBanner } from "./blocks/ribbon_banner"
+import { PublicColorBand } from "./blocks/color_band"
+import { PublicBigStatement } from "./blocks/big_statement"
+import { PublicTextColumns } from "./blocks/text_columns"
+import { PublicNumberedList } from "./blocks/numbered_list"
+import { PublicChecklist } from "./blocks/checklist"
+import { PublicDefinitionList } from "./blocks/definition_list"
+import { PublicCardLink } from "./blocks/card_link"
+import { PublicAnchorNav } from "./blocks/anchor_nav"
+import { PublicAnchorTarget } from "./blocks/anchor_target"
+import { PublicToggleContent } from "./blocks/toggle_content"
+import { PublicBackToTop } from "./blocks/back_to_top"
+import { PublicStepsHorizontal } from "./blocks/steps_horizontal"
+import { PublicStatHero } from "./blocks/stat_hero"
+import { PublicBadgeRow } from "./blocks/badge_row"
+import { PublicIconRow } from "./blocks/icon_row"
+import { PublicCompareTwo } from "./blocks/compare_two"
+import { PublicProgressBars } from "./blocks/progress_bars"
+import { PublicHighlightBox } from "./blocks/highlight_box"
 
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
@@ -110,6 +146,41 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   discography: PublicDiscography,
   podcast_links: PublicPodcastLinks,
   product_catalog: PublicProductCatalog,
+  free_section: PublicFreeSection,
+  image_text: PublicImageText,
+  split_panel: PublicSplitPanel,
+  overlay_card: PublicOverlayCard,
+  frame_box: PublicFrameBox,
+  banner_strip: PublicBannerStrip,
+  full_bleed_image: PublicFullBleedImage,
+  stack_cards: PublicStackCards,
+  free_grid: PublicFreeGrid,
+  columns_text: PublicColumnsText,
+  image_mosaic: PublicImageMosaic,
+  logo_marquee: PublicLogoMarquee,
+  avatar_row: PublicAvatarRow,
+  shape_divider: PublicShapeDivider,
+  decor_line: PublicDecorLine,
+  marquee_text: PublicMarqueeText,
+  ribbon_banner: PublicRibbonBanner,
+  color_band: PublicColorBand,
+  big_statement: PublicBigStatement,
+  text_columns: PublicTextColumns,
+  numbered_list: PublicNumberedList,
+  checklist: PublicChecklist,
+  definition_list: PublicDefinitionList,
+  card_link: PublicCardLink,
+  anchor_nav: PublicAnchorNav,
+  anchor_target: PublicAnchorTarget,
+  toggle_content: PublicToggleContent,
+  back_to_top: PublicBackToTop,
+  steps_horizontal: PublicStepsHorizontal,
+  stat_hero: PublicStatHero,
+  badge_row: PublicBadgeRow,
+  icon_row: PublicIconRow,
+  compare_two: PublicCompareTwo,
+  progress_bars: PublicProgressBars,
+  highlight_box: PublicHighlightBox,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

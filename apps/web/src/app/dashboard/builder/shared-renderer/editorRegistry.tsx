@@ -56,6 +56,42 @@ import { EditorAlbumBlock } from "./blocks/album_block/EditorAlbumBlock"
 import { EditorDiscography } from "./blocks/discography/EditorDiscography"
 import { EditorPodcastLinks } from "./blocks/podcast_links/EditorPodcastLinks"
 import { EditorProductCatalog } from "./blocks/product_catalog/EditorProductCatalog"
+// Vague LAYOUT — blocs « Création libre » (une vue partagée, deux adapters d'une ligne).
+import { EditorFreeSection } from "./blocks/free_section"
+import { EditorImageText } from "./blocks/image_text"
+import { EditorSplitPanel } from "./blocks/split_panel"
+import { EditorOverlayCard } from "./blocks/overlay_card"
+import { EditorFrameBox } from "./blocks/frame_box"
+import { EditorBannerStrip } from "./blocks/banner_strip"
+import { EditorFullBleedImage } from "./blocks/full_bleed_image"
+import { EditorStackCards } from "./blocks/stack_cards"
+import { EditorFreeGrid } from "./blocks/free_grid"
+import { EditorColumnsText } from "./blocks/columns_text"
+import { EditorImageMosaic } from "./blocks/image_mosaic"
+import { EditorLogoMarquee } from "./blocks/logo_marquee"
+import { EditorAvatarRow } from "./blocks/avatar_row"
+import { EditorShapeDivider } from "./blocks/shape_divider"
+import { EditorDecorLine } from "./blocks/decor_line"
+import { EditorMarqueeText } from "./blocks/marquee_text"
+import { EditorRibbonBanner } from "./blocks/ribbon_banner"
+import { EditorColorBand } from "./blocks/color_band"
+import { EditorBigStatement } from "./blocks/big_statement"
+import { EditorTextColumns } from "./blocks/text_columns"
+import { EditorNumberedList } from "./blocks/numbered_list"
+import { EditorChecklist } from "./blocks/checklist"
+import { EditorDefinitionList } from "./blocks/definition_list"
+import { EditorCardLink } from "./blocks/card_link"
+import { EditorAnchorNav } from "./blocks/anchor_nav"
+import { EditorAnchorTarget } from "./blocks/anchor_target"
+import { EditorToggleContent } from "./blocks/toggle_content"
+import { EditorBackToTop } from "./blocks/back_to_top"
+import { EditorStepsHorizontal } from "./blocks/steps_horizontal"
+import { EditorStatHero } from "./blocks/stat_hero"
+import { EditorBadgeRow } from "./blocks/badge_row"
+import { EditorIconRow } from "./blocks/icon_row"
+import { EditorCompareTwo } from "./blocks/compare_two"
+import { EditorProgressBars } from "./blocks/progress_bars"
+import { EditorHighlightBox } from "./blocks/highlight_box"
 
 const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   heading: EditorHeading,
@@ -110,6 +146,41 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   discography: EditorDiscography,
   podcast_links: EditorPodcastLinks,
   product_catalog: EditorProductCatalog,
+  free_section: EditorFreeSection,
+  image_text: EditorImageText,
+  split_panel: EditorSplitPanel,
+  overlay_card: EditorOverlayCard,
+  frame_box: EditorFrameBox,
+  banner_strip: EditorBannerStrip,
+  full_bleed_image: EditorFullBleedImage,
+  stack_cards: EditorStackCards,
+  free_grid: EditorFreeGrid,
+  columns_text: EditorColumnsText,
+  image_mosaic: EditorImageMosaic,
+  logo_marquee: EditorLogoMarquee,
+  avatar_row: EditorAvatarRow,
+  shape_divider: EditorShapeDivider,
+  decor_line: EditorDecorLine,
+  marquee_text: EditorMarqueeText,
+  ribbon_banner: EditorRibbonBanner,
+  color_band: EditorColorBand,
+  big_statement: EditorBigStatement,
+  text_columns: EditorTextColumns,
+  numbered_list: EditorNumberedList,
+  checklist: EditorChecklist,
+  definition_list: EditorDefinitionList,
+  card_link: EditorCardLink,
+  anchor_nav: EditorAnchorNav,
+  anchor_target: EditorAnchorTarget,
+  toggle_content: EditorToggleContent,
+  back_to_top: EditorBackToTop,
+  steps_horizontal: EditorStepsHorizontal,
+  stat_hero: EditorStatHero,
+  badge_row: EditorBadgeRow,
+  icon_row: EditorIconRow,
+  compare_two: EditorCompareTwo,
+  progress_bars: EditorProgressBars,
+  highlight_box: EditorHighlightBox,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

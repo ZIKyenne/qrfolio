@@ -63,6 +63,41 @@ const PUBLIC_REACHABLE = [
   "./blocks/discography/PublicDiscography.tsx",
   "./blocks/podcast_links/PublicPodcastLinks.tsx",
   "./blocks/product_catalog/PublicProductCatalog.tsx",
+  "./blocks/free_section/index.tsx",
+  "./blocks/image_text/index.tsx",
+  "./blocks/split_panel/index.tsx",
+  "./blocks/overlay_card/index.tsx",
+  "./blocks/frame_box/index.tsx",
+  "./blocks/banner_strip/index.tsx",
+  "./blocks/full_bleed_image/index.tsx",
+  "./blocks/stack_cards/index.tsx",
+  "./blocks/free_grid/index.tsx",
+  "./blocks/columns_text/index.tsx",
+  "./blocks/image_mosaic/index.tsx",
+  "./blocks/logo_marquee/index.tsx",
+  "./blocks/avatar_row/index.tsx",
+  "./blocks/shape_divider/index.tsx",
+  "./blocks/decor_line/index.tsx",
+  "./blocks/marquee_text/index.tsx",
+  "./blocks/ribbon_banner/index.tsx",
+  "./blocks/color_band/index.tsx",
+  "./blocks/big_statement/index.tsx",
+  "./blocks/text_columns/index.tsx",
+  "./blocks/numbered_list/index.tsx",
+  "./blocks/checklist/index.tsx",
+  "./blocks/definition_list/index.tsx",
+  "./blocks/card_link/index.tsx",
+  "./blocks/anchor_nav/index.tsx",
+  "./blocks/anchor_target/index.tsx",
+  "./blocks/toggle_content/index.tsx",
+  "./blocks/back_to_top/index.tsx",
+  "./blocks/steps_horizontal/index.tsx",
+  "./blocks/stat_hero/index.tsx",
+  "./blocks/badge_row/index.tsx",
+  "./blocks/icon_row/index.tsx",
+  "./blocks/compare_two/index.tsx",
+  "./blocks/progress_bars/index.tsx",
+  "./blocks/highlight_box/index.tsx",
   "./primitives/PublicImage.tsx",
   "./models/repeaterExtract.ts",
   "./models/heading.ts",
@@ -98,7 +133,7 @@ describe("frontière de bundle — public n'importe rien d'éditeur", () => {
 })
 
 describe("modèles purs — sans React ni Supabase", () => {
-  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts", "./models/processSteps.ts", "./models/onSiteServices.ts", "./models/engagements.ts", "./models/trustBadge.ts", "./models/statsBlock.ts", "./models/eventProgram.ts", "./models/testimonials.ts", "./models/businessStats.ts", "./models/brands.ts", "./models/lineup.ts", "./models/reassurance.ts", "./models/timeline.ts", "./models/menuSection.ts", "./models/servicesList.ts", "./models/promoBanner.ts", "./models/giftCard.ts", "./models/eventInfo.ts", "./models/eventTicketing.ts", "./models/image.ts", "./models/portfolioWork.ts", "./models/favoriteLinks.ts", "./models/concerts.ts", "./models/merch.ts", "./models/appDownload.ts", "./models/mediaUrl.ts", "./models/videoLocal.ts", "./models/audioPlayer.ts", "./models/pdfViewer.ts", "./models/spotifyEmbed.ts", "./models/spotifyPlayer.ts", "./models/beforeAfter.ts", "./models/embed.ts", "./models/sharedImage.ts", "./models/albumBlockCta.ts", "./models/beforeAfterShared.ts", "./models/videoBlock.ts", "./models/googleMapsEmbed.ts", "./models/albumBlock.ts", "./models/discography.ts", "./models/podcastLinks.ts", "./models/productCatalog.ts", "./models/repeaterExtract.ts", "./forms/formTypes.ts", "./forms/leadFormModels.ts", "./forms/leadPayload.ts", "./forms/leadFormMachine.ts", "./forms/formCandidates.ts"]) {
+  for (const m of ["./models/heading.ts", "./models/values.ts", "./models/pricing.ts", "./models/divider.ts", "./models/spacer.ts", "./models/bio.ts", "./models/skills.ts", "./models/languages.ts", "./models/advantages.ts", "./models/whatsappButton.ts", "./models/emailButton.ts", "./models/downloadFile.ts", "./models/orderOnline.ts", "./models/donation.ts", "./models/googleReview.ts", "./models/processSteps.ts", "./models/onSiteServices.ts", "./models/engagements.ts", "./models/trustBadge.ts", "./models/statsBlock.ts", "./models/eventProgram.ts", "./models/testimonials.ts", "./models/businessStats.ts", "./models/brands.ts", "./models/lineup.ts", "./models/reassurance.ts", "./models/timeline.ts", "./models/menuSection.ts", "./models/servicesList.ts", "./models/promoBanner.ts", "./models/giftCard.ts", "./models/eventInfo.ts", "./models/eventTicketing.ts", "./models/image.ts", "./models/portfolioWork.ts", "./models/favoriteLinks.ts", "./models/concerts.ts", "./models/merch.ts", "./models/appDownload.ts", "./models/mediaUrl.ts", "./models/videoLocal.ts", "./models/audioPlayer.ts", "./models/pdfViewer.ts", "./models/spotifyEmbed.ts", "./models/spotifyPlayer.ts", "./models/beforeAfter.ts", "./models/embed.ts", "./models/sharedImage.ts", "./models/albumBlockCta.ts", "./models/beforeAfterShared.ts", "./models/videoBlock.ts", "./models/googleMapsEmbed.ts", "./models/albumBlock.ts", "./models/discography.ts", "./models/podcastLinks.ts", "./models/productCatalog.ts", "./models/repeaterExtract.ts", "./models/layoutStyle.ts", "./forms/formTypes.ts", "./forms/leadFormModels.ts", "./forms/leadPayload.ts", "./forms/leadFormMachine.ts", "./forms/formCandidates.ts"]) {
     it(`${m} : aucun import react/supabase`, () => {
       const imports = read(m).split("\n").filter(l => /^\s*import\b/.test(l)).join("\n")
       expect(/from ["']react["']/.test(imports)).toBe(false)

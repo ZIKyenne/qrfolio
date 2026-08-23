@@ -104,7 +104,9 @@ export async function POST(req: NextRequest) {
           type: b.type,
           position: i,
           content: b.content || {},
-          is_visible: true,
+          // L'assistant de personnalisation peut demander qu'un bloc soit posé MASQUÉ
+          // (gardé dans la page mais invisible en ligne). Sans ce champ : visible.
+          is_visible: b.visible !== false,
           styles: {},
         }))
       )

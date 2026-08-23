@@ -1,8 +1,9 @@
 // TemplatePreviewModal.tsx — Preview d'un template dans une simulation iPhone
 "use client"
 import { useEffect, useRef } from "react"
-import { X, ArrowRight, Lock, Check, Layers, Clock, ExternalLink } from "lucide-react"
+import { X, ArrowRight, Lock, Check, Layers, Clock, ExternalLink, Sparkles } from "lucide-react"
 import { type Block, type PageTheme, BLOCK_DEFS } from "../builder/types"
+import { resolvePublicBlock } from "../builder/shared-renderer/publicRegistry"
 import { useIsMobile } from "@/lib/useIsMobile"
 
 const NOISE_SVG_URL = "url('data:image/svg+xml,%3Csvg viewBox=%270 0 200 200%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E')"
@@ -77,7 +78,7 @@ const getPatternCSS = (pattern: string, color: string, size: number, opacity: nu
   }
 }
 
-function computeBgStyle(theme: PageTheme, dayMode: boolean): React.CSSProperties {
+export function computeBgStyle(theme: PageTheme, dayMode: boolean): React.CSSProperties {
   if (dayMode) return { background: "#FAFAFA" }
   const t = theme as any
   let base: React.CSSProperties = {}
@@ -127,7 +128,29 @@ function computeBgStyle(theme: PageTheme, dayMode: boolean): React.CSSProperties
   return base
 }
 
-function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageTheme; dayMode: boolean }) {
+export function BlockPreview({ block, theme, dayMode }: { block: Block; theme: PageTheme; dayMode: boolean }) {
+  // Renderer PARTAGÉ d'abord : l'aperçu montre alors EXACTEMENT ce que verra un visiteur.
+  // Sans lui, tout bloc absent du `switch` ci-dessous tombait sur une vignette « icône +
+  // nom », ce qui vidait l'aperçu des modèles récents. Repli sur le rendu maison sinon.
+  const Shared = resolvePublicBlock(block.type)
+  if (Shared) {
+    return (
+      <Shared
+        content={block.content as any}
+        ctx={{
+          theme,
+          G: theme.primary || "var(--accent)",
+          TEXT: theme.text || "#F5F0E8",
+          MUTED: theme.muted || "#8A8478",
+          FONT_D: theme.fontDisplay || "Fraunces, serif",
+          FONT_B: theme.fontBody || "DM Sans, sans-serif",
+          pageId: "preview",
+          blockId: block.id,
+          trackClick: () => {},
+        } as any}
+      />
+    )
+  }
   const c = block.content
   const bg = "transparent"
   const text = dayMode ? "#1A1A1A" : theme.text
@@ -2547,6 +2570,8 @@ interface TemplatePreviewModalProps {
   blocks: { type: string; content: Record<string, string> }[]
   onClose: () => void
   onUse: () => void
+  /** Ouvre l'assistant de personnalisation (questions → revue → création). */
+  onCustomize?: () => void
   canUse: boolean
   isCreating?: boolean
 }
@@ -2556,7 +2581,7 @@ const MUTED = "#A8A190"
 const G = "var(--accent)"
 
 export default function TemplatePreviewModal({
-  template, blocks, onClose, onUse, canUse, isCreating
+  template, blocks, onClose, onUse, onCustomize, canUse, isCreating
 }: TemplatePreviewModalProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile(768) // mobile : aperçu + panneau empilés et scrollables
@@ -2821,16 +2846,30 @@ export default function TemplatePreviewModal({
             <button type="button" onClick={onClose} className="da-btn-neutral da-btn-neutral--sm">
               <X className="da-ic da-ic-x" size={13} /> Fermer
             </button>
-            <button type="button" onClick={onUse} disabled={!!isCreating}
-              className={canUse ? "da-btn-primary da-btn-primary--sm" : "da-btn-neutral da-btn-neutral--sm"}
-              style={{ flex: 1, justifyContent: "center" }}>
-              {isCreating
-                ? <><span style={{ width: 12, height: 12, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> <span>Création...</span></>
-                : canUse
-                  ? <><span>Utiliser ce template</span> <ArrowRight className="da-ic da-ic-arrow" size={14} /></>
-                  : <><Lock size={12} /> <span>Plan {PLAN_LABELS[template.plan]} requis</span></>
-              }
-            </button>
+            {canUse && onCustomize
+              ? <>
+                  {/* Chemin recommandé : on remplit le modèle avec ses propres informations
+                      AVANT d'entrer dans l'éditeur — la page ne contient alors aucun exemple. */}
+                  <button type="button" onClick={onCustomize} disabled={!!isCreating}
+                    className="da-btn-primary da-btn-primary--sm" style={{ flex: 1, justifyContent: "center" }}>
+                    <Sparkles size={13} /> <span>Remplir avec mes infos</span> <ArrowRight className="da-ic da-ic-arrow" size={14} />
+                  </button>
+                  <button type="button" onClick={onUse} disabled={!!isCreating}
+                    className="da-btn-neutral da-btn-neutral--sm" title="Créer la page telle quelle, avec le contenu d'exemple">
+                    Utiliser tel quel
+                  </button>
+                </>
+              : <button type="button" onClick={onUse} disabled={!!isCreating}
+                  className={canUse ? "da-btn-primary da-btn-primary--sm" : "da-btn-neutral da-btn-neutral--sm"}
+                  style={{ flex: 1, justifyContent: "center" }}>
+                  {isCreating
+                    ? <><span style={{ width: 12, height: 12, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> <span>Création...</span></>
+                    : canUse
+                      ? <><span>Utiliser ce template</span> <ArrowRight className="da-ic da-ic-arrow" size={14} /></>
+                      : <><Lock size={12} /> <span>Plan {PLAN_LABELS[template.plan]} requis</span></>
+                  }
+                </button>
+            }
           </div>
         </div>
       </div>

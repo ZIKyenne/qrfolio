@@ -8,6 +8,7 @@ import { slugifyBase } from "@/lib/slug"
 import { Sparkles, ArrowRight, Check, X, Lock, Search, Heart, Eye, Clock, Layers, SlidersHorizontal,
   UtensilsCrossed, Martini, Coffee, Laptop, Target, User, Building2, Megaphone, Music, Camera, Home, Brush, PartyPopper, Rocket, ShoppingBag, Zap, Flame } from "lucide-react"
 import TemplatePreviewModal from "./TemplatePreviewModal"
+import TemplateWizardModal from "./TemplateWizardModal"
 import Particles from "@/components/Particles"
 import { useIsMobile } from "@/lib/useIsMobile"
 import { PAGE_TEMPLATES } from "../builder/page-templates"
@@ -140,6 +141,7 @@ export default function TemplatesPage() {
   const [isCreating,   setIsCreating]   = useState(false)
   const toast = useToast()
   const [namingFor,    setNamingFor]    = useState<string | null>(null)
+  const [wizardFor,    setWizardFor]    = useState<string | null>(null)
   const router = useRouter()
 
   // T3.b — sélection de style/disposition dans la modale de nommage (moteur de templates). Couvre
@@ -564,6 +566,38 @@ export default function TemplatesPage() {
         </div>
       </div>
 
+      {/* ── Assistant de personnalisation ─────────────────────────────────── */}
+      {wizardFor && (() => {
+        const tpl = TEMPLATES.find((t: any) => t.id === wizardFor)
+        if (!tpl) return null
+        const currentTheme = TEMPLATE_THEMES[wizardFor] || TEMPLATE_THEMES["freelance"]
+        const currentBlocks = TEMPLATE_BLOCKS[wizardFor] || []
+        const effStyle = styleKey || nativeGalleryStyleKey(currentTheme)
+        const composed = galleryComposeBlocks(currentBlocks, currentTheme, effStyle, layoutKey)
+        return (
+          <TemplateWizardModal
+            templateName={tpl.name}
+            templateEmoji={tpl.emoji}
+            blocks={composed.blocks}
+            theme={composed.theme}
+            onClose={() => setWizardFor(null)}
+            onCreate={async ({ name, slug, blocks }) => {
+              const res = await fetch("/api/templates/use", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ templateId: wizardFor, templateName: name, slug, description: tpl.description, theme: composed.theme, blocks }),
+              })
+              const json = await res.json()
+              if (!res.ok || !json.pageId) return { error: json.error || "Erreur creation page." }
+              toast.success("Page créée — à vous de jouer")
+              setTimeout(() => router.push("/dashboard/builder/" + json.pageId), 400)
+              return { ok: true }
+            }}
+          />
+        )
+      })()}
+
       {/* ── Modal Aperçu ──────────────────────────────────────────────────── */}
       {preview && previewTemplate && (
         <TemplatePreviewModal
@@ -574,6 +608,11 @@ export default function TemplatesPage() {
             setPreview(null)
             if (!canUse(previewTemplate.plan)) { toast.error(`Plan ${previewTemplate.plan} requis`); return }
             setNamingFor(previewTemplate.id)
+          }}
+          onCustomize={() => {
+            setPreview(null)
+            if (!canUse(previewTemplate.plan)) { toast.error(`Plan ${previewTemplate.plan} requis`); return }
+            setWizardFor(previewTemplate.id)
           }}
           canUse={canUse(previewTemplate.plan)}
           isCreating={isCreating}

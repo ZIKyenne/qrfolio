@@ -1,6 +1,6 @@
   "use client"
 
-  import { useState, useRef, useEffect, useCallback, Component, memo } from "react"
+  import { useState, useRef, useEffect, useCallback, useMemo, Component, memo } from "react"
   import {
     X, ChevronUp, ChevronDown, Trash2,
     Eye, Plus, Settings, Check, Search, Copy, EyeOff,
@@ -44,6 +44,7 @@
   import { createPublishController } from "./publish"
   import { publishPage } from "./publishActions"
   import { safeErrorMessage, loadStateFromError, type LoadState } from "./builderErrors"
+  import { printHandoff, printStudioUrl } from "../print-studio/handoff"
 
   // Helper module-scope (evite la temporal-dead-zone du UUID_RE interne au composant).
   const IS_UUID = (s?: string | null): boolean => !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
@@ -216,6 +217,9 @@
     const [qrShortCode, setQrShortCode] = useState("")
     // Cible du QR (lien de scan) + telechargement PNG genere en local (sans API externe).
     const qrTarget = qrShortCode ? `${typeof window !== "undefined" ? window.location.origin : ""}/q/${qrShortCode}` : ""
+    // Pont vers le Print Studio : on déduit métier, usage et textes depuis la page elle-même,
+    // pour que l'utilisateur atterrisse sur un support déjà rempli au lieu d'une page blanche.
+    const handoff = useMemo(() => printHandoff({ title: pageName, blocks: blocks.filter(b => b.visible !== false) }), [pageName, blocks])
     const downloadQrPng = async () => {
       if (!qrTarget) return
       const b = await getQRBlob({ data: qrTarget, fg: "#080808", bg: "#FFFFFF", ecc: "M", style: {}, size: 512 }, "png")
@@ -1407,6 +1411,33 @@
                         <QRCanvas value={qrTarget} size={132} />
                       </div>
                       <button onClick={downloadQrPng} style={{ width: "100%", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 10, padding: "11px", color: G, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>↓ Télécharger le QR (PNG)</button>
+
+                      {/* Un QR en PNG ne sert à rien tant qu'il n'est pas posé quelque part.
+                          On propose donc les 3 supports les plus évidents pour ce métier, avec
+                          le studio déjà pré-rempli (métier, usage, nom, message, appel à l'action). */}
+                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                        <p style={{ color: MUTED, fontSize: 10, margin: "0 0 3px", textTransform: "uppercase", letterSpacing: 1, textAlign: "center" }}>L'imprimer sur un support</p>
+                        <p style={{ color: "rgba(245,240,232,0.45)", fontSize: 10.5, margin: "0 0 9px", textAlign: "center", lineHeight: 1.35 }}>
+                          {handoff.metier !== "Tout" ? `Conseillé pour « ${handoff.metier} »` : "Prêt à imprimer, textes déjà remplis"}
+                        </p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {handoff.suggested.map(sg => (
+                            <a key={sg.id} href={printStudioUrl(qrShortCode, handoff, sg.id)}
+                              style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "9px 10px", textDecoration: "none" }}>
+                              <span aria-hidden style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 7, background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: G, fontSize: 12 }}>🖨</span>
+                              <span style={{ minWidth: 0 }}>
+                                <span style={{ display: "block", color: "#F5F0E8", fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sg.label}</span>
+                                <span style={{ display: "block", color: MUTED, fontSize: 10, lineHeight: 1.3 }}>{sg.why}</span>
+                              </span>
+                              <span aria-hidden style={{ marginLeft: "auto", color: MUTED, fontSize: 13 }}>›</span>
+                            </a>
+                          ))}
+                        </div>
+                        <a href={printStudioUrl(qrShortCode, handoff)}
+                          style={{ display: "block", marginTop: 7, textAlign: "center", color: MUTED, fontSize: 11, textDecoration: "none", padding: "6px" }}>
+                          Voir tous les supports →
+                        </a>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -223,6 +223,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [showOthers, setShowOthers] = useState(false)     // « Voir les N autres »
   const [allMetiers, setAllMetiers] = useState(false)     // « + N métiers » (déplie les raccourcis)
   const [itemId, setItemId] = useState<string | null>(null)
+  // Textes hérités d'une page publiée (?brand/?message/?cta) : réappliqués à chaque objet ouvert,
+  // sinon openItem() les écraserait par les valeurs de démonstration du catalogue.
+  const handoffRef = useRef<{ brand: string; message: string; cta: string } | null>(null)
 
   // état studio
   const [styleId, setStyleId] = useState("premiumdark")
@@ -351,6 +354,21 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       .then(r => r.json()).then(d => { if (alive && d && d.design && typeof d.design === "object") restoreDesign(d.design) })
       .catch(() => {})
     return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  // Arrivée depuis une page publiée (bouton « Imprimer un support ») : la page a déjà déduit
+  // le métier, l'usage et les textes. On ouvre le studio déjà cadré au lieu de tout resaisir.
+  useEffect(() => {
+    let q: URLSearchParams
+    try { q = new URLSearchParams(window.location.search) } catch { return }
+    const g = (k: string) => (q.get(k) || "").replace(/\s+/g, " ").trim().slice(0, 90)
+    const m = g("metier"); if (m && METIERS.includes(m)) setMetier(m)
+    const o = g("objectif"); if (o && OBJECTIFS.includes(o)) setObjectif(o)
+    const h = { brand: g("brand"), message: g("message"), cta: g("cta") }
+    if (h.brand || h.message || h.cta) handoffRef.current = h
+    const it = g("item")
+    if (it && ITEM_BY_ID[it]) openItem(it)   // openItem applique le handoff en fin de course
+    else applyHandoff()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => {
@@ -717,6 +735,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setItemId(id); setDeclineOpen(false)
   }
 
+  // Réapplique les textes venus de la page publiée par-dessus les valeurs de démonstration.
+  function applyHandoff() {
+    const h = handoffRef.current; if (!h) return
+    if (h.brand) setBrandText(h.brand)
+    if (h.message) setMessage(h.message)
+    if (h.cta) setCtaText(h.cta)
+  }
+
   function openItem(id: string) {
     const it = ITEM_BY_ID[id]; if (!it) return
     setItemId(id); setStyleId(it.pal); setLayoutId(resolveLayoutId(it.layout))
@@ -727,6 +753,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false)
     setLibre(true); setFreeEls([]); setSelEl(null); setQrFree(false); setQrFx(0.32); setQrFy(0.55); setContentFree(false); setPhase("studio")
     undoRef.current = { past: [], future: [], apply: false, last: "", t: null }; setCanUndo(false); setCanRedo(false)
+    applyHandoff()
   }
 
   // Ré-export du QR choisi, seul (source « Mes QR »). On réencode le lien du QR existant :

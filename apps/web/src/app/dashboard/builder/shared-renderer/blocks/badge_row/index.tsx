@@ -1,7 +1,7 @@
 "use client"
 // badge_row — Rangée de pastilles. Une simple liste séparée par des virgules devient une
 // série d'étiquettes colorées : labels, garanties, spécialités, moyens de paiement.
-import { splitList, safeColor, alignOf, flexAlign } from "../../models/layoutStyle"
+import { splitList, safeColor, alignOf, flexAlign, textOn } from "../../models/layoutStyle"
 import { LayoutSurface, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
@@ -12,7 +12,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
   const kind = String(c.style || "Doux")
   const size = String(c.size || "Normale") === "Grande" ? 13.5 : String(c.size || "") === "Petite" ? 10.5 : 12
   const skin = kind === "Plein"
-    ? { background: accent, color: "#080808", border: "none" }
+    ? { background: accent, color: textOn(accent), border: "none" }
     : kind === "Contour"
       ? { background: "transparent", color: accent, border: `1px solid ${accent}` }
       : { background: `${accent}1A`, color: accent, border: `1px solid ${accent}33` }

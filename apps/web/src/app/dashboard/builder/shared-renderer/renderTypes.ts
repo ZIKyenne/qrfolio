@@ -4,6 +4,7 @@
 
 import type { CSSProperties } from "react"
 import type { PageTheme } from "../types"
+import { isLightTheme, surfaceTokens } from "./models/layoutStyle"
 
 // Adapter ÉDITEUR : couleurs + style de surface + édition inline (capacité fournie).
 export type EditorRenderCtx = {
@@ -53,6 +54,11 @@ export type UnifiedCtx = {
   FONT_B: string
   scale: number      // 1 en public, < 1 dans le canvas éditeur
   trackClick: (target: string) => void
+  // Surfaces adaptatives : s'inversent sur un thème clair (voir models/layoutStyle).
+  light: boolean
+  FILL: string        // fond de carte discret
+  LINE: string        // bordure / filet
+  LINE_STRONG: string // pointillés, séparateurs marqués
 }
 
 export function editorCtx(ctx: EditorRenderCtx): UnifiedCtx {
@@ -67,7 +73,14 @@ export function editorCtx(ctx: EditorRenderCtx): UnifiedCtx {
     FONT_B: ctx.theme.fontBody || "inherit",
     scale: 0.86,
     trackClick: () => {},
+    ...themeSurfaces(ctx.theme),
   }
+}
+
+// Facteur commun aux deux contextes : décide clair/sombre une seule fois.
+function themeSurfaces(theme: PageTheme | undefined) {
+  const light = isLightTheme(theme as any)
+  return { light, ...surfaceTokens(light) }
 }
 
 export function publicCtx(ctx: PublicRenderCtx): UnifiedCtx {
@@ -82,6 +95,7 @@ export function publicCtx(ctx: PublicRenderCtx): UnifiedCtx {
     FONT_B: ctx.FONT_B,
     scale: 1,
     trackClick: ctx.trackClick,
+    ...themeSurfaces(ctx.theme),
   }
 }
 

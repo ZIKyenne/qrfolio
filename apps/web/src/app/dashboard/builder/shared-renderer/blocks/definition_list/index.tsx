@@ -36,7 +36,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
         ) : (
           <div key={i} style={{ display: "flex", alignItems: "baseline", gap: Math.round(7 * u.scale) }}>
             <dt style={{ color: u.MUTED, fontSize: Math.round(12.5 * u.scale), fontFamily: u.FONT_B, margin: 0, flexShrink: 0 }}>{r.label}</dt>
-            {dotted && <span aria-hidden style={{ flex: 1, borderBottom: "1px dotted rgba(255,255,255,0.22)", transform: `translateY(-${Math.round(3 * u.scale)}px)` }} />}
+            {dotted && <span aria-hidden style={{ flex: 1, borderBottom: `1px dotted ${u.LINE_STRONG}`, transform: `translateY(-${Math.round(3 * u.scale)}px)` }} />}
             <dd style={{ color: r.strong ? accent : u.TEXT, fontSize: Math.round(13 * u.scale), fontWeight: r.strong ? 700 : 600, margin: 0, fontFamily: u.FONT_B, textAlign: "right", flexShrink: 0, maxWidth: "60%" }}>{r.value}</dd>
           </div>
         ))}

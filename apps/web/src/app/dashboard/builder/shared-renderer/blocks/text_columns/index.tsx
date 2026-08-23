@@ -20,7 +20,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
         color: u.TEXT, fontSize: Math.round(13 * u.scale), lineHeight: 1.75, fontFamily: u.FONT_B,
         margin: c.title ? `${Math.round(10 * u.scale)}px 0 0` : 0, textAlign: String(c.align || "") === "Justifié" ? "justify" : align,
         columnCount: cols, columnGap: Math.round(16 * u.scale),
-        columnRule: String(c.rule || "Non") === "Oui" ? "1px solid rgba(255,255,255,0.12)" : undefined,
+        columnRule: String(c.rule || "Non") === "Oui" ? `1px solid ${u.LINE}` : undefined,
         whiteSpace: "pre-line", hyphens: "auto",
       }}>{c.text}</p>
     </LayoutSurface>

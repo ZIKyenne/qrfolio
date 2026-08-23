@@ -29,7 +29,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
       <SurfaceHeading u={u} title={c.title} subtitle={undefined} align={align} color={u.TEXT} mutedColor={u.MUTED} titleSize={18} />
       <div style={{ display: "grid", gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: Math.round(12 * u.scale), marginTop: c.title ? Math.round(12 * u.scale) : 0 }}>
         {cols.map((col, i) => (
-          <div key={i} style={{ textAlign: align, borderLeft: divider && i > 0 ? "1px solid rgba(255,255,255,0.1)" : undefined, paddingLeft: divider && i > 0 ? Math.round(11 * u.scale) : undefined }}>
+          <div key={i} style={{ textAlign: align, borderLeft: divider && i > 0 ? `1px solid ${u.LINE}` : undefined, paddingLeft: divider && i > 0 ? Math.round(11 * u.scale) : undefined }}>
             {col.emoji && <span style={{ fontSize: Math.round(19 * u.scale), display: "block", marginBottom: Math.round(5 * u.scale) }}>{col.emoji}</span>}
             {col.title && <p style={{ color: u.TEXT, fontSize: Math.round(13 * u.scale), fontWeight: 700, margin: `0 0 ${Math.round(4 * u.scale)}px`, fontFamily: u.FONT_D }}>{col.title}</p>}
             {col.text && <p style={{ color: u.MUTED, fontSize: Math.round(12 * u.scale), margin: 0, lineHeight: 1.6, fontFamily: u.FONT_B, whiteSpace: "pre-line" }}>{col.text}</p>}

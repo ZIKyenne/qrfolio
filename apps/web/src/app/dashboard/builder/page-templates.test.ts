@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, AMBIANCE_THEMES, AMBIANCE_KEYS, themeForAmbiance,
 } from "./page-templates"
+import { safeImageUrl, isLightTheme } from "./shared-renderer/models/layoutStyle"
 
 describe("themeForAmbiance", () => {
   it("cle connue -> son theme", () => {
@@ -71,5 +72,45 @@ describe("integrite des PAGE_TEMPLATES", () => {
         expect(b.content && typeof b.content === "object", `content invalide sur ${t.key}`).toBe(true)
       }
     }
+  })
+})
+
+// Les modèles « studio » embarquent des visuels générés (data-URI SVG) et des thèmes
+// sur mesure. Ces garde-fous attrapent les régressions qui les rendraient invisibles :
+// un visuel rejeté par la validation d'URL, ou un thème absent des ambiances (le
+// sélecteur de style de la galerie ne saurait alors plus reproduire le look d'origine).
+describe("modèles studio", () => {
+  const studio = PAGE_TEMPLATES.filter(t => t.key.startsWith("studio_"))
+
+  it("au moins dix modèles studio", () => {
+    expect(studio.length).toBeGreaterThanOrEqual(10)
+  })
+
+  it("chaque thème studio est une ambiance connue (identité de référence)", () => {
+    const ambiances = Object.values(AMBIANCE_THEMES)
+    for (const t of studio) {
+      expect(ambiances.includes(t.theme), `${t.key}: thème hors ambiances`).toBe(true)
+    }
+  })
+
+  it("chaque visuel embarqué passe la validation d'URL d'image", () => {
+    const KEYS = ["image", "bg_image", "img1", "img2", "img3", "img4", "img5",
+      "c1_image", "c2_image", "c3_image", "logo1", "logo2"]
+    const bad: string[] = []
+    for (const t of studio) {
+      for (const b of t.blocks) {
+        for (const k of KEYS) {
+          const v = (b.content as any)[k]
+          if (typeof v === "string" && v.startsWith("data:") && !safeImageUrl(v)) bad.push(`${t.key}.${b.type}.${k}`)
+        }
+      }
+    }
+    expect(bad, `visuels rejetés : ${bad.join(", ")}`).toEqual([])
+  })
+
+  it("les modèles clairs et sombres coexistent (variété réelle)", () => {
+    const light = studio.filter(t => isLightTheme(t.theme as any)).length
+    expect(light, "aucun modèle clair").toBeGreaterThan(0)
+    expect(studio.length - light, "aucun modèle sombre").toBeGreaterThan(0)
   })
 })

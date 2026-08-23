@@ -3,7 +3,7 @@
 // Différente du bloc « étapes » existant, qui impose une lecture chronologique : ici les
 // numéros sont un simple repère (top 5, sélection, classement).
 import { extractIndexed } from "../../models/repeaterExtract"
-import { alignOf, safeColor } from "../../models/layoutStyle"
+import { alignOf, safeColor, textOn } from "../../models/layoutStyle"
 import { LayoutSurface, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
@@ -34,7 +34,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
             <span style={{
               flexShrink: 0, width: size, height: size, borderRadius: String(c.number_shape || "Rond") === "Carré" ? 8 : "50%",
               background: filled ? color : "transparent", border: filled ? "none" : `1.5px solid ${color}`,
-              color: filled ? "#080808" : color, fontWeight: 800, fontSize: Math.round(13 * u.scale),
+              color: filled ? textOn(color) : color, fontWeight: 800, fontSize: Math.round(13 * u.scale),
               display: "flex", alignItems: "center", justifyContent: "center", fontFamily: u.FONT_D,
             }}>{start + i}</span>
             <div style={{ flex: 1, minWidth: 0, paddingTop: Math.round(3 * u.scale) }}>

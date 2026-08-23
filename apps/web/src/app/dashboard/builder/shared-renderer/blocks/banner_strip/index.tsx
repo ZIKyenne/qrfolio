@@ -3,7 +3,7 @@
 // Trois styles (plein, contour, dégradé). Pensée pour l'info qui doit se voir en premier :
 // « Fermé le lundi », « Livraison offerte dès 25 € », « Nouvelle carte ».
 import { extHref } from "../../../types"
-import { safeColor, edgeCss, radiusOf } from "../../models/layoutStyle"
+import { safeColor, edgeCss, radiusOf, textOn } from "../../models/layoutStyle"
 import { SmartCta } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
@@ -12,7 +12,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
   const kind = String(c.style || "Plein").toLowerCase()
   const outline = kind.startsWith("contour")
   const gradient = kind.startsWith("dégra") || kind.startsWith("degra")
-  const fg = outline ? color : "#080808"
+  const fg = outline ? color : textOn(color)
   const href = extHref(String(c.cta_url || ""))
   const bg = outline ? "transparent" : gradient ? `linear-gradient(135deg, ${color}, ${safeColor(c.color2, u.SURFACE)})` : color
   return (
@@ -26,7 +26,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
         <p style={{ color: gradient ? "#FFFFFF" : fg, fontSize: Math.round(13.5 * u.scale), fontWeight: 700, margin: 0, fontFamily: u.FONT_B, textAlign: "center" }}>{c.text}</p>
         {c.cta_label && <SmartCta u={u} href={href} label={c.cta_label} style={{
           padding: `${Math.round(5 * u.scale)}px ${Math.round(12 * u.scale)}px`, borderRadius: 20,
-          background: outline ? color : "rgba(0,0,0,0.18)", color: outline ? "#080808" : gradient ? "#FFFFFF" : fg,
+          background: outline ? color : fg === "#FFFFFF" ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.14)", color: outline ? textOn(color) : gradient ? "#FFFFFF" : fg,
           fontSize: Math.round(11.5 * u.scale), fontWeight: 700, textDecoration: "none", fontFamily: u.FONT_B, whiteSpace: "nowrap",
         }} />}
       </div>

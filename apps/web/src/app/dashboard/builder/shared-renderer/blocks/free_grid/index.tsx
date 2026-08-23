@@ -45,8 +45,8 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
           const box = {
             display: "block", textDecoration: "none", textAlign: align as any,
             padding: boxed ? `${Math.round(13 * u.scale)}px ${Math.round(11 * u.scale)}px` : 0,
-            background: boxed ? "rgba(255,255,255,0.04)" : "transparent",
-            border: boxed ? "1px solid rgba(255,255,255,0.09)" : "none",
+            background: boxed ? u.FILL : "transparent",
+            border: boxed ? `1px solid ${u.LINE}` : "none",
             borderRadius: 11,
           } as const
           return cell.href

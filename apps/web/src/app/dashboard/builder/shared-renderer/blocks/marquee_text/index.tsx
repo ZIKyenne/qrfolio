@@ -2,7 +2,7 @@
 // marquee_text — Bandeau de texte qui défile en boucle. Le message se répète, séparé par
 // un symbole : on lit l'information même si le téléphone est étroit. Animation coupée si
 // l'utilisateur a demandé moins d'animations.
-import { safeColor, splitList, clampInt } from "../../models/layoutStyle"
+import { safeColor, splitList, clampInt, textOn } from "../../models/layoutStyle"
 import { Marquee } from "../../primitives/Marquee"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
@@ -11,7 +11,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
   const items = parts.length ? parts : [String(c.text || "").trim()].filter(Boolean)
   if (items.length === 0) return null
   const bg = safeColor(c.bg_color, u.G)
-  const fg = safeColor(c.text_color, "#080808")
+  const fg = safeColor(c.text_color, textOn(bg))
   const sep = String(c.separator || "✦")
   const size = clampInt(c.size, 10, 30, 14)
   return (

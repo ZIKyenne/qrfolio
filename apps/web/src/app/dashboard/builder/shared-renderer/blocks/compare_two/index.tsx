@@ -32,20 +32,20 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
   return (
     <LayoutSurface content={c} u={u} defaultPad="compact">
       <SurfaceHeading u={u} title={c.title} subtitle={undefined} align="center" color={u.TEXT} mutedColor={u.MUTED} titleSize={18} />
-      <div style={{ marginTop: c.title ? Math.round(12 * u.scale) : 0, border: "1px solid rgba(255,255,255,0.09)", borderRadius: 12, overflow: "hidden" }}>
-        <div style={{ display: "flex", background: "rgba(255,255,255,0.05)" }}>
+      <div style={{ marginTop: c.title ? Math.round(12 * u.scale) : 0, border: `1px solid ${u.LINE}`, borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ display: "flex", background: u.FILL }}>
           <div style={{ flex: 1, minWidth: 0, padding: `${Math.round(9 * u.scale)}px ${Math.round(10 * u.scale)}px`, textAlign: "center" }}>
             <span style={{ color: good, fontSize: Math.round(12 * u.scale), fontWeight: 800, fontFamily: u.FONT_D }}>{c.left_title || "Nous"}</span>
           </div>
-          <div style={{ width: 1, background: "rgba(255,255,255,0.09)" }} />
+          <div style={{ width: 1, background: u.LINE }} />
           <div style={{ flex: 1, minWidth: 0, padding: `${Math.round(9 * u.scale)}px ${Math.round(10 * u.scale)}px`, textAlign: "center" }}>
             <span style={{ color: u.MUTED, fontSize: Math.round(12 * u.scale), fontWeight: 800, fontFamily: u.FONT_D }}>{c.right_title || "Ailleurs"}</span>
           </div>
         </div>
         {rows.map((r, i) => (
-          <div key={i} style={{ display: "flex", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          <div key={i} style={{ display: "flex", borderTop: `1px solid ${u.LINE}` }}>
             {cell(r.left, good, "✓")}
-            <div style={{ width: 1, background: "rgba(255,255,255,0.07)" }} />
+            <div style={{ width: 1, background: u.LINE }} />
             {cell(r.right, bad, "✕")}
           </div>
         ))}

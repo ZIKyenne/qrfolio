@@ -14,7 +14,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
   return (
     <div style={{
       height: Math.round(h * u.scale), background,
-      backgroundImage: kind === "Image" && img ? `url(${img})` : undefined,
+      backgroundImage: kind === "Image" && img ? `url("${img}")` : undefined,
       backgroundSize: "cover", backgroundPosition: "center", position: "relative",
     }}>
       {kind === "Image" && img && <div aria-hidden style={{ position: "absolute", inset: 0, background: "#000", opacity: pct01(c.overlay, 0.25) }} />}

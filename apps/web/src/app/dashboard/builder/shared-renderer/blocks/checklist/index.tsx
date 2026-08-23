@@ -30,8 +30,8 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
           <li key={i} style={{
             display: "flex", gap: Math.round(9 * u.scale), alignItems: "flex-start",
             padding: boxed ? `${Math.round(9 * u.scale)}px ${Math.round(11 * u.scale)}px` : 0,
-            background: boxed ? "rgba(255,255,255,0.04)" : undefined,
-            border: boxed ? "1px solid rgba(255,255,255,0.08)" : undefined, borderRadius: boxed ? 9 : undefined,
+            background: boxed ? u.FILL : undefined,
+            border: boxed ? `1px solid ${u.LINE}` : undefined, borderRadius: boxed ? 9 : undefined,
           }}>
             <span aria-hidden style={{ color: l.off ? "#FF6B6B" : okColor, fontSize: Math.round(14 * u.scale), fontWeight: 800, lineHeight: 1.4, flexShrink: 0 }}>{l.off ? "✕" : "✓"}</span>
             <div style={{ flex: 1, minWidth: 0 }}>

@@ -2,6 +2,7 @@
 // Appliqué depuis le builder : pose un thème cohérent + un jeu de blocs prêts à personnaliser.
 // N'utilise QUE des types de blocs existants et des clés de contenu réelles (mêmes clés que le rendu).
 import type { PageTheme } from "./types"
+import { STUDIO_TEMPLATES, STUDIO_THEMES } from "./templatesStudio"
 
 export type PageTemplate = {
   key: string
@@ -344,6 +345,11 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
   },
 ]
 
+// Modèles « nouvelle génération » (templatesStudio.ts) : bâtis sur les blocs de création
+// libre, avec leurs thèmes sur mesure. Concaténés ici pour qu'ils alimentent d'un coup le
+// sélecteur du builder ET la galerie, sans toucher à leur code.
+PAGE_TEMPLATES.push(...STUDIO_TEMPLATES)
+
 // Groupes ordonnés pour l'affichage (dérivé, garde l'ordre d'apparition).
 export const PAGE_TEMPLATE_GROUPS: string[] = PAGE_TEMPLATES.reduce<string[]>((acc, t) => {
   if (!acc.includes(t.group)) acc.push(t.group)
@@ -352,8 +358,10 @@ export const PAGE_TEMPLATE_GROUPS: string[] = PAGE_TEMPLATES.reduce<string[]>((a
 
 // Ambiances réutilisables (clé -> thème premium), pour la génération par IA.
 // L'IA choisit une clé d'ambiance ; le mapper la traduit en thème réel cohérent.
-export const AMBIANCE_THEMES: Record<string, PageTheme> = T
-export const AMBIANCE_KEYS = Object.keys(T)
+// Les thèmes sur mesure des modèles studio rejoignent les ambiances : n'importe quel
+// modèle de la galerie peut donc être re-stylé avec l'un d'eux (moteur templateEngine).
+export const AMBIANCE_THEMES: Record<string, PageTheme> = { ...T, ...STUDIO_THEMES }
+export const AMBIANCE_KEYS = Object.keys(AMBIANCE_THEMES)
 export function themeForAmbiance(key: string): PageTheme {
-  return T[key as keyof typeof T] || T.gold
+  return AMBIANCE_THEMES[key] || T.gold
 }

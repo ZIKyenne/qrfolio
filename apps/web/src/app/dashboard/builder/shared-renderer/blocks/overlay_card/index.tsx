@@ -3,7 +3,7 @@
 // par-dessus (haut / centre / bas) et bouton optionnel. C'est le bloc « couverture »
 // que réclament les vitrines, les hôtels et les cartes de restaurant.
 import { extHref } from "../../../types"
-import { safeImageUrl, pct01, clampInt, alignOf, edgeCss, radiusOf } from "../../models/layoutStyle"
+import { safeImageUrl, pct01, clampInt, alignOf, edgeCss, radiusOf, textOn } from "../../models/layoutStyle"
 import { SmartCta } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
@@ -21,7 +21,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
         position: "relative", borderRadius: radiusOf(c.radius, 16), overflow: "hidden",
         minHeight: Math.round(h * u.scale), display: "flex", flexDirection: "column", justifyContent: justify,
         background: img ? undefined : "linear-gradient(135deg,rgba(201,168,76,0.25),rgba(0,0,0,0.5))",
-        backgroundImage: img ? `url(${img})` : undefined, backgroundSize: "cover", backgroundPosition: "center",
+        backgroundImage: img ? `url("${img}")` : undefined, backgroundSize: "cover", backgroundPosition: "center",
       }}>
         <div aria-hidden style={{ position: "absolute", inset: 0, background: `linear-gradient(to top, rgba(0,0,0,${pct01(c.overlay, 0.62)}), rgba(0,0,0,${pct01(c.overlay, 0.62) * 0.25}))`, pointerEvents: "none" }} />
         <div style={{ position: "relative", padding: `${Math.round(20 * u.scale)}px ${Math.round(18 * u.scale)}px`, textAlign: align }}>
@@ -31,7 +31,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
           {c.cta_label && (
             <SmartCta u={u} href={href} label={c.cta_label} style={{
               display: "inline-block", marginTop: Math.round(14 * u.scale), padding: `${Math.round(10 * u.scale)}px ${Math.round(20 * u.scale)}px`,
-              borderRadius: 9, background: u.G, color: "#080808", fontSize: Math.round(13.5 * u.scale), fontWeight: 700, textDecoration: "none", fontFamily: u.FONT_B,
+              borderRadius: 9, background: u.G, color: textOn(u.G), fontSize: Math.round(13.5 * u.scale), fontWeight: 700, textDecoration: "none", fontFamily: u.FONT_B,
             }} />
           )}
         </div>

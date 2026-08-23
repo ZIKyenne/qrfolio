@@ -45,7 +45,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
               </div>
             </>
           )
-          const box = { display: "block", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 12, overflow: "hidden", textDecoration: "none" } as const
+          const box = { display: "block", background: u.FILL, border: `1px solid ${u.LINE}`, borderRadius: 12, overflow: "hidden", textDecoration: "none" } as const
           return it.href
             ? <SmartCta key={i} u={u} href={it.href} label={inner} style={box} />
             : <div key={i} style={box}>{inner}</div>

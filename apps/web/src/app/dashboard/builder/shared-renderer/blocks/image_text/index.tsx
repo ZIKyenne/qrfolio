@@ -3,7 +3,7 @@
 // réglable. Sur un écran étroit (< 380 px de conteneur) la mise en page reste lisible
 // grâce à un ratio minimum ; c'est la brique de base des présentations « à propos ».
 import { extHref } from "../../../types"
-import { alignOf, safeImageUrl, textOnSurface } from "../../models/layoutStyle"
+import { alignOf, safeImageUrl, textOnSurface, textOn } from "../../models/layoutStyle"
 import { LayoutSurface, SmartCta, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
@@ -34,7 +34,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
           {c.cta_label && (
             <SmartCta u={u} href={href} label={c.cta_label} style={{
               display: "inline-block", marginTop: Math.round(10 * u.scale), padding: `${Math.round(8 * u.scale)}px ${Math.round(16 * u.scale)}px`,
-              borderRadius: 9, background: u.G, color: "#080808", fontSize: Math.round(12.5 * u.scale), fontWeight: 700, textDecoration: "none", fontFamily: u.FONT_B,
+              borderRadius: 9, background: u.G, color: textOn(u.G), fontSize: Math.round(12.5 * u.scale), fontWeight: 700, textDecoration: "none", fontFamily: u.FONT_B,
             }} />
           )}
         </div>

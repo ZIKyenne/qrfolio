@@ -33,7 +33,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
               <span style={{ color: u.TEXT, fontSize: Math.round(12.5 * u.scale), fontWeight: 600, fontFamily: u.FONT_B }}>{b.label}</span>
               {showPct && <span style={{ color: b.color || accent, fontSize: Math.round(12 * u.scale), fontWeight: 800, fontFamily: u.FONT_B, flexShrink: 0 }}>{b.note || `${b.value}%`}</span>}
             </div>
-            <div style={{ height: thickness, borderRadius: 999, background: "rgba(255,255,255,0.09)", overflow: "hidden" }}>
+            <div style={{ height: thickness, borderRadius: 999, background: u.LINE, overflow: "hidden" }}>
               <div style={{ width: `${b.value}%`, height: "100%", borderRadius: 999, background: b.color || `linear-gradient(90deg, ${accent}, ${accent}AA)` }} />
             </div>
           </div>

@@ -20,12 +20,18 @@ export function safeColor(v: unknown, fallback = ""): string {
 export function safeImageUrl(v: unknown): string {
   if (typeof v !== "string") return ""
   const s = v.trim()
-  if (!s || s.length > 2000) return ""
-  // Autorisé : http(s), data:image, et chemin absolu same-origin (/mon-image.png).
+  if (!s) return ""
+  // Une adresse http reste courte ; une image embarquée (data:) est forcément longue —
+  // les visuels générés des modèles font quelques kilo-octets, une photo encodée bien plus.
+  const max = /^data:/i.test(s) ? 500_000 : 4000
+  if (s.length > max) return ""
+  // Autorisé : http(s), data:image — avec ou sans « ;base64 », les visuels générés
+  // étant des SVG en clair — et chemin absolu same-origin (/mon-image.png). Un SVG
+  // chargé via <img> ou background-image ne peut pas exécuter de script.
   // Refusé : tout le reste, dont les URL relatives au protocole (//hote/x) qui
   // permettraient de pointer vers un hôte tiers sans que ce soit visible.
   const ok = /^https?:\/\//i.test(s)
-    || /^data:image\/(png|jpe?g|gif|webp|avif|svg\+xml);/i.test(s)
+    || /^data:image\/(png|jpe?g|gif|webp|avif|svg\+xml)[;,]/i.test(s)
     || (s.startsWith("/") && !s.startsWith("//"))
   if (!ok) return ""
   // Neutralise ce qui pourrait fermer `url(` ou une chaîne CSS.
@@ -115,7 +121,7 @@ export function surfaceStyle(
 
   if (kind === "image" && img) {
     return {
-      container: { ...base, backgroundImage: `url(${img})`, backgroundSize: "cover", backgroundPosition: "center" },
+      container: { ...base, backgroundImage: `url("${img}")`, backgroundSize: "cover", backgroundPosition: "center" },
       overlay: { position: "absolute", inset: 0, background: "#000", opacity: pct01(src.overlay, 0.45), pointerEvents: "none" },
     }
   }
@@ -156,4 +162,45 @@ export function anchorId(v: unknown): string {
   const s = String(v ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
   const slug = s.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40)
   return slug ? `qf-${slug}` : ""
+}
+
+// ── Clair ou sombre ? ────────────────────────────────────────────────────────
+// Les surfaces douces des blocs (fond de carte, filet, bordure) doivent s'inverser
+// selon le thème : un voile blanc à 4 % est invisible sur un fond crème. On décide
+// une fois, à partir du thème, et on expose des tokens prêts à l'emploi.
+
+function hexLuminance(v: unknown): number | null {
+  if (typeof v !== "string") return null
+  const m = v.trim().match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/)
+  if (!m) return null
+  const h = m[1].length === 3 ? m[1].split("").map(c => c + c).join("") : m[1]
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255)
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+}
+
+// Vrai si la page a un fond clair. On regarde d'abord le fond ; s'il n'est pas
+// lisible (dégradé, variable CSS…), on déduit du texte : un texte sombre implique
+// un fond clair.
+export function isLightTheme(theme: { bg?: string; text?: string } | null | undefined): boolean {
+  const t = theme || {}
+  const bg = hexLuminance(t.bg)
+  if (bg !== null) return bg > 0.5
+  const text = hexLuminance(t.text)
+  if (text !== null) return text < 0.4
+  return false
+}
+
+// Tokens de surface adaptatifs. `light` vient de isLightTheme.
+export function surfaceTokens(light: boolean): { FILL: string; LINE: string; LINE_STRONG: string } {
+  return light
+    ? { FILL: "rgba(0,0,0,0.045)", LINE: "rgba(0,0,0,0.12)", LINE_STRONG: "rgba(0,0,0,0.28)" }
+    : { FILL: "rgba(255,255,255,0.04)", LINE: "rgba(255,255,255,0.09)", LINE_STRONG: "rgba(255,255,255,0.22)" }
+}
+
+// Couleur de texte lisible SUR une couleur donnée (bouton, ruban, panneau).
+// Sans cela, un accent clair (jaune pâle, rose poudré) donne un bouton blanc sur blanc.
+export function textOn(color: unknown): string {
+  const l = hexLuminance(color)
+  return l !== null && l > 0.45 ? "#0A0A0A" : "#FFFFFF"
 }

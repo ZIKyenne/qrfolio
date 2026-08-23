@@ -3,7 +3,7 @@
 // « étapes » existant empile verticalement : sur trois étapes courtes, l'horizontale
 // tient sur un écran et se lit d'un coup d'œil (Scanner → Choisir → Réserver).
 import { extractIndexed } from "../../models/repeaterExtract"
-import { safeColor, clampInt } from "../../models/layoutStyle"
+import { safeColor, clampInt, textOn } from "../../models/layoutStyle"
 import { LayoutSurface, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
@@ -37,7 +37,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               {showNumbers
-                ? <span style={{ color: "#080808", fontSize: Math.round(14 * u.scale), fontWeight: 800, fontFamily: u.FONT_D }}>{i + 1}</span>
+                ? <span style={{ color: textOn(accent), fontSize: Math.round(14 * u.scale), fontWeight: 800, fontFamily: u.FONT_D }}>{i + 1}</span>
                 : <span style={{ fontSize: Math.round(16 * u.scale) }}>{s.emoji || "•"}</span>}
             </div>
             {s.title && <p style={{ color: u.TEXT, fontSize: Math.round(12 * u.scale), fontWeight: 700, margin: `${Math.round(7 * u.scale)}px ${Math.round(3 * u.scale)}px 0`, fontFamily: u.FONT_D, lineHeight: 1.3 }}>{s.title}</p>}

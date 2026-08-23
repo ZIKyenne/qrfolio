@@ -4,7 +4,7 @@
 // C'est le bloc « couteau suisse » : il permet de composer une page entière sans
 // dépendre d'un bloc métier figé. Vue unique → parité éditeur/public par construction.
 import { extHref } from "../../../types"
-import { alignOf, textOnSurface, clampInt } from "../../models/layoutStyle"
+import { alignOf, textOnSurface, clampInt, textOn } from "../../models/layoutStyle"
 import { LayoutSurface, SmartCta, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
@@ -29,7 +29,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
               <SmartCta key={i} u={u} href={b.href} label={b.label} style={{
                 display: "inline-block", padding: `${Math.round(11 * u.scale)}px ${Math.round(22 * u.scale)}px`, borderRadius: 10,
                 fontSize: Math.round(14 * u.scale), fontWeight: 700, textDecoration: "none", fontFamily: u.FONT_B,
-                background: b.primary ? u.G : "transparent", color: b.primary ? "#080808" : color,
+                background: b.primary ? u.G : "transparent", color: b.primary ? textOn(u.G) : color,
                 border: b.primary ? "none" : `1.5px solid ${color === "#FFFFFF" ? "rgba(255,255,255,0.45)" : u.G}`,
               }} />
             ))}

@@ -30,7 +30,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
   )
   const box = {
     display: "block", textDecoration: "none", overflow: "hidden", borderRadius: 13,
-    background: "rgba(255,255,255,0.04)", border: `1px solid ${accent}33`,
+    background: u.FILL, border: `1px solid ${accent}33`,
   } as const
   return (
     <LayoutSurface content={c} u={u} defaultPad="compact">

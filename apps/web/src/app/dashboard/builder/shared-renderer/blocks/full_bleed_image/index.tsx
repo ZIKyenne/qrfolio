@@ -19,7 +19,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
         ? <img src={img} alt={String(c.caption || "")} loading="lazy" decoding="async"
             onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
             style={{ width: "100%", display: "block", borderRadius: radius, ...(auto ? {} : { height: Math.round(h * u.scale), objectFit: "cover" }) }} />
-        : <div style={{ width: "100%", height: Math.round((auto ? 200 : h) * u.scale), borderRadius: radius, background: "rgba(255,255,255,0.05)", border: "1px dashed rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: u.MUTED, fontSize: Math.round(12 * u.scale), fontFamily: u.FONT_B }}>Ajoutez une image</div>}
+        : <div style={{ width: "100%", height: Math.round((auto ? 200 : h) * u.scale), borderRadius: radius, background: u.FILL, border: `1px dashed ${u.LINE_STRONG}`, display: "flex", alignItems: "center", justifyContent: "center", color: u.MUTED, fontSize: Math.round(12 * u.scale), fontFamily: u.FONT_B }}>Ajoutez une image</div>}
       {c.caption && <p style={{ color: u.MUTED, fontSize: Math.round(11.5 * u.scale), textAlign: "center", margin: `${Math.round(7 * u.scale)}px ${Math.round(24 * u.scale)}px 0`, fontFamily: u.FONT_B, fontStyle: "italic" }}>{c.caption}</p>}
     </div>
   )

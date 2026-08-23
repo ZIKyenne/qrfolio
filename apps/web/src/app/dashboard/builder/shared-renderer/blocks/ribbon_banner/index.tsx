@@ -1,12 +1,12 @@
 "use client"
 // ribbon_banner — Ruban incliné, comme une étiquette collée sur la page. Sert à marquer
 // une nouveauté, une période ou une promotion sans ouvrir un bloc promo complet.
-import { safeColor, alignOf, flexAlign } from "../../models/layoutStyle"
+import { safeColor, alignOf, flexAlign, textOn } from "../../models/layoutStyle"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
 
 function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }) {
   const color = safeColor(c.color, u.G)
-  const fg = safeColor(c.text_color, "#080808")
+  const fg = safeColor(c.text_color, textOn(color))
   const tilt = String(c.tilt || "Gauche")
   const deg = tilt === "Aucune" ? 0 : tilt === "Droite" ? 2.5 : -2.5
   const align = alignOf(c.align)

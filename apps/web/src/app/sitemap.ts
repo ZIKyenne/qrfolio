@@ -2,6 +2,11 @@ import { createAdminClient } from "@/lib/supabase/server"
 import { VERTICAL_ORDER } from "./qr-code/verticals"
 import { GUIDE_ORDER } from "./guides/guides"
 
+// Dernière révision réelle du contenu éditorial. À mettre à jour quand on
+// retouche les pages marketing ou le cluster SEO — surtout PAS `new Date()` :
+// une date toujours fraîche est un signal que Google apprend à ignorer.
+const CONTENT_REVISED = new Date("2026-08-23T00:00:00.000Z")
+
 export default async function sitemap() {
   const supabase = createAdminClient()
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
@@ -9,28 +14,28 @@ export default async function sitemap() {
   // Pages statiques indexables (les pages /auth/* sont volontairement exclues :
   // elles sont bloquees par robots.txt, les lister ici serait contradictoire).
   const staticPages = [
-    { url: baseUrl,               lastModified: new Date(), changeFrequency: "weekly",  priority: 1   },
-    { url: `${baseUrl}/features`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
-    { url: `${baseUrl}/examples`, lastModified: new Date(), changeFrequency: "weekly",  priority: 0.7 },
-    { url: `${baseUrl}/upgrade`,  lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
-    { url: `${baseUrl}/contact`,  lastModified: new Date(), changeFrequency: "yearly",  priority: 0.4 },
-    { url: `${baseUrl}/legal`,    lastModified: new Date(), changeFrequency: "yearly",  priority: 0.2 },
-    { url: `${baseUrl}/security`, lastModified: new Date(), changeFrequency: "yearly",  priority: 0.4 },
-    { url: `${baseUrl}/terms`,    lastModified: new Date(), changeFrequency: "yearly",  priority: 0.2 },
-    { url: `${baseUrl}/privacy`,  lastModified: new Date(), changeFrequency: "yearly",  priority: 0.2 },
+    { url: baseUrl,               lastModified: CONTENT_REVISED, changeFrequency: "weekly",  priority: 1   },
+    { url: `${baseUrl}/features`, lastModified: CONTENT_REVISED, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/examples`, lastModified: CONTENT_REVISED, changeFrequency: "weekly",  priority: 0.7 },
+    { url: `${baseUrl}/upgrade`,  lastModified: CONTENT_REVISED, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${baseUrl}/contact`,  lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.4 },
+    { url: `${baseUrl}/legal`,    lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.2 },
+    { url: `${baseUrl}/security`, lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.4 },
+    { url: `${baseUrl}/terms`,    lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.2 },
+    { url: `${baseUrl}/privacy`,  lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.2 },
   ]
 
   // Pages SEO « QR code par usage » (hub + une page par usage) + outil gratuit.
   const verticalPages = [
-    { url: `${baseUrl}/generateur-qr-code`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.9 },
-    { url: `${baseUrl}/generateur-qr-code-wifi`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${baseUrl}/qr-code`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${baseUrl}/generateur-qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.9 },
+    { url: `${baseUrl}/generateur-qr-code-wifi`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${baseUrl}/qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8 },
     ...VERTICAL_ORDER.map(slug => ({
-      url: `${baseUrl}/qr-code/${slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8,
+      url: `${baseUrl}/qr-code/${slug}`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8,
     })),
-    { url: `${baseUrl}/guides`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 },
+    { url: `${baseUrl}/guides`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.7 },
     ...GUIDE_ORDER.map(slug => ({
-      url: `${baseUrl}/guides/${slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7,
+      url: `${baseUrl}/guides/${slug}`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.7,
     })),
   ]
 

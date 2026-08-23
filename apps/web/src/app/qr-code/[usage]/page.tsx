@@ -22,7 +22,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ usage: string }> }): Promise<Metadata> {
   const { usage } = await params
   const v = getVertical(usage)
-  if (!v) return { title: "QR code par usage | QRowg" }
+  if (!v) return { title: "QR code par usage" }
   const url = `${APP}/qr-code/${v.slug}`
   return {
     title: v.metaTitle,

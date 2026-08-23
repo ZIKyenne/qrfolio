@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { redirect } from "next/navigation"
 import Link from "next/link"
 import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
@@ -12,7 +11,7 @@ const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#0808
 const URL = `${APP}/generateur-qr-code-wifi`
 
 export const metadata: Metadata = {
-  title: "Générateur de QR code WiFi gratuit — connexion en un scan | QRowg",
+  title: "Générateur de QR code WiFi gratuit",
   description: "Créez un QR code WiFi gratuit : vos invités se connectent en un scan, sans taper le mot de passe. Fonctionne hors ligne, PNG/SVG à imprimer. Compte gratuit.",
   alternates: { canonical: URL },
   openGraph: { title: "Générateur de QR code WiFi gratuit | QRowg", description: "Créez un QR code WiFi gratuit : connexion automatique en un scan, sans mot de passe à taper. À imprimer.", url: URL, siteName: "QRowg", type: "website" },
@@ -34,13 +33,16 @@ const STEPS = [
 ]
 
 export default async function WifiGeneratorPage() {
-  // Accès réservé aux comptes (cf. générateur principal).
+  // Ouvert à tous, comme le générateur principal. La page redirigeait les visiteurs
+  // anonymes vers l'inscription : Googlebot n'étant jamais connecté, elle recevait un
+  // 307 et ne pouvait pas être indexée — alors qu'elle est au sitemap, canonique,
+  // balisée FAQ, et qu'elle vise « générateur QR code WiFi gratuit ».
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/auth/signup")
+  const authed = !!user
 
   const appLd = {
-    "@context": "https://schema.org", "@type": "WebApplication",
+    "@context": "https://schema.org", "@type": "WebApplication", "@id": `${URL}/#tool`,
     name: "Générateur de QR code WiFi gratuit QRowg", url: URL,
     applicationCategory: "UtilitiesApplication", operatingSystem: "Web",
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
@@ -85,7 +87,7 @@ export default async function WifiGeneratorPage() {
 
         {/* L'outil, pré-réglé sur WiFi */}
         <section aria-label="Générateur de QR code WiFi" style={{ marginBottom: 52 }}>
-          <GeneratorClient defaultType="wifi" />
+          <GeneratorClient defaultType="wifi" authed={authed} />
         </section>
 
         {/* Comment ça marche */}

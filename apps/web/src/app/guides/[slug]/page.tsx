@@ -17,7 +17,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const g = getGuide(slug)
-  if (!g) return { title: "Guides QR code | QRowg" }
+  if (!g) return { title: "Guides QR code" }
   const url = `${APP}/guides/${g.slug}`
   return {
     title: g.metaTitle,

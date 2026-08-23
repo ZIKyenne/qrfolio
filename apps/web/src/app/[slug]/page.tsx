@@ -16,6 +16,15 @@ export const revalidate = 60
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 
+/** Le gabarit racine ajoute « | QRowg » (8 caractères) : on garde le tout sous ~60. */
+function clampTitle(t: string): string {
+  const s = (t || "").trim()
+  if (s.length <= 52) return s
+  const cut = s.slice(0, 51)
+  const sp = cut.lastIndexOf(" ")
+  return (sp > 24 ? cut.slice(0, sp) : cut).trimEnd() + "…"
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   // Service role : lecture publique contrôlée côté serveur (RLS anon retirée sur profiles).
@@ -30,8 +39,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) return { title: "Page introuvable" }
 
   const profile = page.profiles as any
-  const title = page.seo_title || page.title
-  const description = page.seo_description || `Decouvre la page de ${profile?.full_name || page.title} sur QRowg`
+  // Le titre part dans le gabarit « %s | QRowg » du layout racine : on le borne pour
+  // que l'ensemble tienne dans la fenêtre de la SERP (~60 caractères).
+  const title = clampTitle(page.seo_title || page.title)
+  // Repli quand l'utilisateur n'a pas rempli sa description : une phrase correcte
+  // et vouvoyée plutôt qu'un gabarit non accentué de trente caractères.
+  const who = (profile?.full_name || page.title || "").trim()
+  const description = page.seo_description
+    || `${who} sur QRowg : coordonnées, horaires, liens et contact réunis sur une seule page, accessible en un scan.`.slice(0, 158)
   // Image OG : custom si definie, sinon image de marque generee dynamiquement par page.
   const image = page.og_image_url || `${APP_URL}/${page.slug}/og`
   const url = `${APP_URL}/${page.slug}`

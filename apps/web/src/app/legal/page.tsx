@@ -1,11 +1,14 @@
 import type { Metadata } from "next"
 import { LegalLayout } from "@/components/legal-layout"
 
+const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
+
 export const metadata: Metadata = {
   title: "Mentions légales",
-  description: "Mentions légales du service QRowg.",
-  robots: { index: true, follow: true },
-  alternates: { canonical: "https://qrowg.com/legal" },
+  description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact.",
+  alternates: { canonical: `${APP}/legal` },
+  openGraph: { title: "Mentions légales | QRowg", description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact.", url: `${APP}/legal`, siteName: "QRowg", type: "website" },
+  twitter: { card: "summary_large_image", title: "Mentions légales | QRowg", description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact." },
 }
 
 export default function LegalPage() {

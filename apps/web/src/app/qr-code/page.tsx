@@ -9,10 +9,11 @@ const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
 
 export const metadata: Metadata = {
-  title: "QR codes par usage : restaurant, menu, avis Google, WiFi… | QRowg",
+  title: "QR codes par usage : restaurant, menu, avis Google…",
   description: "Créez le QR code adapté à votre besoin : restaurant, menu numérique, avis Google, WiFi, événement, carte de visite. Dynamique, modifiable, prêt à imprimer.",
   alternates: { canonical: `${APP}/qr-code` },
-  openGraph: { title: "QR codes par usage | QRowg", description: "Le QR code adapté à chaque besoin : restaurant, menu, avis Google, WiFi, événement, carte de visite.", url: `${APP}/qr-code`, siteName: "QRowg", type: "website" },
+  openGraph: { title: "QR codes par usage : restaurant, menu, avis Google… | QRowg", description: "Le QR code adapté à chaque besoin : restaurant, menu, avis Google, WiFi, événement, carte de visite.", url: `${APP}/qr-code`, siteName: "QRowg", type: "website" },
+  twitter: { card: "summary_large_image", title: "QR codes par usage : restaurant, menu, avis Google… | QRowg", description: "Créez le QR code adapté à votre besoin : restaurant, menu numérique, avis Google, WiFi, événement, carte de visite. Dynamique, modifiable, prêt à imprimer." },
 }
 
 export default function QrCodeHub() {
@@ -55,6 +56,7 @@ export default function QrCodeHub() {
           <Link href="/auth/signup" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 800, padding: "14px 30px", borderRadius: 12, boxShadow: "0 6px 26px rgba(201,168,76,0.32)" }}>Créer mon QR code gratuitement →</Link>
           <p style={{ color: MUT, fontSize: 12.5, margin: "10px 0 0" }}>Sans carte bancaire · Modifiable à tout moment</p>
           <p style={{ margin: "14px 0 0" }}><Link href="/generateur-qr-code" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>Ou générez un QR code statique gratuit, sans compte →</Link></p>
+          <p style={{ margin: "8px 0 0" }}><Link href="/guides" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>Nos guides : créer, imprimer et suivre un QR code →</Link></p>
         </section>
       </main>
 
@@ -63,6 +65,7 @@ export default function QrCodeHub() {
         <p style={{ margin: "10px 0 0" }}>
           <Link href="/" style={{ color: MUT, textDecoration: "none" }}>Accueil</Link>{" · "}
           <Link href="/features" style={{ color: MUT, textDecoration: "none" }}>Fonctionnalités</Link>{" · "}
+          <Link href="/guides" style={{ color: MUT, textDecoration: "none" }}>Guides</Link>{" · "}
           <Link href="/examples" style={{ color: MUT, textDecoration: "none" }}>Exemples</Link>{" · "}
           <Link href="/upgrade" style={{ color: MUT, textDecoration: "none" }}>Tarifs</Link>
         </p>

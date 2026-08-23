@@ -10,10 +10,11 @@ const URL = `${APP}/security`
 const UPDATED = "2026-08-12"
 
 export const metadata: Metadata = {
-  title: "Sécurité & confidentialité | QRowg",
+  title: "Sécurité & confidentialité",
   description: "Comment QRowg protège vos données : chiffrement, isolation par utilisateur (RLS), paiements Stripe, hébergement en Europe, export et suppression de vos données.",
   alternates: { canonical: URL },
-  openGraph: { title: "Sécurité — QRowg", description: "Chiffrement, isolation des données, paiements Stripe, hébergement en Europe, contrôle total de vos données.", url: URL, siteName: "QRowg", type: "website" },
+  openGraph: { title: "Sécurité & confidentialité | QRowg", description: "Comment QRowg protège vos données : chiffrement, isolation par utilisateur (RLS), paiements Stripe, hébergement en Europe, export et suppression de vos données.", url: URL, siteName: "QRowg", type: "website" },
+  twitter: { card: "summary_large_image", title: "Sécurité & confidentialité | QRowg", description: "Comment QRowg protège vos données : chiffrement, isolation par utilisateur (RLS), paiements Stripe, hébergement en Europe, export et suppression de vos données." },
 }
 
 // Contenu 100% factuel, vérifiable dans le code/l'infra. Aucune certification revendiquée.

@@ -7,7 +7,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/dashboard/", "/auth/", "/api/"],
+        // /e2e-harness est déjà 404 en production ; on le bloque aussi côté robots
+        // pour qu'aucune preview indexée n'expose des routes de test.
+        disallow: ["/dashboard/", "/auth/", "/api/", "/e2e-harness/"],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

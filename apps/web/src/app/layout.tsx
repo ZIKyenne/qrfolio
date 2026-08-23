@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s | QRowg",
   },
   description:
-    "Créez une page de présentation professionnelle, générez un QR code dynamique et suivez chaque scan. Idéal pour restaurants (menu numérique), indépendants, créateurs (portfolio, lien en bio) et commerces.",
+    "Créez une page pro, générez un QR code dynamique et suivez chaque scan. Pour restaurants, commerces, indépendants et créateurs.",
   keywords: [
     "carte de visite numérique",
     "QR code professionnel",
@@ -91,7 +91,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: serializeJsonLd({
               "@context": "https://schema.org",
-              "@type": "WebApplication",
+              // Même @id et même @type que le nœud du @graph de l'accueil
+              // (lib/landingJsonLd.ts) : les deux descriptions fusionnent en une
+              // seule entité au lieu de se concurrencer.
+              "@type": "SoftwareApplication",
+              "@id": `${APP_URL}/#software`,
               name: "QRowg",
               url: APP_URL,
               description:

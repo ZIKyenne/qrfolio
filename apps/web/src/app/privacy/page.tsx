@@ -2,11 +2,14 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { LegalLayout } from "@/components/legal-layout"
 
+const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
+
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
-  description: "Comment QRowg collecte, utilise et protège vos données personnelles.",
-  robots: { index: true, follow: true },
-  alternates: { canonical: "https://qrowg.com/privacy" },
+  description: "Comment QRowg collecte, utilise et protège vos données personnelles : finalités, durées de conservation, sous-traitants et vos droits.",
+  alternates: { canonical: `${APP}/privacy` },
+  openGraph: { title: "Politique de confidentialité | QRowg", description: "Comment QRowg collecte, utilise et protège vos données personnelles : finalités, durées de conservation, sous-traitants et vos droits.", url: `${APP}/privacy`, siteName: "QRowg", type: "website" },
+  twitter: { card: "summary_large_image", title: "Politique de confidentialité | QRowg", description: "Comment QRowg collecte, utilise et protège vos données personnelles : finalités, durées de conservation, sous-traitants et vos droits." },
 }
 
 export default function PrivacyPage() {

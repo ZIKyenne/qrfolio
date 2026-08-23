@@ -12,7 +12,7 @@ const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#0808
 const URL = `${APP}/generateur-qr-code`
 
 export const metadata: Metadata = {
-  title: "Générateur de QR code gratuit — en ligne, PNG & SVG | QRowg",
+  title: "Générateur de QR code gratuit — en ligne, PNG & SVG",
   description: "Créez un QR code en ligne : lien, texte, WiFi, email, téléphone. Couleurs, logo, téléchargement PNG et SVG haute résolution. Compte gratuit, sans filigrane.",
   alternates: { canonical: URL },
   openGraph: { title: "Générateur de QR code gratuit | QRowg", description: "Créez un QR code en ligne (lien, WiFi, texte…) avec couleurs et logo. Téléchargement PNG/SVG, compte gratuit.", url: URL, siteName: "QRowg", type: "website" },
@@ -42,7 +42,7 @@ export default async function GeneratorPage() {
   const authed = !!user
 
   const appLd = {
-    "@context": "https://schema.org", "@type": "WebApplication",
+    "@context": "https://schema.org", "@type": "WebApplication", "@id": `${URL}/#tool`,
     name: "Générateur de QR code gratuit QRowg", url: URL,
     applicationCategory: "UtilitiesApplication", operatingSystem: "Web",
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
@@ -153,6 +153,7 @@ export default async function GeneratorPage() {
         <p style={{ margin: "10px 0 0" }}>
           <Link href="/" style={{ color: MUT, textDecoration: "none" }}>Accueil</Link>{" · "}
           <Link href="/qr-code" style={{ color: MUT, textDecoration: "none" }}>QR codes par usage</Link>{" · "}
+          <Link href="/guides" style={{ color: MUT, textDecoration: "none" }}>Guides</Link>{" · "}
           <Link href="/features" style={{ color: MUT, textDecoration: "none" }}>Fonctionnalités</Link>{" · "}
           <Link href="/upgrade" style={{ color: MUT, textDecoration: "none" }}>Tarifs</Link>
         </p>

@@ -1,11 +1,14 @@
 import type { Metadata } from "next"
 import { LegalLayout } from "@/components/legal-layout"
 
+const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
+
 export const metadata: Metadata = {
   title: "Conditions d’utilisation",
-  description: "Conditions générales d’utilisation du service QRowg.",
-  robots: { index: true, follow: true },
-  alternates: { canonical: "https://qrowg.com/terms" },
+  description: "Conditions générales d’utilisation de QRowg : accès au service, abonnements, obligations de chacun, résiliation et responsabilité.",
+  alternates: { canonical: `${APP}/terms` },
+  openGraph: { title: "Conditions d’utilisation | QRowg", description: "Conditions générales d’utilisation de QRowg : accès au service, abonnements, obligations de chacun, résiliation et responsabilité.", url: `${APP}/terms`, siteName: "QRowg", type: "website" },
+  twitter: { card: "summary_large_image", title: "Conditions d’utilisation | QRowg", description: "Conditions générales d’utilisation de QRowg : accès au service, abonnements, obligations de chacun, résiliation et responsabilité." },
 }
 
 export default function TermsPage() {

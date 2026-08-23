@@ -36,6 +36,15 @@ export async function middleware(req: NextRequest) {
   }
 
   // ── Cas 2 : domaine racine QRowg ────────────────────────────────────────
+  // www sert exactement le même site que l'apex : sans redirection permanente,
+  // Google voit deux sites identiques et partage l'autorité entre les deux.
+  if (hostname === `www.${APP_DOMAIN}`) {
+    const url = req.nextUrl.clone()
+    url.host = APP_DOMAIN
+    url.protocol = "https:"
+    url.port = ""
+    return NextResponse.redirect(url, 308)
+  }
   if (QROWG_HOSTS.has(hostname) || hostname.endsWith(".vercel.app")) {
     return NextResponse.next()
   }

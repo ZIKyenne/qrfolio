@@ -9,10 +9,11 @@ const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
 
 export const metadata: Metadata = {
-  title: "Guides QR code : créer, imprimer, suivre les scans | QRowg",
+  title: "Guides QR code : créer, imprimer, suivre les scans",
   description: "Guides pratiques sur les QR codes : dynamique vs statique, comment en créer un, quelle taille pour l'impression, le rendre scannable et suivre les scans.",
   alternates: { canonical: `${APP}/guides` },
-  openGraph: { title: "Guides QR code | QRowg", description: "Guides pratiques : dynamique vs statique, création, taille d'impression, scannabilité, statistiques.", url: `${APP}/guides`, siteName: "QRowg", type: "website" },
+  openGraph: { title: "Guides QR code : créer, imprimer, suivre les scans | QRowg", description: "Guides pratiques : dynamique vs statique, création, taille d'impression, scannabilité, statistiques.", url: `${APP}/guides`, siteName: "QRowg", type: "website" },
+  twitter: { card: "summary_large_image", title: "Guides QR code : créer, imprimer, suivre les scans | QRowg", description: "Guides pratiques sur les QR codes : dynamique vs statique, comment en créer un, quelle taille pour l'impression, le rendre scannable et suivre les scans." },
 }
 
 export default function GuidesHub() {

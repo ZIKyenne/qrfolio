@@ -655,7 +655,7 @@ function AnnouncementPublic({ c, theme, pageId, blockId }: { c: any; theme: any;
   )
 }
 
-function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: Block; theme: any; pageId: string; ownerEmail?: string; totalViews?: number }) {
+function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: { block: Block; theme: any; pageId: string; ownerEmail?: string; totalViews?: number; h1Owner?: string }) {
   const c = block.content
   const G = theme.primary || "#C9A84C"
   const MUTED = theme.muted || "#8A8478"
@@ -680,7 +680,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews }: { block: 
       return (
       <div style={{ textAlign: "center", padding: "32px 20px 20px" }}>
         {showAvatar && <ProfileAvatar src={c.avatar} name={pName} fontD={FONT_D} shapeStyle={avatarShapeStyle(c.avatar_shape)} decoStyle={avatarDecoStyle(c.avatar_shape, c.avatar_border, c.avatar_shadow, G)} bgStyle={avatarBgStyle(c.avatar_bg, G, theme.accent || "var(--success)")} />}
-        {pName && <h1 style={{ color: TEXT, fontSize: 26, fontWeight: 700, margin: "0 0 5px", fontFamily: FONT_D }}>{pName}</h1>}
+        {pName && (h1Owner === block.id
+          ? <h1 style={{ color: TEXT, fontSize: 26, fontWeight: 700, margin: "0 0 5px", fontFamily: FONT_D }}>{pName}</h1>
+          : <p style={{ color: TEXT, fontSize: 26, fontWeight: 700, margin: "0 0 5px", fontFamily: FONT_D }}>{pName}</p>)}
         {pTagline && <p style={{ color: MUTED, fontSize: 14, margin: c.badge ? "0 0 10px" : "0", fontFamily: FONT_B }}>{pTagline}</p>}
         {c.badge && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
@@ -2851,6 +2853,11 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
   // garantie, anciens formats pris en charge, aucun JSON invalide ne peut planter le rendu.
   const theme = normalizePageTheme(page.theme)
 
+  // Un seul <h1> par page : le premier bloc « profil » qui porte un nom le remporte.
+  // Les profils suivants (une page peut en contenir plusieurs) rendent un simple
+  // paragraphe de même apparence — le rendu ne bouge pas, la structure devient valide.
+  const h1Owner = blocks.find(b => b.type === "profile" && (b.content?.name || "").trim())?.id
+
   // Charge les polices Google du thème — uniquement les polices CUSTOM (Fraunces
   // et DM Sans sont déjà chargées par le layout -> évite une requête redondante + le FOUT).
   // Chaque famille reçoit son propre axe de poids (sinon seule la dernière chargeait 600/700,
@@ -3087,6 +3094,12 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
       {/* Container — fond complet selon bgMode (mesh/radial/pattern/image/gradient/solid) pour matcher l'éditeur */}
       <div style={{ maxWidth: "min(480px, 100%)", margin: "0 auto", minHeight: "100vh", ...themeBackgroundStyle(theme as any), boxShadow: "0 0 80px rgba(0,0,0,0.6)", position: "relative", overflowX: "clip", boxSizing: "border-box", overflowWrap: "anywhere", wordBreak: "break-word" }}>
 
+        {/* Exactement un <h1> par page. Sans profil nommé, le titre de la page prend
+            le relais (hors écran, mais lu par les moteurs et les lecteurs d'écran). */}
+        {!h1Owner && (page.title || "").trim() && (
+          <h1 style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", border: 0 }}>{page.title}</h1>
+        )}
+
         {/* Blocks with staggered animation */}
         {blocks.map((block, idx) => {
           const deco = blockDecoration(block.content, theme)
@@ -3099,7 +3112,7 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
             <AnimatedBlock key={block.id} delay={idx < 3 ? idx * 80 : 0}>
               <div className={cls || undefined} style={deco.style} data-qf-block={block.id}>
                 <BlockBoundary>
-                  <RenderBlock block={block} theme={theme} pageId={page.id} ownerEmail={page.profiles?.contact_email || page.profiles?.email} totalViews={page.total_views} />
+                  <RenderBlock block={block} theme={theme} pageId={page.id} ownerEmail={page.profiles?.contact_email || page.profiles?.email} totalViews={page.total_views} h1Owner={h1Owner} />
                 </BlockBoundary>
               </div>
             </AnimatedBlock>

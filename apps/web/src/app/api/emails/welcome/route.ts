@@ -35,6 +35,9 @@ const WELCOME_HTML = `<!DOCTYPE html>
   @media (max-width:600px){
     .px{padding-left:24px!important;padding-right:24px!important}
     .h1{font-size:26px!important}
+    /* Outlook ignore les media queries et garde ses 600 px ; les clients mobiles
+       les appliquent et le cadre s'adapte enfin à la largeur du téléphone. */
+    .wrap{width:100%!important}
   }
 </style>
 </head>
@@ -43,7 +46,7 @@ const WELCOME_HTML = `<!DOCTYPE html>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#080808;">
   <tr>
     <td align="center" style="padding:32px 12px;">
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#0C0B08;border:1px solid rgba(201,168,76,0.14);border-radius:16px;">
+      <table role="presentation" class="wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#0C0B08;border:1px solid rgba(201,168,76,0.14);border-radius:16px;">
         <!-- Header -->
         <tr>
           <td align="center" class="px" style="padding:34px 40px 26px;border-bottom:1px solid rgba(201,168,76,0.14);">

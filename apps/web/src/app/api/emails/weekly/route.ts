@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server"
 import { EMAIL_FROM } from "@/lib/emailFrom"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
+import { semaineEcoulee, resumeSemaine, nombre } from "@/lib/weeklyReport"
 
 // Carte de statistique (nombre dore + libelle). Cellule d'une rangee a 2 colonnes.
 function statCard(value: string, label: string, side: "left" | "right"): string {
@@ -47,6 +48,8 @@ export async function POST(req: NextRequest) {
     if (!profiles?.length) return NextResponse.json({ sent: 0 })
 
     const dateLabel = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" })
+    // Un rapport de période doit parler de la période : on borne les sept derniers jours.
+    const { debutIso, libelle: periode } = semaineEcoulee(new Date())
 
     let sent = 0
     for (const profile of profiles) {
@@ -54,24 +57,42 @@ export async function POST(req: NextRequest) {
       if ((profile as any).preferences?.weekly_report === false) continue
       const clean = profile.full_name && String(profile.full_name).trim() ? escapeHtml(String(profile.full_name).trim()) : ""
       const greeting = clean ? `Bonjour ${clean},` : "Bonjour,"
-      const scans = (profile.total_scans ?? 0).toLocaleString("fr-FR")
-      const pages = (profile.total_pages ?? 0).toLocaleString("fr-FR")
+      // Activité RÉELLE de la semaine, page par page. Sans cela l'email répétait
+      // les cumuls de toujours et n'apprenait rien à personne.
+      let vuesSemaine = 0, scansSemaine = 0
+      try {
+        const { data: pagesUser } = await supabase.from("pages").select("id").eq("user_id", profile.id)
+        const ids = (pagesUser ?? []).map((p: any) => p.id)
+        if (ids.length) {
+          const [{ count: v }, { count: sc }] = await Promise.all([
+            supabase.from("page_views").select("id", { count: "exact", head: true }).in("page_id", ids).gte("viewed_at", debutIso),
+            supabase.from("scans").select("id", { count: "exact", head: true }).in("page_id", ids).gte("created_at", debutIso),
+          ])
+          vuesSemaine = v ?? 0
+          scansSemaine = sc ?? 0
+        }
+      } catch { /* un comptage raté ne doit pas priver la personne de son email */ }
+
+      const resume = resumeSemaine({ vues: vuesSemaine, scans: scansSemaine, scansTotal: profile.total_scans ?? 0 })
+      const scans = nombre(scansSemaine)
+      const pages = nombre(vuesSemaine)
 
       const content = `
-        ${emailH1("Votre rapport QRowg")}
+        ${emailH1(resume.titre)}
         ${emailP(greeting)}
-        ${emailP("Voici votre activité en un coup d'œil.", 22)}
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px;"><tr>
-          ${statCard(scans, "Scans au total", "left")}
-          ${statCard(pages, "Pages publiées", "right")}
-        </tr></table>
+        ${emailP(`${resume.phrase} <span style="color:#6E6A60;">(${periode})</span>`, 22)}
+        ${resume.creux ? "" : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;"><tr>
+          ${statCard(scans, "Scans cette semaine", "left")}
+          ${statCard(pages, "Visites cette semaine", "right")}
+        </tr></table>`}
+        ${emailP(`Depuis le début : <strong style="color:#F5F0E8;">${nombre(profile.total_scans ?? 0)}</strong> scan${(profile.total_scans ?? 0) > 1 ? "s" : ""} au total.`, 26)}
         ${emailButton("Voir mes statistiques →", "https://qrowg.com/dashboard/analytics")}
       `
 
       await resend.emails.send({
         from: EMAIL_FROM,
         to: profile.email,
-        subject: `Votre rapport QRowg — ${dateLabel}`,
+        subject: resume.creux ? `Semaine calme sur QRowg — ${dateLabel}` : `${scans} scan${scansSemaine > 1 ? "s" : ""} cette semaine — QRowg`,
         html: emailShell({ preheader: "Votre activité QRowg en un coup d'œil.", content }),
       })
       sent++

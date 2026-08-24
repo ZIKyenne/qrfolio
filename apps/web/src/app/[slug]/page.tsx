@@ -1,5 +1,6 @@
 ﻿import { createAdminClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
+import { jugerPage } from "@/lib/indexation"
 import PublicPageClient from "./PublicPageClient"
 import { canRemoveBranding, canPageIntro } from "@/lib/plans"
 import { serializeJsonLd } from "@/lib/jsonLd"
@@ -31,12 +32,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createAdminClient()
   const { data: page } = await supabase
     .from("pages")
-    .select("title, seo_title, seo_description, og_image_url, slug, profiles(full_name, username)")
+    .select("title, seo_title, seo_description, og_image_url, slug, profiles(full_name, username), blocks(content)")
     .eq("slug", slug)
     .eq("status", "published")
     .single()
 
   if (!page) return { title: "Page introuvable" }
+
+  const proposable = jugerPage({
+    slug: page.slug,
+    title: page.title,
+    blocks: (page as { blocks?: { content?: unknown }[] }).blocks,
+  }).indexable
 
   const profile = page.profiles as any
   // Le titre part dans le gabarit « %s | QRowg » du layout racine : on le borne pour
@@ -64,6 +71,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: { card: "summary_large_image", title, description, images: [image] },
     alternates: { canonical: url },
+    // Une page d'essai reste en ligne et scannable, mais n'est pas proposée aux
+    // moteurs : sinon le domaine entier passe pour un domaine qui publie du vide.
+    // `follow` est conservé pour que les liens sortants de la page comptent quand
+    // même. Le sitemap applique exactement le même critère (lib/indexation.ts).
+    robots: proposable ? undefined : { index: false, follow: true },
   }
 }
 

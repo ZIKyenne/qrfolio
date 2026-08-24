@@ -69,3 +69,43 @@ describe("escapeHtml (anti-XSS pause_message)", () => {
     expect(escapeHtml("Revenez demain à 9h")).toBe("Revenez demain à 9h")
   })
 })
+
+// ── Durcissement (audit de sécurité) ─────────────────────────────────────────
+// Cette valeur part dans un en-tête `Location` : le téléphone du client la suit
+// sans que personne ne la lise. Elle ne doit donc jamais pouvoir devenir autre
+// chose qu'une page, un mail ou un appel.
+describe("aucun schéma exotique ne sort de la résolution", () => {
+  const interdits = [
+    "javascript:alert(1)",
+    "JavaScript:alert(1)",
+    "data:text/html,<script>alert(1)</script>",
+    "file:///etc/passwd",
+    "vbscript:msgbox(1)",
+  ]
+
+  it("quel que soit le type déclaré", () => {
+    for (const type of ["url", "file", "email", "phone", "whatsapp"] as const) {
+      for (const dest of interdits) {
+        expect(resolveOverrideDest({ type, url: dest } as any), `${type} + ${dest}`).toBeNull()
+      }
+    }
+  })
+
+  it("« httpjavascript: » ne passe plus pour du http", () => {
+    // L'ancien test était `dest.startsWith("http")` — « httpjavascript:… » le passait.
+    expect(resolveOverrideDest({ type: "url", url: "httpjavascript:alert(1)" } as any)).toBeNull()
+  })
+
+  it("le type whatsapp ne renvoie plus la valeur brute", () => {
+    // Il renvoyait `dest` tel quel, sans le moindre contrôle.
+    expect(resolveOverrideDest({ type: "whatsapp", url: "+33 6 12 34 56 78" } as any)).toBe("https://wa.me/33612345678")
+    expect(resolveOverrideDest({ type: "whatsapp", url: "https://wa.me/33612345678" } as any)).toBe("https://wa.me/33612345678")
+  })
+
+  it("les destinations légitimes passent toujours", () => {
+    expect(resolveOverrideDest({ type: "url", url: "https://monsite.fr/carte" } as any)).toBe("https://monsite.fr/carte")
+    expect(resolveOverrideDest({ type: "url", url: "monsite.fr" } as any)).toBe("https://monsite.fr")
+    expect(resolveOverrideDest({ type: "email", url: "contact@monsite.fr" } as any)).toBe("mailto:contact@monsite.fr")
+    expect(resolveOverrideDest({ type: "phone", url: "+33612345678" } as any)).toBe("tel:+33612345678")
+  })
+})

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { PLAN_RANK } from "@/lib/plans"
@@ -16,6 +16,7 @@ import { TEMPLATE_LAYOUT_LIST, galleryStyleChoices, nativeGalleryStyleKey, galle
 import { useToast } from "@/components/Toast"
 import { browserStorage, saveDraft, makeDraft } from "../builder/draftStore"
 import { safeMetier, SECTEUR_LABEL, safeEntryLink, applyEntryLink, linkLabel } from "../../creer/entry"
+import { FUNNEL, marque, origine, etiquette } from "@/lib/funnel"
 
 // Source unique partagée avec le builder : les modèles de page complets (métier + sous-variantes)
 // alimentent AUSSI la galerie d'onboarding (en plus des 14 modèles curés historiques).
@@ -177,9 +178,11 @@ export default function TemplatesPage() {
   // Il part donc dans le brouillon local et s'ouvre dans l'éditeur : le visiteur voit
   // sa page avant de donner quoi que ce soit.
   const [guest, setGuest] = useState(false)
+  const vuRef = useRef(false)   // le repère d'arrivée ne se pose qu'une fois
 
   /** Sans compte : le modèle devient le brouillon local, puis l'éditeur s'ouvre dessus. */
   function applyTemplateAsGuest(args: { key: string; name: string; theme: unknown; blocks: any[] }): { ok?: boolean; error?: string } {
+    marque(FUNNEL.modeleChoisi, { modele: etiquette(args.key), invite: true })
     const draft = makeDraft({ pageName: args.name, theme: args.theme, blocks: args.blocks, templateKey: args.key, now: Date.now() })
     const r = saveDraft(browserStorage(), draft)
     if (r.ok !== true) {
@@ -198,7 +201,19 @@ export default function TemplatesPage() {
       try {
         const sb = createClient()
         const { data: { user } } = await sb.auth.getUser()
-        if (!user) { setGuest(true); return }
+        if (!user) {
+          setGuest(true)
+          // Repère 1 — d'où vient-elle, et pour quel secteur ? C'est la seule
+          // mesure de l'arrivée : on ne pose rien sur les 40 boutons d'entrée.
+          if (!vuRef.current) {
+            vuRef.current = true
+            marque(FUNNEL.essaiVu, {
+              source: origine(document.referrer, window.location.origin),
+              metier: etiquette(new URLSearchParams(window.location.search).get("metier")),
+            })
+          }
+          return
+        }
         // Profil + pages en parallèle (un seul aller-retour réseau)
         const [{ data: profile }, { data: userPages }] = await Promise.all([
           sb.from("profiles").select("plan").eq("id", user.id).single(),

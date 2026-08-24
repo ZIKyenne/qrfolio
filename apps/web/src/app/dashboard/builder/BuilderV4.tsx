@@ -15,6 +15,7 @@
   import { OutlinePanel } from "./OutlinePanel"
   import { G, MUTED } from "./builderConstants"
   import { BlockPreview } from "./builderPreview"
+  import { FUNNEL, marque, etiquette, precharge } from "@/lib/funnel"
   // Mémoïsé : lors d'une frappe, seul le bloc édité change de référence (setBlocks
   // via .map préserve les autres) -> les blocs inchangés ne re-rendent plus.
   // Props stables (block/theme/dayMode, aucun callback) -> aucun risque de rendu périmé.
@@ -220,7 +221,11 @@
     // Le brouillon d'un visiteur vit dans son navigateur (la table `pages` impose
     // user_id NOT NULL : une page anonyme ne peut pas exister en base).
     const claimRef = useRef<LocalDraft | null>(null)   // brouillon à reprendre juste après l'inscription
-    const [claimed, setClaimed] = useState(false)      // confirmation « votre travail a été repris »
+    const [claimed, setClaimed] = useState(false)
+    const modifRef = useRef(false)                     // repère « page modifiée » : une seule fois
+    // La mesure est chargée d'avance : le repère « publier sans compte » est posé
+    // juste avant de quitter la page, il n'aurait pas le temps de partir sinon.
+    useEffect(() => { precharge() }, [])      // confirmation « votre travail a été repris »
     const guestReady = useRef(false)                   // brouillon restauré : la sauvegarde locale peut démarrer
     // Reprise de brouillon : la page vient d'être créée VIDE en base et son contenu
     // n'est encore qu'en mémoire. Sans ce garde, le chargement qui suit lisait zéro
@@ -617,6 +622,8 @@
             clearDraft(browserStorage())
             claimRef.current = null
             setClaimed(true)
+            // Repère 5 — bout du parcours : le compte existe ET le travail a été retrouvé.
+            marque(FUNNEL.brouillonRepris, { modele: etiquette(claimed?.templateKey) })
             skipLoadRef.current = true
           } else {
             // Normalise les IDs de blocs par defaut (\"1\"/\"2\"/\"3\") en UUID -> chemin upsert propre.
@@ -740,6 +747,9 @@
         const r = saveDraft(browserStorage(), d)
         setDraftState(r.ok === true ? "saved" : r.reason)
         dirty.current = !r.ok                       // rien n'est perdu si l'écriture a réussi
+        // Repère 3 — la personne a VRAIMENT touché à sa page : draftIsMeaningful, juste
+        // au-dessus, a déjà écarté le squelette de départ. Posé une seule fois.
+        if (r.ok === true && !modifRef.current) { modifRef.current = true; marque(FUNNEL.pageModifiee, { blocs: blocks.length }) }
       }, 600)
       return () => clearTimeout(draftTimer.current)
     }, [blocks, pageName, theme, authState, draftFound])
@@ -850,11 +860,16 @@
 
     /** Emporte le brouillon vers l'inscription, puis revient créer la page. */
     function goSignup() {
+      // Repère 4 — la marche décisive : elle a une page, on lui demande un compte.
+      marque(FUNNEL.publierSansCompte, { blocs: blocks.length, modele: etiquette(templateKeyRef.current) })
       const d = makeDraft({ pageName, theme, blocks, templateKey: templateKeyRef.current, now: Date.now() })
       const r = saveDraft(browserStorage(), d)
       if (r.ok !== true) { setDraftState(r.reason); return }   // on ne l'envoie pas perdre son travail
       const back = encodeURIComponent("/dashboard/builder/new?claim=1")
-      try { window.location.href = `/auth/signup?redirect=${back}` } catch {}
+      // Un souffle avant de partir : le temps que le repère parte vraiment. Personne
+      // ne perçoit 120 ms, et sans cela la marche la plus intéressante du parcours
+      // ne serait jamais comptée.
+      setTimeout(() => { try { window.location.href = `/auth/signup?redirect=${back}` } catch {} }, 120)
     }
 
     // ID de bloc = UUID valide (colonne uuid en base) -> IDs stables entre sauvegardes,

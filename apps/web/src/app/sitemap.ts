@@ -6,7 +6,7 @@ import { jugerPage } from "@/lib/indexation"
 // Dernière révision réelle du contenu éditorial. À mettre à jour quand on
 // retouche les pages marketing ou le cluster SEO — surtout PAS `new Date()` :
 // une date toujours fraîche est un signal que Google apprend à ignorer.
-const CONTENT_REVISED = new Date("2026-08-23T00:00:00.000Z")
+const CONTENT_REVISED = new Date("2026-08-24T00:00:00.000Z")
 
 export default async function sitemap() {
   const supabase = createAdminClient()
@@ -31,6 +31,7 @@ export default async function sitemap() {
   const verticalPages = [
     { url: `${baseUrl}/generateur-qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.9 },
     { url: `${baseUrl}/generateur-qr-code-wifi`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${baseUrl}/outils/testeur-qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.9 },
     { url: `${baseUrl}/qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8 },
     ...VERTICAL_ORDER.map(slug => ({
       url: `${baseUrl}/qr-code/${slug}`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8,

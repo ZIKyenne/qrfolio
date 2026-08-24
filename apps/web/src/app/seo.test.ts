@@ -32,6 +32,7 @@ const PUBLIC_PAGES: { route: string; file: string }[] = [
   { route: "/guides", file: "guides/page.tsx" },
   { route: "/generateur-qr-code", file: "generateur-qr-code/page.tsx" },
   { route: "/generateur-qr-code-wifi", file: "generateur-qr-code-wifi/page.tsx" },
+  { route: "/outils/testeur-qr-code", file: "outils/testeur-qr-code/page.tsx" },
 ]
 
 /** Résout `title: MA_CONSTANTE` en remontant à `const MA_CONSTANTE = "…"`. */

@@ -141,6 +141,7 @@ export default async function GeneratorPage() {
         <section>
           <p style={{ color: G, fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", textAlign: "center", marginBottom: 14 }}>QR codes par usage</p>
           <p style={{ textAlign: "center", margin: "0 0 14px" }}><Link href="/generateur-qr-code-wifi" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>📶 Besoin d'un QR code WiFi ? Utilisez le générateur WiFi dédié →</Link></p>
+          <p style={{ textAlign: "center", margin: "0 0 14px" }}><Link href="/outils/testeur-qr-code" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>🔎 Avant d&apos;imprimer : testez votre QR code (contraste, marge, définition) →</Link></p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
             {usages.map(v => (
               <Link key={v.slug} href={`/qr-code/${v.slug}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${BOR}`, color: INK, textDecoration: "none", fontSize: 13.5, fontWeight: 600, padding: "10px 15px", borderRadius: 11 }}>
@@ -158,6 +159,7 @@ export default async function GeneratorPage() {
           <Link href="/" style={{ color: MUT, textDecoration: "none" }}>Accueil</Link>{" · "}
           <Link href="/qr-code" style={{ color: MUT, textDecoration: "none" }}>QR codes par usage</Link>{" · "}
           <Link href="/guides" style={{ color: MUT, textDecoration: "none" }}>Guides</Link>{" · "}
+          <Link href="/outils/testeur-qr-code" style={{ color: MUT, textDecoration: "none" }}>Testeur de QR code</Link>{" · "}
           <Link href="/features" style={{ color: MUT, textDecoration: "none" }}>Fonctionnalités</Link>{" · "}
           <Link href="/upgrade" style={{ color: MUT, textDecoration: "none" }}>Tarifs</Link>
         </p>

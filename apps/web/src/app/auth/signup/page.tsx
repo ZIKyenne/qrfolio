@@ -19,6 +19,9 @@ export default async function SignupPage({
   // Arrivée depuis l'éditeur avec une page déjà composée : on le dit, sinon on a
   // l'air de demander un compte pour rien juste avant la récompense.
   const claiming = (sp.redirect || '').includes('claim=1')
+  // Elle n'a pas cliqué « créer un compte » : elle a cliqué « publier ». Le dire,
+  // sinon le compte a l'air d'être une condition surgie de nulle part.
+  const pourPublier = (sp.redirect || '').includes('publier=1')
   return (
     <div style={{
       minHeight: '100dvh', background: '#080808',
@@ -33,8 +36,8 @@ export default async function SignupPage({
           <a href="/" aria-label="QRowg — accueil" style={{ display: 'inline-flex', textDecoration: 'none' }}>
             <QrowgLogo size={26} />
           </a>
-          <h1 style={{ color: '#F8F4EC', fontSize: 23, fontWeight: 700, margin: '18px 0 6px', fontFamily: 'Fraunces, serif' }}>{claiming ? 'Plus qu\'une étape' : 'Créer un compte'}</h1>
-          <p style={{ color: '#C9C3B6', fontSize: 14.5, margin: 0 }}>{claiming ? 'Votre page est prête et vous attend — elle sera reprise telle quelle.' : 'Gratuit · prêt en 3 minutes.'}</p>
+          <h1 style={{ color: '#F8F4EC', fontSize: 23, fontWeight: 700, margin: '18px 0 6px', fontFamily: 'Fraunces, serif' }}>{pourPublier ? 'Plus qu\'une étape avant la mise en ligne' : claiming ? 'Plus qu\'une étape' : 'Créer un compte'}</h1>
+          <p style={{ color: '#C9C3B6', fontSize: 14.5, margin: 0 }}>{pourPublier ? 'Votre page part en ligne juste après — elle est reprise telle quelle, rien à resaisir.' : claiming ? 'Votre page est prête et vous attend — elle sera reprise telle quelle.' : 'Gratuit · prêt en 3 minutes.'}</p>
         </div>
 
         <div style={{ background: '#141210', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 'clamp(22px, 6vw, 30px)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>

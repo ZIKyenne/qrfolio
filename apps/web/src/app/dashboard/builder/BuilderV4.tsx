@@ -223,6 +223,10 @@
     const claimRef = useRef<LocalDraft | null>(null)   // brouillon à reprendre juste après l'inscription
     const [claimed, setClaimed] = useState(false)
     const modifRef = useRef(false)                     // repère « page modifiée » : une seule fois
+    const wantPublishRef = useRef(false)               // « publier » cliqué AVANT le compte
+    const autoPubRef = useRef(false)                   // la mise en ligne automatique n'a lieu qu'une fois
+    const publieeRef = useRef(false)                   // repère « page publiée » : une seule fois
+    const blocksRef = useRef(0)                        // nb de blocs, lisible depuis un callback stable
     // La mesure est chargée d'avance : le repère « publier sans compte » est posé
     // juste avant de quitter la page, il n'aurait pas le temps de partir sinon.
     useEffect(() => { precharge() }, [])      // confirmation « votre travail a été repris »
@@ -599,7 +603,11 @@
     // Le brouillon doit être en main AVANT la création de la page : le bootstrap
     // s'en sert comme contenu initial au lieu de créer une page vide.
     useEffect(() => {
-      try { if (new URLSearchParams(window.location.search).get("claim") === "1") claimRef.current = loadDraft(browserStorage()) } catch {}
+      try {
+        const q = new URLSearchParams(window.location.search)
+        if (q.get("claim") === "1") claimRef.current = loadDraft(browserStorage())
+        if (q.get("publier") === "1") wantPublishRef.current = true
+      } catch {}
     }, [])
 
     useEffect(() => {
@@ -802,6 +810,8 @@
           if (s.phase === "error") setPublishError(s.message)
           if (s.phase === "published") {
             setPublishError("")
+            // Repère 6 — le bout du parcours : une page en ligne, un QR qui sert.
+            if (!publieeRef.current) { publieeRef.current = true; marque(FUNNEL.pagePubliee, { auto: autoPubRef.current, blocs: blocksRef.current }) }
             setPageStatus("published")
             setPublishWasUpdate(s.alreadyPublished)
             setPublishSuccess(true)
@@ -810,6 +820,25 @@
         },
       })
     }
+
+    // Compteur de blocs lisible depuis les callbacks stables du contrôleur.
+    useEffect(() => { blocksRef.current = blocks.length }, [blocks])
+
+    // Tenir la promesse : elle a cliqué « publier », créé un compte, et sa page est
+    // maintenant en base avec son contenu. On enregistre puis on publie — sans lui
+    // redemander. L'ordre compte : saveNow() dépose le snapshot, publishLatest()
+    // attend qu'il soit persisté avant de basculer le statut. Publier sans cela
+    // mettrait en ligne une page vide.
+    useEffect(() => {
+      if (!wantPublishRef.current || autoPubRef.current) return
+      if (!claimed || !IS_UUID(liveId) || !ready.current) return
+      autoPubRef.current = true
+      wantPublishRef.current = false
+      setShowPublishPopup(true)          // on montre ce qui se passe, on ne le fait pas en douce
+      saveNow()
+      void publishCtrlRef.current?.publishLatest()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [claimed, liveId])
 
     // Snapshot IMMUABLE de l'état courant (cloné avant tout appel réseau). Renvoie null
     // tant que la page n'est pas prête (garde anti-écrasement des blocs de démo).
@@ -865,7 +894,10 @@
       const d = makeDraft({ pageName, theme, blocks, templateKey: templateKeyRef.current, now: Date.now() })
       const r = saveDraft(browserStorage(), d)
       if (r.ok !== true) { setDraftState(r.reason); return }   // on ne l'envoie pas perdre son travail
-      const back = encodeURIComponent("/dashboard/builder/new?claim=1")
+      // L'INTENTION voyage, pas seulement le contenu : la personne n'a pas cliqué
+      // « créer un compte », elle a cliqué « publier ». Sans ce marqueur, elle
+      // revenait devant un brouillon et devait retrouver le bouton toute seule.
+      const back = encodeURIComponent("/dashboard/builder/new?claim=1&publier=1")
       // Un souffle avant de partir : le temps que le repère parte vraiment. Personne
       // ne perçoit 120 ms, et sans cela la marche la plus intéressante du parcours
       // ne serait jamais comptée.
@@ -1298,7 +1330,7 @@
         {claimed && (
           <div role="status" style={{ position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 380, background: "rgba(57,255,143,0.12)", border: "1px solid rgba(57,255,143,0.35)", borderRadius: 12, padding: "10px 16px", display: "flex", alignItems: "center", gap: 9, maxWidth: "calc(100vw - 28px)" }}>
             <Check size={14} color="var(--success)" />
-            <span style={{ color: "var(--success)", fontSize: 12.5, fontWeight: 600 }}>Votre page vous a suivi — elle est maintenant dans votre compte.</span>
+            <span style={{ color: "var(--success)", fontSize: 12.5, fontWeight: 600 }}>{autoPubRef.current ? "Votre page vous a suivi et part en ligne." : "Votre page vous a suivi — elle est maintenant dans votre compte."}</span>
             <button onClick={() => setClaimed(false)} aria-label="Fermer" style={{ background: "none", border: "none", color: "var(--success)", cursor: "pointer", fontSize: 15, lineHeight: 1, padding: 0 }}>×</button>
           </div>
         )}

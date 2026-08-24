@@ -24,8 +24,10 @@ export const FUNNEL = {
   pageModifiee: "page_modifiee",
   /** Clic sur « Publier » sans compte — juste avant le mur. */
   publierSansCompte: "publier_sans_compte",
-  /** Le compte a été créé ET le brouillon repris : le parcours est bouclé. */
+  /** Le compte a été créé ET le brouillon repris. */
   brouillonRepris: "brouillon_repris",
+  /** Le vrai bout du parcours : la page est en ligne, le QR sert enfin à quelque chose. */
+  pagePubliee: "page_publiee",
 } as const
 
 export type FunnelEvent = typeof FUNNEL[keyof typeof FUNNEL]

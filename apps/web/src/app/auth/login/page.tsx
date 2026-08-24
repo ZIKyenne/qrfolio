@@ -16,6 +16,11 @@ export default async function LoginPage({
   const sp = await searchParams
   // Conserve la destination interne (deep-link SEO) quand on bascule vers l'inscription.
   const signupHref = sp.redirect ? `/auth/signup?redirect=${encodeURIComponent(sp.redirect)}` : '/auth/signup'
+  // Quelqu'un qui avait déjà un compte et qui vient de composer une page : sa page
+  // l'attend de l'autre côté. Le dire ici aussi, sinon la connexion a l'air d'être
+  // un détour sans rapport avec ce qu'il vient de faire.
+  const pourPublier = (sp.redirect || '').includes('publier=1')
+  const avecPage = (sp.redirect || '').includes('claim=1')
   return (
     <div style={{
       minHeight: '100dvh', background: '#080808',
@@ -32,7 +37,11 @@ export default async function LoginPage({
             <QrowgLogo size={26} />
           </a>
           <h1 style={{ color: '#F8F4EC', fontSize: 23, fontWeight: 700, margin: '18px 0 6px', fontFamily: 'Fraunces, serif' }}>Bon retour</h1>
-          <p style={{ color: '#C9C3B6', fontSize: 14.5, margin: 0 }}>Connectez-vous pour retrouver vos pages et QR codes.</p>
+          <p style={{ color: '#C9C3B6', fontSize: 14.5, margin: 0 }}>{pourPublier
+            ? 'Connectez-vous : votre page part en ligne juste après, telle quelle.'
+            : avecPage
+              ? 'Connectez-vous : la page que vous venez de composer vous suit.'
+              : 'Connectez-vous pour retrouver vos pages et QR codes.'}</p>
         </div>
 
         <div style={{ background: '#141210', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 'clamp(22px, 6vw, 30px)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>

@@ -27,7 +27,8 @@ describe("visiteur sans compte — aucune écriture prématurée", () => {
 
   it("le brouillon part avec le visiteur vers l'inscription", () => {
     expect(BUILDER).toContain('/auth/signup?redirect=${back}')
-    expect(BUILDER).toContain('encodeURIComponent("/dashboard/builder/new?claim=1")')
+    // L'intention de publier voyage avec lui depuis le lot « mur de la publication ».
+    expect(BUILDER).toContain('encodeURIComponent("/dashboard/builder/new?claim=1&publier=1")')
   })
 })
 

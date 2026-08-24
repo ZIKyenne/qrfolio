@@ -42,10 +42,26 @@ describe("le catalogue de l'éditeur ne part plus chez le client", () => {
     expect(reg).not.toContain("blockDefs")
   })
 
+  it("les catalogues de l'éditeur non plus : thèmes tout prêts et presets", () => {
+    // PRESET_THEMES pesait à lui seul 64 Ko — la galerie des thèmes proposés dans
+    // l'éditeur. Une page publiée en utilise UN, celui enregistré avec elle.
+    const types = lire("../dashboard/builder/types.ts")
+    for (const nom of ["PRESET_THEMES", "IDENTITY_PRESETS", "ACTION_PRESETS", "BLOCK_HINTS"]) {
+      expect(types, `${nom} est revenu dans types.ts`).not.toContain(`export const ${nom}`)
+    }
+    expect(types).not.toContain('from "./editorPresets"')
+    for (const f of ["PublicPageClient.tsx", "page.tsx"]) {
+      expect(lire(f), `${f} importe les presets d'éditeur`).not.toContain("editorPresets")
+    }
+  })
+
   it("le catalogue, lui, reste complet", () => {
     const defs = lire("../dashboard/builder/blockDefs.ts")
     expect(defs).toContain("export const BLOCK_DEFS")
     // 178 types de blocs : on vérifie l'ordre de grandeur, pas un compte exact.
     expect((defs.match(/\n  [a-z_0-9]+: \{\n    label:/g) || []).length).toBeGreaterThan(150)
+    const presets = lire("../dashboard/builder/editorPresets.ts")
+    expect(presets).toContain("export const PRESET_THEMES")
+    expect(presets.length, "la galerie de thèmes doit être là, entière").toBeGreaterThan(50_000)
   })
 })

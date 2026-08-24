@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { normalizePageTheme, mergePageTheme, DEFAULT_PAGE_THEME, PRESET_THEMES, type PageTheme } from "./types"
+import { normalizePageTheme, mergePageTheme, DEFAULT_PAGE_THEME, type PageTheme } from "./types"
+import { PRESET_THEMES } from "./editorPresets"
 import { PAGE_TEMPLATES } from "./page-templates"
 
 const CANON_KEYS = ["name","bg","surface","primary","accent","text","muted","fontDisplay","fontBody","bgMode"] as const

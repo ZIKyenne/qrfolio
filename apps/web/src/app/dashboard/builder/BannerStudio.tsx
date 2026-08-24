@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react"
 import { ImageIcon, LayoutGrid, Type, Palette, Sparkles, Layers, ChevronDown, Wand2, Crop, Move, X, AArrowUp } from "lucide-react"
 import ImageUpload from "./ImageUpload"
-import { BANNER_GRADIENTS, BANNER_PRESETS, BANNER_ANIM_CSS, BANNER_FONTS, BANNER_IMG_FILTERS, BANNER_NOISE_URL as NOISE_URL, bannerBackgroundStyle, bannerImageStyle } from "./types"
+import { BANNER_GRADIENTS, BANNER_ANIM_CSS, BANNER_FONTS, BANNER_IMG_FILTERS, BANNER_NOISE_URL as NOISE_URL, bannerBackgroundStyle, bannerImageStyle } from "./types"
+import { BANNER_PRESETS } from "./editorPresets"
 
 const G = "#C9A84C"
 const MUTED = "#A8A190"

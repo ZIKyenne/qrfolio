@@ -4,6 +4,7 @@ import { AlertTriangle } from 'lucide-react'
 import Particles from '@/components/Particles'
 import QrowgLogo from '@/components/QrowgLogo'
 import LoginForm from './LoginForm'
+import GoogleButton from '../GoogleButton'
 
 export const metadata: Metadata = { title: 'Connexion' }
 
@@ -42,6 +43,8 @@ export default async function LoginPage({
               <span>{decodeURIComponent(sp.error)}</span>
             </div>
           )}
+
+          <GoogleButton label="Continuer avec Google" />
 
           <LoginForm />
         </div>

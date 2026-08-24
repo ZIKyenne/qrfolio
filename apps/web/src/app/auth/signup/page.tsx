@@ -4,6 +4,7 @@ import { AlertTriangle } from 'lucide-react'
 import Particles from '@/components/Particles'
 import QrowgLogo from '@/components/QrowgLogo'
 import SignupForm from './SignupForm'
+import GoogleButton from '../GoogleButton'
 
 export const metadata: Metadata = { title: 'Créer un compte' }
 
@@ -45,6 +46,7 @@ export default async function SignupPage({
             </div>
           )}
 
+          <GoogleButton label="Continuer avec Google" refCode={sp.ref} />
           <SignupForm refCode={sp.ref} />
         </div>
 

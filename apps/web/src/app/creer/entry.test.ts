@@ -86,6 +86,16 @@ describe("les pages d'entrée mènent bien à l'essai", () => {
     expect(read("../guides/[slug]/page.tsx")).toContain("creerUrl()")
   })
 
+  it("un guide peut declarer sa destination, sans la faire deviner", () => {
+    // Elle etait deduite par expression reguliere sur le LIBELLE du bouton :
+    // « Creer mes supports imprimables » atterrissait sur le generateur de QR.
+    const route = read("../guides/[slug]/page.tsx")
+    expect(route).toContain("g.ctaHref || (")
+    const src = read("../guides/guides.ts")
+    expect(src).toContain("ctaHref?: string")
+    expect(src).toContain('ctaHref: "/creer"')
+  })
+
   it("les deux hubs et le générateur", () => {
     for (const f of ["../qr-code/page.tsx", "../generateur-qr-code/page.tsx"]) {
       expect(read(f), f).toContain("href={creerUrl()}")

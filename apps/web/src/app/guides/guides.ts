@@ -23,6 +23,8 @@ export type Guide = {
   related: string[]        // slugs d'autres guides
   relatedUsages: string[]  // slugs de /qr-code/[usage]
   cta: string
+  /** Destination du bouton. Absente = déduite du libellé (voir la route). */
+  ctaHref?: string
 }
 
 // Date de dernière révision (Article: datePublished/dateModified). Statique = pas de Date.now().
@@ -234,6 +236,141 @@ export const GUIDES: Record<string, Guide> = {
     relatedUsages: ["menu", "immobilier"],
     cta: "Créer un QR code dynamique",
   },
+  "qr-code-ne-fonctionne-pas": {
+    slug: "qr-code-ne-fonctionne-pas",
+    emoji: "🚑",
+    category: "Dépannage",
+    metaTitle: "Mon QR code ne fonctionne pas : que faire ?",
+    metaDescription: "QR code qui ne scanne pas : les huit causes réelles, dans l'ordre où les vérifier — contraste, taille, marge, pliure, reflet, logo, impression, lien mort.",
+    h1: "Mon QR code ne fonctionne pas : que faire ?",
+    lede: "Un QR qui refuse de se scanner a presque toujours l'une de ces huit causes. Vérifiez-les dans cet ordre : les premières sont les plus fréquentes.",
+    tldr: "Dans neuf cas sur dix : contraste insuffisant, QR trop petit pour la distance, ou marge blanche supprimée. Testez d'abord à l'écran ; si ça marche à l'écran mais pas sur papier, le problème vient de l'impression.",
+    sections: [
+      { h2: "D'abord : à l'écran ou sur papier ?", body: ["Affichez le QR sur un écran et scannez-le. S'il fonctionne là et pas sur votre support imprimé, le code est bon : le problème vient de l'impression, de la taille ou du placement. S'il échoue déjà à l'écran, c'est le code ou sa destination."] },
+      { h2: "Les huit causes, par fréquence", table: { head: ["Cause", "Comment la reconnaître", "Correction"], rows: [
+        ["Contraste trop faible", "Couleurs proches, ou QR clair sur fond clair", "Foncez les modules, éclaircissez le fond"],
+        ["QR trop petit", "Il faut coller le téléphone pour que ça marche", "Taille ≈ distance de scan ÷ 10"],
+        ["Marge blanche supprimée", "Le QR touche un bord, une image ou du texte", "Laissez une zone vide d'au moins 4 modules autour"],
+        ["Logo central trop grand", "Un logo mange le centre du code", "Réduisez-le : au-delà d'environ 30 %, la correction d'erreur ne suffit plus"],
+        ["Pliure ou courbure", "Le QR est sur un pli, un angle ou une bouteille", "Déplacez-le sur une zone plane"],
+        ["Reflet", "Vitrine, plastification brillante, écran", "Support mat, ou changez l'angle"],
+        ["Impression floue", "Contours baveux, modules empâtés", "Exportez en SVG, ou en PNG à 300 DPI"],
+        ["Lien mort", "Le scan marche, mais la page est en erreur", "Vérifiez la destination et sa publication"]] } },
+      { h2: "Le cas particulier : ça scanne mais la page est vide", body: ["Là, le QR fonctionne parfaitement — c'est la destination qui pose problème. Vérifiez que la page est bien publiée, et que son adresse n'a pas changé.", "C'est l'intérêt d'un QR dynamique : la destination se corrige sans réimprimer quoi que ce soit. Avec un QR statique, l'adresse est gravée dans le code : il faut tout refaire."] },
+      { h2: "Inverser les couleurs : mauvaise idée", body: ["Un QR clair sur fond sombre est lisible par certains téléphones et pas par d'autres : beaucoup de lecteurs attendent des modules sombres sur fond clair. Si le rendu inversé compte pour votre design, testez-le sur plusieurs appareils avant d'imprimer en série."] },
+      { h2: "Tester avant d'imprimer en série", bullets: ["Imprimez UNE épreuve, à la taille réelle, sur le vrai support", "Scannez-la à la distance réelle d'utilisation", "Testez avec au moins deux téléphones différents", "Testez dans la lumière du lieu : une vitrine ensoleillée n'est pas un bureau"] },
+    ],
+    faq: [
+      { q: "Pourquoi mon QR marche sur mon téléphone mais pas sur celui d'un client ?", a: "Les lecteurs n'ont pas tous la même tolérance. Un QR limite — contraste faible, taille juste, marge réduite — passe sur un appareil récent et échoue sur un autre. Corrigez la cause plutôt que de conclure que ça fonctionne." },
+      { q: "Puis-je réparer un QR déjà imprimé ?", a: "Si le code est dynamique, oui : changez la destination, les supports restent valides. S'il est statique, l'adresse est encodée dans le dessin lui-même — il faut réimprimer." },
+      { q: "Un QR abîmé fonctionne-t-il encore ?", a: "En partie. La correction d'erreur intégrée tolère une part de dégradation, mais une rayure sur un coin de repérage suffit souvent à le rendre illisible." },
+      { q: "Faut-il une application pour scanner ?", a: "Non. Tous les téléphones vendus depuis 2018 environ scannent un QR avec l'appareil photo, sans rien installer." },
+    ],
+    related: ["qr-code-scannable", "taille-qr-code-impression", "qr-code-dynamique-vs-statique"],
+    relatedUsages: ["restaurant", "boutique", "avis-google"],
+    cta: "Créer un QR code fiable",
+    ctaHref: "/generateur-qr-code",
+  },
+
+  "ou-placer-son-qr-code": {
+    slug: "ou-placer-son-qr-code",
+    emoji: "📍",
+    category: "Impression",
+    metaTitle: "Où placer son QR code dans un commerce ?",
+    metaDescription: "Où poser un QR code pour qu'il soit vraiment scanné : les emplacements qui marchent par type de commerce, la hauteur, la distance, et les erreurs à éviter.",
+    h1: "Où placer son QR code dans un commerce ?",
+    lede: "Un QR code scanné, c'est d'abord un QR bien placé. L'endroit compte davantage que le design.",
+    tldr: "Placez-le là où votre client a déjà les mains libres et une raison d'attendre : sur la table, au comptoir pendant l'encaissement, en vitrine côté rue. À hauteur des yeux, jamais au sol ni au plafond.",
+    sections: [
+      { h2: "La règle : un temps mort, les mains libres", body: ["On ne scanne pas en marchant, ni les bras chargés. Les emplacements qui fonctionnent sont ceux où la personne attend déjà : assise à une table, dans une file, devant une vitrine fermée, en salle d'attente.", "À l'inverse, un QR sur un sac de courses ou sur une porte qu'on pousse en sortant ne sera presque jamais scanné."] },
+      { h2: "Par type de commerce", table: { head: ["Commerce", "Le meilleur emplacement", "Pourquoi"], rows: [
+        ["Restaurant, café", "Sur la table (chevalet ou sticker)", "Le client est assis et attend"],
+        ["Bar", "Sous le verre (sous-bock)", "Il arrive avec la commande, sans qu'on le demande"],
+        ["Boulangerie, commerce", "Vitrine côté rue + comptoir", "La vitrine travaille porte fermée"],
+        ["Coiffeur, institut", "À l'encaissement", "Moment naturel pour demander un avis"],
+        ["Artisan, garage", "Sur la facture et le véhicule", "Le client garde le document"],
+        ["Fleuriste", "Marque-page dans le bouquet", "Atteint celui qui reçoit, pas seulement l'acheteur"],
+        ["Hôtel, camping", "Dans la chambre ou l'hébergement", "Le Wi-Fi est le premier besoin"],
+        ["Événement", "Affiche sur les lieux de passage", "Grand format, lu de loin"]] } },
+      { h2: "Hauteur et distance", body: ["Un QR se lit confortablement entre 1,20 m et 1,60 m du sol — hauteur des yeux d'une personne debout. En vitrine, visez le niveau du regard depuis le trottoir, pas le bas de la devanture.", "La taille suit la distance : environ un dixième de la distance de lecture. Un QR lu à un mètre demande une dizaine de centimètres."] },
+      { h2: "Dites ce qu'il y a derrière", body: ["Un QR nu est rarement scanné. Une ligne suffit à changer les choses : « Scannez pour voir la carte », « Scannez pour le Wi-Fi », « Scannez pour laisser un avis ». La personne doit savoir ce qu'elle obtient avant de sortir son téléphone."] },
+      { h2: "Les erreurs qui tuent un emplacement", bullets: ["Derrière une vitre qui reflète en plein soleil", "Sur une surface courbe : bouteille, colonne, coin de comptoir", "Trop bas — sous 1 m, il faut se pencher", "Sur un support qu'on emporte et qu'on jette", "Au milieu d'un mur d'affiches, où il disparaît"] },
+      { h2: "Mesurer plutôt que deviner", body: ["Si vous hésitez entre deux emplacements, ne tranchez pas au feeling : créez un QR par emplacement. Ils mènent à la même page, mais chacun compte ses propres scans. Au bout de deux semaines, vous saurez lequel garder."] },
+    ],
+    faq: [
+      { q: "Combien de QR codes différents faut-il ?", a: "Un par emplacement que vous voulez mesurer séparément. Tous peuvent mener à la même page : ce sont les compteurs qui diffèrent." },
+      { q: "Faut-il mettre un QR sur le ticket de caisse ?", a: "C'est un bon emplacement pour demander un avis, à condition que le ticket ne soit pas jeté immédiatement. Une carte remise en main propre fonctionne souvent mieux." },
+      { q: "Un autocollant tient-il sur une vitrine ?", a: "Oui, à condition de le poser à l'intérieur de la vitre pour le protéger des intempéries — en pensant à inverser le sens si l'adhésif est côté verre." },
+    ],
+    related: ["taille-qr-code-impression", "qr-code-scannable", "qr-code-avec-statistiques"],
+    relatedUsages: ["restaurant", "boutique", "avis-google"],
+    cta: "Créer mes supports imprimables",
+    ctaHref: "/creer",
+  },
+
+  "qr-code-rgpd": {
+    slug: "qr-code-rgpd",
+    emoji: "⚖️",
+    category: "Les bases",
+    metaTitle: "QR code et RGPD : ce qu'il faut savoir",
+    metaDescription: "QR code et RGPD : ce que mesure vraiment un QR dynamique, quand un bandeau cookies s'impose, ce que devient un formulaire de contact et vos obligations.",
+    h1: "QR code et RGPD : ce qu'il faut savoir",
+    lede: "Compter les scans n'est pas anodin au regard du droit. Voici ce qui est en jeu, en clair — sans jargon et sans dramatiser.",
+    tldr: "Un QR code n'est qu'un lien : il ne collecte rien par lui-même. Ce sont la page d'arrivée et la mesure des scans qui relèvent du RGPD. Les statistiques agrégées posent peu de difficultés ; un formulaire de contact, lui, vous rend responsable des données reçues.",
+    sections: [
+      { h2: "Le QR code lui-même ne collecte rien", body: ["Un QR est un dessin qui encode du texte, le plus souvent une adresse. Le scanner n'envoie aucune donnée à qui que ce soit : c'est le téléphone qui lit le motif, hors ligne. Tant que la personne n'ouvre pas le lien, rien ne circule."] },
+      { h2: "Ce que mesure un QR dynamique", body: ["Un QR dynamique passe par une adresse de redirection, ce qui permet de compter les scans. Ce que QRowg enregistre à ce moment : la date, le pays approximatif, le type d'appareil et la source. Ni nom, ni adresse e-mail, ni identifiant publicitaire.", "Ces mesures restent agrégées : elles servent à savoir qu'un support fonctionne, pas à suivre une personne. C'est une différence de nature avec le pistage publicitaire, et elle compte juridiquement."] },
+      { h2: "Faut-il un bandeau cookies ?", body: ["La règle française, portée par la CNIL, distingue les traceurs strictement nécessaires — ou de mesure d'audience limitée à cette seule finalité — des traceurs publicitaires, qui exigent un consentement préalable.", "Une mesure d'audience simple, sans recoupement avec d'autres sites et sans usage publicitaire, peut relever de l'exemption. Ajoutez en revanche un pixel Meta ou Google Ads sur votre page, et vous basculez dans le régime du consentement : bandeau obligatoire."] },
+      { h2: "Le formulaire de contact change tout", body: ["Dès que votre page recueille un nom, un e-mail ou un téléphone, vous devenez responsable de ces données. Trois obligations concrètes : dire à quoi elles servent, ne les garder que le temps utile, et pouvoir les supprimer sur demande.", "Chez QRowg, les messages reçus sont stockés chiffrés et hébergés dans l'Union européenne. Vous pouvez les exporter et les effacer depuis votre espace."] },
+      { h2: "En pratique, pour un commerce", bullets: ["Indiquez sur votre page qui vous êtes et comment vous joindre", "Si vous avez un formulaire, dites en une phrase à quoi servent les réponses", "N'ajoutez un pixel publicitaire que si vous assumez le bandeau qui va avec", "Ne demandez que ce dont vous avez besoin : un champ en moins, c'est une obligation en moins"] },
+      { h2: "Ce guide n'est pas un avis juridique", body: ["Nous décrivons le fonctionnement de QRowg et les principes généraux du RGPD. Votre situation peut appeler des obligations particulières — secteur réglementé, données sensibles, effectif. Pour un cas précis, l'interlocuteur juste est un juriste, ou directement la CNIL, qui publie des fiches pratiques gratuites."] },
+    ],
+    faq: [
+      { q: "Dois-je déclarer mes QR codes à la CNIL ?", a: "Non. La déclaration préalable a disparu avec le RGPD en 2018. Vous devez en revanche pouvoir démontrer votre conformité si on vous le demande." },
+      { q: "Les scans permettent-ils d'identifier une personne ?", a: "Pas dans QRowg : les mesures sont agrégées — date, pays approximatif, type d'appareil, source. Rien qui désigne quelqu'un en particulier." },
+      { q: "Où sont hébergées les données ?", a: "Dans l'Union européenne. Les messages reçus via les formulaires sont chiffrés au stockage." },
+      { q: "Un QR code Wi-Fi pose-t-il un problème ?", a: "Non : il encode le nom du réseau et le mot de passe directement dans le motif. Rien ne transite par un serveur, il fonctionne même hors ligne." },
+    ],
+    related: ["qr-code-avec-statistiques", "qr-code-dynamique-vs-statique", "duree-de-vie-qr-code"],
+    relatedUsages: ["avis-google", "restaurant", "wifi"],
+    cta: "Créer un QR code",
+  },
+
+  "qr-code-gratuit-sans-inscription": {
+    slug: "qr-code-gratuit-sans-inscription",
+    emoji: "🎁",
+    category: "Les bases",
+    metaTitle: "QR code gratuit sans inscription : le vrai périmètre",
+    metaDescription: "Créer un QR code gratuitement et sans compte : ce que vous obtenez vraiment, ce qui demande un compte, et le piège des générateurs qui expirent.",
+    h1: "QR code gratuit sans inscription : ce qui est possible",
+    lede: "Beaucoup de services promettent « gratuit et sans inscription », puis désactivent le code trois semaines plus tard. Voici où passe la vraie frontière.",
+    tldr: "Un QR statique se crée et se télécharge sans compte, et fonctionne pour toujours : le contenu est encodé dans le dessin, personne ne peut l'éteindre. Un QR dynamique — modifiable, mesurable — passe forcément par un compte, parce qu'il dépend d'un service qui redirige.",
+    sections: [
+      { h2: "Pourquoi certains QR « gratuits » cessent de marcher", body: ["Un QR dynamique ne contient pas votre lien : il contient l'adresse d'un service, qui redirige vers vous. C'est ce qui permet de changer la destination après impression — et c'est aussi ce qui permet au service de couper la redirection le jour où l'essai se termine.", "Un QR statique, lui, encode directement votre contenu. Aucun intermédiaire, donc rien à couper. Il ne peut pas expirer."] },
+      { h2: "Ce qui se fait sans compte", table: { head: ["Besoin", "Sans compte ?", "Pourquoi"], rows: [
+        ["QR vers un lien", "Oui", "Contenu encodé directement"],
+        ["QR Wi-Fi", "Oui", "Réseau et mot de passe dans le motif"],
+        ["QR contact (vCard)", "Oui", "Fiche encodée dans le code"],
+        ["QR texte, SMS, e-mail", "Oui", "Aucun serveur nécessaire"],
+        ["Télécharger en PNG ou SVG", "Oui", "Rendu dans votre navigateur"],
+        ["Composer une page", "Oui, chez QRowg", "Gardée dans votre navigateur"],
+        ["Changer la destination après impression", "Non", "Suppose une redirection à votre nom"],
+        ["Compter les scans", "Non", "Suppose un serveur qui les enregistre"],
+        ["Publier la page en ligne", "Non", "Une page doit appartenir à quelqu'un"]] } },
+      { h2: "Chez QRowg, concrètement", body: ["Le générateur crée et télécharge des QR statiques sans compte : ils sont à vous, définitivement, et fonctionnent hors ligne pour le Wi-Fi et les contacts.", "Vous pouvez aussi composer une page entière sans compte — choisir un modèle, écrire vos textes, voir le résultat. Le travail est gardé dans votre navigateur. Le compte n'intervient qu'au moment de publier, parce qu'il faut bien que la page ait une adresse et un propriétaire."] },
+      { h2: "Statique ou dynamique : comment choisir", bullets: ["Le contenu ne changera jamais (Wi-Fi, coordonnées) → statique, sans compte", "Vous imprimez en série et le contenu peut évoluer → dynamique", "Vous voulez savoir si le support fonctionne → dynamique", "Vous testez une idée avant d'investir → statique pour commencer"] },
+      { h2: "Les questions à poser avant de choisir un service", bullets: ["Le QR reste-t-il actif si j'arrête de payer ?", "Combien de scans avant que ça se bloque ?", "Puis-je exporter en vectoriel pour une grande impression ?", "Où sont hébergées les données de scan ?"] },
+    ],
+    faq: [
+      { q: "Un QR code gratuit peut-il expirer ?", a: "Un QR statique, non : le contenu est dans le dessin. Un QR dynamique gratuit peut cesser de rediriger si le service le décide — c'est le modèle économique de beaucoup de générateurs." },
+      { q: "Puis-je créer une page sans donner mon e-mail ?", a: "Chez QRowg, oui : vous composez la page et voyez le résultat sans compte. L'e-mail n'est demandé qu'au moment de la publier." },
+      { q: "Le QR statique est-il de moins bonne qualité ?", a: "Non, c'est le même standard. La différence est fonctionnelle : le statique est figé, le dynamique est modifiable et mesurable." },
+      { q: "Combien de QR statiques puis-je créer ?", a: "Autant que vous voulez : le rendu se fait dans votre navigateur, rien n'est décompté." },
+    ],
+    related: ["qr-code-dynamique-vs-statique", "duree-de-vie-qr-code", "comment-creer-un-qr-code"],
+    relatedUsages: ["wifi", "carte-de-visite", "restaurant"],
+    cta: "Créer un QR code gratuitement",
+  },
 }
 
 export const GUIDE_SLUGS = Object.keys(GUIDES)
@@ -243,4 +380,6 @@ export const GUIDE_ORDER = [
   "qr-code-dynamique-vs-statique", "comment-creer-un-qr-code", "comment-scanner-un-qr-code",
   "personnaliser-qr-code", "taille-qr-code-impression", "qr-code-scannable",
   "qr-code-avec-statistiques", "duree-de-vie-qr-code",
+  "qr-code-ne-fonctionne-pas", "ou-placer-son-qr-code", "qr-code-rgpd",
+  "qr-code-gratuit-sans-inscription",
 ]

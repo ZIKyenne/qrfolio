@@ -701,6 +701,210 @@ export const VERTICALS: Record<string, Vertical> = {
     ctaTitle: "Créez le QR code de votre musique",
     related: ["instagram", "evenement", "carte-de-visite"],
   },
+  boulangerie: {
+    slug: "boulangerie",
+    emoji: "🥐",
+    eyebrow: "Boulangeries & pâtisseries",
+    metaTitle: "QR code boulangerie : horaires et commandes",
+    metaDescription: "Un QR code sur votre vitrine : horaires à jour, fournées du jour, commandes de pain et de gâteaux, avis Google. Modifiable sans réimprimer.",
+    h1: "Le QR code collé sur votre vitrine travaille aussi quand vous êtes fermé",
+    intro: "Vos clients passent devant votre vitrine bien après la fermeture. Un QR code sur la porte leur donne vos horaires du jour, vos fournées, et de quoi commander leur gâteau — sans que vous ayez à décrocher.",
+    problems: [
+      { pain: "Le papier des horaires jaunit sur la porte, et il est faux dès le premier jour férié.", gain: "Vous changez les horaires depuis votre téléphone ; l'affiche collée reste la même." },
+      { pain: "Les commandes de gâteaux se prennent au téléphone, en plein coup de feu.", gain: "Un formulaire de commande recueille nom, date et détails, sans interrompre le service." },
+      { pain: "Personne ne sait quand sort la prochaine fournée.", gain: "Une page que vous mettez à jour en deux gestes le matin." },
+    ],
+    features: [
+      { title: "Horaires toujours justes", desc: "Ouvertures, fermetures annuelles, jours fériés. Un statut « ouvert / fermé » s'affiche en direct." },
+      { title: "Commandes sur mesure", desc: "Un formulaire pour les gâteaux, buffets et pains spéciaux, avec date de retrait." },
+      { title: "Avis Google", desc: "Un bouton dédié envoie vos clients satisfaits vers votre fiche Google." },
+      { title: "Supports pour la vitrine", desc: "Sticker vitrine, panneau horaires, carte comptoir — prêts à imprimer avec votre QR." },
+    ],
+    steps: [
+      "Partez d'un modèle et renseignez vos horaires et vos spécialités.",
+      "Ajoutez un formulaire de commande si vous prenez des gâteaux sur commande.",
+      "Imprimez le sticker vitrine et le panneau horaires depuis le Print Studio.",
+      "Mettez à jour vos horaires quand vous voulez : le QR collé ne change jamais.",
+    ],
+    faq: [
+      { q: "Je change mes horaires en été. Faut-il réimprimer ?", a: "Non. Le QR code est dynamique : vous modifiez la page, le code collé sur la vitrine reste identique." },
+      { q: "Puis-je afficher les allergènes de mes produits ?", a: "Oui. Chaque produit peut porter une description, un prix et la liste des allergènes." },
+      { q: "Est-ce que ça marche pour prendre les commandes de Noël ?", a: "Oui. Un formulaire recueille le nom, le téléphone, la date de retrait et le détail de la commande ; les demandes arrivent dans votre espace." },
+      { q: "Et si mes clients n'ont pas de smartphone récent ?", a: "Tous les téléphones vendus depuis 2018 scannent un QR code avec l'appareil photo, sans installer d'application." },
+    ],
+    ctaTitle: "Créez le QR code de votre boulangerie",
+    related: ["restaurant", "avis-google", "menu"],
+  },
+
+  bar: {
+    slug: "bar",
+    emoji: "🍸",
+    eyebrow: "Bars & brasseries",
+    metaTitle: "QR code bar : carte des cocktails et happy hour",
+    metaDescription: "Un QR code sur vos tables et vos sous-bocks : carte des cocktails à jour, happy hour, événements et avis. Modifiable sans réimprimer la carte.",
+    h1: "Votre carte change souvent. Votre QR code, jamais.",
+    intro: "Une rupture sur un spiritueux, un cocktail de saison, un happy hour qui bouge : la carte papier est fausse avant d'être sèche. Un QR sur la table et sous le verre affiche toujours la bonne.",
+    problems: [
+      { pain: "Réimprimer la carte à chaque changement de prix ou de rupture.", gain: "Vous modifiez la carte en direct ; les supports imprimés ne bougent pas." },
+      { pain: "Le happy hour et les soirées passent inaperçus.", gain: "Une bannière en haut de page annonce l'offre du moment." },
+      { pain: "Pas moyen de savoir quelle table consulte quoi.", gain: "Des QR distincts par emplacement mesurent les scans, table par table." },
+    ],
+    features: [
+      { title: "Carte par catégories", desc: "Cocktails, bières pression, vins au verre, sans alcool. Prix et descriptions modifiables à tout moment." },
+      { title: "Bannière happy hour", desc: "Une offre mise en avant, que vous activez et désactivez quand vous voulez." },
+      { title: "Agenda des soirées", desc: "Concerts, DJ sets, matchs diffusés — avec date, heure et lien de réservation." },
+      { title: "Sous-bocks et chevalets", desc: "Le Print Studio produit vos sous-bocks ronds et chevalets de table, avec votre QR." },
+    ],
+    steps: [
+      "Choisissez un modèle bar et saisissez votre carte.",
+      "Ajoutez votre happy hour et vos prochaines soirées.",
+      "Imprimez sous-bocks, chevalets et sticker vitrine.",
+      "Changez la carte quand vous voulez, sans rien réimprimer.",
+    ],
+    faq: [
+      { q: "Puis-je masquer un cocktail en rupture sans supprimer sa fiche ?", a: "Oui. Chaque élément peut être rendu invisible d'un geste, puis réaffiché plus tard." },
+      { q: "Le QR fonctionne-t-il dans un bar peu éclairé ?", a: "Oui, à condition d'un bon contraste. Le contrôle avant impression vous prévient si les couleurs choisies risquent de gêner la lecture." },
+      { q: "Puis-je mesurer les scans du comptoir et ceux des tables séparément ?", a: "Oui, en créant un QR par emplacement : ils mènent à la même carte, mais chacun compte ses propres scans." },
+    ],
+    ctaTitle: "Créez le QR code de votre bar",
+    related: ["restaurant", "menu", "evenement"],
+  },
+
+  garage: {
+    slug: "garage",
+    emoji: "🔧",
+    eyebrow: "Garages & mécanique",
+    metaTitle: "QR code garage auto : devis, rendez-vous et avis",
+    metaDescription: "Un QR code sur votre vitrine et vos factures : demande de devis, prise de rendez-vous, horaires et avis Google. Vos clients vous joignent sans appeler.",
+    h1: "Vos clients demandent un devis pendant que vous êtes sous une voiture",
+    intro: "Le téléphone sonne au mauvais moment, toujours. Un QR code sur la vitrine, le comptoir et les factures laisse vos clients demander un devis ou un rendez-vous — vous répondez quand vous avez les mains libres.",
+    problems: [
+      { pain: "Le téléphone interrompt les interventions toute la journée.", gain: "Les demandes de devis arrivent par écrit, avec le modèle et le besoin." },
+      { pain: "Les clients ne savent pas si vous prenez les rendez-vous en ligne.", gain: "Un bouton de prise de rendez-vous, visible dès le scan." },
+      { pain: "Peu d'avis en ligne, alors que le travail est bon.", gain: "Un QR sur la facture invite à laisser un avis, au moment où le client est content." },
+    ],
+    features: [
+      { title: "Demande de devis", desc: "Un formulaire avec véhicule, immatriculation, besoin et photos. Les demandes arrivent dans votre espace." },
+      { title: "Prestations et tarifs", desc: "Vidange, freins, pneus, contrôle technique : ce que vous faites, à quel prix indicatif." },
+      { title: "Horaires et itinéraire", desc: "Ouvertures, fermeture annuelle, lien direct vers l'itinéraire." },
+      { title: "Supports pour l'atelier", desc: "Sticker vitrine, carte de visite à glisser dans le véhicule, panneau horaires." },
+    ],
+    steps: [
+      "Renseignez vos prestations, vos horaires et votre adresse.",
+      "Ajoutez un formulaire de demande de devis.",
+      "Imprimez le sticker vitrine et les cartes à laisser dans les véhicules.",
+      "Traitez les demandes quand vous êtes disponible.",
+    ],
+    faq: [
+      { q: "Les clients peuvent-ils joindre des photos à leur demande ?", a: "Oui. Le formulaire accepte des pièces jointes, utile pour un impact de pare-brise ou un voyant allumé." },
+      { q: "Puis-je afficher des tarifs sans m'engager ?", a: "Oui. Rien ne vous oblige à afficher un prix ferme : beaucoup de garages indiquent une fourchette « à partir de »." },
+      { q: "Où mettre le QR pour qu'il serve vraiment ?", a: "Sur la vitrine côté rue, au comptoir, et sur la facture ou le rapport d'intervention remis au client." },
+    ],
+    ctaTitle: "Créez le QR code de votre garage",
+    related: ["artisan", "avis-google", "carte-de-visite"],
+  },
+
+  pharmacie: {
+    slug: "pharmacie",
+    emoji: "💊",
+    eyebrow: "Pharmacies & santé",
+    metaTitle: "QR code pharmacie : horaires, garde et services",
+    metaDescription: "Un QR code sur votre vitrine : horaires, pharmacie de garde, services proposés et contact. À jour en permanence, sans réimprimer l'affiche.",
+    h1: "L'information que vos patients cherchent porte fermée",
+    intro: "Horaires, garde du week-end, vaccination, tests, matériel médical : ces questions arrivent au comptoir ou par téléphone, souvent au pire moment. Un QR sur la vitrine y répond, y compris la nuit.",
+    problems: [
+      { pain: "L'affiche des horaires est raturée et périmée.", gain: "Vous modifiez la page ; l'affiche collée reste identique." },
+      { pain: "Les patients appellent pour savoir qui est de garde.", gain: "Une page que vous mettez à jour chaque semaine, consultable porte fermée." },
+      { pain: "Vos services sont mal connus.", gain: "Une liste claire : vaccination, tests, orthopédie, location de matériel." },
+    ],
+    features: [
+      { title: "Horaires et garde", desc: "Ouvertures, fermeture du midi, jours fériés, et l'information de garde mise à jour quand vous voulez." },
+      { title: "Vos services", desc: "Ce que votre officine propose vraiment, avec le détail utile pour chacun." },
+      { title: "Contact direct", desc: "Appel, itinéraire, et un formulaire pour les questions qui ne relèvent pas de l'urgence." },
+      { title: "Panneau vitrine", desc: "Un panneau A5 prêt à imprimer, lisible depuis le trottoir." },
+    ],
+    steps: [
+      "Saisissez vos horaires, vos services et vos coordonnées.",
+      "Ajoutez l'information de garde si vous la communiquez.",
+      "Imprimez le panneau vitrine depuis le Print Studio.",
+      "Actualisez la page quand la garde ou les horaires changent.",
+    ],
+    faq: [
+      { q: "Puis-je y mettre des conseils de santé ?", a: "Techniquement oui, mais restez dans le cadre déontologique de votre profession : une officine reste soumise aux règles de communication de l'Ordre des pharmaciens." },
+      { q: "Les données du formulaire de contact sont-elles protégées ?", a: "Les messages sont stockés chiffrés et hébergés dans l'Union européenne. N'utilisez pas ce canal pour des données de santé : il n'est pas conçu pour ça." },
+      { q: "Puis-je afficher la garde sans la mettre à jour moi-même ?", a: "Non, la mise à jour est manuelle. Beaucoup d'officines préfèrent renvoyer vers le service officiel de leur département par un simple lien." },
+    ],
+    ctaTitle: "Créez le QR code de votre pharmacie",
+    related: ["artisan", "avis-google", "wifi"],
+  },
+
+  camping: {
+    slug: "camping",
+    emoji: "⛺",
+    eyebrow: "Campings & locations",
+    metaTitle: "QR code camping : Wi-Fi, infos et activités",
+    metaDescription: "Un QR code à l'accueil et dans les hébergements : code Wi-Fi, horaires de la piscine, activités, plan du site et contact. Sans réimprimer chaque saison.",
+    h1: "Le classeur d'accueil que personne ne lit, en un scan",
+    intro: "Code Wi-Fi, horaires de la piscine, marché du village, urgences : vos vacanciers posent les mêmes questions toute la saison. Un QR dans chaque hébergement y répond avant qu'ils viennent à l'accueil.",
+    problems: [
+      { pain: "Le code Wi-Fi est dicté vingt fois par jour à l'accueil.", gain: "Un QR le donne d'un scan, sans faute de frappe." },
+      { pain: "Le classeur d'accueil est déchiré et date de trois saisons.", gain: "Une page que vous corrigez en cours de saison, sans rien réimprimer." },
+      { pain: "Les animations et les horaires changent chaque semaine.", gain: "Un agenda que vous actualisez le lundi matin." },
+    ],
+    features: [
+      { title: "Wi-Fi en un scan", desc: "Le réseau et le mot de passe encodés : le téléphone se connecte sans rien taper." },
+      { title: "Infos pratiques", desc: "Piscine, sanitaires, laverie, réception, urgences — chaque horaire à sa place." },
+      { title: "Animations et alentours", desc: "Le programme de la semaine, les marchés, les randonnées, les commerces du village." },
+      { title: "Supports pour les hébergements", desc: "Chevalet de table, panneau Wi-Fi, sticker — un par mobil-home ou par emplacement." },
+    ],
+    steps: [
+      "Renseignez le Wi-Fi, les horaires et les infos pratiques.",
+      "Ajoutez le programme d'animations de la semaine.",
+      "Imprimez un chevalet ou un panneau par hébergement.",
+      "Actualisez le programme en cours de saison, sans réimprimer.",
+    ],
+    faq: [
+      { q: "Le QR Wi-Fi fonctionne-t-il sans connexion ?", a: "Oui. Un QR Wi-Fi encode directement le réseau et le mot de passe : le téléphone se connecte hors ligne, sans passer par internet." },
+      { q: "Puis-je avoir une page différente par hébergement ?", a: "Oui, en créant une page par type d'hébergement. Vous pouvez aussi n'en faire qu'une et créer un QR par emplacement pour mesurer les scans." },
+      { q: "Et pour un gîte ou une chambre d'hôtes ?", a: "Le principe est identique, en plus simple : une page, un QR affiché dans le logement." },
+    ],
+    ctaTitle: "Créez le QR code de votre camping",
+    related: ["wifi", "hotel", "evenement"],
+  },
+
+  fleuriste: {
+    slug: "fleuriste",
+    emoji: "💐",
+    eyebrow: "Fleuristes",
+    metaTitle: "QR code fleuriste : commandes, livraison et avis",
+    metaDescription: "Un QR code en vitrine et glissé dans le bouquet : commandes, livraison, occasions et avis Google. La personne qui reçoit vos fleurs vous retrouve.",
+    h1: "Celui qui reçoit le bouquet ne sait pas d'où il vient",
+    intro: "Vos plus belles compositions partent chez des gens qui ne connaissent pas votre boutique. Un marque-page glissé dans le bouquet, avec votre QR, transforme chaque livraison en nouveau client.",
+    problems: [
+      { pain: "La personne qui reçoit vos fleurs ignore qui les a faites.", gain: "Un marque-page avec votre QR part avec chaque bouquet." },
+      { pain: "Les commandes pour la fête des mères saturent le téléphone.", gain: "Un formulaire de commande recueille occasion, budget, date et message." },
+      { pain: "Votre vitrine ne travaille plus une fois fermée.", gain: "Un sticker vitrine renvoie vers vos compositions et vos horaires, jour et nuit." },
+    ],
+    features: [
+      { title: "Commande à distance", desc: "Occasion, budget, couleurs, date de livraison et texte de la carte, en un formulaire." },
+      { title: "Vos compositions", desc: "Une galerie de vos réalisations, que vous renouvelez au fil des saisons." },
+      { title: "Livraison et zone couverte", desc: "Les communes que vous livrez, les délais et les tarifs." },
+      { title: "Marque-page et sticker", desc: "Le Print Studio produit le marque-page à piquer dans le bouquet et le sticker vitrine." },
+    ],
+    steps: [
+      "Présentez vos compositions et votre zone de livraison.",
+      "Ajoutez un formulaire de commande avec date et occasion.",
+      "Imprimez le marque-page et le sticker vitrine.",
+      "Glissez un marque-page dans chaque bouquet livré.",
+    ],
+    faq: [
+      { q: "Puis-je encaisser directement sur la page ?", a: "Vous pouvez ajouter un lien de paiement vers votre propre solution. QRowg ne traite pas les paiements de vos clients." },
+      { q: "Comment mesurer si le marque-page fonctionne ?", a: "En créant un QR distinct pour les marque-pages : ses scans se comptent à part de ceux de la vitrine." },
+      { q: "Puis-je changer ma galerie à chaque saison ?", a: "Oui, autant de fois que vous voulez. Les supports déjà imprimés ne changent pas." },
+    ],
+    ctaTitle: "Créez le QR code de votre boutique de fleurs",
+    related: ["boutique", "avis-google", "carte-de-visite"],
+  },
 }
 
 export const VERTICAL_SLUGS = Object.keys(VERTICALS)
@@ -716,11 +920,14 @@ export const VERTICAL_OBJECTIVE: Record<string, string> = {
   salon: "reservation", boutique: "vente", "food-truck": "menu", artisan: "contact",
   paiement: "vente", association: "contact", musique: "reseaux", cv: "portfolio",
   evenement: "evenement", "carte-de-visite": "contact",
+  boulangerie: "menu", bar: "menu", garage: "contact",
+  pharmacie: "contact", camping: "contact", fleuriste: "vente",
 }
 export const objectiveForVertical = (slug: string): string | undefined => VERTICAL_OBJECTIVE[slug]
 // Ordre d'affichage du hub /qr-code (le plus recherché en premier).
 export const VERTICAL_ORDER = [
   "restaurant", "menu", "avis-google", "wifi", "instagram", "whatsapp", "sms", "pdf",
   "immobilier", "hotel", "salon", "boutique", "food-truck", "artisan", "paiement",
+  "boulangerie", "bar", "garage", "pharmacie", "camping", "fleuriste",
   "association", "musique", "cv", "evenement", "carte-de-visite",
 ]

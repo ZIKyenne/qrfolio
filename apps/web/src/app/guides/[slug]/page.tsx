@@ -37,8 +37,11 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   if (!g) notFound()
 
   const url = `${APP}/guides/${g.slug}`
-  // Un guide n'indique aucun métier : l'essai s'ouvre sur la galerie complète.
-  const ctaHref = /dynamique|statistiques/i.test(g.cta) ? creerUrl() : "/generateur-qr-code"
+  // Destination déclarée par le guide quand elle est évidente ; sinon on retombe
+  // sur l'ancienne règle. Deviner à partir du LIBELLÉ envoyait « Créer mes supports
+  // imprimables » vers le générateur de QR. Un guide n'indique aucun métier :
+  // l'essai s'ouvre donc sur la galerie complète.
+  const ctaHref = g.ctaHref || (/dynamique|statistiques/i.test(g.cta) ? creerUrl() : "/generateur-qr-code")
   const articleLd = {
     "@context": "https://schema.org", "@type": "Article",
     headline: g.h1, description: g.metaDescription,

@@ -31,6 +31,12 @@ export const METIER_BY_USAGE: Record<string, string> = {
   "cv":               "Freelance",
   "artisan":          "Consultant",   // artisans et indépendants : services, devis, contact
   "evenement":        "Evenement",
+  "boulangerie":      "Restaurant",   // carte, horaires, commandes : mêmes blocs
+  "bar":              "Bar",
+  "garage":           "Consultant",   // devis, prestations, avis
+  "pharmacie":        "Sante",
+  "camping":          "Restaurant",   // hébergement : Wi-Fi, horaires, infos pratiques
+  "fleuriste":        "Ecommerce",
 }
 
 /** Secteurs connus de la galerie — garde-fou contre une clé qui ne filtrerait rien. */

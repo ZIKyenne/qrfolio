@@ -56,14 +56,69 @@ export function safeMetier(v: string | null | undefined): string {
  * Adresse de l'essai depuis une page d'entrée.
  * `usage` = slug SEO ; `ref` = code de parrainage à ne pas perdre en route.
  */
-export function creerUrl(usage?: string | null, ref?: string | null): string {
+export function creerUrl(usage?: string | null, ref?: string | null, lien?: string | null): string {
   const p = new URLSearchParams()
   const m = METIER_BY_USAGE[(usage || "").trim()]
   if (m) p.set("metier", m)
   const r = (ref || "").trim().toLowerCase()
   if (/^[a-z0-9_-]{3,40}$/.test(r)) p.set("ref", r)
+  const l = safeEntryLink(lien)
+  if (l) p.set("lien", l)
   const q = p.toString()
   return q ? `/creer?${q}` : "/creer"
+}
+
+// ── Le lien saisi au générateur suit jusqu'à la page ────────────────────────────
+//
+// Quelqu'un qui vient de faire un QR vers monsite.fr et qui accepte de composer une
+// page ne devrait pas avoir à retaper son adresse. Elle voyage dans ?lien=… et
+// devient un bouton sur la page composée.
+
+/** Lien d'entrée recevable : http(s) uniquement, longueur bornée. Sinon "". */
+export function safeEntryLink(v: string | null | undefined): string {
+  const s = (v || "").trim()
+  if (!s || s.length > 300) return ""
+  // javascript:, data:, mailto:, tel: … : rien de tout cela n'a sa place dans un bouton.
+  if (!/^https?:\/\//i.test(s)) return ""
+  try {
+    const u = new URL(s)
+    if (u.protocol !== "http:" && u.protocol !== "https:") return ""
+    if (!u.hostname.includes(".")) return ""
+    return u.toString()
+  } catch { return "" }
+}
+
+/** Nom de domaine lisible — sert de libellé au bouton ajouté. */
+export function linkLabel(link: string): string {
+  const l = safeEntryLink(link)
+  if (!l) return ""
+  try {
+    const h = new URL(l).hostname.replace(/^www\./i, "")
+    return h.length > 40 ? h.slice(0, 40) : h
+  } catch { return "" }
+}
+
+/**
+ * Ajoute le lien d'entrée aux blocs d'un modèle : un bouton, juste après le bloc
+ * de profil (ou en tête s'il n'y en a pas), là où il sera vu.
+ *
+ * Volontairement ADDITIF : on ne réécrit pas l'URL d'un bouton existant, dont le
+ * libellé (« Réserver une table ») promettrait alors autre chose que sa destination.
+ * Idempotent : rappelé avec le même lien, il n'en ajoute pas un second.
+ */
+export function applyEntryLink(blocks: unknown, link: string): any[] {
+  const list = Array.isArray(blocks) ? (blocks as any[]) : []
+  const l = safeEntryLink(link)
+  if (!l) return list
+  const already = list.some(b => b && b.type === "cta_button" && b.content && b.content.url === l)
+  if (already) return list
+  const bouton = {
+    type: "cta_button",
+    content: { label: `Voir ${linkLabel(l)}`, url: l, style: "gold", icon: "🔗", full_width: "yes" },
+  }
+  const i = list.findIndex(b => b && b.type === "profile")
+  const at = i >= 0 ? i + 1 : 0
+  return [...list.slice(0, at), bouton, ...list.slice(at)]
 }
 
 /** Libellé affiché dans le bandeau d'arrivée. */

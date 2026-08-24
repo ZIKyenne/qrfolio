@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { METIER_BY_USAGE, SECTEURS, SECTEUR_LABEL, safeMetier, creerUrl } from "./entry"
+import { METIER_BY_USAGE, SECTEURS, SECTEUR_LABEL, safeMetier, creerUrl, safeEntryLink, linkLabel, applyEntryLink } from "./entry"
 import { VERTICAL_ORDER } from "../qr-code/verticals"
 
 const read = (p: string) => readFileSync(join(__dirname, p), "utf8")
@@ -106,7 +106,7 @@ describe("les pages d'entrée mènent bien à l'essai", () => {
     // Filtrer serait pire que ne rien faire : « Restaurant » ne compte qu'un
     // modèle sur 48, et n'en montrer qu'un ferait passer le catalogue pour vide.
     const g = read("../dashboard/templates/page.tsx")
-    expect(g).toContain('safeMetier(new URLSearchParams(window.location.search).get("metier"))')
+    expect(g).toContain('const m = safeMetier(q.get("metier"))')
     expect(g).toContain("if (m) setFromEntry(m)")
     expect(g, "le secteur ne doit PAS devenir un filtre").not.toContain("setActiveMetier(m)")
     expect(g).toContain("return [...dedans, ...dehors]")
@@ -120,5 +120,73 @@ describe("les pages d'entrée mènent bien à l'essai", () => {
     const g = read("../dashboard/templates/page.tsx")
     expect(g).toContain('onClick={() => setFromEntry("")}')
     expect(g).toContain("Ordre habituel")
+  })
+})
+
+describe("le lien saisi au générateur suit jusqu'à la page", () => {
+  it("n'accepte qu'une vraie adresse web", () => {
+    expect(safeEntryLink("https://monsite.fr")).toBe("https://monsite.fr/")
+    expect(safeEntryLink("  http://exemple.fr/carte  ")).toBe("http://exemple.fr/carte")
+    // Un bouton de page publique ne doit jamais pouvoir exécuter du script.
+    expect(safeEntryLink("javascript:alert(1)")).toBe("")
+    expect(safeEntryLink("data:text/html,<script>")).toBe("")
+    expect(safeEntryLink("mailto:a@b.fr")).toBe("")
+    expect(safeEntryLink("monsite.fr")).toBe("")   // sans schéma : on ne devine pas
+    expect(safeEntryLink("https://localhost")).toBe("") // pas un domaine
+    expect(safeEntryLink("")).toBe("")
+    expect(safeEntryLink(null)).toBe("")
+    expect(safeEntryLink("https://a.fr/" + "x".repeat(400))).toBe("")
+  })
+
+  it("le libellé du bouton est le domaine, sans www", () => {
+    expect(linkLabel("https://www.monrestaurant.fr/carte")).toBe("monrestaurant.fr")
+    expect(linkLabel("https://instagram.com/moi")).toBe("instagram.com")
+    expect(linkLabel("javascript:alert(1)")).toBe("")
+  })
+
+  it("voyage dans l'adresse de l'essai", () => {
+    expect(creerUrl(null, null, "https://monsite.fr")).toBe("/creer?lien=https%3A%2F%2Fmonsite.fr%2F")
+    expect(creerUrl("restaurant", null, "https://monsite.fr")).toContain("metier=Restaurant")
+    expect(creerUrl("restaurant", null, "javascript:alert(1)")).toBe("/creer?metier=Restaurant")
+    expect(creerUrl()).toBe("/creer")   // le comportement d'avant, intact
+  })
+
+  it("devient un bouton, juste après le profil", () => {
+    const blocs = [
+      { type: "profile", content: { name: "Le Bistrot" } },
+      { type: "menu_section", content: {} },
+    ]
+    const out = applyEntryLink(blocs, "https://monsite.fr/carte")
+    expect(out.map(b => b.type)).toEqual(["profile", "cta_button", "menu_section"])
+    expect(out[1].content.url).toBe("https://monsite.fr/carte")
+    expect(out[1].content.label).toBe("Voir monsite.fr")
+    // Les blocs d'origine ne sont pas modifiés au passage.
+    expect(blocs).toHaveLength(2)
+  })
+
+  it("se met en tête quand le modèle n'a pas de profil", () => {
+    const out = applyEntryLink([{ type: "bio", content: {} }], "https://a-b.fr")
+    expect(out[0].type).toBe("cta_button")
+  })
+
+  it("ne réécrit JAMAIS un bouton existant", () => {
+    // « Réserver une table » qui mènerait soudain au site : le libellé mentirait.
+    const blocs = [{ type: "cta_button", content: { label: "Réserver une table", url: "#" } }]
+    const out = applyEntryLink(blocs, "https://monsite.fr")
+    expect(out[1].content.label).toBe("Réserver une table")
+    expect(out[1].content.url).toBe("#")
+  })
+
+  it("ne double pas le bouton si on repasse dessus", () => {
+    const une = applyEntryLink([{ type: "profile", content: {} }], "https://monsite.fr")
+    const deux = applyEntryLink(une, "https://monsite.fr")
+    expect(deux.filter(b => b.type === "cta_button")).toHaveLength(1)
+  })
+
+  it("sans lien recevable, les blocs ressortent tels quels", () => {
+    const blocs = [{ type: "profile", content: {} }]
+    expect(applyEntryLink(blocs, "")).toBe(blocs)
+    expect(applyEntryLink(blocs, "javascript:alert(1)")).toBe(blocs)
+    expect(applyEntryLink(null, "https://monsite.fr")).toHaveLength(1)
   })
 })

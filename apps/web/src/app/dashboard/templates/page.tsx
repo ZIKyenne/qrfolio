@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { PLAN_RANK } from "@/lib/plans"
 import { slugifyBase } from "@/lib/slug"
 import { Sparkles, ArrowRight, Check, X, Lock, Search, Heart, Eye, Clock, Layers, SlidersHorizontal,
-  UtensilsCrossed, Martini, Coffee, Laptop, Target, User, Building2, Megaphone, Music, Camera, Home, Brush, PartyPopper, Rocket, ShoppingBag, Zap, Flame } from "lucide-react"
+  UtensilsCrossed, Martini, Coffee, Laptop, Target, User, Building2, Megaphone, Music, Camera, Home, Brush, PartyPopper, Rocket, ShoppingBag, Zap, Flame, Link2 as LinkIcon } from "lucide-react"
 import TemplatePreviewModal from "./TemplatePreviewModal"
 import TemplateWizardModal from "./TemplateWizardModal"
 import Particles from "@/components/Particles"
@@ -15,7 +15,7 @@ import { PAGE_TEMPLATES } from "../builder/page-templates"
 import { TEMPLATE_LAYOUT_LIST, galleryStyleChoices, nativeGalleryStyleKey, galleryComposeBlocks } from "../builder/templateEngine"
 import { useToast } from "@/components/Toast"
 import { browserStorage, saveDraft, makeDraft } from "../builder/draftStore"
-import { safeMetier, SECTEUR_LABEL } from "../../creer/entry"
+import { safeMetier, SECTEUR_LABEL, safeEntryLink, applyEntryLink, linkLabel } from "../../creer/entry"
 
 // Source unique partagée avec le builder : les modèles de page complets (métier + sous-variantes)
 // alimentent AUSSI la galerie d'onboarding (en plus des 14 modèles curés historiques).
@@ -134,10 +134,16 @@ export default function TemplatesPage() {
   // pas 48 modèles tous secteurs confondus. Lu une seule fois, au montage.
   const [activeMetier, setActiveMetier] = useState("Tous")
   const [fromEntry, setFromEntry] = useState("")
+  // ?lien=… : l'adresse déjà saisie au générateur de QR. Elle deviendra un bouton
+  // sur la page composée — personne ne devrait retaper ce qu'il vient d'écrire.
+  const [entryLink, setEntryLink] = useState("")
   useEffect(() => {
     try {
-      const m = safeMetier(new URLSearchParams(window.location.search).get("metier"))
+      const q = new URLSearchParams(window.location.search)
+      const m = safeMetier(q.get("metier"))
       if (m) setFromEntry(m)
+      const l = safeEntryLink(q.get("lien"))
+      if (l) setEntryLink(l)
     } catch { /* pas de query : galerie complète */ }
   }, [])
   const [activePlan,   setActivePlan]   = useState("all")
@@ -352,6 +358,13 @@ export default function TemplatesPage() {
         ) : (
           <p style={{ color: MUTED, fontSize: 14.5, margin: "0 0 22px" }}>
             {TEMPLATES.length} templates pré-configurés pour votre métier
+          </p>
+        )}
+
+        {/* Le lien apporté du générateur : annoncé, jamais glissé en douce. */}
+        {entryLink && (
+          <p style={{ display: "inline-flex", alignItems: "center", gap: 7, color: G, fontSize: 12.5, fontWeight: 600, background: "color-mix(in srgb, var(--accent) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 999, padding: "6px 14px", margin: "0 0 20px" }}>
+            <LinkIcon size={13} /> {linkLabel(entryLink)} sera ajouté à votre page
           </p>
         )}
 
@@ -645,7 +658,8 @@ export default function TemplatesPage() {
             blocks={composed.blocks}
             theme={composed.theme}
             onClose={() => setWizardFor(null)}
-            onCreate={async ({ name, slug, blocks }) => {
+            onCreate={async ({ name, slug, blocks: composedBlocks }) => {
+              const blocks = applyEntryLink(composedBlocks, entryLink)
               if (guest) return applyTemplateAsGuest({ key: String(wizardFor), name, theme: composed.theme, blocks })
               const res = await fetch("/api/templates/use", {
                 method: "POST",
@@ -729,7 +743,8 @@ export default function TemplatesPage() {
             onClose={() => setNamingFor(null)}
             onCreate={async (name, slug, description) => {
               // Recompose thème + blocs selon le style/disposition choisis (par défaut = look d'origine).
-              const { theme, blocks } = galleryComposeBlocks(currentBlocks, currentTheme, effStyle, layoutKey)
+              const { theme, blocks: composedBlocks } = galleryComposeBlocks(currentBlocks, currentTheme, effStyle, layoutKey)
+              const blocks = applyEntryLink(composedBlocks, entryLink)
               if (guest) return applyTemplateAsGuest({ key: String(namingFor), name, theme, blocks })
               const res = await fetch("/api/templates/use", {
                 method: "POST",

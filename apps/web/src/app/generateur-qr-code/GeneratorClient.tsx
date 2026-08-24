@@ -11,6 +11,7 @@ import QRCanvas from "../dashboard/qr-codes/QRCanvas"
 import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../dashboard/qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail, buildSms, buildVCard } from "../dashboard/qr-link/qrLinkUtils"
+import { creerUrl } from "../creer/entry"
 import { qrLimit } from "@/lib/plans"
 import { DYN_FREE_TRIALS_PER_MONTH } from "@/lib/dynamicPlans"
 
@@ -59,6 +60,9 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
   const [logo, setLogo] = useState<string | null>(null)
   const [busy, setBusy] = useState<null | "png" | "svg">(null)
   const [done, setDone] = useState(false)
+  // Signature du design réellement téléchargé : la suite ne s'affiche qu'après
+  // le fichier, et disparaît d'elle-même dès que le contenu change.
+  const [downloaded, setDownloaded] = useState("")
   const [dyn, setDyn] = useState(false)
   const [saved, setSaved] = useState<{ sig: string; encoded: string } | null>(null)
   const [err, setErr] = useState<{ msg: string; upgrade?: boolean; dyn?: boolean } | null>(null)
@@ -129,14 +133,23 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
     return staticCount >= lim
   }, [isDyn, dynPlan, plan, usage])
   const blocked = overQuota && !isSavedCurrent
+  // Sans compte, « QR dynamique » ne peut pas produire de fichier : il mène à l'essai.
+  // Le bouton principal change donc de libellé — on n'emmène personne par surprise.
+  const dynGuest = isDyn && !authed
+  // La suite ne se propose qu'une fois le fichier obtenu, et seulement pour un QR figé.
+  const justDownloaded = downloaded === sig && !isDyn
 
   // Enregistre le QR dans le compte (POST /api/qr-instant → consomme le quota) PUIS le
   // télécharge. Dynamique → le QR encode /q/<code> renvoyé par le serveur (traçable,
   // modifiable, essai 30 j) ; statique → contenu brut. Erreur 403 = quota atteint (upsell).
   async function createAndDownload(ext: "png" | "svg") {
     if (!ready || busy) return
-    // QR dynamique = compte requis (il faut un lien serveur /q/<code>). Anonyme -> inscription.
-    if (isDyn && !authed) { window.location.href = "/auth/signup"; return }
+    // QR dynamique = compte requis (il faut un lien serveur /q/<code>). Sans compte, on
+    // ne renvoie plus vers un formulaire — huit visiteurs y sont arrivés en trente jours,
+    // aucun n'est allé au bout. On mène à ce qui répond au même besoin sans rien demander :
+    // composer une page modifiable, avec le lien déjà saisi. Le bouton le dit (voir plus bas),
+    // donc personne n'est surpris de ce qui arrive.
+    if (isDyn && !authed) { window.location.href = creerUrl(null, null, data); return }
     // Quota atteint : on ne tente même pas la création/téléchargement (défense en
     // profondeur ; le serveur renvoie de toute façon 403). Re-download d'un QR déjà
     // créé (isSavedCurrent) autorisé car `blocked` est déjà faux dans ce cas.
@@ -167,7 +180,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
       }
       const opts: QROptions = { data: enc, fg, bg, ecc: effectiveEcc, style: qrStyle, size: 1024 }
       const blob = await getQRBlob(opts, ext)
-      if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qrcode.${ext}`; a.click(); URL.revokeObjectURL(a.href); setDone(true); setTimeout(() => setDone(false), 1800) }
+      if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `qrcode.${ext}`; a.click(); URL.revokeObjectURL(a.href); setDone(true); setDownloaded(sig); setTimeout(() => setDone(false), 1800) }
     } catch { setErr({ msg: "Erreur réseau. Réessayez." }) }
     finally { setBusy(null) }
   }
@@ -311,7 +324,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
             </span>
             <span style={{ minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6, color: INK, fontSize: 13, fontWeight: 700 }}><Zap size={14} color={G} /> QR dynamique</span>
-              <span style={{ display: "block", color: MUT, fontSize: 11.5, lineHeight: 1.4, marginTop: 2 }}>{authed ? "Modifiable après impression + suivi des scans. Gratuit 30 j (2/mois)." : "Modifiable après impression + suivi des scans. Créez un compte gratuit pour l'activer."}</span>
+              <span style={{ display: "block", color: MUT, fontSize: 11.5, lineHeight: 1.4, marginTop: 2 }}>{authed ? "Modifiable après impression + suivi des scans. Gratuit 30 j (2/mois)." : "Modifiable après impression + suivi des scans. Sans compte, commencez par composer votre page."}</span>
             </span>
           </button>
         )}
@@ -325,21 +338,51 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
 
         <div style={{ display: "flex", gap: 10 }}>
           <button type="button" onClick={() => createAndDownload("png")} disabled={!ready || busy !== null || blocked} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 50, borderRadius: 12, border: "none", background: (ready && !blocked) ? G : "rgba(201,168,76,0.3)", color: "#080808", fontSize: 15, fontWeight: 800, cursor: (ready && !blocked) ? "pointer" : "default" }}>
-            {blocked ? <Lock size={18} /> : done ? <Check size={18} /> : <Download size={18} />} {blocked ? "Limite atteinte" : busy === "png" ? "…" : done ? "Téléchargé" : "Créer & télécharger"}
+            {blocked ? <Lock size={18} /> : dynGuest ? <Zap size={18} /> : done ? <Check size={18} /> : <Download size={18} />} {blocked ? "Limite atteinte" : dynGuest ? "Composer ma page" : busy === "png" ? "…" : done ? "Téléchargé" : "Créer & télécharger"}
           </button>
-          <button type="button" onClick={() => createAndDownload("svg")} disabled={!ready || busy !== null || blocked} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${BOR}`, background: "rgba(255,255,255,0.04)", color: INK, fontSize: 14, fontWeight: 700, cursor: (ready && !blocked) ? "pointer" : "default", opacity: blocked ? 0.5 : 1 }}>{busy === "svg" ? "…" : "SVG"}</button>
+          {/* Sans compte + dynamique : il n'y a pas de fichier à produire, donc pas de SVG. */}
+          {!dynGuest && (
+            <button type="button" onClick={() => createAndDownload("svg")} disabled={!ready || busy !== null || blocked} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${BOR}`, background: "rgba(255,255,255,0.04)", color: INK, fontSize: 14, fontWeight: 700, cursor: (ready && !blocked) ? "pointer" : "default", opacity: blocked ? 0.5 : 1 }}>{busy === "svg" ? "…" : "SVG"}</button>
+          )}
         </div>
-        <p style={{ color: "#6E685E", fontSize: 11.5, textAlign: "center", margin: 0 }}>{isDyn ? "Enregistré dans votre compte · le QR pointe vers un lien traçable." : authed ? "Enregistré dans votre compte · haute résolution, prêt à imprimer." : "Téléchargement direct · aucun compte requis · haute résolution, prêt à imprimer."}</p>
+        <p style={{ color: "#6E685E", fontSize: 11.5, textAlign: "center", margin: 0 }}>{dynGuest ? "Sans compte · votre page est gardée dans ce navigateur, le compte n'est demandé qu'à la publication." : isDyn ? "Enregistré dans votre compte · le QR pointe vers un lien traçable." : authed ? "Enregistré dans votre compte · haute résolution, prêt à imprimer." : "Téléchargement direct · aucun compte requis · haute résolution, prêt à imprimer."}</p>
 
-        {/* Explication contextuelle */}
+        {/* ── Après le téléchargement ────────────────────────────────────────────
+            Jusqu'ici, obtenir son fichier ne menait nulle part : une coche pendant
+            1,8 s, puis plus rien. On ne dit toujours rien AVANT — le fichier est
+            promis sans condition, il le reste — mais une fois qu'il est en main,
+            la limite d'un QR figé mérite d'être dite. */}
+        {justDownloaded && (
+          <div style={{ ...card, borderColor: "rgba(57,255,143,0.28)", background: "rgba(57,255,143,0.06)" }}>
+            <p style={{ color: "var(--success,#39FF8F)", fontSize: 12, fontWeight: 800, margin: "0 0 6px", display: "flex", alignItems: "center", gap: 6 }}><Check size={14} /> Fichier téléchargé</p>
+            <p style={{ color: INK, fontSize: 13.5, fontWeight: 700, margin: "0 0 4px" }}>Ce QR est figé pour toujours.</p>
+            <p style={{ color: MUT, fontSize: 12, margin: "0 0 12px", lineHeight: 1.5 }}>
+              Il pointera toujours vers ce que vous venez d&apos;encoder. Si le contenu peut changer — un menu, des horaires, une promo — donnez-lui plutôt une page modifiable&nbsp;: le QR ne bouge plus, la page, si.
+            </p>
+            <Link href={creerUrl(null, null, qrType === "link" ? data : null)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44, padding: "0 16px", borderRadius: 11, background: G, color: "#080808", fontSize: 13.5, fontWeight: 800, textDecoration: "none" }}>
+              Composer ma page →
+            </Link>
+            <p style={{ color: "#6E685E", fontSize: 11, margin: "8px 0 0", lineHeight: 1.4 }}>
+              {qrType === "link" ? "Votre lien y sera déjà. " : ""}Sans compte, sans carte&nbsp;: il n&apos;est demandé qu&apos;au moment de publier.
+            </p>
+          </div>
+        )}
+
+        {/* Explication contextuelle — masquée quand la suite après téléchargement
+            prend le relais : les deux diraient la même chose. */}
+        {!justDownloaded && (
         <div style={{ ...card, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)" }}>
-          <p style={{ color: INK, fontSize: 13.5, fontWeight: 800, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 7 }}><Zap size={16} color={G} /> {isDyn ? "QR dynamique — 30 jours gratuits" : qrType === "link" ? "Besoin de le modifier après impression ?" : "QR statique — pour toujours"}</p>
-          <p style={{ color: MUT, fontSize: 12, margin: 0, lineHeight: 1.5 }}>{isDyn
+          <p style={{ color: INK, fontSize: 13.5, fontWeight: 800, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 7 }}><Zap size={16} color={G} /> {dynGuest ? "QR dynamique — sans compte, autrement" : isDyn ? "QR dynamique — 30 jours gratuits" : qrType === "link" ? "Besoin de le modifier après impression ?" : "QR statique — pour toujours"}</p>
+          <p style={{ color: MUT, fontSize: 12, margin: 0, lineHeight: 1.5 }}>{dynGuest
+            ? <>Un QR dynamique pointe vers une adresse qui lui appartient : elle doit être créée quelque part, donc dans un compte. Sans compte, une <strong style={{ color: MUT }}>page modifiable</strong> rend le même service — le QR imprimé ne change jamais, son contenu, si.</>
+            : isDyn
             ? <>Ce QR pointera vers un lien <strong style={{ color: MUT }}>traçable et modifiable</strong>. Gratuit 30 j (2/mois) ; pour le garder actif ensuite, <Link href="/dashboard/qr-dynamique" style={{ color: G, textDecoration: "none", fontWeight: 700 }}>un abonnement QR Dynamique</Link>.</>
             : qrType === "link"
               ? <>Activez <strong style={{ color: MUT }}>« QR dynamique »</strong> ci-dessus pour changer la destination sans réimprimer et suivre les scans.</>
               : <>Le contenu est encodé directement : il <strong style={{ color: MUT }}>fonctionne hors ligne</strong> et ne périme jamais. Les liens peuvent, eux, être rendus dynamiques.</>}</p>
         </div>
+        )}
       </div>
     </div>
   )

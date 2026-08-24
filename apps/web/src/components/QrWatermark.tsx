@@ -1,38 +1,48 @@
 import type { CSSProperties } from "react"
+import { watermarkGeometry } from "./qrWatermark"
 
-// Filigrane de marque superposé à l'APERÇU d'un QR (jamais sur le fichier réellement
-// créé / téléchargé, qui passe par getQRBlob). Rend l'aperçu NON SCANNABLE et le marque.
-// Mécanique : `backdrop-filter: blur` FLOUTE le QR derrière (casse la lecture quelle que
-// soit sa couleur) + voile de secours (si backdrop-filter indisponible) + rangées « QROWG ».
+// Filigrane de marque superposé à l'APERÇU d'un QR — jamais sur le fichier créé /
+// téléchargé, qui passe par getQRBlob et reste, lui, parfaitement propre.
+//
+// Un seul ruban en travers de la diagonale bas-gauche → haut-droite : il efface deux
+// des trois yeux de détection, ce qui rend l'aperçu introuvable pour un lecteur, et
+// laisse le reste du code NET — couleurs, forme des modules, logo, style de coin en
+// haut à gauche. Le raisonnement complet est dans ./qrWatermark.ts.
+//
 // À poser dans un conteneur `position: relative` qui enveloppe le QRCanvas.
-// `size` = côté du QR en px (adapte flou/densité entre vignette et grand aperçu).
+// `size` = côté du QR en px (le ruban et son texte s'y adaptent).
 export default function QrWatermark({ text = "QROWG", size = 210 }: { text?: string; size?: number }) {
-  const small = size < 120
-  const fontSize = Math.max(7, Math.min(13, size / 15))
-  const blur = small ? 1.6 : Math.max(2.4, size / 70) // ~3px sur un grand aperçu
-  const rows = small ? 7 : 11
-  const reps = small ? 4 : 7
-  const lineText = (Array(reps).fill(text).join("   ") + "   ").repeat(2)
+  const g = watermarkGeometry(size)
+  const gold = "#C9A84C"
+
   const wrap: CSSProperties = {
     position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none",
-    borderRadius: "inherit", display: "flex", alignItems: "center", justifyContent: "center",
-    // Le flou de fond rend le QR illisible au scan ; le voile est un filet de sécurité.
-    backdropFilter: `blur(${blur}px)`, WebkitBackdropFilter: `blur(${blur}px)`,
-    background: "rgba(255,255,255,0.30)",
+    borderRadius: "inherit",
   }
-  const tile: CSSProperties = {
-    position: "absolute", inset: "-30%", transform: "rotate(-30deg)",
-    display: "flex", flexDirection: "column", alignItems: "center",
-    gap: small ? 6 : Math.round(fontSize * 1.15),
+
+  // Le ruban : une bande horizontale centrée, pivotée de 45° dans le sens inverse
+  // des aiguilles — elle rejoint donc le coin bas-gauche au coin haut-droite.
+  // Elle déborde largement en largeur pour que ses extrémités sortent du cadre.
+  const ribbon: CSSProperties = {
+    position: "absolute", left: "-30%", right: "-30%", top: "50%",
+    height: g.band, marginTop: -g.half,
+    transform: "rotate(-45deg)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    background: "linear-gradient(180deg, #101010 0%, #050505 100%)",
+    borderTop: `1px solid ${gold}`, borderBottom: `1px solid ${gold}`,
+    boxShadow: "0 6px 22px rgba(0,0,0,0.45)",
   }
-  const rowStyle: CSSProperties = {
-    whiteSpace: "nowrap", fontSize, fontWeight: 800, letterSpacing: 2,
-    color: "rgba(201,168,76,0.7)", textShadow: "0 1px 2px rgba(0,0,0,0.5)", userSelect: "none",
+
+  const label: CSSProperties = {
+    color: gold, fontSize: g.fontSize, fontWeight: 800,
+    letterSpacing: g.letterSpacing, whiteSpace: "nowrap", userSelect: "none",
+    fontFamily: "DM Sans, sans-serif", textTransform: "uppercase",
   }
+
   return (
     <div aria-hidden style={wrap}>
-      <div style={tile}>
-        {Array.from({ length: rows }).map((_, i) => <div key={i} style={rowStyle}>{lineText}</div>)}
+      <div style={ribbon}>
+        {g.withText && <span style={label}>{text} · aperçu</span>}
       </div>
     </div>
   )

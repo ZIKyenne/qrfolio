@@ -6,12 +6,36 @@ import { getPlan, fmtPrice } from "@/lib/plans"
 
 const APP = "https://qrowg.com"
 
+/** Les plans que ce message sait décrire. Tout le reste est un cas à ne pas inventer. */
+const PLANS_CONNUS = new Set(["free", "starter", "pro", "business"])
+
 export function buildSubscriptionEmail(opts: {
   name?: string | null
   plan: string
   billing?: string | null   // "monthly" | "annual"
   trialDays?: number | null
-}): { subject: string; html: string } {
+}): { subject: string; html: string; planConnu: boolean } {
+  const clean0 = opts.name && String(opts.name).trim() ? escapeHtml(String(opts.name).trim()) : ""
+
+  // Plan non reconnu (renommé chez Stripe, abonnement créé à la main, ancien tarif) :
+  // `getPlan` retombe silencieusement sur « free ». Quelqu'un qui vient de PAYER
+  // recevait alors « Bienvenue dans QRowg Gratuit — 3 pages, 200 vues/mois ».
+  // On préfère un message sobre et vrai à un message précis et faux.
+  if (!PLANS_CONNUS.has(String(opts.plan || "").trim())) {
+    const content = `
+      ${emailH1("Votre abonnement est actif")}
+      ${emailP(clean0 ? `Bonjour ${clean0},` : "Bonjour,")}
+      ${emailP("Votre abonnement QRowg vient d'être activé. Le détail de votre formule et de vos factures se trouve dans votre compte.", 24)}
+      ${emailButton("Voir mon abonnement", "https://qrowg.com/dashboard/profile")}
+      ${emailP('<span style="font-size:13px;color:#8A8478;">Un doute sur votre formule ? Répondez à cet email, nous vérifions.</span>', 0)}
+    `
+    return {
+      subject: "Votre abonnement QRowg est actif",
+      html: emailShell({ preheader: "Votre abonnement QRowg vient d'être activé.", content }),
+      planConnu: false,
+    }
+  }
+
   const p = getPlan(opts.plan)
   const label = escapeHtml(p.label)
   const clean = opts.name && String(opts.name).trim() ? escapeHtml(String(opts.name).trim()) : ""
@@ -52,5 +76,6 @@ export function buildSubscriptionEmail(opts: {
       content,
       footer: `QRowg · <a href="${APP}/dashboard/profile" style="color:#8A8478;text-decoration:underline;">Gérer mon abonnement</a>`,
     }),
+    planConnu: true,
   }
 }

@@ -32,7 +32,10 @@ async function sendSubscriptionEmail(userId: string, plan: string, billing?: str
     if (!process.env.RESEND_API_KEY) return
     const { data: prof } = await supabase.from("profiles").select("email, full_name").eq("id", userId).single()
     if (!prof?.email) return
-    const { subject, html } = buildSubscriptionEmail({ name: prof.full_name, plan, billing, trialDays: 7 })
+    const { subject, html, planConnu } = buildSubscriptionEmail({ name: prof.full_name, plan, billing, trialDays: 7 })
+    // Un plan que le code ne connaît pas : l'email reste sobre (voir subscriptionEmail),
+    // mais il faut le savoir — c'est le signe d'un tarif renommé chez Stripe.
+    if (!planConnu) console.error("[stripe] plan inconnu dans l'email d'abonnement :", plan)
     const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({ from: EMAIL_FROM, to: prof.email, subject, html })
   } catch (e) {

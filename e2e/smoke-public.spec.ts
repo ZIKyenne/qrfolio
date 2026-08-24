@@ -10,10 +10,23 @@ import { collect, problems } from "./helpers/collect"
 // La liste des pages n'est pas écrite à la main : elle vient du sitemap. Une page
 // ajoutée demain est donc couverte sans y penser — et si elle est dans le sitemap
 // sans être atteignable, c'est justement ce qu'il faut savoir.
+//
+// SE LANCE CONTRE LE SITE EN LIGNE, avec sa propre configuration :
+//
+//   npx playwright test --config playwright.smoke.config.ts
+//
+// Surtout PAS avec la configuration principale : elle démarre un serveur de
+// développement qui recompile chaque page à la volée. Cinquante-deux pages d'affilée
+// dans ce mode font sauter Node (« JavaScript heap out of memory ») sur une machine
+// de bureau ordinaire — constaté, pas supposé.
 
 // La suite tourne sur deux « projets » (desktop et mobile) ; ce fichier gère lui-même
 // ses deux tailles, il n'a donc rien à gagner à être joué deux fois.
 test.beforeEach(({}, testInfo) => {
+  // Garde-fou : lancé par mégarde avec la configuration principale (serveur de
+  // développement), ce fichier ferait tomber la machine. On préfère un test ignoré
+  // avec une explication à un plantage sans message.
+  test.skip(!process.env.SMOKE_CONFIG, "à lancer avec : npx playwright test --config playwright.smoke.config.ts")
   test.skip(testInfo.project.name === "mobile", "les deux tailles sont déjà couvertes dans ce fichier")
 })
 

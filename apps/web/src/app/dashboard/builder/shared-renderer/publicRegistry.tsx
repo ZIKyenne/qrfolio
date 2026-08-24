@@ -3,95 +3,106 @@
 // N'importe AUCUN adapter éditeur (isolation de bundle vérifiée par bundleBoundary.test).
 import type { ComponentType } from "react"
 import { SHARED_RENDERER_BLOCKS } from "./architecture"
+import dynamic from "next/dynamic"
+
+// Chargement À LA DEMANDE de chaque bloc public.
+//
+// Ces 87 composants étaient importés en dur : ils partaient donc TOUS sur chaque
+// scan — mesuré à 162 Ko de JavaScript décompressé — alors qu'une carte de
+// restaurant en utilise trois. `dynamic` conserve le rendu serveur (le HTML arrive
+// complet, rien ne clignote, le référencement est intact) et ne télécharge côté
+// client que les blocs réellement présents sur la page.
+
 import type { PublicAdapterProps } from "./renderTypes"
-import { PublicHeading } from "./blocks/heading/PublicHeading"
-import { PublicValues } from "./blocks/values/PublicValues"
-import { PublicPricing } from "./blocks/pricing/PublicPricing"
-import { PublicDivider } from "./blocks/divider/PublicDivider"
-import { PublicSpacer } from "./blocks/spacer/PublicSpacer"
-import { PublicBio } from "./blocks/bio/PublicBio"
-import { PublicSkills } from "./blocks/skills/PublicSkills"
-import { PublicLanguages } from "./blocks/languages/PublicLanguages"
-import { PublicAdvantages } from "./blocks/advantages/PublicAdvantages"
-import { PublicWhatsappButton } from "./blocks/whatsapp_button/PublicWhatsappButton"
-import { PublicEmailButton } from "./blocks/email_button/PublicEmailButton"
-import { PublicDownloadFile } from "./blocks/download_file/PublicDownloadFile"
-import { PublicOrderOnline } from "./blocks/order_online/PublicOrderOnline"
-import { PublicDonation } from "./blocks/donation/PublicDonation"
-import { PublicGoogleReview } from "./blocks/google_review/PublicGoogleReview"
-import { PublicProcessSteps } from "./blocks/process_steps/PublicProcessSteps"
-import { PublicOnSiteServices } from "./blocks/on_site_services/PublicOnSiteServices"
-import { PublicEngagements } from "./blocks/engagements/PublicEngagements"
-import { PublicTrustBadge } from "./blocks/trust_badge/PublicTrustBadge"
-import { PublicStatsBlock } from "./blocks/stats_block/PublicStatsBlock"
-import { PublicEventProgram } from "./blocks/event_program/PublicEventProgram"
-import { PublicTestimonials } from "./blocks/testimonials/PublicTestimonials"
-import { PublicBusinessStats } from "./blocks/business_stats/PublicBusinessStats"
-import { PublicBrands } from "./blocks/brands/PublicBrands"
-import { PublicLineup } from "./blocks/lineup/PublicLineup"
-import { PublicReassurance } from "./blocks/reassurance/PublicReassurance"
-import { PublicTimeline } from "./blocks/timeline/PublicTimeline"
-import { PublicMenuSection } from "./blocks/menu_section/PublicMenuSection"
-import { PublicMenuTabs } from "./blocks/menu_tabs/PublicMenuTabs"
-import { PublicServicesList } from "./blocks/services_list/PublicServicesList"
-import { PublicPromoBanner } from "./blocks/promo_banner/PublicPromoBanner"
-import { PublicGiftCard } from "./blocks/gift_card/PublicGiftCard"
-import { PublicEventInfo } from "./blocks/event_info/PublicEventInfo"
-import { PublicEventTicketing } from "./blocks/event_ticketing/PublicEventTicketing"
-import { PublicImage } from "./blocks/image/PublicImage"
-import { PublicPortfolioWork } from "./blocks/portfolio_work/PublicPortfolioWork"
-import { PublicFavoriteLinks } from "./blocks/favorite_links/PublicFavoriteLinks"
-import { PublicConcerts } from "./blocks/concerts/PublicConcerts"
-import { PublicMerch } from "./blocks/merch/PublicMerch"
-import { PublicAppDownload } from "./blocks/app_download/PublicAppDownload"
-import { PublicVideoLocal } from "./blocks/video_local/PublicVideoLocal"
-import { PublicAudioPlayer } from "./blocks/audio_player/PublicAudioPlayer"
-import { PublicPdfViewer } from "./blocks/pdf_viewer/PublicPdfViewer"
-import { PublicSpotifyEmbed } from "./blocks/spotify_embed/PublicSpotifyEmbed"
-import { PublicSpotifyPlayer } from "./blocks/spotify_player/PublicSpotifyPlayer"
-import { PublicBeforeAfter } from "./blocks/before_after/PublicBeforeAfter"
-import { PublicVideo } from "./blocks/video/PublicVideo"
-import { PublicGoogleMapsEmbed } from "./blocks/google_maps_embed/PublicGoogleMapsEmbed"
-import { PublicAlbumBlock } from "./blocks/album_block/PublicAlbumBlock"
-import { PublicDiscography } from "./blocks/discography/PublicDiscography"
-import { PublicPodcastLinks } from "./blocks/podcast_links/PublicPodcastLinks"
-import { PublicProductCatalog } from "./blocks/product_catalog/PublicProductCatalog"
 // Vague LAYOUT — blocs « Création libre » (une vue partagée, deux adapters d'une ligne).
-import { PublicFreeSection } from "./blocks/free_section"
-import { PublicImageText } from "./blocks/image_text"
-import { PublicSplitPanel } from "./blocks/split_panel"
-import { PublicOverlayCard } from "./blocks/overlay_card"
-import { PublicFrameBox } from "./blocks/frame_box"
-import { PublicBannerStrip } from "./blocks/banner_strip"
-import { PublicFullBleedImage } from "./blocks/full_bleed_image"
-import { PublicStackCards } from "./blocks/stack_cards"
-import { PublicFreeGrid } from "./blocks/free_grid"
-import { PublicColumnsText } from "./blocks/columns_text"
-import { PublicImageMosaic } from "./blocks/image_mosaic"
-import { PublicLogoMarquee } from "./blocks/logo_marquee"
-import { PublicAvatarRow } from "./blocks/avatar_row"
-import { PublicShapeDivider } from "./blocks/shape_divider"
-import { PublicDecorLine } from "./blocks/decor_line"
-import { PublicMarqueeText } from "./blocks/marquee_text"
-import { PublicRibbonBanner } from "./blocks/ribbon_banner"
-import { PublicColorBand } from "./blocks/color_band"
-import { PublicBigStatement } from "./blocks/big_statement"
-import { PublicTextColumns } from "./blocks/text_columns"
-import { PublicNumberedList } from "./blocks/numbered_list"
-import { PublicChecklist } from "./blocks/checklist"
-import { PublicDefinitionList } from "./blocks/definition_list"
-import { PublicCardLink } from "./blocks/card_link"
-import { PublicAnchorNav } from "./blocks/anchor_nav"
-import { PublicAnchorTarget } from "./blocks/anchor_target"
-import { PublicToggleContent } from "./blocks/toggle_content"
-import { PublicBackToTop } from "./blocks/back_to_top"
-import { PublicStepsHorizontal } from "./blocks/steps_horizontal"
-import { PublicStatHero } from "./blocks/stat_hero"
-import { PublicBadgeRow } from "./blocks/badge_row"
-import { PublicIconRow } from "./blocks/icon_row"
-import { PublicCompareTwo } from "./blocks/compare_two"
-import { PublicProgressBars } from "./blocks/progress_bars"
-import { PublicHighlightBox } from "./blocks/highlight_box"
+
+const PublicHeading = dynamic(() => import("./blocks/heading/PublicHeading").then(m => m.PublicHeading))
+const PublicValues = dynamic(() => import("./blocks/values/PublicValues").then(m => m.PublicValues))
+const PublicPricing = dynamic(() => import("./blocks/pricing/PublicPricing").then(m => m.PublicPricing))
+const PublicDivider = dynamic(() => import("./blocks/divider/PublicDivider").then(m => m.PublicDivider))
+const PublicSpacer = dynamic(() => import("./blocks/spacer/PublicSpacer").then(m => m.PublicSpacer))
+const PublicBio = dynamic(() => import("./blocks/bio/PublicBio").then(m => m.PublicBio))
+const PublicSkills = dynamic(() => import("./blocks/skills/PublicSkills").then(m => m.PublicSkills))
+const PublicLanguages = dynamic(() => import("./blocks/languages/PublicLanguages").then(m => m.PublicLanguages))
+const PublicAdvantages = dynamic(() => import("./blocks/advantages/PublicAdvantages").then(m => m.PublicAdvantages))
+const PublicWhatsappButton = dynamic(() => import("./blocks/whatsapp_button/PublicWhatsappButton").then(m => m.PublicWhatsappButton))
+const PublicEmailButton = dynamic(() => import("./blocks/email_button/PublicEmailButton").then(m => m.PublicEmailButton))
+const PublicDownloadFile = dynamic(() => import("./blocks/download_file/PublicDownloadFile").then(m => m.PublicDownloadFile))
+const PublicOrderOnline = dynamic(() => import("./blocks/order_online/PublicOrderOnline").then(m => m.PublicOrderOnline))
+const PublicDonation = dynamic(() => import("./blocks/donation/PublicDonation").then(m => m.PublicDonation))
+const PublicGoogleReview = dynamic(() => import("./blocks/google_review/PublicGoogleReview").then(m => m.PublicGoogleReview))
+const PublicProcessSteps = dynamic(() => import("./blocks/process_steps/PublicProcessSteps").then(m => m.PublicProcessSteps))
+const PublicOnSiteServices = dynamic(() => import("./blocks/on_site_services/PublicOnSiteServices").then(m => m.PublicOnSiteServices))
+const PublicEngagements = dynamic(() => import("./blocks/engagements/PublicEngagements").then(m => m.PublicEngagements))
+const PublicTrustBadge = dynamic(() => import("./blocks/trust_badge/PublicTrustBadge").then(m => m.PublicTrustBadge))
+const PublicStatsBlock = dynamic(() => import("./blocks/stats_block/PublicStatsBlock").then(m => m.PublicStatsBlock))
+const PublicEventProgram = dynamic(() => import("./blocks/event_program/PublicEventProgram").then(m => m.PublicEventProgram))
+const PublicTestimonials = dynamic(() => import("./blocks/testimonials/PublicTestimonials").then(m => m.PublicTestimonials))
+const PublicBusinessStats = dynamic(() => import("./blocks/business_stats/PublicBusinessStats").then(m => m.PublicBusinessStats))
+const PublicBrands = dynamic(() => import("./blocks/brands/PublicBrands").then(m => m.PublicBrands))
+const PublicLineup = dynamic(() => import("./blocks/lineup/PublicLineup").then(m => m.PublicLineup))
+const PublicReassurance = dynamic(() => import("./blocks/reassurance/PublicReassurance").then(m => m.PublicReassurance))
+const PublicTimeline = dynamic(() => import("./blocks/timeline/PublicTimeline").then(m => m.PublicTimeline))
+const PublicMenuSection = dynamic(() => import("./blocks/menu_section/PublicMenuSection").then(m => m.PublicMenuSection))
+const PublicMenuTabs = dynamic(() => import("./blocks/menu_tabs/PublicMenuTabs").then(m => m.PublicMenuTabs))
+const PublicServicesList = dynamic(() => import("./blocks/services_list/PublicServicesList").then(m => m.PublicServicesList))
+const PublicPromoBanner = dynamic(() => import("./blocks/promo_banner/PublicPromoBanner").then(m => m.PublicPromoBanner))
+const PublicGiftCard = dynamic(() => import("./blocks/gift_card/PublicGiftCard").then(m => m.PublicGiftCard))
+const PublicEventInfo = dynamic(() => import("./blocks/event_info/PublicEventInfo").then(m => m.PublicEventInfo))
+const PublicEventTicketing = dynamic(() => import("./blocks/event_ticketing/PublicEventTicketing").then(m => m.PublicEventTicketing))
+const PublicImage = dynamic(() => import("./blocks/image/PublicImage").then(m => m.PublicImage))
+const PublicPortfolioWork = dynamic(() => import("./blocks/portfolio_work/PublicPortfolioWork").then(m => m.PublicPortfolioWork))
+const PublicFavoriteLinks = dynamic(() => import("./blocks/favorite_links/PublicFavoriteLinks").then(m => m.PublicFavoriteLinks))
+const PublicConcerts = dynamic(() => import("./blocks/concerts/PublicConcerts").then(m => m.PublicConcerts))
+const PublicMerch = dynamic(() => import("./blocks/merch/PublicMerch").then(m => m.PublicMerch))
+const PublicAppDownload = dynamic(() => import("./blocks/app_download/PublicAppDownload").then(m => m.PublicAppDownload))
+const PublicVideoLocal = dynamic(() => import("./blocks/video_local/PublicVideoLocal").then(m => m.PublicVideoLocal))
+const PublicAudioPlayer = dynamic(() => import("./blocks/audio_player/PublicAudioPlayer").then(m => m.PublicAudioPlayer))
+const PublicPdfViewer = dynamic(() => import("./blocks/pdf_viewer/PublicPdfViewer").then(m => m.PublicPdfViewer))
+const PublicSpotifyEmbed = dynamic(() => import("./blocks/spotify_embed/PublicSpotifyEmbed").then(m => m.PublicSpotifyEmbed))
+const PublicSpotifyPlayer = dynamic(() => import("./blocks/spotify_player/PublicSpotifyPlayer").then(m => m.PublicSpotifyPlayer))
+const PublicBeforeAfter = dynamic(() => import("./blocks/before_after/PublicBeforeAfter").then(m => m.PublicBeforeAfter))
+const PublicVideo = dynamic(() => import("./blocks/video/PublicVideo").then(m => m.PublicVideo))
+const PublicGoogleMapsEmbed = dynamic(() => import("./blocks/google_maps_embed/PublicGoogleMapsEmbed").then(m => m.PublicGoogleMapsEmbed))
+const PublicAlbumBlock = dynamic(() => import("./blocks/album_block/PublicAlbumBlock").then(m => m.PublicAlbumBlock))
+const PublicDiscography = dynamic(() => import("./blocks/discography/PublicDiscography").then(m => m.PublicDiscography))
+const PublicPodcastLinks = dynamic(() => import("./blocks/podcast_links/PublicPodcastLinks").then(m => m.PublicPodcastLinks))
+const PublicProductCatalog = dynamic(() => import("./blocks/product_catalog/PublicProductCatalog").then(m => m.PublicProductCatalog))
+const PublicFreeSection = dynamic(() => import("./blocks/free_section").then(m => m.PublicFreeSection))
+const PublicImageText = dynamic(() => import("./blocks/image_text").then(m => m.PublicImageText))
+const PublicSplitPanel = dynamic(() => import("./blocks/split_panel").then(m => m.PublicSplitPanel))
+const PublicOverlayCard = dynamic(() => import("./blocks/overlay_card").then(m => m.PublicOverlayCard))
+const PublicFrameBox = dynamic(() => import("./blocks/frame_box").then(m => m.PublicFrameBox))
+const PublicBannerStrip = dynamic(() => import("./blocks/banner_strip").then(m => m.PublicBannerStrip))
+const PublicFullBleedImage = dynamic(() => import("./blocks/full_bleed_image").then(m => m.PublicFullBleedImage))
+const PublicStackCards = dynamic(() => import("./blocks/stack_cards").then(m => m.PublicStackCards))
+const PublicFreeGrid = dynamic(() => import("./blocks/free_grid").then(m => m.PublicFreeGrid))
+const PublicColumnsText = dynamic(() => import("./blocks/columns_text").then(m => m.PublicColumnsText))
+const PublicImageMosaic = dynamic(() => import("./blocks/image_mosaic").then(m => m.PublicImageMosaic))
+const PublicLogoMarquee = dynamic(() => import("./blocks/logo_marquee").then(m => m.PublicLogoMarquee))
+const PublicAvatarRow = dynamic(() => import("./blocks/avatar_row").then(m => m.PublicAvatarRow))
+const PublicShapeDivider = dynamic(() => import("./blocks/shape_divider").then(m => m.PublicShapeDivider))
+const PublicDecorLine = dynamic(() => import("./blocks/decor_line").then(m => m.PublicDecorLine))
+const PublicMarqueeText = dynamic(() => import("./blocks/marquee_text").then(m => m.PublicMarqueeText))
+const PublicRibbonBanner = dynamic(() => import("./blocks/ribbon_banner").then(m => m.PublicRibbonBanner))
+const PublicColorBand = dynamic(() => import("./blocks/color_band").then(m => m.PublicColorBand))
+const PublicBigStatement = dynamic(() => import("./blocks/big_statement").then(m => m.PublicBigStatement))
+const PublicTextColumns = dynamic(() => import("./blocks/text_columns").then(m => m.PublicTextColumns))
+const PublicNumberedList = dynamic(() => import("./blocks/numbered_list").then(m => m.PublicNumberedList))
+const PublicChecklist = dynamic(() => import("./blocks/checklist").then(m => m.PublicChecklist))
+const PublicDefinitionList = dynamic(() => import("./blocks/definition_list").then(m => m.PublicDefinitionList))
+const PublicCardLink = dynamic(() => import("./blocks/card_link").then(m => m.PublicCardLink))
+const PublicAnchorNav = dynamic(() => import("./blocks/anchor_nav").then(m => m.PublicAnchorNav))
+const PublicAnchorTarget = dynamic(() => import("./blocks/anchor_target").then(m => m.PublicAnchorTarget))
+const PublicToggleContent = dynamic(() => import("./blocks/toggle_content").then(m => m.PublicToggleContent))
+const PublicBackToTop = dynamic(() => import("./blocks/back_to_top").then(m => m.PublicBackToTop))
+const PublicStepsHorizontal = dynamic(() => import("./blocks/steps_horizontal").then(m => m.PublicStepsHorizontal))
+const PublicStatHero = dynamic(() => import("./blocks/stat_hero").then(m => m.PublicStatHero))
+const PublicBadgeRow = dynamic(() => import("./blocks/badge_row").then(m => m.PublicBadgeRow))
+const PublicIconRow = dynamic(() => import("./blocks/icon_row").then(m => m.PublicIconRow))
+const PublicCompareTwo = dynamic(() => import("./blocks/compare_two").then(m => m.PublicCompareTwo))
+const PublicProgressBars = dynamic(() => import("./blocks/progress_bars").then(m => m.PublicProgressBars))
+const PublicHighlightBox = dynamic(() => import("./blocks/highlight_box").then(m => m.PublicHighlightBox))
 
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,

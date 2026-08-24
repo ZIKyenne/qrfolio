@@ -46,6 +46,7 @@
   import { publishPage } from "./publishActions"
   import { safeErrorMessage, loadStateFromError, type LoadState } from "./builderErrors"
   import { printHandoff, printStudioUrl } from "../print-studio/handoff"
+  import PublishedScreen from "./PublishedScreen"
   import { browserStorage, loadDraft, saveDraft, clearDraft, makeDraft, draftIsMeaningful, draftSummary, type LocalDraft } from "./draftStore"
 
   // Helper module-scope (evite la temporal-dead-zone du UUID_RE interne au composant).
@@ -226,6 +227,9 @@
     const wantPublishRef = useRef(false)               // « publier » cliqué AVANT le compte
     const autoPubRef = useRef(false)                   // la mise en ligne automatique n'a lieu qu'une fois
     const publieeRef = useRef(false)                   // repère « page publiée » : une seule fois
+    // Première mise en ligne : un écran qui reste, contrairement au « Page publiée ! »
+    // du bouton, qui disparaissait au bout de 3,5 s. Se ferme sur décision, pas sur minuterie.
+    const [premiereEnLigne, setPremiereEnLigne] = useState(false)
     const blocksRef = useRef(0)                        // nb de blocs, lisible depuis un callback stable
     // La mesure est chargée d'avance : le repère « publier sans compte » est posé
     // juste avant de quitter la page, il n'aurait pas le temps de partir sinon.
@@ -815,6 +819,8 @@
             setPageStatus("published")
             setPublishWasUpdate(s.alreadyPublished)
             setPublishSuccess(true)
+            // Uniquement la PREMIÈRE fois : une mise à jour de page n'est pas un événement.
+            if (!s.alreadyPublished) { setShowPublishPopup(false); setPremiereEnLigne(true) }
             setTimeout(() => { if (mountedRef.current) setPublishSuccess(false) }, 3500)
           }
         },
@@ -1327,6 +1333,19 @@
         )}
 
         {/* Retour d'inscription : on confirme que le travail a bien suivi. */}
+        {premiereEnLigne && qrTarget && pageSlug && (
+          <PublishedScreen
+            pageUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/${pageSlug}`}
+            qrTarget={qrTarget}
+            metier={handoff.metier}
+            supports={handoff.suggested}
+            printUrl={(id) => printStudioUrl(qrShortCode, handoff, id)}
+            onDownloadQr={() => { void downloadQrPng() }}
+            onClose={() => setPremiereEnLigne(false)}
+            mobile={isMobile}
+          />
+        )}
+
         {claimed && (
           <div role="status" style={{ position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 380, background: "rgba(57,255,143,0.12)", border: "1px solid rgba(57,255,143,0.35)", borderRadius: 12, padding: "10px 16px", display: "flex", alignItems: "center", gap: 9, maxWidth: "calc(100vw - 28px)" }}>
             <Check size={14} color="var(--success)" />

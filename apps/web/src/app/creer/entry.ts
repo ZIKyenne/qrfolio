@@ -121,6 +121,21 @@ export function applyEntryLink(blocks: unknown, link: string): any[] {
   return [...list.slice(0, at), bouton, ...list.slice(at)]
 }
 
+/**
+ * Certaines pages nomment les secteurs autrement que la galerie (« Artiste » pour
+ * les musiciens, « Commerce » pour l'e-commerce). On traduit plutôt que de laisser
+ * tomber le secteur : quelqu'un qui regardait un exemple d'artiste doit retrouver
+ * des modèles d'artistes.
+ */
+const SECTEUR_ALIAS: Record<string, string> = { Artiste: "Musicien", Commerce: "Ecommerce" }
+
+/** Adresse de l'essai quand on connaît déjà le secteur (et non un slug d'usage). */
+export function creerUrlSecteur(secteur?: string | null): string {
+  const s = (secteur || "").trim()
+  const m = safeMetier(SECTEUR_ALIAS[s] || s)
+  return m ? `/creer?metier=${encodeURIComponent(m)}` : "/creer"
+}
+
 /** Libellé affiché dans le bandeau d'arrivée. */
 export const SECTEUR_LABEL: Record<string, string> = {
   Restaurant: "restauration", Bar: "bars", Cafe: "cafés", Freelance: "freelances",

@@ -4,7 +4,8 @@
 // modifie aucune donnée. ADDITIF : `page-templates.ts` (galerie/builder/IA) reste la source, inchangé ;
 // ce module généralise ses briques (thèmes déjà factorisés) et prouve la décomposition.
 
-import { BLOCK_DEFS, type PageTheme } from "./types"
+import { type PageTheme } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 import { PAGE_TEMPLATES, AMBIANCE_THEMES, type PageTemplate } from "./page-templates"
 import { EXTRA_STRUCTURES } from "./templateStructures.extra"
 

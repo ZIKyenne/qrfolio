@@ -8,7 +8,7 @@ import {
 } from "./templateEngine"
 import { PAGE_TEMPLATES, AMBIANCE_THEMES, AMBIANCE_KEYS } from "./page-templates"
 import { EXTRA_STRUCTURES } from "./templateStructures.extra"
-import { BLOCK_DEFS } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 
 describe("registres du moteur", () => {
   it("TEMPLATE_STYLES reflète les thèmes d'ambiance", () => {

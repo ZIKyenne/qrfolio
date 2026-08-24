@@ -5,7 +5,8 @@
 // toolbar, reset et suppression SANS Supabase. Le legacy est simulé par un placeholder injecté.
 
 import { useState, useCallback } from "react"
-import { BLOCK_DEFS, type Block } from "../../dashboard/builder/types"
+import { type Block } from "../../dashboard/builder/types"
+import { BLOCK_DEFS } from "../../dashboard/builder/blockDefs"
 import { BlockSettingsPanel } from "../../dashboard/builder/BlockSettingsPanel"
 import { resetBlockContent } from "../../dashboard/builder/builderSettings"
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { BLOCK_DEFS } from "../dashboard/builder/types"
+import { BLOCK_DEFS } from "../dashboard/builder/blockDefs"
 
 const page = readFileSync(join(__dirname, "PublicPageClient.tsx"), "utf8")
 

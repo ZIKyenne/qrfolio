@@ -7,7 +7,8 @@
 // ou dans le harness. Présentational, props-driven.
 
 import { useMemo, useState, useCallback, useEffect, type ReactNode } from "react"
-import { BLOCK_DEFS, type Block } from "./types"
+import { type Block } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 import { BUILDER_UI } from "./builderUi"
 import {
   resolveSettingsMode, SETTINGS_MODE_KEY, blockSettingsSections, resolveActiveSection,

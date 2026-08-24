@@ -10,7 +10,8 @@
 
 import { useMemo, useRef, useState, useEffect } from "react"
 import { X, ArrowRight, ArrowLeft, Check, Eye, EyeOff, Trash2, SkipForward, Sparkles } from "lucide-react"
-import { type Block, type PageTheme, BLOCK_DEFS } from "../builder/types"
+import { type Block, type PageTheme } from "../builder/types"
+import { BLOCK_DEFS } from "../builder/blockDefs"
 import {
   buildWizard, applyAnswers, reviewBlocks, finalizeBlocks,
   type WizardStep, type BlockDecision, type BlockReview,

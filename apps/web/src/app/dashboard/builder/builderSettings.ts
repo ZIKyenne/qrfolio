@@ -3,7 +3,8 @@
 // compte les valeurs modifiées (diff vs BLOCK_DEFS.defaultContent), et fournit les helpers de reset.
 // S'appuie sur builderUx (SETTINGS_SECTIONS, settingsSectionsForMode, resolveMode). Testable.
 
-import { BLOCK_DEFS, type Block, type BlockField } from "./types"
+import { type Block, type BlockField } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 import { SETTINGS_SECTIONS, settingsSectionsForMode, type UxMode } from "./builderUx"
 
 // Le libellé produit dit « Avancé » ; en interne c'est le mode "expert" de builderUx.

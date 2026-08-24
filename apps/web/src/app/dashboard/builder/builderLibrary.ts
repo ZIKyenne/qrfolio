@@ -5,7 +5,8 @@
 // existantes), recommandations déterministes, classification premium (affichage), insertion et
 // garde anti-double-ajout. Consommé par BlockLibrary.tsx, derrière le flag BUILDER_REDESIGN.
 
-import { BLOCK_DEFS, BLOCK_CATEGORIES, BLOCK_HINTS, type BlockDef } from "./types"
+import { BLOCK_CATEGORIES, BLOCK_HINTS, type BlockDef } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 import { BLOCK_SYNONYMS } from "./builderSearch"
 
 // Clés localStorage EXISTANTES (BuilderV4) — réutilisées, jamais dupliquées.

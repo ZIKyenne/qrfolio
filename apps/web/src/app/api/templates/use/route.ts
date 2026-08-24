@@ -5,7 +5,8 @@ import { cookies } from "next/headers"
 import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyUnique } from "@/lib/slug"
 import { uniqueShortCode } from "@/lib/shortCode"
-import { BLOCK_DEFS, normalizePageTheme } from "@/app/dashboard/builder/types"
+import { normalizePageTheme } from "@/app/dashboard/builder/types"
+import { BLOCK_DEFS } from "@/app/dashboard/builder/blockDefs"
 
 // Slug valide (minuscules, accents retires, non-alphanum -> "-", + suffixe
 // aleatoire) via @/lib/slug. Respecte slug_format : ^[a-z0-9_-]{2,60}$

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import { resolveEditorBlock } from "./editorRegistry"
 import { resolvePublicBlock } from "./publicRegistry"
 import { SHARED_RENDERER_BLOCKS, PLANNED_PILOT_BLOCKS, migrationStatusOf } from "./architecture"
-import { BLOCK_DEFS } from "../types"
+import { BLOCK_DEFS } from "../blockDefs"
 
 const ACTIVE = new Set(["heading", "values", "pricing", "divider", "spacer", "bio", "skills", "languages", "advantages", "whatsapp_button", "email_button", "download_file", "order_online", "donation", "google_review", "process_steps", "on_site_services", "engagements", "trust_badge", "stats_block", "event_program", "testimonials", "business_stats", "brands", "lineup", "reassurance", "timeline", "menu_section", "services_list", "promo_banner", "gift_card", "event_info", "event_ticketing", "image", "portfolio_work", "favorite_links", "concerts", "merch", "app_download", "video_local", "audio_player", "pdf_viewer", "spotify_embed", "spotify_player", "before_after", "video", "google_maps_embed", "album_block", "discography", "podcast_links", "product_catalog", "menu_tabs", "free_section", "image_text", "split_panel", "overlay_card", "frame_box", "banner_strip", "full_bleed_image", "stack_cards", "free_grid", "columns_text", "image_mosaic", "logo_marquee", "avatar_row", "shape_divider", "decor_line", "marquee_text", "ribbon_banner", "color_band", "big_statement", "text_columns", "numbered_list", "checklist", "definition_list", "card_link", "anchor_nav", "anchor_target", "toggle_content", "back_to_top", "steps_horizontal", "stat_hero", "badge_row", "icon_row", "compare_two", "progress_bars", "highlight_box"])
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { SHARED_RENDERER_BLOCKS, PLANNED_PILOT_BLOCKS, resolveRendererStatus, isRegistrationComplete, type BlockRendererRegistration } from "./architecture"
-import { BLOCK_DEFS } from "../types"
+import { BLOCK_DEFS } from "../blockDefs"
 
 // Cohérence des contrats PRÉPARATOIRES (mission B09.1). Garantit qu'aucun bloc n'est
 // activé et que les invariants d'architecture tiennent avant B09.2.

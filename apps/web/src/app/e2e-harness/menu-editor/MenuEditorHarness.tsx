@@ -6,7 +6,8 @@ import { useState } from "react"
 import { EditPanel } from "@/app/dashboard/builder/builderPanels"
 import { ToastProvider } from "@/components/Toast"
 import { ConfirmProvider } from "@/components/ui/Confirm"
-import { BLOCK_DEFS, type Block } from "@/app/dashboard/builder/types"
+import { type Block } from "@/app/dashboard/builder/types"
+import { BLOCK_DEFS } from "@/app/dashboard/builder/blockDefs"
 
 export function MenuEditorHarness() {
   const [block, setBlock] = useState<Block>({

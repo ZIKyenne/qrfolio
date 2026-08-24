@@ -5,7 +5,8 @@ import {
   blockSettingsSections, resolveActiveSection, resetContentFields, resetSectionContent,
   resetBlockContent, blockStateBadges, isBlockEmpty,
 } from "./builderSettings"
-import { BLOCK_DEFS, type Block } from "./types"
+import { type Block } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 import { SETTINGS_SECTIONS } from "./builderUx"
 
 const mk = (type: string, content: Record<string, string> = {}): Block => ({

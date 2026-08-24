@@ -4,7 +4,7 @@
 // encapsulé dans un conteneur `data-block` pour les assertions/captures Playwright.
 import { SHARED_RENDERER_BLOCKS } from "../../dashboard/builder/shared-renderer/architecture"
 import { resolvePublicBlock } from "../../dashboard/builder/shared-renderer/publicRegistry"
-import { BLOCK_DEFS } from "../../dashboard/builder/types"
+import { BLOCK_DEFS } from "../../dashboard/builder/blockDefs"
 import { FILL } from "./fixtures"
 
 const theme: any = { primary: "#C9A84C", muted: "#8A8478", text: "#F5F0E8", surface: "#111009", fontDisplay: "Fraunces, serif", fontBody: "DM Sans, sans-serif", accent: "#39FF8F" }

@@ -2,7 +2,8 @@
 "use client"
 import { useEffect, useRef } from "react"
 import { X, ArrowRight, Lock, Check, Layers, Clock, ExternalLink, Sparkles } from "lucide-react"
-import { type Block, type PageTheme, BLOCK_DEFS } from "../builder/types"
+import { type Block, type PageTheme } from "../builder/types"
+import { BLOCK_DEFS } from "../builder/blockDefs"
 import { resolvePublicBlock } from "../builder/shared-renderer/publicRegistry"
 import { useIsMobile } from "@/lib/useIsMobile"
 

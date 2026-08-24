@@ -5,7 +5,8 @@ import {
   resolveInsertIndex, isDuplicateAdd, nearbyCategories, premiumInfo, PREMIUM_BLOCK_TYPES,
   RECENT_MAX, LIBRARY_LABEL_OVERRIDES,
 } from "./builderLibrary"
-import { BLOCK_DEFS, BLOCK_CATEGORIES } from "./types"
+import { BLOCK_CATEGORIES } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 
 const ALL = buildLibraryItems()
 const find = (t: string) => ALL.find(i => i.type === t)!

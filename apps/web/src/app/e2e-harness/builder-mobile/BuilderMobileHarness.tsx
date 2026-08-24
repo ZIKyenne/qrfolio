@@ -7,7 +7,8 @@ import { useState, useCallback, useMemo, useEffect } from "react"
 import { MobileBuilderShell } from "../../dashboard/builder/MobileBuilderShell"
 import { toggleFavorite, pushRecentType } from "../../dashboard/builder/builderLibrary"
 import { reorderArray } from "../../dashboard/builder/builderHooks"
-import { BLOCK_DEFS, type Block } from "../../dashboard/builder/types"
+import { type Block } from "../../dashboard/builder/types"
+import { BLOCK_DEFS } from "../../dashboard/builder/blockDefs"
 
 const genId = (() => { let n = 0; return () => "blk-" + (++n) })()
 function make(type: string): Block { return { id: genId(), type, content: { ...(BLOCK_DEFS[type]?.defaultContent as any) }, visible: true } }

@@ -13,7 +13,8 @@ import { MobileBuilderShell } from "../../dashboard/builder/MobileBuilderShell"
 import { toggleFavorite, pushRecentType } from "../../dashboard/builder/builderLibrary"
 import { reorderArray } from "../../dashboard/builder/builderHooks"
 import { useBuilderRedesign } from "../../dashboard/builder/builderFlags"
-import { BLOCK_DEFS, type Block } from "../../dashboard/builder/types"
+import { type Block } from "../../dashboard/builder/types"
+import { BLOCK_DEFS } from "../../dashboard/builder/blockDefs"
 
 const genId = (() => { let n = 0; return () => "blk-" + (++n) })()
 const make = (type: string): Block => ({ id: genId(), type, content: { ...(BLOCK_DEFS[type]?.defaultContent as any) }, visible: true })

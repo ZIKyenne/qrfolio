@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
-import { BLOCK_DEFS } from "../dashboard/builder/types"
+import { BLOCK_DEFS } from "../dashboard/builder/blockDefs"
 import { SHARED_RENDERER_BLOCKS } from "../dashboard/builder/shared-renderer/architecture"
 
 // GARDE ANTI-DERIVE DES RENDERERS

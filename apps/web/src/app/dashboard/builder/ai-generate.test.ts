@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { aiBriefToTemplate, AI_BRIEF_SCHEMA, AI_SECTION_KINDS, buildSystemPrompt, type AiBrief } from "./ai-generate"
 import { AMBIANCE_KEYS } from "./page-templates"
-import { BLOCK_DEFS } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 
 // Tout bloc émis par le mapper doit avoir un type existant dans BLOCK_DEFS.
 function assertValidBlocks(blocks: { type: string; content: Record<string, string> }[]) {

@@ -20,7 +20,8 @@ import { MobileBottomSheet } from "./MobileBottomSheet"
 import { MobileContextBar } from "./MobileContextBar"
 import { BlockLibrary } from "./BlockLibrary"
 import { BlockSettingsPanel } from "./BlockSettingsPanel"
-import { BLOCK_DEFS, type Block } from "./types"
+import { type Block } from "./types"
+import { BLOCK_DEFS } from "./blockDefs"
 import type { BlockActionId } from "./builderUx"
 
 const MUTED = BUILDER_UI.text.muted

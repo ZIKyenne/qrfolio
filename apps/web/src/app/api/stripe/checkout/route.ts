@@ -55,7 +55,22 @@ export async function POST(req: NextRequest) {
 
     // Annuel si demandé ET si un prix annuel est configuré, sinon mensuel
     const priceId = (annual && ANNUAL_PRICE_IDS[plan]) ? ANNUAL_PRICE_IDS[plan] : PRICE_IDS[plan]
-    if (!priceId) return NextResponse.json({ error: "Plan invalide" }, { status: 400 })
+    if (!priceId) {
+      // Deux échecs très différents se cachaient derrière « Plan invalide ».
+      //  · un plan qui n'existe pas : la requête est fautive ;
+      //  · un plan qui existe mais dont l'identifiant de prix n'est pas configuré :
+      //    c'est une variable d'environnement manquante côté Vercel, et le client,
+      //    lui, n'y peut rien. Il ne doit pas croire qu'il a mal cliqué.
+      const planConnu = Object.prototype.hasOwnProperty.call(PRICE_IDS, plan)
+      if (planConnu) {
+        console.error("[stripe] tarif non configuré pour le plan", plan, "— vérifier NEXT_PUBLIC_STRIPE_*_PRICE_ID")
+        return NextResponse.json(
+          { error: "Ce plan n'est pas encore disponible à la souscription. Écrivez-nous, on s'en occupe tout de suite." },
+          { status: 503 },
+        )
+      }
+      return NextResponse.json({ error: "Plan invalide" }, { status: 400 })
+    }
     const billing = (annual && ANNUAL_PRICE_IDS[plan]) ? "annual" : "monthly"
 
     const session = await stripe.checkout.sessions.create({

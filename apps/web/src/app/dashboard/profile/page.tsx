@@ -2683,7 +2683,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
                 <a href="/upgrade" className="da-btn-primary da-btn-primary--sm">
-                  <Activity className="da-ic" size={13}/> <span>Passer a Pro ou Business</span>
+                  <Activity className="da-ic" size={13}/> <span>Passer à Pro ou Business</span>
                 </a>
               </div>
             ) : (
@@ -2926,7 +2926,7 @@ export default function ProfilePage() {
                   Connectez votre propre domaine<br/>a vos pages QRowg.
                 </p>
                 <a href="/upgrade" className="da-btn-primary da-btn-primary--sm">
-                  <Activity size={13}/> <span>Passer a Starter ou Pro</span>
+                  <Activity size={13}/> <span>Passer à Starter ou Pro</span>
                 </a>
               </div>
             ) : domainsLoading ? (

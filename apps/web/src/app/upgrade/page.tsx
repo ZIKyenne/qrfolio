@@ -14,9 +14,9 @@ import CheckoutErrorBanner from "@/components/CheckoutErrorBanner"
 // UI par plan (icône, CTA, mise en avant) ; les DONNÉES viennent de lib/plans
 const PLAN_UI = {
   free:     { icon: <Star size={20} />,     cta: "Plan gratuit",                ctaDisabled: true,  highlight: false, priceId: undefined },
-  starter:  { icon: <Zap size={20} />,      cta: "Commencer l essai gratuit",   ctaDisabled: false, highlight: false, priceId: "starter"  },
-  pro:      { icon: <Sparkles size={20} />, cta: "Passer a Pro",                ctaDisabled: false, highlight: true,  priceId: "pro"      },
-  business: { icon: <Crown size={20} />,    cta: "Passer a Business",           ctaDisabled: false, highlight: false, priceId: "business" },
+  starter:  { icon: <Zap size={20} />,      cta: "Commencer l'essai gratuit",   ctaDisabled: false, highlight: false, priceId: "starter"  },
+  pro:      { icon: <Sparkles size={20} />, cta: "Passer à Pro",                ctaDisabled: false, highlight: true,  priceId: "pro"      },
+  business: { icon: <Crown size={20} />,    cta: "Passer à Business",           ctaDisabled: false, highlight: false, priceId: "business" },
 } as Record<string, any>
 
 const PLANS = PLAN_LIST.map(p => ({

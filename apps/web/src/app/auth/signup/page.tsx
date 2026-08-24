@@ -15,6 +15,9 @@ export default async function SignupPage({
   const sp = await searchParams
   // Conserve la destination interne (deep-link SEO) quand on bascule vers la connexion.
   const loginHref = sp.redirect ? `/auth/login?redirect=${encodeURIComponent(sp.redirect)}` : '/auth/login'
+  // Arrivée depuis l'éditeur avec une page déjà composée : on le dit, sinon on a
+  // l'air de demander un compte pour rien juste avant la récompense.
+  const claiming = (sp.redirect || '').includes('claim=1')
   return (
     <div style={{
       minHeight: '100dvh', background: '#080808',
@@ -29,8 +32,8 @@ export default async function SignupPage({
           <a href="/" aria-label="QRowg — accueil" style={{ display: 'inline-flex', textDecoration: 'none' }}>
             <QrowgLogo size={26} />
           </a>
-          <h1 style={{ color: '#F8F4EC', fontSize: 23, fontWeight: 700, margin: '18px 0 6px', fontFamily: 'Fraunces, serif' }}>Créer un compte</h1>
-          <p style={{ color: '#C9C3B6', fontSize: 14.5, margin: 0 }}>Gratuit · prêt en 3 minutes.</p>
+          <h1 style={{ color: '#F8F4EC', fontSize: 23, fontWeight: 700, margin: '18px 0 6px', fontFamily: 'Fraunces, serif' }}>{claiming ? 'Plus qu\'une étape' : 'Créer un compte'}</h1>
+          <p style={{ color: '#C9C3B6', fontSize: 14.5, margin: 0 }}>{claiming ? 'Votre page est prête et vous attend — elle sera reprise telle quelle.' : 'Gratuit · prêt en 3 minutes.'}</p>
         </div>
 
         <div style={{ background: '#141210', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 'clamp(22px, 6vw, 30px)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>

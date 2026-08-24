@@ -15,7 +15,7 @@ type Props = {
 }
 
 export default function ImageUpload({ value, onChange, label, hint, cropAspect }: Props) {
-  const { uploadImage, uploading, listAssets, deleteAsset } = useImageUpload()
+  const { uploadImage, uploading, listAssets, deleteAsset, lastError } = useImageUpload()
   const confirm = useConfirm()
   const inputRef = useRef<HTMLInputElement>(null)
   const libInputRef = useRef<HTMLInputElement>(null)
@@ -75,11 +75,12 @@ export default function ImageUpload({ value, onChange, label, hint, cropAspect }
       setLibBusy(true)
       const url = await uploadImage(named, "blocks")
       if (url) await refreshLibrary()
+      else setError(lastError === "no_account" ? "Créez un compte (gratuit) pour ajouter vos propres photos — votre page est gardée." : "Erreur upload — réessaie")
       setLibBusy(false)
     } else {
       const url = await uploadImage(named, "blocks")
       if (url) onChange(url)
-      else setError("Erreur upload — réessaie")
+      else setError(lastError === "no_account" ? "Créez un compte (gratuit) pour ajouter vos propres photos — votre page est gardée." : "Erreur upload — réessaie")
     }
   }
 

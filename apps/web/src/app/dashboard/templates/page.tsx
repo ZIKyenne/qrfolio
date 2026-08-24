@@ -14,6 +14,7 @@ import { useIsMobile } from "@/lib/useIsMobile"
 import { PAGE_TEMPLATES } from "../builder/page-templates"
 import { TEMPLATE_LAYOUT_LIST, galleryStyleChoices, nativeGalleryStyleKey, galleryComposeBlocks } from "../builder/templateEngine"
 import { useToast } from "@/components/Toast"
+import { browserStorage, saveDraft, makeDraft } from "../builder/draftStore"
 
 // Source unique partagée avec le builder : les modèles de page complets (métier + sous-variantes)
 // alimentent AUSSI la galerie d'onboarding (en plus des 14 modèles curés historiques).
@@ -156,6 +157,24 @@ export default function TemplatesPage() {
   }, [namingFor])
 
   const [usedTemplateIds, setUsedTemplateIds] = useState<string[]>([])
+  // Sans compte, un modèle ne peut pas être créé en base (pages.user_id NOT NULL).
+  // Il part donc dans le brouillon local et s'ouvre dans l'éditeur : le visiteur voit
+  // sa page avant de donner quoi que ce soit.
+  const [guest, setGuest] = useState(false)
+
+  /** Sans compte : le modèle devient le brouillon local, puis l'éditeur s'ouvre dessus. */
+  function applyTemplateAsGuest(args: { key: string; name: string; theme: unknown; blocks: any[] }): { ok?: boolean; error?: string } {
+    const draft = makeDraft({ pageName: args.name, theme: args.theme, blocks: args.blocks, templateKey: args.key, now: Date.now() })
+    const r = saveDraft(browserStorage(), draft)
+    if (r.ok !== true) {
+      return { error: r.reason === "too_big"
+        ? "Ce modèle est trop lourd pour être gardé sans compte. Créez un compte pour l'utiliser."
+        : "Ce navigateur refuse d'enregistrer (navigation privée ?). Créez un compte pour garder votre page." }
+    }
+    toast.success("À vous de jouer — votre page est gardée dans ce navigateur")
+    setTimeout(() => router.push("/dashboard/builder?draft=1"), 400)
+    return { ok: true }
+  }
 
   // Fetch user plan + pages existantes (pour la recommandation)
   useEffect(() => {
@@ -163,7 +182,7 @@ export default function TemplatesPage() {
       try {
         const sb = createClient()
         const { data: { user } } = await sb.auth.getUser()
-        if (!user) return
+        if (!user) { setGuest(true); return }
         // Profil + pages en parallèle (un seul aller-retour réseau)
         const [{ data: profile }, { data: userPages }] = await Promise.all([
           sb.from("profiles").select("plan").eq("id", user.id).single(),
@@ -582,12 +601,15 @@ export default function TemplatesPage() {
             theme={composed.theme}
             onClose={() => setWizardFor(null)}
             onCreate={async ({ name, slug, blocks }) => {
+              if (guest) return applyTemplateAsGuest({ key: String(wizardFor), name, theme: composed.theme, blocks })
               const res = await fetch("/api/templates/use", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({ templateId: wizardFor, templateName: name, slug, description: tpl.description, theme: composed.theme, blocks }),
               })
+              // Course possible : la session n'était pas encore connue au moment du clic.
+              if (res.status === 401) return applyTemplateAsGuest({ key: String(wizardFor), name, theme: composed.theme, blocks })
               const json = await res.json()
               if (!res.ok || !json.pageId) return { error: json.error || "Erreur creation page." }
               toast.success("Page créée — à vous de jouer")
@@ -658,16 +680,20 @@ export default function TemplatesPage() {
             layoutOptions={TEMPLATE_LAYOUT_LIST.map(l => ({ key: l.key, label: l.label }))}
             layoutKey={layoutKey}
             onLayoutChange={setLayoutKey}
+            guest={guest}
             onClose={() => setNamingFor(null)}
             onCreate={async (name, slug, description) => {
               // Recompose thème + blocs selon le style/disposition choisis (par défaut = look d'origine).
               const { theme, blocks } = galleryComposeBlocks(currentBlocks, currentTheme, effStyle, layoutKey)
+              if (guest) return applyTemplateAsGuest({ key: String(namingFor), name, theme, blocks })
               const res = await fetch("/api/templates/use", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({ templateId: namingFor, templateName: name, slug, description, theme, blocks }),
               })
+              // Course possible : la session n'était pas encore connue au moment du clic.
+              if (res.status === 401) return applyTemplateAsGuest({ key: String(namingFor), name, theme, blocks })
               const json = await res.json()
               if (!res.ok || !json.pageId) {
                 return { error: json.error || "Erreur creation page." }
@@ -690,12 +716,15 @@ export default function TemplatesPage() {
     </div>
   )
 }// ── Composant Modal de nommage ──────────────────────────────────────────────
-export function NamingModal({ template, blockCount, onClose, onCreate,
+export function NamingModal({ template, blockCount, onClose, onCreate, guest,
   styleOptions, styleKey, onStyleChange, layoutOptions, layoutKey, onLayoutChange }: {
   template: any
   blockCount: number
   onClose: () => void
   onCreate: (name: string, slug: string, description: string) => Promise<{ ok?: boolean; error?: string }>
+  /** Sans compte, la page n'est pas créée en base : l'adresse publique se choisit
+      à la publication. Demander un slug disponible ici bloquerait pour rien. */
+  guest?: boolean
   // T3.b (optionnels) : sélecteur de style/disposition alimenté par le moteur de templates.
   // Absents → aucun rendu supplémentaire (comportement historique strictement inchangé).
   styleOptions?: { key: string; label: string; color: string }[]
@@ -726,6 +755,7 @@ export function NamingModal({ template, blockCount, onClose, onCreate,
 
   // Verification du slug (debounce 400ms)
   useEffect(() => {
+    if (guest) { setSlugStatus("idle"); setSuggestions([]); return }
     if (!slug) { setSlugStatus("idle"); setSuggestions([]); return }
     setSlugStatus("checking")
     const t = setTimeout(async () => {
@@ -742,7 +772,7 @@ export function NamingModal({ template, blockCount, onClose, onCreate,
   }, [slug])
 
   const nameValid = name.trim().length >= 2 && name.trim().length <= 80
-  const canSubmit = nameValid && slugStatus === "available" && !submitting
+  const canSubmit = nameValid && (guest || slugStatus === "available") && !submitting
 
   async function handleCreate() {
     if (!canSubmit) return
@@ -821,8 +851,8 @@ export function NamingModal({ template, blockCount, onClose, onCreate,
           {!nameValid && name.length > 0 && <p style={{ color: "#F87171", fontSize: 10, margin: "4px 0 0" }}>Le nom doit faire 2 a 80 caracteres.</p>}
         </div>
 
-        {/* Slug */}
-        <div style={{ marginBottom: 14 }}>
+        {/* Slug — masqué sans compte : l'adresse se choisit au moment de publier. */}
+        <div style={{ marginBottom: 14, display: guest ? "none" : undefined }}>
           <label style={{ color: MUTED, fontSize: 11, display: "block", marginBottom: 5, fontWeight: 600 }}>Slug public</label>
           <input value={slug} onChange={e => { setSlugTouched(true); setSlug(slugify(e.target.value)) }} placeholder="le-bistrot-parisien" style={{ ...inputStyle, fontFamily: "monospace" }} />
           <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "5px 0 0", minHeight: 16 }}>
@@ -857,11 +887,13 @@ export function NamingModal({ template, blockCount, onClose, onCreate,
           {/* Halo réservé au bouton primaire actif ; retiré tant que le formulaire est incomplet. */}
           <span className={canSubmit ? "da-halo-wrap" : undefined} style={{ flex: 2, display: "flex" }}>
             <button onClick={handleCreate} disabled={!canSubmit} className="da-btn-primary da-btn-primary--sm" style={{ flex: 1, justifyContent: "center" }}>
-              <span>{submitting ? "Création…" : "Créer ma page"}</span>{!submitting && <ArrowRight className="da-ic da-ic-arrow" size={15} />}
+              <span>{submitting ? "Création…" : guest ? "Composer ma page" : "Créer ma page"}</span>{!submitting && <ArrowRight className="da-ic da-ic-arrow" size={15} />}
             </button>
           </span>
         </div>
-        <p style={{ color: MUTED, fontSize: 10, margin: "12px 0 0", textAlign: "center" }}>Tu pourras modifier ce nom plus tard.</p>
+        <p style={{ color: MUTED, fontSize: 10, margin: "12px 0 0", textAlign: "center" }}>
+          {guest ? "Aucun compte n'est demandé : votre page sera gardée dans ce navigateur." : "Tu pourras modifier ce nom plus tard."}
+        </p>
       </div>
     </div>
   )

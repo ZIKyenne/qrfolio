@@ -36,13 +36,18 @@ async function compressImage(file: File, maxDim = 1600, quality = 0.82): Promise
 
 export function useImageUpload() {
   const [uploading, setUploading] = useState(false)
+  // Un envoi échouait en silence quand il n'y avait pas de session : l'image ne
+  // s'insérait pas, sans un mot. Depuis l'essai sans inscription, ce cas est la
+  // norme pour un visiteur — il doit savoir que c'est le compte qui manque, pas
+  // son fichier, et surtout qu'il ne sert à rien de réessayer.
+  const [lastError, setLastError] = useState<"no_account" | "failed" | null>(null)
 
   async function uploadImage(file: File, path: string): Promise<string | null> {
-    setUploading(true)
+    setUploading(true); setLastError(null)
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
+      if (!user) { setLastError("no_account"); return null }
 
       const optimized = await compressImage(file)
 
@@ -53,7 +58,7 @@ export function useImageUpload() {
         .from("page-assets")
         .upload(fileName, optimized, { upsert: true, contentType: optimized.type })
 
-      if (error) { console.error("Upload error:", error); return null }
+      if (error) { console.error("Upload error:", error); setLastError("failed"); return null }
 
       const { data: { publicUrl } } = supabase.storage
         .from("page-assets")
@@ -86,18 +91,18 @@ export function useImageUpload() {
 
   // Upload d'un fichier NON-image (PDF, doc…) : pas de compression, nom d'origine préservé (slug) pour rester lisible.
   async function uploadFile(file: File, path = "docs"): Promise<string | null> {
-    setUploading(true)
+    setUploading(true); setLastError(null)
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
+      if (!user) { setLastError("no_account"); return null }
       const ext = (file.name.split(".").pop() || "bin").toLowerCase()
       const base = file.name.replace(/\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "fichier"
       const fileName = `${user.id}/${path}-${base}-${Date.now()}.${ext}`
       const { error } = await supabase.storage
         .from("page-assets")
         .upload(fileName, file, { upsert: true, contentType: file.type || undefined })
-      if (error) { console.error("Upload error:", error); return null }
+      if (error) { console.error("Upload error:", error); setLastError("failed"); return null }
       const { data: { publicUrl } } = supabase.storage.from("page-assets").getPublicUrl(fileName)
       return publicUrl
     } finally {
@@ -114,5 +119,5 @@ export function useImageUpload() {
     return !error
   }
 
-  return { uploadImage, uploadFile, uploading, listAssets, deleteAsset }
+  return { uploadImage, uploadFile, uploading, listAssets, deleteAsset, lastError }
 }

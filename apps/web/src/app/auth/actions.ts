@@ -65,12 +65,12 @@ export async function signUp(formData: FormData) {
       })
     } catch {}
   }
-  if (error) redirect('/auth/signup?error=' + encodeURIComponent(frAuthError(error)))
-  // Redirection interne sûre (ex. deep-link SEO -> onboarding par objectif) ; sinon,
-  // par défaut on envoie les nouveaux inscrits vers l'onboarding « par objectif » qui
-  // fabrique une page + un QR en 2 clics (meilleur chemin vers la première valeur).
+  // Destination interne, conservée AUSSI en cas d'erreur : sans ça, un mot de passe
+  // mal tapé faisait perdre le brouillon composé avant l'inscription.
   const to = (formData.get('redirect') as string | null) || ''
-  redirect(to.startsWith('/') && !to.startsWith('//') ? to : '/dashboard/onboarding')
+  const safeTo = to.startsWith('/') && !to.startsWith('//') ? to : ''
+  if (error) redirect('/auth/signup?error=' + encodeURIComponent(frAuthError(error)) + (safeTo ? '&redirect=' + encodeURIComponent(safeTo) : ''))
+  redirect(safeTo || '/dashboard/onboarding')
 }
 
 export async function signIn(formData: FormData) {
@@ -80,10 +80,11 @@ export async function signIn(formData: FormData) {
 
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-  if (error) redirect('/auth/login?error=' + encodeURIComponent(frAuthError(error)))
-  // Redirection interne sûre (ex. lien d'invitation) ; sinon dashboard.
   const to = (formData.get('redirect') as string | null) || ''
-  redirect(to.startsWith('/') && !to.startsWith('//') ? to : '/dashboard')
+  const safeTo = to.startsWith('/') && !to.startsWith('//') ? to : ''
+  if (error) redirect('/auth/login?error=' + encodeURIComponent(frAuthError(error)) + (safeTo ? '&redirect=' + encodeURIComponent(safeTo) : ''))
+  // Redirection interne sûre (ex. lien d'invitation, reprise d'un brouillon) ; sinon dashboard.
+  redirect(safeTo || '/dashboard')
 }
 
 export async function signOut() {

@@ -592,7 +592,7 @@ function FeaturesSection() {
                 <p style={{ color: "#EDEBE4", fontSize: 15, lineHeight: 1.65, margin: 0 }}>{txt}</p>
               </div>
             ))}
-            <Link href="/auth/signup" style={{ display: "block", textAlign: "center", marginTop: 20, padding: "12px", borderRadius: 11, background: `linear-gradient(90deg, ${fInfo.accent}, ${fInfo.accent}cc)`, color: "#080808", textDecoration: "none", fontSize: 13.5, fontWeight: 800 }}>
+            <Link href="/dashboard/templates" style={{ display: "block", textAlign: "center", marginTop: 20, padding: "12px", borderRadius: 11, background: `linear-gradient(90deg, ${fInfo.accent}, ${fInfo.accent}cc)`, color: "#080808", textDecoration: "none", fontSize: 13.5, fontWeight: 800 }}>
               Essayer gratuitement
             </Link>
           </div>
@@ -1815,13 +1815,13 @@ function HowItWorks() {
         </div>
       </div>
       <div style={{textAlign:"center",marginTop:64,opacity:visible?1:0,transition:"opacity 0.6s ease 0.7s"}}>
-        <a href="/auth/signup" style={{display:"inline-flex",alignItems:"center",gap:10,
+        <a href="/dashboard/templates" style={{display:"inline-flex",alignItems:"center",gap:10,
           background:"transparent",border:"1px solid rgba(201,168,76,0.3)",
           color:"#C9A84C",textDecoration:"none",fontSize:14,fontWeight:600,
           padding:"12px 28px",borderRadius:10,transition:"all 0.2s ease"}}
           onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.background="rgba(201,168,76,0.08)";el.style.borderColor="rgba(201,168,76,0.55)"}}
           onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.background="transparent";el.style.borderColor="rgba(201,168,76,0.3)"}}>
-          Créer ma page gratuitement <span style={{fontSize:16}}>→</span>
+          Composer ma page — sans compte <span style={{fontSize:16}}>→</span>
         </a>
       </div>
     </section>
@@ -2192,7 +2192,7 @@ function QRDynamicSection() {
               opacity: visible ? 1 : 0,
               transition: "opacity 0.6s ease 0.7s",
             }}>
-              <a href="/auth/signup" style={{
+              <a href="/dashboard/templates" style={{
                 display: "inline-flex", alignItems: "center", gap: 10,
                 background: "linear-gradient(90deg,#C9A84C,#b8953f)",
                 color: "#080808", textDecoration: "none",
@@ -2612,7 +2612,7 @@ function AnalyticsSection() {
               </div>
             </div>
 
-            <a href="/auth/signup" style={{
+            <a href="/dashboard/templates" style={{
               display: "inline-flex", alignItems: "center", gap: 10,
               background: "transparent",
               border: "1px solid rgba(201,168,76,0.3)",
@@ -2902,7 +2902,7 @@ function UseCasesSection() {
               background: "linear-gradient(90deg, " + uc.color + "40, transparent)",
             }} />
 
-            <a href="/auth/signup" style={{
+            <a href="/dashboard/templates" style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               background: uc.color,
               color: "#080808", textDecoration: "none",
@@ -3373,14 +3373,14 @@ function ComparisonSection() {
         </div>
 
         <div style={{ marginTop: 34, display: "flex", justifyContent: "center" }}>
-          <Link href="/auth/signup" style={{
+          <Link href="/dashboard/templates" style={{
             background: "linear-gradient(90deg, #C9A84C, #b8953f)", color: "#080808", textDecoration: "none",
             fontSize: 15, fontWeight: 700, padding: "14px 30px", borderRadius: 12, display: "inline-flex", alignItems: "center", gap: 9,
             boxShadow: "0 4px 24px rgba(201,168,76,0.4)", transition: "transform 0.2s var(--mo-ease-spring), box-shadow 0.2s",
           }}
             onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-2px) scale(1.02)"; el.style.boxShadow = "0 8px 34px rgba(201,168,76,0.5)" }}
             onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "none"; el.style.boxShadow = "0 4px 24px rgba(201,168,76,0.4)" }}>
-            Créer ma page gratuitement <span aria-hidden="true">→</span>
+            Composer ma page — sans compte <span aria-hidden="true">→</span>
           </Link>
         </div>
       </div>
@@ -3452,8 +3452,8 @@ function PrintStudioSection() {
         </div>
 
         <div style={{ textAlign: "center", marginTop: 44, opacity: visible ? 1 : 0, transition: "opacity 0.6s ease 0.5s" }}>
-          <Link href="/auth/signup" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "linear-gradient(90deg,#C9A84C,#b8953f)", color: "#080808", textDecoration: "none", fontSize: 14, fontWeight: 800, padding: "13px 28px", borderRadius: 11, boxShadow: "0 6px 22px rgba(201,168,76,0.3)" }}>
-            Créer mes supports <span style={{ fontSize: 16 }}>→</span>
+          <Link href="/dashboard/templates" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "linear-gradient(90deg,#C9A84C,#b8953f)", color: "#080808", textDecoration: "none", fontSize: 14, fontWeight: 800, padding: "13px 28px", borderRadius: 11, boxShadow: "0 6px 22px rgba(201,168,76,0.3)" }}>
+            Composer ma page — sans compte <span style={{ fontSize: 16 }}>→</span>
           </Link>
         </div>
       </div>
@@ -3602,7 +3602,7 @@ export default function HomeClient() {
               display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center",
               animation: "mo-fade-up 0.7s ease 0.75s both"
             }}>
-              <Link href="/auth/signup" style={{
+              <Link href="/dashboard/templates" style={{
                 background: "linear-gradient(90deg, #C9A84C, #d4a843, #b8953f)",
                 backgroundSize: "200% 200%", animation: "gradientShift 3s ease infinite",
                 color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 700,
@@ -3621,7 +3621,7 @@ export default function HomeClient() {
                   el.style.transform = "translateY(0) scale(1)"
                   el.style.boxShadow = "0 4px 28px rgba(201,168,76,0.45)"
                 }}>
-                Créer ma page gratuitement <span aria-hidden="true">→</span>
+                Composer ma page — sans compte <span aria-hidden="true">→</span>
               </Link>
               <Link href="#qr-studio" style={{
                 background: "transparent",
@@ -3800,7 +3800,7 @@ export default function HomeClient() {
               Créez votre QRowg gratuitement, personnalisez votre page et commencez à suivre vos scans en quelques minutes.
             </p>
 
-            <Link href="/auth/signup" style={{
+            <Link href="/dashboard/templates" style={{
               display:"inline-flex", alignItems:"center", gap:10,
               background:"linear-gradient(90deg,#C9A84C,#b8953f)",
               color:"#080808", textDecoration:"none",
@@ -3811,7 +3811,7 @@ export default function HomeClient() {
             }}
               onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-3px) scale(1.03)";el.style.animation="none";el.style.boxShadow="0 8px 40px rgba(201,168,76,0.55)"}}
               onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none"}}>
-              Créer ma page gratuitement
+              Composer ma page — sans compte
               <span style={{ fontSize:18 }}>→</span>
             </Link>
 
@@ -3955,14 +3955,14 @@ export default function HomeClient() {
       <div aria-hidden className={`m-sticky-cta-spacer${showSticky ? " show" : ""}`} />
       {/* CTA mobile collant — apparaît après le hero, masqué sur desktop (CSS .m-sticky-cta) */}
       <div className={`m-sticky-cta${showSticky ? " show" : ""}`} aria-hidden={!showSticky}>
-        <Link href="/auth/signup" style={{
+        <Link href="/dashboard/templates" style={{
           display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           width: "100%", padding: "14px", borderRadius: 12,
           background: "linear-gradient(90deg, #C9A84C, #b8953f)",
           color: "#080808", fontWeight: 800, fontSize: 15, textDecoration: "none",
           boxShadow: "0 6px 22px rgba(201,168,76,0.4)",
         }}>
-          Créer ma page gratuitement <span style={{ fontSize: 16 }}>→</span>
+          Composer ma page — sans compte <span style={{ fontSize: 16 }}>→</span>
         </Link>
       </div>
     </div>

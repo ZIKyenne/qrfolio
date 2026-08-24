@@ -24,7 +24,7 @@ const G = "#C9A84C"
 const MUTED = "#A8A190"
 
 export default function FileUpload({ value, onChange, hint }: Props) {
-  const { uploadFile, uploading, listAssets, deleteAsset } = useImageUpload()
+  const { uploadFile, uploading, listAssets, deleteAsset, lastError } = useImageUpload()
   const confirm = useConfirm()
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState("")
@@ -36,13 +36,13 @@ export default function FileUpload({ value, onChange, hint }: Props) {
     setError("")
     if (file.size > 20 * 1024 * 1024) { setError("Fichier trop lourd — max 20 Mo"); return }
     const url = await uploadFile(file, "docs")
-    if (url) onChange(url); else setError("Erreur d'import — réessayez")
+    if (url) onChange(url); else setError(lastError === "no_account" ? "Créez un compte (gratuit) pour joindre vos fichiers — votre page est gardée." : "Erreur d'import — réessayez")
   }
   async function openLibrary() { setLibOpen(true); if (libAssets === null) setLibAssets(await listAssets("file")) }
   async function refreshLibrary() { setLibAssets(await listAssets("file")) }
   async function handleLibFile(file: File) {
     if (file.size > 20 * 1024 * 1024) { setError("Fichier trop lourd — max 20 Mo"); return }
-    setLibBusy(true); const url = await uploadFile(file, "docs"); if (url) await refreshLibrary(); setLibBusy(false)
+    setLibBusy(true); const url = await uploadFile(file, "docs"); if (url) await refreshLibrary(); else setError(lastError === "no_account" ? "Créez un compte (gratuit) pour joindre vos fichiers — votre page est gardée." : "Erreur d'import — réessayez"); setLibBusy(false)
   }
   async function removeAsset(a: { name: string; url: string }) {
     if (!(await confirm({ title: "Supprimer ce fichier ?", message: "S'il est utilisé sur une page publiée, le lien ne fonctionnera plus.", confirmLabel: "Supprimer", danger: true }))) return

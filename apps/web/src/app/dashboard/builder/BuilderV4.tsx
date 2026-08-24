@@ -45,6 +45,7 @@
   import { publishPage } from "./publishActions"
   import { safeErrorMessage, loadStateFromError, type LoadState } from "./builderErrors"
   import { printHandoff, printStudioUrl } from "../print-studio/handoff"
+  import { browserStorage, loadDraft, saveDraft, clearDraft, makeDraft, draftIsMeaningful, draftSummary, type LocalDraft } from "./draftStore"
 
   // Helper module-scope (evite la temporal-dead-zone du UUID_RE interne au composant).
   const IS_UUID = (s?: string | null): boolean => !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
@@ -143,13 +144,19 @@
     // Plan de l'utilisateur (gating UI de l'animation d'entrée ; l'enforcement réel
     // est côté serveur au rendu de la page publique).
     const [userPlan, setUserPlan] = useState<string | null>(null)
+    // Mode invité : on compose AVANT de créer un compte. Tant que la session n'est
+    // pas connue on ne déclenche rien de réseau — sinon un visiteur anonyme sur
+    // /builder/new déclencherait une création de page vouée à un 401.
+    const [authState, setAuthState] = useState<"unknown" | "guest" | "user">("unknown")
+    const guest = authState === "guest"
     useEffect(() => {
       const sb = createClient()
       sb.auth.getUser().then(({ data }) => {
-        if (!data.user) return
+        if (!data.user) { setAuthState("guest"); return }
+        setAuthState("user")
         sb.from("profiles").select("plan").eq("id", data.user.id).single()
           .then(({ data: p }) => setUserPlan((p as any)?.plan ?? null))
-      })
+      }).catch(() => setAuthState("guest"))
     }, [])
     const [rightTab, setRightTab] = useState<"preview"|"edit"|"theme">("edit")
     const [editTab, setEditTab] = useState<"contenu"|"style"|"layout"|"avance">("contenu")
@@ -209,6 +216,22 @@
     const [loadState, setLoadState] = useState<LoadState>("loading")
     const [loadNonce, setLoadNonce] = useState(0)
     const creatingRef = useRef(false)
+    // ── Essai sans inscription ────────────────────────────────────────────────
+    // Le brouillon d'un visiteur vit dans son navigateur (la table `pages` impose
+    // user_id NOT NULL : une page anonyme ne peut pas exister en base).
+    const claimRef = useRef<LocalDraft | null>(null)   // brouillon à reprendre juste après l'inscription
+    const [claimed, setClaimed] = useState(false)      // confirmation « votre travail a été repris »
+    const guestReady = useRef(false)                   // brouillon restauré : la sauvegarde locale peut démarrer
+    // Reprise de brouillon : la page vient d'être créée VIDE en base et son contenu
+    // n'est encore qu'en mémoire. Sans ce garde, le chargement qui suit lisait zéro
+    // bloc et écrasait la page reprise — tout le travail du visiteur, perdu à la
+    // dernière seconde. On saute ce premier chargement ; l'autosave écrit la suite.
+    const skipLoadRef = useRef(false)
+    const draftTimer = useRef<any>(null)
+    const [draftState, setDraftState] = useState<"idle" | "saved" | "too_big" | "unavailable">("idle")
+    const [draftFound, setDraftFound] = useState<LocalDraft | null>(null)   // proposition « reprendre »
+    const [fromTemplate, setFromTemplate] = useState(false)                 // arrivée depuis la galerie
+    const templateKeyRef = useRef<string | undefined>(undefined)            // modèle d'origine, à ne pas perdre
     const [showPublishPopup, setShowPublishPopup] = useState(false)
     const [publishing, setPublishing] = useState(false)
     const [publishSuccess, setPublishSuccess] = useState(false)
@@ -568,17 +591,37 @@
 
     // Bootstrap : URL /builder/new (ou tout pageId non-UUID) -> on cree la page en base,
     // on recupere son vrai UUID, on met a jour l'URL sans rechargement, puis liveId prend le relais.
+    // Le brouillon doit être en main AVANT la création de la page : le bootstrap
+    // s'en sert comme contenu initial au lieu de créer une page vide.
+    useEffect(() => {
+      try { if (new URLSearchParams(window.location.search).get("claim") === "1") claimRef.current = loadDraft(browserStorage()) } catch {}
+    }, [])
+
     useEffect(() => {
       if (!pageId || IS_UUID(pageId)) return
+      if (authState !== "user") return        // invité ou session inconnue : aucune écriture
       if (creatingRef.current) return
       creatingRef.current = true
       ;(async () => {
         try {
-          const res = await fetch("/api/pages/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: pageName }) })
+          // Reprise du travail fait AVANT l'inscription : le brouillon local devient
+          // le contenu de la page créée. C'est tout l'intérêt de l'essai sans compte.
+          const claimed = claimRef.current
+          const res = await fetch("/api/pages/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: claimed?.pageName || pageName }) })
           const json = await res.json().catch(() => ({}))
           if (!res.ok || !json?.pageId) { setBootstrapError(json?.message || json?.error || "Impossible de creer la page."); return }
-          // Normalise les IDs de blocs par defaut (\"1\"/\"2\"/\"3\") en UUID -> chemin upsert propre.
-          setBlocksRaw(prev => prev.map(b => IS_UUID(b.id) ? b : { ...b, id: genId() }))
+          if (claimed) {
+            setBlocksRaw(claimed.blocks.map(b => ({ id: IS_UUID(b.id) ? b.id : genId(), type: b.type, content: { ...b.content }, visible: b.visible !== false, draft: b.draft, locked: b.locked })))
+            setPageName(claimed.pageName)
+            if (claimed.theme) setTheme(normalizePageTheme(claimed.theme))
+            clearDraft(browserStorage())
+            claimRef.current = null
+            setClaimed(true)
+            skipLoadRef.current = true
+          } else {
+            // Normalise les IDs de blocs par defaut (\"1\"/\"2\"/\"3\") en UUID -> chemin upsert propre.
+            setBlocksRaw(prev => prev.map(b => IS_UUID(b.id) ? b : { ...b, id: genId() }))
+          }
           // Page neuve creee : la sauvegarde peut persister les blocs initiaux.
           ready.current = true
           setLiveId(json.pageId)
@@ -588,10 +631,13 @@
           setBootstrapError(e?.message || "Impossible de creer la page.")
         }
       })()
-    }, [pageId])
+    }, [pageId, authState])
 
     useEffect(() => {
       if (!IS_UUID(liveId)) return
+      // Page tout juste créée à partir d'un brouillon : son contenu est en mémoire,
+      // pas encore en base. Relire maintenant reviendrait à l'effacer.
+      if (skipLoadRef.current) { skipLoadRef.current = false; setLoadState("loaded"); return }
       const supabase = createClient()
       let cancelled = false                 // ignore les résultats si l'effet est remplacé/démonté
       const alive = () => !cancelled && mountedRef.current
@@ -650,6 +696,53 @@
       load()
       return () => { cancelled = true }
     }, [liveId, loadNonce])
+
+    // ── Invité : restauration du brouillon ────────────────────────────────────
+    // Un visiteur qui revient retrouve son travail. On restaure d'office quand il
+    // arrive depuis un modèle (?draft=1) ; sinon on propose, sans rien écraser.
+    useEffect(() => {
+      if (authState !== "guest" || guestReady.current) return
+      const d = loadDraft(browserStorage())
+      const asked = (() => { try { return new URLSearchParams(window.location.search).get("draft") === "1" } catch { return false } })()
+      if (d && (asked || !draftIsMeaningful(d))) {
+        applyDraft(d)
+      } else if (d && d.templateKey) {
+        templateKeyRef.current = d.templateKey
+        setDraftFound(d)
+      } else if (d) {
+        setDraftFound(d)          // on demande avant d'écraser ce qu'il a peut-être commencé
+      }
+      guestReady.current = true
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [authState])
+
+    function applyDraft(d: LocalDraft) {
+      templateKeyRef.current = d.templateKey
+      // Page déjà remplie : le guide « on a posé 3 blocs pour toi » n'a plus de sens.
+      if (d.templateKey || d.blocks.length > 3) setFromTemplate(true)
+      setBlocksRaw(d.blocks.map(b => ({ id: b.id, type: b.type, content: { ...b.content }, visible: b.visible !== false, draft: b.draft, locked: b.locked })))
+      setPageName(d.pageName)
+      if (d.theme) setTheme(normalizePageTheme(d.theme))
+      setDraftFound(null)
+      guestReady.current = true
+    }
+
+    // ── Invité : sauvegarde du brouillon dans le navigateur ───────────────────
+    // Sans compte il n'y a rien à écrire en base : on écrit localement, au même
+    // format que ce que la base attend, pour que la reprise après inscription soit
+    // une simple relecture — pas une conversion.
+    useEffect(() => {
+      if (authState !== "guest" || !guestReady.current || draftFound) return
+      clearTimeout(draftTimer.current)
+      draftTimer.current = setTimeout(() => {
+        const d = makeDraft({ pageName, theme, blocks, templateKey: templateKeyRef.current, now: Date.now() })
+        if (!draftIsMeaningful(d)) return          // le squelette de départ ne mérite pas d'être conservé
+        const r = saveDraft(browserStorage(), d)
+        setDraftState(r.ok === true ? "saved" : r.reason)
+        dirty.current = !r.ok                       // rien n'est perdu si l'écriture a réussi
+      }, 600)
+      return () => clearTimeout(draftTimer.current)
+    }, [blocks, pageName, theme, authState, draftFound])
 
     // Avertit avant de fermer/recharger l'onglet s'il reste des changements non sauvegardes.
     useEffect(() => {
@@ -748,8 +841,20 @@
     // Publication / mise à jour : délègue au contrôleur (flush → mutation serveur →
     // revalidation). La garde single-flight vit dans le contrôleur (double-clic sûr).
     function handlePublish() {
+      // Invité : publier, c'est le moment où le compte devient nécessaire (la page
+      // doit appartenir à quelqu'un). On emporte le brouillon — rien n'est resaisi.
+      if (guest) { goSignup(); return }
       if (!IS_UUID(liveId)) return
       void publishCtrlRef.current?.publishLatest()
+    }
+
+    /** Emporte le brouillon vers l'inscription, puis revient créer la page. */
+    function goSignup() {
+      const d = makeDraft({ pageName, theme, blocks, templateKey: templateKeyRef.current, now: Date.now() })
+      const r = saveDraft(browserStorage(), d)
+      if (r.ok !== true) { setDraftState(r.reason); return }   // on ne l'envoie pas perdre son travail
+      const back = encodeURIComponent("/dashboard/builder/new?claim=1")
+      try { window.location.href = `/auth/signup?redirect=${back}` } catch {}
     }
 
     // ID de bloc = UUID valide (colonne uuid en base) -> IDs stables entre sauvegardes,
@@ -1146,7 +1251,42 @@
       <div className="builder-root" style={{ height: "100dvh", background: "#080808", display: "flex", flexDirection: "column", fontFamily: "DM Sans, sans-serif", color: "#F5F0E8", overflow: "hidden", position: "relative" }}>
 
         {/* Guide de bienvenue au 1er lancement (auto-gere via localStorage) — QWG-0016 */}
-        {!preview && <BuilderWelcome mobile={isMobile} />}
+        {/* Le guide dit « on a posé 3 blocs pour toi » : hors sujet quand on arrive
+            d'un modèle avec une page déjà remplie. On le garde pour la page vierge. */}
+        {!preview && !draftFound && !fromTemplate && !claimed && <BuilderWelcome mobile={isMobile} />}
+
+        {/* Un visiteur qui revient a laissé du travail derrière lui. On demande avant
+            de l'écraser : reprendre, ou repartir de zéro — jamais à son insu. */}
+        {draftFound && (
+          <div role="dialog" aria-modal="true" aria-label="Reprendre votre page"
+            style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div style={{ maxWidth: 380, width: "100%", background: "#111009", border: "1px solid rgba(201,168,76,0.22)", borderRadius: 18, padding: "26px 24px", textAlign: "center" }}>
+              <div style={{ fontSize: 32, marginBottom: 10 }} aria-hidden>📝</div>
+              <h2 style={{ fontSize: 17, fontWeight: 700, margin: "0 0 6px", fontFamily: "Fraunces, serif", color: "#F5F0E8" }}>Vous aviez commencé une page</h2>
+              <p style={{ fontSize: 13, color: MUTED, margin: "0 0 20px", lineHeight: 1.55 }}>
+                {draftSummary(draftFound, Date.now())} — gardée dans ce navigateur.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <button onClick={() => applyDraft(draftFound)} className="da-btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+                  <span>Reprendre où j'en étais</span>
+                </button>
+                <button onClick={() => { clearDraft(browserStorage()); setDraftFound(null); guestReady.current = true }}
+                  style={{ width: "100%", background: "none", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px", color: MUTED, fontSize: 12.5, cursor: "pointer" }}>
+                  Repartir de zéro
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Retour d'inscription : on confirme que le travail a bien suivi. */}
+        {claimed && (
+          <div role="status" style={{ position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 380, background: "rgba(57,255,143,0.12)", border: "1px solid rgba(57,255,143,0.35)", borderRadius: 12, padding: "10px 16px", display: "flex", alignItems: "center", gap: 9, maxWidth: "calc(100vw - 28px)" }}>
+            <Check size={14} color="var(--success)" />
+            <span style={{ color: "var(--success)", fontSize: 12.5, fontWeight: 600 }}>Votre page vous a suivi — elle est maintenant dans votre compte.</span>
+            <button onClick={() => setClaimed(false)} aria-label="Fermer" style={{ background: "none", border: "none", color: "var(--success)", cursor: "pointer", fontSize: 15, lineHeight: 1, padding: 0 }}>×</button>
+          </div>
+        )}
 
         {/* C05 — Shell mobile dédié (flag ON + viewport mobile). Recouvre le Builder desktop-compressé.
             Flag OFF ou desktop = interface historique strictement inchangée (zéro régression). */}
@@ -1200,7 +1340,12 @@
           </>)}
           {pageId && !IS_UUID(pageId) && !liveId && !bootstrapError && <span style={{ color: MUTED, fontSize: 10 }}>Création de la page…</span>}
           {bootstrapError && <span style={{ color: "#EF4444", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }} title={bootstrapError}>⚠ {bootstrapError}</span>}
-          {!pageId && !isMobile && <span style={{ color: "#8A8478", fontSize: 9 }}>Mode démo</span>}
+          {/* Invité : « Mode démo » laissait croire que rien n'est gardé. C'est faux
+              depuis qu'on écrit un brouillon local — on dit ce qui se passe vraiment. */}
+          {guest && draftState === "saved" && <span style={{ color: "var(--success)", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}><Check size={10} /> Brouillon gardé ici</span>}
+          {guest && draftState === "too_big" && <span style={{ color: "#FBBF24", fontSize: 10 }} title="Le brouillon dépasse ce que le navigateur peut garder — créez un compte pour ne rien perdre.">⚠ Brouillon trop lourd</span>}
+          {guest && draftState === "unavailable" && <span style={{ color: "#FBBF24", fontSize: 10 }} title="Ce navigateur refuse d'enregistrer (navigation privée ?) — créez un compte pour garder votre page.">⚠ Rien ne peut être gardé ici</span>}
+          {!guest && !pageId && !isMobile && <span style={{ color: "#8A8478", fontSize: 9 }}>Mode démo</span>}
           <div style={{ flex: 1 }} />
 
           {/* Boutons Undo / Redo */}
@@ -1311,7 +1456,7 @@
           )}
 
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <button onClick={() => { setShowPublishPopup(true); if (pageStatus !== "published" && !publishing && IS_UUID(liveId)) void handlePublish() }}
+            <button onClick={() => { setShowPublishPopup(true); if (!guest && pageStatus !== "published" && !publishing && IS_UUID(liveId)) void handlePublish() }}
               className={pageStatus === "published" ? undefined : "da-btn-primary da-btn-primary--sm"}
               style={pageStatus === "published"
                 ? { display: "flex", alignItems: "center", gap: 6, background: "rgba(57,255,143,0.12)", border: "1px solid rgba(57,255,143,0.35)", borderRadius: 9, padding: "8px 18px", color: "var(--success)", fontSize: 14, fontWeight: 700, cursor: "pointer" }
@@ -1328,20 +1473,20 @@
                       {pageStatus==="published" ? <Globe size={20} color="var(--success)" /> : <Send size={20} color={G} />}
                     </div>
                     <div>
-                      <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>{pageStatus==="published" ? "Page en ligne" : "Publier la page"}</p>
-                      <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{pageStatus==="published" ? "Votre page est accessible" : "Rendre la page accessible"}</p>
+                      <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>{guest ? "Mettre en ligne" : pageStatus==="published" ? "Page en ligne" : "Publier la page"}</p>
+                      <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{guest ? "Dernière étape : votre compte" : pageStatus==="published" ? "Votre page est accessible" : "Rendre la page accessible"}</p>
                     </div>
                   </div>
 
                   {/* Statut */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, background: pageStatus==="published" ? "rgba(57,255,143,0.08)" : "rgba(255,255,255,0.04)", border: `1px solid ${pageStatus==="published" ? "rgba(57,255,143,0.2)" : "rgba(255,255,255,0.08)"}`, borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: pageStatus==="published" ? "var(--success)" : MUTED, boxShadow: pageStatus==="published" ? "0 0 6px var(--success)80" : "none" }} />
-                    <span style={{ color: pageStatus==="published" ? "var(--success)" : MUTED, fontSize: 12, fontWeight: 600 }}>{pageStatus==="published" ? "En ligne" : "Brouillon"}</span>
+                    <span style={{ color: pageStatus==="published" ? "var(--success)" : MUTED, fontSize: 12, fontWeight: 600 }}>{guest ? "Brouillon local" : pageStatus==="published" ? "En ligne" : "Brouillon"}</span>
                     <span style={{ color: MUTED, fontSize: 11, marginLeft: "auto" }}>{blocks.length} bloc{blocks.length!==1?"s":""}</span>
                   </div>
 
-                  {/* URL */}
-                  {pageSlug && (
+                  {/* URL — rien à montrer tant que la page n'a pas d'adresse. */}
+                  {pageSlug && !guest && (
                     <div style={{ marginBottom: 16 }}>
                       <p style={{ color: MUTED, fontSize: 10, margin: "0 0 6px", textTransform: "uppercase", letterSpacing: 1.5 }}>URL de la page</p>
                       <div style={{ background: "#0A0A0A", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
@@ -1357,7 +1502,7 @@
                   )}
 
                   {/* Stats rapides */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+                  <div style={{ display: guest ? "none" : "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
                     <div style={{ background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 10, padding: "10px", textAlign: "center" }}>
                       <p style={{ color: G, fontSize: 20, fontWeight: 700, margin: 0, fontFamily: "Fraunces, serif" }}>{pageStats.views}</p>
                       <p style={{ color: MUTED, fontSize: 9, margin: 0 }}>👁 Vues</p>
@@ -1371,9 +1516,9 @@
                   {/* Bouton principal — publie (brouillon) ou met à jour la page publique
                       (déjà publiée : réenregistre + revalide le cache ISR pour rendre les
                       derniers changements visibles immédiatement). */}
-                  <button onClick={handlePublish} disabled={publishing || !IS_UUID(liveId)} aria-busy={publishing}
+                  <button onClick={handlePublish} disabled={!guest && (publishing || !IS_UUID(liveId))} aria-busy={publishing}
                     className="da-btn-primary" style={{ width: "100%", justifyContent: "center", marginBottom: pageSlug ? 10 : 0 }}>
-                    {publishing ? (
+                    {guest ? <><Send size={14} /> Créer mon compte et publier</> : publishing ? (
                       <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
                         <span style={{display:"inline-block",width:14,height:14,border:"2px solid #08080880",borderTopColor:"#080808",borderRadius:"50%",animation:"mo-spin 0.7s linear infinite"}} />
                         {pageStatus==="published" ? "Mise à jour…" : "Publication…"}
@@ -1384,6 +1529,14 @@
                       </span>
                     ) : pageStatus==="published" ? <><RefreshCw size={14} /> Mettre à jour la page</> : <><Send size={14} /> Publier maintenant</>}
                   </button>
+
+                  {/* Invité : dire exactement ce qui va se passer, sans surprise. */}
+                  {guest && (
+                    <p style={{ color: MUTED, fontSize: 11, lineHeight: 1.45, margin: "0 0 10px" }}>
+                      Votre page est gardée dans ce navigateur. Le compte sert à lui donner une
+                      adresse et un QR code — vous la retrouverez telle quelle, rien à resaisir.
+                    </p>
+                  )}
 
                   {/* Erreur publication */}
                   {publishError && (
@@ -1404,6 +1557,22 @@
                       mobile (le panneau QR de la barre du haut est masqué sous 1024 px)
                       et parce que c'est le moment où il sert : la page vient d'être mise
                       en ligne, l'étape suivante est de l'imprimer. */}
+                  {/* Invité : voir à quoi ça ressemble avant de s'engager. Le QR n'encode
+                      pas encore d'adresse réelle — on le dit, et on n'offre pas de le
+                      télécharger : un QR imprimé qui ne mène nulle part serait pire que rien. */}
+                  {guest && (
+                    <div style={{ marginTop: 10, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                      <p style={{ color: MUTED, fontSize: 10, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 1, textAlign: "center" }}>Votre QR code</p>
+                      <div style={{ position: "relative", background: "#FFFFFF", borderRadius: 10, padding: 8, marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ filter: "blur(2.5px)", opacity: 0.55 }} aria-hidden><QRCanvas value="https://qrowg.com" size={132} /></div>
+                        <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#0A0A0A", fontSize: 11, fontWeight: 700, textAlign: "center", padding: 10 }}>Aperçu</span>
+                      </div>
+                      <p style={{ color: MUTED, fontSize: 11, lineHeight: 1.45, margin: 0, textAlign: "center" }}>
+                        Il sera généré, et téléchargeable, dès que la page aura une adresse.
+                      </p>
+                    </div>
+                  )}
+
                   {pageStatus === "published" && qrTarget && (
                     <div style={{ marginTop: 10, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
                       <p style={{ color: MUTED, fontSize: 10, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 1, textAlign: "center" }}>Votre QR code</p>
@@ -1607,11 +1776,13 @@
                           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "inherit", lineHeight: 1.2 }}>{def.label}</p>
                           <p style={{ margin: 0, fontSize: 10.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{def.description}</p>
                         </div>
-                        <button onClick={e => { e.stopPropagation(); toggleFav(type) }} title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                        <span role="button" tabIndex={0} onClick={e => { e.stopPropagation(); toggleFav(type) }}
+                          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); toggleFav(type) } }}
+                          title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"} aria-pressed={isFav(type)}
                           style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", flexShrink: 0, fontSize: 13, opacity: isFav(type) ? 1 : 0, color: isFav(type) ? "#FFD700" : MUTED }}
                           className="fav-star">
                           {isFav(type) ? "⭐" : "☆"}
-                        </button>
+                        </span>
                       </button>
                     ))}
                     {/* Récents */}
@@ -1625,11 +1796,13 @@
                           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "inherit", lineHeight: 1.2 }}>{def.label}</p>
                           <p style={{ margin: 0, fontSize: 10.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{def.description}</p>
                         </div>
-                        <button onClick={e => { e.stopPropagation(); toggleFav(type) }} title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                        <span role="button" tabIndex={0} onClick={e => { e.stopPropagation(); toggleFav(type) }}
+                          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); toggleFav(type) } }}
+                          title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"} aria-pressed={isFav(type)}
                           style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", flexShrink: 0, fontSize: 13, opacity: isFav(type) ? 1 : 0, color: isFav(type) ? "#FFD700" : MUTED }}
                           className="fav-star">
                           {isFav(type) ? "⭐" : "☆"}
-                        </button>
+                        </span>
                       </button>
                     ))}
                     {/* Favoris */}
@@ -1643,9 +1816,11 @@
                           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "inherit", lineHeight: 1.2 }}>{def.label}</p>
                           <p style={{ margin: 0, fontSize: 10.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{def.description}</p>
                         </div>
-                        <button onClick={e => { e.stopPropagation(); toggleFav(type) }} title="Retirer des favoris"
+                        <span role="button" tabIndex={0} onClick={e => { e.stopPropagation(); toggleFav(type) }}
+                          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); toggleFav(type) } }}
+                          title="Retirer des favoris" aria-pressed
                           style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", flexShrink: 0, fontSize: 13, opacity: 1, color: "#FFD700" }}
-                          className="fav-star">⭐</button>
+                          className="fav-star">⭐</span>
                       </button>
                     ))}
                     {/* Catégories normales en accordéon */}
@@ -1680,12 +1855,13 @@
                                 </div>
                                 <p style={{ margin: 0, fontSize: 10.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3 }}>{def.description}</p>
                               </div>
-                              <button onClick={e => { e.stopPropagation(); toggleFav(type) }}
-                                title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                              <span role="button" tabIndex={0} onClick={e => { e.stopPropagation(); toggleFav(type) }}
+                                onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); toggleFav(type) } }}
+                                title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"} aria-pressed={isFav(type)}
                                 style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", flexShrink: 0, fontSize: 13, opacity: isFav(type) ? 1 : 0, transition: "opacity 0.15s", color: isFav(type) ? "#FFD700" : MUTED }}
                                 className="fav-star">
                                 {isFav(type) ? "⭐" : "☆"}
-                              </button>
+                              </span>
                             </button>
                           )
                           const subHeader = { color: MUTED, fontSize: 8.5, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: 1.2, margin: "9px 6px 3px" }
@@ -1917,11 +2093,12 @@
                       <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "inherit", lineHeight: 1.2 }}>{def.label}</p>
                       <p style={{ margin: 0, fontSize: 10.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{def.description}</p>
                     </div>
-                    <button onClick={e => { e.stopPropagation(); toggleFav(type) }}
-                      title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                    <span role="button" tabIndex={0} onClick={e => { e.stopPropagation(); toggleFav(type) }}
+                      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); toggleFav(type) } }}
+                      title={isFav(type) ? "Retirer des favoris" : "Ajouter aux favoris"} aria-pressed={isFav(type)}
                       style={{ width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", flexShrink: 0, fontSize: 12, color: isFav(type) ? "#FFD700" : "rgba(255,255,255,0.25)" }}>
                       {isFav(type) ? "⭐" : "☆"}
-                    </button>
+                    </span>
                   </button>
                 ))}
               </div>
@@ -2061,7 +2238,8 @@
                     <Pencil size={9} /> {blocks.filter(b => b.draft).length} brouillon{blocks.filter(b => b.draft).length > 1 ? "s" : ""}
                   </span>
                 )}
-                {!pageId && <span style={{ color: "#8A8478", fontSize: 9, marginLeft: "auto" }}>Mode démo</span>}
+                {guest && draftState === "saved" && <span style={{ color: "var(--success)", fontSize: 9, marginLeft: "auto" }}>Brouillon gardé</span>}
+                {!guest && !pageId && <span style={{ color: "#8A8478", fontSize: 9, marginLeft: "auto" }}>Mode démo</span>}
               </div>}
 
               <div style={{ ...bgStyle(), borderRadius: 20, overflow: "hidden", minHeight: 200, position: "relative", boxShadow: "0 8px 60px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.05)" }}>

@@ -3429,7 +3429,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   bio: {
     label: "Bio", description: "Texte de presentation libre",
     icon: "✍️", color: "#C9A84C", category: "identity",
-    defaultContent: { text: "Bienvenue sur ma page !", align: "center" },
+    defaultContent: { text: "", align: "center" },
     fields: [
       { key: "text", label: "Présentation", type: "textarea", placeholder: "Décrivez qui vous êtes en quelques phrases…", maxRecommended: 500, suggestions: ["Je capture les émotions au quotidien et j'en fais des souvenirs qui durent.", "Je vous accompagne pas à pas vers vos objectifs, avec méthode et bienveillance.", "Passionné(e) et créatif(ve), je conçois des contenus qui marquent les esprits.", "Notre équipe transforme vos idées en projets concrets, avec exigence et proximité."] },
       { key: "align", label: "Alignement", type: "select", options: ["left", "center", "right"] },
@@ -3438,7 +3438,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   skills: {
     label: "Competences", description: "Tags de competences ou interets",
     icon: "🏷️", color: "#C9A84C", category: "identity",
-    defaultContent: { title: "Mes competences", tags: "React, Design, Marketing" },
+    defaultContent: { title: "", tags: "" },
     fields: [
       { key: "title", label: "Titre (optionnel)", type: "text", placeholder: "Mes competences" },
       { key: "tags", label: "Tags (separes par virgule)", type: "text", placeholder: "React, Design, Marketing", suggestions: ["React, Design, Marketing", "Photographie, Retouche, Studio", "Coaching, Nutrition, Bien-être", "SEO, Contenu, Réseaux sociaux"] },
@@ -3646,7 +3646,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   heading: {
     label: "Titre", description: "Titre ou sous-titre de section",
     icon: "📝", color: "#38BDF8", category: "info",
-    defaultContent: { text: "Mon titre", size: "medium", align: "center", color: "primary" },
+    defaultContent: { text: "", size: "medium", align: "center", color: "primary" },
     fields: [
       { key: "text", label: "Titre", type: "text", placeholder: "Mon titre de section" },
       { key: "subtitle", label: "Sous-titre", type: "text", placeholder: "Une phrase de description" },
@@ -4239,7 +4239,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   hero_banner: {
     label: "Hero Banner", description: "Grande bannière d ouverture premium",
     icon: "🚀", color: "#C9A84C", category: "layout",
-    defaultContent: { title: "Mon Titre Principal", subtitle: "Sous-titre accrocheur", cta_label: "Découvrir" },
+    defaultContent: { title: "", subtitle: "", cta_label: "" },
     fields: [
       { key: "bg_image", label: "Image de fond", type: "image" },
       { key: "bg_color", label: "Couleur de fond", type: "color" },
@@ -5057,7 +5057,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   founder_message: {
     label: "Message du fondateur", description: "Mot du dirigeant ou fondateur",
     icon: "✉️", color: "#38BDF8", category: "info",
-    defaultContent: { name: "Jean Dupont", role: "Fondateur & CEO", message: "Bienvenue ! Notre mission est de..." },
+    defaultContent: { name: "", role: "", message: "" },
     fields: [
       { key: "photo", label: "Photo", type: "image" },
       { key: "name", label: "Nom", type: "text", placeholder: "Jean Dupont" },

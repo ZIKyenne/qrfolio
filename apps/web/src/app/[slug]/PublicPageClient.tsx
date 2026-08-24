@@ -695,7 +695,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       )
     }
 
-    case "bio": return (
+    case "bio":
+      if (!c.text) return null            // rien saisi = rien affiché : jamais de texte d'exemple chez un client
+      return (
       <div style={{ padding: "6px 24px 16px", textAlign: (c.align as any) || "left" }}>
         <p style={{ color: TEXT, fontSize: 15, lineHeight: 1.75, margin: 0, fontFamily: FONT_B }}>{c.text}</p>
       </div>
@@ -703,6 +705,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
 
     case "skills": {
       const tags = (c.tags || "").split(",").map((t: string) => t.trim()).filter(Boolean)
+      if (!tags.length && !c.title) return null
       return (
         <div style={{ padding: "6px 24px 16px" }}>
           {c.title && <p style={{ color: MUTED, fontSize: 11, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px", fontFamily: FONT_B }}>{c.title}</p>}
@@ -802,7 +805,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       const hColors: Record<string, string> = { default: TEXT, primary: G, accent: theme.accent || "var(--success)", muted: MUTED }
       return (
         <div style={{ padding: "12px 24px 6px", textAlign: (c.align as any) || "center" }}>
-          <h2 style={{ fontFamily: FONT_D, fontSize: sizes[c.size || "medium"], color: hColors[c.color || "default"], fontWeight: 700, margin: "0 0 4px", lineHeight: 1.2 }}>{c.text || "Titre"}</h2>
+          <h2 style={{ fontFamily: FONT_D, fontSize: sizes[c.size || "medium"], color: hColors[c.color || "default"], fontWeight: 700, margin: "0 0 4px", lineHeight: 1.2 }}>{c.text}</h2>
           {c.subtitle && <p style={{ color: MUTED, fontSize: 13, margin: 0, fontFamily: FONT_B }}>{c.subtitle}</p>}
         </div>
       )
@@ -2623,7 +2626,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ background: `${G}06`, border: `1px solid ${G}15`, borderRadius: 15, padding: "17px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 13 }}>
               {c.photo ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.photo} alt="" width={52} height={52} style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} /> : <div style={{ width: 52, height: 52, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>👤</div>}
-              <div><p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_D }}>{c.name || "Jean Dupont"}</p><p style={{ color: G, fontSize: 12, margin: 0 }}>{c.role || "Fondateur & CEO"}</p></div>
+              <div>{c.name && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_D }}>{c.name}</p>}{c.role && <p style={{ color: G, fontSize: 12, margin: 0 }}>{c.role}</p>}</div>
             </div>
             <p style={{ color: MUTED, fontSize: 13, lineHeight: 1.7, margin: c.signature ? "0 0 11px" : "0", fontStyle: "italic" }}>&quot;{c.message}&quot;</p>
             {c.signature && <p style={{ color: G, fontSize: 15, fontFamily: "Georgia, serif", margin: 0, fontStyle: "italic" }}>{c.signature}</p>}

@@ -169,7 +169,7 @@ export function MobileBuilderShell(p: MobileBuilderShellProps) {
         side={chrome.sheetSide}
       >
         {effectiveSheet.open && effectiveSheet.tab === "add" && (
-          <BlockLibrary favorites={p.favorites} recents={p.recents} recoContext="default" mobile
+          <BlockLibrary favorites={p.favorites} recents={p.recents} recoContext="default" mobile hideHeader
             onAdd={addBlock} onToggleFavorite={p.onToggleFavorite} onRequestClose={closeSheet} />
         )}
 

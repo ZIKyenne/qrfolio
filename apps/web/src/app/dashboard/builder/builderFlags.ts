@@ -11,17 +11,15 @@
 
 import { useEffect, useState } from "react"
 
-function envFlag(name: string): boolean {
-  try {
-    const v = process.env[name]
-    return v === "1" || v === "true"
-  } catch {
-    return false
-  }
-}
-
 // Valeur ENV (build) — utilisée pour le rendu SSR et comme base d'hydratation.
-export const BUILDER_REDESIGN: boolean = envFlag("NEXT_PUBLIC_BUILDER_REDESIGN")
+//
+// La référence DOIT être écrite en toutes lettres : Next remplace `process.env.NEXT_PUBLIC_X`
+// par sa valeur au moment du build, mais uniquement quand la clé est littérale. L'ancienne
+// version lisait `process.env[nom]` avec une clé calculée — impossible à remplacer, donc
+// toujours `undefined` dans le navigateur. Résultat : la variable pouvait être posée sur
+// Vercel sans le moindre effet, et toute la coquille mobile restait inatteignable.
+export const BUILDER_REDESIGN: boolean =
+  process.env.NEXT_PUBLIC_BUILDER_REDESIGN === "1" || process.env.NEXT_PUBLIC_BUILDER_REDESIGN === "true"
 
 export const REDESIGN_STORAGE_KEY = "qrowg_builder_redesign"
 export const REDESIGN_QUERY_PARAM = "builderRedesign"

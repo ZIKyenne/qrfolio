@@ -29,6 +29,14 @@ export interface BlockLibraryProps {
   onRequestClose?: () => void
   /** Sert de titre a11y. */
   title?: string
+  /**
+   * Masque l'en-tête interne (titre + bouton fermer).
+   *
+   * Dans la coquille mobile, la bottom sheet porte déjà son propre titre et sa
+   * propre croix : la bibliothèque en affichait un second juste en dessous —
+   * deux fois « Ajouter un bloc », deux croix, l'une sous l'autre.
+   */
+  hideHeader?: boolean
 }
 
 export function BlockLibrary(props: BlockLibraryProps) {
@@ -113,7 +121,8 @@ export function BlockLibrary(props: BlockLibraryProps) {
     <div data-testid="block-library" onKeyDown={onKeyDown}
       style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, background: "#0A0A0A" }}>
 
-      {/* HEADER */}
+      {/* HEADER — masqué quand le conteneur en fournit déjà un (bottom sheet mobile). */}
+      {!props.hideHeader && (
       <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, padding: mobile ? "calc(env(safe-area-inset-top) + 10px) 12px 10px" : "12px 12px 8px" }}>
         <h2 style={{ margin: 0, fontSize: mobile ? 16 : 13, fontWeight: 800, color: "var(--ink, #F5F0E8)", flex: 1 }}>{props.title ?? "Ajouter un bloc"}</h2>
         {onRequestClose && (
@@ -121,6 +130,7 @@ export function BlockLibrary(props: BlockLibraryProps) {
             style={{ width: mobile ? 40 : 30, height: mobile ? 40 : 30, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, cursor: "pointer", color: MUTED, fontSize: 15 }}>✕</button>
         )}
       </div>
+      )}
 
       {/* RECHERCHE */}
       <div style={{ flexShrink: 0, padding: "0 12px 10px", position: "relative" }}>

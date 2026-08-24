@@ -866,7 +866,7 @@ export function spotifyEmbedUrl(url?: string): string {
 
 // ── Ajouter au calendrier : Google Agenda + fichier .ics (Apple/Outlook/tous) ──
 // Convertit "2025-06-15T19:00[:00]" (ou date seule) en tampon calendrier "20250615T190000"
-// en HEURE FLOTTANTE (aucun decalage de fuseau -> l'evenement s'affiche a l'heure saisie).
+// en HEURE FLOTTANTE (aucun decalage de fuseau -> l'événement s'affiche a l'heure saisie).
 export function toCalStamp(raw?: string): string | null {
   const t = (raw || "").trim()
   const m = t.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{1,2}):(\d{2})(?::(\d{2}))?/)

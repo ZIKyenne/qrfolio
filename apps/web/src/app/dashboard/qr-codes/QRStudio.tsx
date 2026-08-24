@@ -264,7 +264,7 @@ const QR_STATUS_CFG: Record<string, { label: string; dot: string; badge: string;
   draft:    { label: "Brouillon", dot: "#A8A190", badge: "rgba(138,132,120,0.12)", text: "#A8A190", desc: "Visible dans le dashboard uniquement" },
   paused:   { label: "En pause",  dot: "#F97316", badge: "rgba(249,115,22,0.12)",  text: "#F97316", desc: "Page indisponible affichee" },
   archived: { label: "Archivé",   dot: "#6B7280", badge: "rgba(107,114,128,0.12)", text: "#6B7280", desc: "Masque et bloque" },
-  expired:  { label: "Expire",    dot: "var(--danger)", badge: "rgba(255,107,107,0.12)", text: "var(--danger)", desc: "Acces expire" },
+  expired:  { label: "Expire",    dot: "var(--danger)", badge: "rgba(255,107,107,0.12)", text: "var(--danger)", desc: "Accès expire" },
 }
 
 // Sous l'aperçu : bloc stats + éditeur de destination RETIRÉS du flux principal (audit §2/§9 : les stats
@@ -999,7 +999,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       setSaved(true); setTimeout(() => setSaved(false), 2000)
     } catch {
       setSaving(false)
-      setSaveErr("Erreur reseau")
+      setSaveErr("Erreur réseau")
     }
   }, [active, fg, bg, corner, ecLevel, styleConf])
 
@@ -1080,7 +1080,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         toast.success("Copie créée en brouillon : limite de QR actifs atteinte. Activez-la après avoir mis un autre QR en pause.")
       }
     } catch {
-      toast.error("Duplication impossible : erreur reseau")
+      toast.error("Duplication impossible : erreur réseau")
     } finally {
       setDupId(null)
     }
@@ -1221,7 +1221,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       setQRCodes(prev => prev.map(q => q.id === active.id
         ? { ...q, dest_override:d.dest_override, dest_history:d.dest_history??[] } : q))
       setDestMode("view"); setDestSaved(true); setTimeout(()=>setDestSaved(false), 2500)
-    } catch { setDestError("Erreur reseau") }
+    } catch { setDestError("Erreur réseau") }
     setDestLoading(false); setDestConfirm(false)
   }
   async function removeDest() {
@@ -1258,14 +1258,14 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   }
 
   const SUPP_TPLS: SuppTpl[] = [
-    { id:"qr-only",     label:"QR seul",           emoji:"▣", w:800,  h:800,  plan:"free",     cat:"Base",       desc:"QR Code sans decoration" , support:"QR seul"},
+    { id:"qr-only",     label:"QR seul",           emoji:"▣", w:800,  h:800,  plan:"free",     cat:"Base",       desc:"QR Code sans décoration" , support:"QR seul"},
     { id:"a4-poster",   label:"Affiche A4",         emoji:"📋", w:795,  h:1122, plan:"free",     cat:"Print",      desc:"Portrait A4 avec titre et fond" , support:"Affiche"},
     { id:"flyer",       label:"Flyer",              emoji:"📄", w:795,  h:561,  plan:"free",     cat:"Print",      desc:"Demi A4 paysage" , support:"Flyer"},
     { id:"sticker",     label:"Sticker vitrine",    emoji:"🏷️",  w:600,  h:600,  plan:"free",     cat:"Print",      desc:"Carré 6cm avec cadre" , support:"Sticker"},
     { id:"table-card",  label:"Carte de table",     emoji:"🪧",  w:900,  h:506,  plan:"free",      cat:"Restaurant", desc:"Format paysage 9x5cm" , support:"Carte de table"},
     { id:"menu-qr",     label:"Menu QR",            emoji:"🍽",  w:600,  h:900,  plan:"free",      cat:"Restaurant", desc:"Carte portrait avec titre menu" , support:"Menu"},
     { id:"business",    label:"Carte de visite",    emoji:"💳", w:1063, h:591,  plan:"free",      cat:"Business",   desc:"Format CR80 standard" , support:"Carte de visite"},
-    { id:"event-badge", label:"Badge evenement",    emoji:"🎫", w:680,  h:400,  plan:"free",      cat:"Event",      desc:"Badge horizontal 85x50mm" , support:"Badge"},
+    { id:"event-badge", label:"Badge événement",    emoji:"🎫", w:680,  h:400,  plan:"free",      cat:"Event",      desc:"Badge horizontal 85x50mm" , support:"Badge"},
     { id:"story",       label:"Story Instagram",    emoji:"📱", w:1080, h:1920, plan:"free", cat:"Social",     desc:"9:16 vertical stories" , support:"Story"},
     { id:"post",        label:"Post Instagram",     emoji:"🟫", w:1080, h:1080, plan:"free", cat:"Social",     desc:"Carré 1:1" , support:"Post"},
 
@@ -2158,7 +2158,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       reader.onload = (e) => {
         const dataUrl = e.target?.result as string
         setStyleConf(p => ({ ...p, logoUrl: dataUrl }))
-        // Si ECC n'est pas deja H, le forcer (effectiveEcc s'en charge automatiquement)
+        // Si ECC n'est pas déjà H, le forcer (effectiveEcc s'en charge automatiquement)
         setLogoUploading(false)
       }
       reader.readAsDataURL(file)
@@ -2285,7 +2285,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       setQRCodes(prev => prev.map(q => ({ ...q, ...payload })))
       setApplyAllOk(true); setTimeout(()=>setApplyAllOk(false), 2500)
     } catch {
-      toast.error("Application impossible : erreur reseau")
+      toast.error("Application impossible : erreur réseau")
     }
   }
 

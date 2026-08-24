@@ -21,7 +21,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     defaultContent: { name: "", tagline: "", badge: "" },
     fields: [
       { key: "name", label: "Nom complet", type: "text", placeholder: "Jean Dupont", hint: "Laissé vide, il est masqué sur la page (jamais de faux nom affiché)." },
-      { key: "tagline", label: "Accroche", type: "text", placeholder: "Developpeur, artiste, coach...", maxRecommended: 80, suggestions: ["Photographe à Reims", "Coach sportif indépendant", "Consultant freelance", "Créateur de contenu", "Agent immobilier", "Restaurant & bar à cocktails"] },
+      { key: "tagline", label: "Accroche", type: "text", placeholder: "Développeur, artiste, coach...", maxRecommended: 80, suggestions: ["Photographe à Reims", "Coach sportif indépendant", "Consultant freelance", "Créateur de contenu", "Agent immobilier", "Restaurant & bar à cocktails"] },
       { key: "avatar", label: "Photo de profil", type: "image", cropAspect: "square" },
       { key: "hide_avatar", label: "Afficher la photo", type: "select", options: ["Afficher", "Masquer"], hint: "« Masquer » = aucune photo ni initiale sur la page (utile si vous n'avez pas de visuel)." },
       { key: "avatar_shape", label: "Forme de l'avatar", type: "select", options: ["cercle", "arrondi", "squircle", "hexagone", "carré", "diamant"] },
@@ -32,7 +32,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   bio: {
-    label: "Bio", description: "Texte de presentation libre",
+    label: "Bio", description: "Texte de présentation libre",
     icon: "✍️", color: "#C9A84C", category: "identity",
     defaultContent: { text: "", align: "center" },
     fields: [
@@ -41,17 +41,17 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   skills: {
-    label: "Competences", description: "Tags de competences ou interets",
+    label: "Compétences", description: "Tags de compétences ou interets",
     icon: "🏷️", color: "#C9A84C", category: "identity",
     defaultContent: { title: "", tags: "" },
     fields: [
-      { key: "title", label: "Titre (optionnel)", type: "text", placeholder: "Mes competences" },
+      { key: "title", label: "Titre (optionnel)", type: "text", placeholder: "Mes compétences" },
       { key: "tags", label: "Tags (separes par virgule)", type: "text", placeholder: "React, Design, Marketing", suggestions: ["React, Design, Marketing", "Photographie, Retouche, Studio", "Coaching, Nutrition, Bien-être", "SEO, Contenu, Réseaux sociaux"] },
     ],
   },
   // ── Actions ───────────────────────────────────────────────────────────────
   cta_button: {
-    label: "Bouton CTA", description: "Bouton d'appel a l'action",
+    label: "Bouton CTA", description: "Bouton d'appel à l'action",
     icon: "⚡", color: "#39FF8F", category: "actions",
     defaultContent: { label: "Me contacter", url: "#", style: "gold", icon: "" },
     fields: [
@@ -65,16 +65,16 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   calendly: {
     label: "Calendly", description: "Bouton de prise de RDV",
     icon: "📅", color: "#39FF8F", category: "actions",
-    defaultContent: { label: "Reserver un creneau", url: "https://calendly.com", description: "" },
+    defaultContent: { label: "Réserver un creneau", url: "https://calendly.com", description: "" },
     fields: [
-      { key: "label", label: "Titre", type: "text", placeholder: "Reserver un appel" },
+      { key: "label", label: "Titre", type: "text", placeholder: "Réserver un appel" },
       { key: "url", label: "Lien Calendly", type: "url", placeholder: "https://calendly.com/monnom" },
       { key: "description", label: "Description", type: "text", placeholder: "30 min - Gratuit" },
     ],
   },
   // ── Reseaux sociaux ───────────────────────────────────────────────────────
   social_links: {
-    label: "Reseaux sociaux", description: "Liens vers tes profils",
+    label: "Réseaux sociaux", description: "Liens vers vos profils",
     icon: "📲", color: "#1DA1F2", category: "social",
     defaultContent: {},
     fields: SOCIAL_NETWORKS.map(n => ({
@@ -160,7 +160,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     icon: "🍽️", color: "#EF4444", category: "commerce",
     defaultContent: { category: "Entrees" },
     fields: [
-      { key: "category", label: "Categorie", type: "text", placeholder: "Entrees, Plats, Desserts..." },
+      { key: "category", label: "Catégorie", type: "text", placeholder: "Entrées, Plats, Desserts..." },
       { key: "item1_name", label: "Plat 1 — Nom", type: "text", placeholder: "Salade cesar" },
       { key: "item1_price", label: "Plat 1 — Prix", type: "text", placeholder: "12€" },
       { key: "item1_desc", label: "Plat 1 — Description", type: "text", placeholder: "Laitue, parmesan, croutons" },
@@ -197,7 +197,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     fields: [
       { key: "title", label: "Titre section", type: "text", placeholder: "Mes services" },
       { key: "s1_icon", label: "Service 1 — Emoji", type: "text", placeholder: "💻" },
-      { key: "s1_name", label: "Service 1 — Nom", type: "text", placeholder: "Developpement web" },
+      { key: "s1_name", label: "Service 1 — Nom", type: "text", placeholder: "Développement web" },
       { key: "s1_desc", label: "Service 1 — Description", type: "text", placeholder: "Sites et applications" },
       { key: "s2_icon", label: "Service 2 — Emoji", type: "text", placeholder: "🎨" },
       { key: "s2_name", label: "Service 2 — Nom", type: "text", placeholder: "Design" },
@@ -222,7 +222,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   gallery: {
-    label: "Galerie photos", description: "Grille de 2 a 6 photos",
+    label: "Galerie photos", description: "Grille de 2 à 6 photos",
     icon: "🎨", color: "#A78BFA", category: "media",
     defaultContent: { columns: "3", layout: "grid" },
     fields: [
@@ -316,7 +316,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   testimonials: {
-    label: "Temoignages", description: "Avis et retours clients",
+    label: "Témoignages", description: "Avis et retours clients",
     icon: "⭐", color: "#FFD700", category: "info",
     defaultContent: {},
     fields: [
@@ -385,7 +385,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     fields: [
       { key: "label", label: "Nom du lieu", type: "text", placeholder: "Mon restaurant" },
       { key: "address", label: "Adresse", type: "text", placeholder: "12 rue de la Paix, 75001 Paris" },
-      { key: "transport", label: "Acces transport", type: "text", placeholder: "Metro Opera - Ligne 3" },
+      { key: "transport", label: "Accès transport", type: "text", placeholder: "Metro Opera - Ligne 3" },
     ],
   },
   opening_hours: {
@@ -422,11 +422,11 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   reservation_form: {
-    label: "Formulaire reservation", description: "Formulaire pour restaurants",
+    label: "Formulaire réservation", description: "Formulaire pour restaurants",
     icon: "📋", color: "#EF4444", category: "business",
-    defaultContent: { title: "Reserver une table", button_label: "Reserver" },
+    defaultContent: { title: "Réserver une table", button_label: "Reserver" },
     fields: [
-      { key: "title", label: "Titre", type: "text", placeholder: "Reserver une table" },
+      { key: "title", label: "Titre", type: "text", placeholder: "Réserver une table" },
       { key: "phone", label: "Telephone direct", type: "text", placeholder: "+33 1 23 45 67 89" },
       { key: "button_label", label: "Texte bouton", type: "text", placeholder: "Reserver" },
     ],
@@ -456,7 +456,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   },
   // ── Event ─────────────────────────────────────────────────────────────────
   countdown: {
-    label: "Compte a rebours", description: "Decompte live jusqu a une echeance (offre, lancement, evenement)",
+    label: "Compte a rebours", description: "Decompte live jusqu a une echeance (offre, lancement, événement)",
     icon: "⏳", color: "#EF4444", category: "event",
     defaultContent: { title: "Offre limitee", subtitle: "Profitez-en avant la fin", target: "", expired_text: "C est termine", cta_label: "", cta_url: "", accent: "#EF4444" },
     fields: [
@@ -470,9 +470,9 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   event_info: {
-    label: "Infos evenement", description: "Details d'un evenement",
+    label: "Infos événement", description: "Details d'un événement",
     icon: "🎉", color: "#EC4899", category: "event",
-    defaultContent: { name: "Mon evenement" },
+    defaultContent: { name: "Mon événement" },
     fields: [
       { key: "name", label: "Nom", type: "text", placeholder: "Soiree de lancement" },
       { key: "date", label: "Date", type: "text", placeholder: "Samedi 28 juin 2025" },
@@ -1976,11 +1976,11 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   download_file: {
-    label: "Telecharger un fichier", description: "Bouton de telechargement document",
+    label: "Télécharger un fichier", description: "Bouton de téléchargement document",
     icon: "📄", color: "#A78BFA", category: "actions",
-    defaultContent: { label: "Telecharger la brochure", type_doc: "PDF" },
+    defaultContent: { label: "Télécharger la brochure", type_doc: "PDF" },
     fields: [
-      { key: "label", label: "Texte", type: "text", placeholder: "Telecharger la brochure" },
+      { key: "label", label: "Texte", type: "text", placeholder: "Télécharger la brochure" },
       { key: "url", label: "Lien du fichier", type: "file", placeholder: "https://..." },
       { key: "type_doc", label: "Type", type: "select", options: ["PDF","Brochure","CV","Carte","Catalogue","Tarif"] },
       { key: "icon", label: "Emoji", type: "text", placeholder: "📄" },
@@ -2012,12 +2012,12 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   table_booking: {
-    label: "Reserver une table", description: "Reservation restaurant externe",
+    label: "Réserver une table", description: "Réservation restaurant externe",
     icon: "🍽️", color: "#EF4444", category: "actions",
-    defaultContent: { label: "Reserver une table", platform: "TheFork" },
+    defaultContent: { label: "Réserver une table", platform: "TheFork" },
     fields: [
-      { key: "label", label: "Texte", type: "text", placeholder: "Reserver une table" },
-      { key: "url", label: "Lien reservation", type: "url", placeholder: "https://..." },
+      { key: "label", label: "Texte", type: "text", placeholder: "Réserver une table" },
+      { key: "url", label: "Lien réservation", type: "url", placeholder: "https://..." },
       { key: "platform", label: "Plateforme", type: "select", options: ["TheFork","Zenchef","OpenTable","URL personnalisee"] },
     ],
   },
@@ -2072,11 +2072,11 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   app_download: {
-    label: "Telecharger l application", description: "Liens App Store et Google Play",
+    label: "Télécharger l application", description: "Liens App Store et Google Play",
     icon: "📲", color: "#818CF8", category: "actions",
-    defaultContent: { label: "Telecharger l application", ios_url: "", android_url: "" },
+    defaultContent: { label: "Télécharger l application", ios_url: "", android_url: "" },
     fields: [
-      { key: "label", label: "Titre", type: "text", placeholder: "Telecharger l application" },
+      { key: "label", label: "Titre", type: "text", placeholder: "Télécharger l application" },
       { key: "ios_url", label: "Lien App Store", type: "url", placeholder: "https://apps.apple.com/..." },
       { key: "android_url", label: "Lien Google Play", type: "url", placeholder: "https://play.google.com/..." },
     ],
@@ -2104,7 +2104,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   booking_button: {
-    label: "Prendre rendez-vous", description: "Reservation autre que Calendly",
+    label: "Prendre rendez-vous", description: "Réservation autre que Calendly",
     icon: "📅", color: "#38BDF8", category: "actions",
     defaultContent: { label: "Prendre rendez-vous", platform: "URL personnalisee" },
     fields: [
@@ -2184,23 +2184,23 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   journey: {
     label: "Parcours", description: "Chiffres cles et faits marquants",
     icon: "🚀", color: "#C9A84C", category: "identity",
-    defaultContent: { title: "Mon parcours", line_1: "🚀 5 ans d experience", line_2: "💼 20+ projets realises" },
+    defaultContent: { title: "Mon parcours", line_1: "🚀 5 ans d expérience", line_2: "💼 20+ projets realises" },
     fields: [
       { key: "title", label: "Titre section", type: "text", placeholder: "Mon parcours" },
-      { key: "line_1", label: "Ligne 1", type: "text", placeholder: "🚀 5 ans d experience en SaaS" },
+      { key: "line_1", label: "Ligne 1", type: "text", placeholder: "🚀 5 ans d expérience en SaaS" },
       { key: "line_2", label: "Ligne 2", type: "text", placeholder: "💼 20+ projets realises" },
       { key: "line_3", label: "Ligne 3", type: "text", placeholder: "🌍 Clients dans 8 pays" },
       { key: "line_4", label: "Ligne 4", type: "text", placeholder: "🎯 Specialiste Next.js" },
     ],
   },
   expertise: {
-    label: "Expertises", description: "Competences avec barres de progression",
+    label: "Expertises", description: "Compétences avec barres de progression",
     icon: "📊", color: "#C9A84C", category: "identity",
     defaultContent: { title: "Mes expertises" },
     fields: [
       { key: "title", label: "Titre section", type: "text", placeholder: "Mes expertises" },
       { key: "s1_icon", label: "Expertise 1 — Icone", type: "text", placeholder: "💻" },
-      { key: "s1_name", label: "Expertise 1 — Nom", type: "text", placeholder: "Developpement web" },
+      { key: "s1_name", label: "Expertise 1 — Nom", type: "text", placeholder: "Développement web" },
       { key: "s1_level", label: "Expertise 1 — Niveau (1-5)", type: "select", options: ["1","2","3","4","5"] },
       { key: "s2_icon", label: "Expertise 2 — Icone", type: "text", placeholder: "🎨" },
       { key: "s2_name", label: "Expertise 2 — Nom", type: "text", placeholder: "UI/UX Design" },
@@ -2269,7 +2269,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "company_name", label: "Nom de l entreprise", type: "text", placeholder: "Studio PIXEL" },
       { key: "sector", label: "Secteur / Type", type: "text", placeholder: "Agence digitale" },
       { key: "website", label: "Site web", type: "url", placeholder: "https://monentreprise.com" },
-      { key: "founded_year", label: "Annee de creation", type: "text", placeholder: "2019" },
+      { key: "founded_year", label: "Annee de création", type: "text", placeholder: "2019" },
       { key: "team_size", label: "Taille equipe", type: "text", placeholder: "5 personnes" },
     ],
   },

@@ -540,7 +540,7 @@ export default function ProfilePage() {
       } else {
         showToast(d.error || "Erreur suppression", "err")
       }
-    } catch { showToast("Erreur reseau", "err") }
+    } catch { showToast("Erreur réseau", "err") }
     setDeletingDomain(null)
   }
 
@@ -559,7 +559,7 @@ export default function ProfilePage() {
       } else {
         showToast(d.error || "Erreur", "err")
       }
-    } catch { showToast("Erreur reseau", "err") }
+    } catch { showToast("Erreur réseau", "err") }
     setSettingPrimary(null)
   }
 
@@ -653,7 +653,7 @@ export default function ProfilePage() {
       const sb = createClient()
       const { data } = await sb.from("profiles").select("id").eq("username", clean2).single()
       if (data) {
-        setUsernameStatus("taken"); setUsernameMsg("Deja utilise")
+        setUsernameStatus("taken"); setUsernameMsg("Déjà utilise")
       } else {
         setUsernameStatus("ok"); setUsernameMsg("Disponible")
       }
@@ -662,7 +662,7 @@ export default function ProfilePage() {
 
   async function saveProfile() {
     if (!profile || !hasChanges) return
-    if (usernameStatus === "taken") { showToast("Username deja utilise", "err"); return }
+    if (usernameStatus === "taken") { showToast("Username déjà utilise", "err"); return }
     if (usernameStatus === "invalid") { showToast("Username invalide", "err"); return }
     if (form.username && form.username.length < 3) { showToast("Username trop court", "err"); return }
     setSaving(true)
@@ -762,7 +762,7 @@ export default function ProfilePage() {
     const nm  = newKeyName.trim()
     const res = await fetch("/api/keys", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: nm }) })
     const d   = await res.json().catch(() => ({}))
-    if (!res.ok) { showToast(d.error || "Erreur creation cle", "err"); return }
+    if (!res.ok) { showToast(d.error || "Erreur création cle", "err"); return }
     setApiKeys(prev => [d.record, ...prev])
     setNewKeyCreated(d.key)  // afficher UNE FOIS la cle complete (generee serveur, hashee)
     setNewKeyName("")
@@ -1508,7 +1508,7 @@ export default function ProfilePage() {
                       <p style={{ color:MUTED, fontSize:11, margin:0, lineHeight:1.5 }}>
                         {activityFilter === "all"
                           ? "Vos actions apparaitront ici au fur et a mesure"
-                          : "Aucun evenement de ce type"}
+                          : "Aucun événement de ce type"}
                       </p>
                     </div>
                   ) : (
@@ -1925,7 +1925,7 @@ export default function ProfilePage() {
                       <div style={{ display:"flex", alignItems:"center", gap:5 }}>
                         <div style={{ width:5, height:5, borderRadius:"50%", background:emailVerified?"var(--success)":"var(--accent)" }}/>
                         <span style={{ color:emailVerified?"var(--success)":"var(--accent)", fontSize:10 }}>
-                          {emailVerified ? "Email verifie" : "Email non verifie"}
+                          {emailVerified ? "Email vérifié" : "Email non vérifié"}
                         </span>
                       </div>
                     </div>
@@ -2048,7 +2048,7 @@ export default function ProfilePage() {
                 <div style={{ display:"flex", gap:7, flexWrap:"wrap" as const }}>
                   <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", background:emailVerified?"rgba(57,255,143,0.08)":"rgba(201,162,77,0.08)", border:`1px solid ${emailVerified?"rgba(57,255,143,0.2)":"rgba(201,162,77,0.2)"}`, borderRadius:20, fontSize:10, color:emailVerified?"var(--success)":"var(--accent)" }}>
                     {emailVerified ? <ShieldCheck size={11}/> : <ShieldOff size={11}/>}
-                    Email {emailVerified?"verifie":"non verifie"}
+                    Email {emailVerified?"verifie":"non vérifié"}
                   </span>
                   <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", background:"rgba(57,255,143,0.08)", border:"1px solid rgba(57,255,143,0.2)", borderRadius:20, fontSize:10, color:"var(--success)" }}>
                     <Shield size={11}/>
@@ -2868,7 +2868,7 @@ export default function ProfilePage() {
                 <div style={{ padding:"10px 13px", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:9 }}>
                   <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                     {([
-                      { icon:Shield,     text:"La cle complete n'est affichee qu'une seule fois a la creation" },
+                      { icon:Shield,     text:"La cle complete n'est affichee qu'une seule fois a la création" },
                       { icon:Key,        text:"Seul un hash SHA-256 est stocke en base de donnees" },
                       { icon:AlertTriangle, text:"Revoquez immediatement toute cle compromise" },
                     ] as const).map((info, i) => (
@@ -3215,7 +3215,7 @@ export default function ProfilePage() {
                 <p style={{ color:MUTED, fontSize:9, textTransform:"uppercase" as const, letterSpacing:1.2, margin:"0 0 10px" }}>Rapports automatiques</p>
                 <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
                   {([
-                    { key:"report_weekly"  as const, label:"Resume hebdomadaire", desc:"Stats de la semaine chaque lundi matin",   plan:"free" },
+                    { key:"report_weekly"  as const, label:"Résumé hebdomadaire", desc:"Stats de la semaine chaque lundi matin",   plan:"free" },
                     { key:"report_monthly" as const, label:"Rapport mensuel",     desc:"Bilan complet du mois + recommandations",  plan:"pro"  },
                   ]).map(item => {
                     const locked = item.plan === "pro" && currentPlan === "free"

@@ -1320,9 +1320,16 @@
 
         {/* TOPBAR (masquee en mode Apercu plein ecran sur mobile) */}
         <div style={{ height: 50, background: "#0D0D0D", borderBottom: "1px solid rgba(201,168,76,0.12)", display: (preview && isMobile) ? "none" : "flex", alignItems: "center", padding: isMobile ? "0 9px" : "0 14px", gap: isMobile ? 6 : 10, flexShrink: 0, zIndex: 20 }}>
-          <a href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 4, textDecoration: "none", color: G, fontFamily: "Fraunces, serif", fontSize: 16, fontWeight: 700, textTransform: "lowercase" }}>← QRowg</a>
-          <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />
-          <input value={pageName} onChange={e => { const v = e.target.value; setPageName(v); undoRedo.push({ blocks: blocksKbRef.current, theme: themeRef.current, name: v }, "pagename") }} style={{ background: "transparent", border: "none", color: "#F5F0E8", fontSize: 13, fontWeight: 600, outline: "none", width: isMobile ? 96 : 160, minWidth: 0 }} />
+          <a href="/dashboard" aria-label="Retour au tableau de bord"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0, textDecoration: "none", color: G, fontFamily: "Fraunces, serif", fontSize: 16, fontWeight: 700, textTransform: "lowercase", whiteSpace: "nowrap", ...(isMobile ? { width: 30, fontSize: 19 } : {}) }}>
+            {isMobile ? "←" : "← QRowg"}
+          </a>
+          {!isMobile && <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />}
+          {/* Le nom se coupait au milieu d'un mot, sans point de suspension : on lui
+              laisse la place restante et on l'ellipse proprement. */}
+          <input value={pageName} onChange={e => { const v = e.target.value; setPageName(v); undoRedo.push({ blocks: blocksKbRef.current, theme: themeRef.current, name: v }, "pagename") }}
+            aria-label="Nom de la page"
+            style={{ background: "transparent", border: "none", color: "#F5F0E8", fontSize: 13, fontWeight: 600, outline: "none", minWidth: 0, textOverflow: "ellipsis", ...(isMobile ? { flex: "1 1 0" } : { width: 160 }) }} />
           {/* Statut de sauvegarde. Flag ON (C01) : indicateur unifié tokenisé + a11y (role=status/aria-live).
               Flag OFF : coquille historique inchangée (zéro régression). */}
           {BUILDER_REDESIGN ? (
@@ -1342,9 +1349,12 @@
           {bootstrapError && <span style={{ color: "#EF4444", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }} title={bootstrapError}>⚠ {bootstrapError}</span>}
           {/* Invité : « Mode démo » laissait croire que rien n'est gardé. C'est faux
               depuis qu'on écrit un brouillon local — on dit ce qui se passe vraiment. */}
-          {guest && draftState === "saved" && <span style={{ color: "var(--success)", fontSize: 10, display: "flex", alignItems: "center", gap: 3 }}><Check size={10} /> Brouillon gardé ici</span>}
-          {guest && draftState === "too_big" && <span style={{ color: "#FBBF24", fontSize: 10 }} title="Le brouillon dépasse ce que le navigateur peut garder — créez un compte pour ne rien perdre.">⚠ Brouillon trop lourd</span>}
-          {guest && draftState === "unavailable" && <span style={{ color: "#FBBF24", fontSize: 10 }} title="Ce navigateur refuse d'enregistrer (navigation privée ?) — créez un compte pour garder votre page.">⚠ Rien ne peut être gardé ici</span>}
+          {/* Sur mobile, la barre du haut n'a pas la place : le logo passait à la ligne
+              et le nom de la page se coupait au milieu d'un mot. Le bandeau du canvas,
+              juste en dessous, porte déjà la même information — celle-ci est en trop. */}
+          {guest && !isMobile && draftState === "saved" && <span style={{ color: "var(--success)", fontSize: 10, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}><Check size={10} /> Brouillon gardé ici</span>}
+          {guest && draftState === "too_big" && <span style={{ color: "#FBBF24", fontSize: 10, whiteSpace: "nowrap" }} title="Le brouillon dépasse ce que le navigateur peut garder — créez un compte pour ne rien perdre.">⚠ {isMobile ? "Trop lourd" : "Brouillon trop lourd"}</span>}
+          {guest && draftState === "unavailable" && <span style={{ color: "#FBBF24", fontSize: 10, whiteSpace: "nowrap" }} title="Ce navigateur refuse d'enregistrer (navigation privée ?) — créez un compte pour garder votre page.">⚠ {isMobile ? "Non gardé" : "Rien ne peut être gardé ici"}</span>}
           {!guest && !pageId && !isMobile && <span style={{ color: "#8A8478", fontSize: 9 }}>Mode démo</span>}
           <div style={{ flex: 1 }} />
 

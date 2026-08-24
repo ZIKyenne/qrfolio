@@ -549,10 +549,18 @@ export default function TemplatesPage() {
 
                     {/* Actions */}
                     <div style={{ display: "flex", gap: 7 }}>
-                      {/* Aperçu (masqué sur mobile : tap sur la carte = aperçu) */}
-                      {!isMobile && <button type="button" onClick={(e) => { e.stopPropagation(); setPreview(template.id) }} className="dam-selbar-sec" style={{ flex: "none", padding: "11px 17px", fontSize: 13.5 }}>
-                        <Eye size={14} /> Aperçu
-                      </button>}
+                      {/* Aperçu. Sur mobile, taper la carte l'ouvre aussi — mais rien ne
+                          le laissait deviner, et « Utiliser » attirait tous les appuis :
+                          on passait à côté de l'aperçu ET de l'assistant qui vit dedans.
+                          D'où ce bouton compact, réduit à l'icône faute de place. */}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setPreview(template.id) }}
+                        className="dam-selbar-sec" aria-label={`Aperçu de ${template.name}`}
+                        title={isMobile ? "Aperçu" : undefined}
+                        style={isMobile
+                          ? { flex: "none", width: 44, padding: "11px 0", justifyContent: "center", fontSize: 13.5 }
+                          : { flex: "none", padding: "11px 17px", fontSize: 13.5 }}>
+                        <Eye size={14} />{!isMobile && " Aperçu"}
+                      </button>
 
                       {/* Utiliser — primaire or (halo/reflet) hors état verrouillé */}
                       <button type="button" onClick={(e) => { e.stopPropagation(); if (locked) { router.push("/upgrade"); return } setNamingFor(template.id) }}
@@ -744,6 +752,7 @@ export function NamingModal({ template, blockCount, onClose, onCreate, guest,
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [lookOpen, setLookOpen] = useState(false)
 
   // Slug d'affichage (sans suffixe, cap 60) via le coeur pur partage @/lib/slug.
   const slugify = (input: string) => slugifyBase(input, 60)
@@ -805,8 +814,26 @@ export function NamingModal({ template, blockCount, onClose, onCreate, guest,
           <button onClick={onClose} style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", padding: 4 }}><X size={18} /></button>
         </div>
 
+        {/* Apparence repliable. Sur mobile, ces deux réglages occupaient tout l'écran
+            et enterraient le champ « nom » et le bouton : un visiteur devait faire
+            défiler une page entière de pastilles avant de pouvoir avancer. */}
+        {(styleOptions?.length || layoutOptions?.length) ? (
+          <button type="button" onClick={() => setLookOpen(v => !v)} aria-expanded={lookOpen}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, marginBottom: lookOpen ? 12 : 16,
+              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 10,
+              padding: "10px 12px", color: MUTED, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+            <span style={{ width: 12, height: 12, borderRadius: "50%", flexShrink: 0, border: "1px solid rgba(255,255,255,0.2)",
+              background: styleOptions?.find(s => s.key === styleKey)?.color || "var(--accent)" }} />
+            <span>Apparence</span>
+            <span style={{ marginLeft: "auto", color: "#6f6656", fontWeight: 500 }}>
+              {lookOpen ? "Masquer" : (styleOptions?.find(s => s.key === styleKey)?.label || "Style d'origine")}
+            </span>
+            <span aria-hidden style={{ transform: lookOpen ? "rotate(180deg)" : "none", transition: "transform .18s", lineHeight: 1 }}>⌄</span>
+          </button>
+        ) : null}
+
         {/* Style visuel (T3.b — moteur de templates) : un même métier, décliné en plusieurs ambiances. */}
-        {styleOptions && styleOptions.length > 0 && (
+        {lookOpen && styleOptions && styleOptions.length > 0 && (
           <div style={{ marginBottom: 16 }} data-testid="naming-style">
             <label style={{ color: MUTED, fontSize: 11, display: "block", marginBottom: 7, fontWeight: 600 }}>Style visuel</label>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -826,7 +853,7 @@ export function NamingModal({ template, blockCount, onClose, onCreate, guest,
         )}
 
         {/* Disposition (T3.b) : densité des blocs (Standard / Compact / Aéré). */}
-        {layoutOptions && layoutOptions.length > 0 && (
+        {lookOpen && layoutOptions && layoutOptions.length > 0 && (
           <div style={{ marginBottom: 18 }} data-testid="naming-layout">
             <label style={{ color: MUTED, fontSize: 11, display: "block", marginBottom: 7, fontWeight: 600 }}>Disposition</label>
             <div style={{ display: "flex", gap: 6 }}>

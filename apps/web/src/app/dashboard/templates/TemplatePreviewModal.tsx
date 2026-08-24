@@ -2842,10 +2842,17 @@ export default function TemplatePreviewModal({
 
           {/* Action principale — sticky en bas sur mobile (toujours accessible sans scroller) */}
           <div style={{ marginTop: "auto", display: "flex", gap: 10,
-            ...(isMobile ? { position: "sticky" as const, bottom: 0, margin: "12px -20px 0", padding: "12px 20px calc(4px + env(safe-area-inset-bottom))", background: "rgba(16,15,10,0.92)", backdropFilter: "blur(8px)", borderTop: "1px solid rgba(255,255,255,0.08)", zIndex: 3 } : {}) }}>
-            <button type="button" onClick={onClose} className="da-btn-neutral da-btn-neutral--sm">
-              <X className="da-ic da-ic-x" size={13} /> Fermer
-            </button>
+            // Sur mobile les actions s'empilent : côte à côte, les deux boutons
+            // secondaires ne se comprimaient pas et écrasaient l'action principale,
+            // dont le libellé finissait tronqué au milieu d'un mot.
+            ...(isMobile ? { flexDirection: "column" as const, position: "sticky" as const, bottom: 0, margin: "12px -20px 0", padding: "12px 20px calc(4px + env(safe-area-inset-bottom))", background: "rgba(16,15,10,0.92)", backdropFilter: "blur(8px)", borderTop: "1px solid rgba(255,255,255,0.08)", zIndex: 3 } : {}) }}>
+            {/* « Fermer » ferait une troisième ligne sur mobile alors que la croix
+                de l'en-tête est juste au-dessus, toujours visible. */}
+            {!isMobile && (
+              <button type="button" onClick={onClose} className="da-btn-neutral da-btn-neutral--sm">
+                <X className="da-ic da-ic-x" size={13} /> Fermer
+              </button>
+            )}
             {canUse && onCustomize
               ? <>
                   {/* Chemin recommandé : on remplit le modèle avec ses propres informations
@@ -2855,7 +2862,8 @@ export default function TemplatePreviewModal({
                     <Sparkles size={13} /> <span>Remplir avec mes infos</span> <ArrowRight className="da-ic da-ic-arrow" size={14} />
                   </button>
                   <button type="button" onClick={onUse} disabled={!!isCreating}
-                    className="da-btn-neutral da-btn-neutral--sm" title="Créer la page telle quelle, avec le contenu d'exemple">
+                    className="da-btn-neutral da-btn-neutral--sm" title="Créer la page telle quelle, avec le contenu d'exemple"
+                    style={isMobile ? { justifyContent: "center" } : undefined}>
                     Utiliser tel quel
                   </button>
                 </>

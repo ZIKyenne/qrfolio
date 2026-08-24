@@ -7,6 +7,19 @@ import { collect } from "./helpers/collect"
 
 const URL = "/e2e-harness/naming-style"
 
+/** Les réglages d'apparence sont repliés par défaut (ils enterraient le formulaire
+ *  sur mobile). Un clic sur « Apparence » les déplie. */
+async function ouvrirApparence(page: import("@playwright/test").Page) {
+  const b = page.getByRole("button", { name: /Apparence/ })
+  await expect(b).toBeVisible({ timeout: 30_000 })
+  // Le banc d'essai remonte la modale quand son état se stabilise, ce qui remet le
+  // panneau à l'état replié : on redemande jusqu'à ce qu'il tienne ouvert.
+  await expect(async () => {
+    if ((await b.getAttribute("aria-expanded")) !== "true") await b.click()
+    await expect(page.getByTestId("naming-style")).toBeVisible({ timeout: 1500 })
+  }).toPass({ timeout: 20_000 })
+}
+
 test.describe("modale de nommage — sélecteur de style (moteur)", () => {
   test.beforeEach(async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "desktop", "harness = projet desktop")
@@ -19,7 +32,10 @@ test.describe("modale de nommage — sélecteur de style (moteur)", () => {
 
   test("rendu de la modale avec sélecteurs, sans erreur fatale", async ({ page }, testInfo) => {
     await page.goto(URL, { waitUntil: "networkidle" })
-    await expect(page.getByTestId("naming-style")).toBeVisible({ timeout: 30_000 })
+    // Repliés au départ : le champ « nom » et le bouton doivent rester atteignables
+    // sans avoir à faire défiler une pleine page de pastilles.
+    await expect(page.getByTestId("naming-style")).toBeHidden()
+    await ouvrirApparence(page)
     await expect(page.getByTestId("naming-layout")).toBeVisible()
     // au moins plusieurs styles proposés + les 3 dispositions
     expect(await page.locator("[data-testid^='style-']").count()).toBeGreaterThanOrEqual(10)
@@ -35,7 +51,7 @@ test.describe("modale de nommage — sélecteur de style (moteur)", () => {
 
   test("changer de STYLE recompose (thème + nb de blocs)", async ({ page }, testInfo) => {
     await page.goto(URL, { waitUntil: "domcontentloaded" })
-    await expect(page.getByTestId("naming-style")).toBeVisible()
+    await ouvrirApparence(page)
     const before = await page.getByTestId("naming-style-harness").getAttribute("data-theme-name")
     await page.getByTestId("style-slate").click()
     await expect(page.getByTestId("naming-style-harness")).toHaveAttribute("data-style", "slate")
@@ -47,7 +63,7 @@ test.describe("modale de nommage — sélecteur de style (moteur)", () => {
 
   test("changer de DISPOSITION met à jour l'axe layout", async ({ page }) => {
     await page.goto(URL, { waitUntil: "domcontentloaded" })
-    await expect(page.getByTestId("naming-layout")).toBeVisible()
+    await ouvrirApparence(page)
     await page.getByTestId("layout-compact").click()
     await expect(page.getByTestId("naming-style-harness")).toHaveAttribute("data-layout", "compact")
     await expect(page.getByTestId("layout-compact")).toHaveAttribute("data-active", "1")
@@ -55,7 +71,7 @@ test.describe("modale de nommage — sélecteur de style (moteur)", () => {
 
   test("« Creer ma page » émet le composé (blocs + thème)", async ({ page }) => {
     await page.goto(URL, { waitUntil: "domcontentloaded" })
-    await expect(page.getByTestId("naming-style")).toBeVisible()
+    await ouvrirApparence(page)
     await page.getByTestId("style-neon").click()
     // renseigner un nom valide + un slug ; le harness court-circuite la vérif réseau via onCreate direct
     await page.getByPlaceholder("Ex : Le Bistrot Parisien").fill("Ma page de test")

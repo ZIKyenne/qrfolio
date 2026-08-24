@@ -3,6 +3,8 @@ import Link from "next/link"
 import { useState } from "react"
 
 // ── Design tokens ────────────────────────────────────────────────────────────
+import { creerUrl, creerUrlSecteur } from "../creer/entry"
+
 const G   = "#C9A84C"
 const INK = "#F5F0E8"
 const MUT = "rgba(138,132,120,0.82)"
@@ -56,7 +58,7 @@ function SectionHeader({ chip, title, sub }: { chip: string; title: React.ReactN
 
 function CtaInline({ label = "Essayer gratuitement" }: { label?: string }) {
   return (
-    <Link href="/auth/signup" style={{
+    <Link href={creerUrl()} style={{
       display: "inline-flex", alignItems: "center", gap: 8,
       background: "linear-gradient(90deg, #C9A84C, #b8953f)",
       color: BG, textDecoration: "none",
@@ -273,14 +275,14 @@ export default function FeaturesPage() {
           <Link href="/auth/login" style={{color:MUT,textDecoration:"none",fontSize:13,transition:"color 0.2s"}}
             onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.color=INK}}
             onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.color=MUT}}>Connexion</Link>
-          <Link href="/auth/signup" style={{
+          <Link href={creerUrl()} style={{
             background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:BG,
             textDecoration:"none",fontSize:13,fontWeight:700,padding:"8px 20px",borderRadius:9,
             boxShadow:"0 2px 14px rgba(201,168,76,0.3)",transition:"transform 0.2s,box-shadow 0.2s",
           }}
             onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-1px) scale(1.02)";el.style.boxShadow="0 4px 20px rgba(201,168,76,0.45)"}}
             onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.boxShadow="0 2px 14px rgba(201,168,76,0.3)"}}>
-            Commencer
+            Composer ma page
           </Link>
         </div>
       </nav>
@@ -421,14 +423,14 @@ export default function FeaturesPage() {
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,maxWidth:860,margin:"0 auto"}} className="tpl-grid">
             <style>{`@media(max-width:700px){.tpl-grid{grid-template-columns:1fr !important;}}`}</style>
             {[
-              { icon:"🍽️", name:"Restaurant & Bar",    color:"#F97316", blocks:7 },
-              { icon:"💼", name:"Freelance Pro",         color:"var(--action)", blocks:6 },
-              { icon:"🎵", name:"Artiste & Musicien",    color:"#A78BFA", blocks:7 },
-              { icon:"🏠", name:"Agent Immobilier",      color:"#C9A84C", blocks:6 },
-              { icon:"🎪", name:"Événement",             color:"var(--success)", blocks:6 },
-              { icon:"🛍️",  name:"Commerce local",       color:"#F43F5E", blocks:8 },
+              { icon:"🍽️", name:"Restaurant & Bar",    color:"#F97316", blocks:7, secteur:"Restaurant" },
+              { icon:"💼", name:"Freelance Pro",         color:"var(--action)", blocks:6, secteur:"Freelance" },
+              { icon:"🎵", name:"Artiste & Musicien",    color:"#A78BFA", blocks:7, secteur:"Musicien" },
+              { icon:"🏠", name:"Agent Immobilier",      color:"#C9A84C", blocks:6, secteur:"Immobilier" },
+              { icon:"🎪", name:"Événement",             color:"var(--success)", blocks:6, secteur:"Evenement" },
+              { icon:"🛍️",  name:"Commerce local",       color:"#F43F5E", blocks:8, secteur:"Ecommerce" },
             ].map(t => (
-              <Link key={t.name} href="/auth/signup" style={{
+              <Link key={t.name} href={creerUrlSecteur(t.secteur)} style={{
                 display:"flex",alignItems:"center",gap:12,
                 padding:"16px 18px",borderRadius:14,textDecoration:"none",
                 background:"rgba(255,255,255,0.02)",

@@ -2,6 +2,8 @@
 import Link from "next/link"
 import { useState, FormEvent } from "react"
 
+import { creerUrl } from "../creer/entry"
+
 const G   = "#C9A84C"
 const INK = "#F5F0E8"
 const MUT = "rgba(138,132,120,0.8)"
@@ -153,8 +155,8 @@ export default function ContactPage() {
             onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.color=MUT}}>
             ← Retour
           </Link>
-          <Link href="/auth/signup" style={{ background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:BG,textDecoration:"none",fontSize:13,fontWeight:700,padding:"8px 20px",borderRadius:9,boxShadow:"0 2px 14px rgba(201,168,76,0.3)" }}>
-            Commencer
+          <Link href={creerUrl()} style={{ background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:BG,textDecoration:"none",fontSize:13,fontWeight:700,padding:"8px 20px",borderRadius:9,boxShadow:"0 2px 14px rgba(201,168,76,0.3)" }}>
+            Composer ma page
           </Link>
         </div>
       </nav>
@@ -343,7 +345,7 @@ export default function ContactPage() {
               <div style={{ background:"linear-gradient(145deg,rgba(201,168,76,0.08),rgba(201,168,76,0.03))",border:BOR,borderRadius:14,padding:"22px 20px",textAlign:"center" }}>
                 <p style={{color:INK,fontSize:14,fontWeight:600,margin:"0 0 8px"}}>Pas encore sur QRowg ?</p>
                 <p style={{color:MUT.replace("0.8","0.65"),fontSize:12.5,margin:"0 0 16px",lineHeight:1.5}}>Crée ta page gratuitement en 5 minutes.</p>
-                <Link href="/auth/signup" style={{
+                <Link href={creerUrl()} style={{
                   display:"block",textAlign:"center",
                   background:"linear-gradient(90deg,#C9A84C,#b8953f)",
                   color:BG,textDecoration:"none",fontSize:13,fontWeight:700,

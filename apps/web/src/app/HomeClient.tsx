@@ -344,6 +344,8 @@ function QRMockup() {
 
 // ── Section wrapper avec fade-in ──────────────────────────────────────────────
 // ── Features section ──────────────────────────────────────────────────────────
+import { creerUrl } from "./creer/entry"
+
 const FEATURES = [
   {
     icon: "⚡",
@@ -696,7 +698,7 @@ function BrandProSection() {
 // ── Pricing card ──────────────────────────────────────────────────────────────
 // Pricing landing : derive de la source unique (lib/plans) -> 4 plans, Pro en avant
 const PLAN_LANDING_UI = {
-  free:     { cta: "Commencer gratuitement",     href: "/auth/signup",                 badge: null,                note: null },
+  free:     { cta: "Commencer gratuitement",     href: "/creer",                       badge: null,                note: "Sans compte pour composer · le compte n'est demandé qu'à la publication" },
   starter:  { cta: "Démarrer l'essai gratuit",    href: "/auth/signup?plan=starter",  badge: "Meilleur rapport Q/P", note: "7 jours d'essai · Sans carte bancaire · Annulable en 1 clic" },
   pro:      { cta: "Choisir Pro",                 href: "/auth/signup?plan=pro",      badge: "Le plus populaire",   note: "Sans engagement · Annulable en 1 clic" },
   business: { cta: "Choisir Business",            href: "/auth/signup?plan=business", badge: null,                note: "Sans engagement · Annulable en 1 clic" },
@@ -1677,7 +1679,7 @@ function Navbar() {
           ) : (<>
             <Link href="/auth/login" className="nl"
               style={{color:"#BCB6A6",textDecoration:"none",fontSize:14,position:"relative",paddingBottom:2,transition:"color 0.2s"}}>Connexion</Link>
-            <Link href="/auth/signup" className="nct" style={{
+            <Link href="/creer" className="nct" style={{
               background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:"#080808",
               textDecoration:"none",fontSize:14,fontWeight:700,padding:"9px 22px",borderRadius:10,
               display:"inline-block",boxShadow:"0 2px 16px rgba(201,168,76,0.3)",
@@ -1685,7 +1687,7 @@ function Navbar() {
             }}
               onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="translateY(-2px) scale(1.03)";el.style.boxShadow="0 6px 24px rgba(201,168,76,0.5)"}}
               onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.transform="none";el.style.boxShadow="0 2px 16px rgba(201,168,76,0.3)"}}>
-              Commencer
+              Composer ma page
             </Link>
           </>)}
         </div>
@@ -1730,12 +1732,12 @@ function Navbar() {
               <Link href="/auth/login" onClick={()=>setMenuOpen(false)} style={{
                 display:"block",textAlign:"center",color:"#BCB6A6",textDecoration:"none",
                 fontSize:16,padding:"14px",border:"1px solid rgba(201,168,76,0.15)",borderRadius:12}}>Connexion</Link>
-              <Link href="/auth/signup" onClick={()=>setMenuOpen(false)} style={{
+              <Link href="/creer" onClick={()=>setMenuOpen(false)} style={{
                 display:"block",textAlign:"center",
                 background:"linear-gradient(90deg,#C9A84C,#b8953f)",
                 color:"#080808",textDecoration:"none",fontSize:16,fontWeight:700,
                 padding:"16px",borderRadius:12,boxShadow:"0 4px 24px rgba(201,168,76,0.4)"}}>
-                Commencer gratuitement →</Link>
+                Composer ma page →</Link>
             </>)}
           </div>
         </div>
@@ -3054,7 +3056,7 @@ function FAQSection() {
           <p style={{ color:"rgba(188,182,166,0.7)", fontSize:14, marginBottom:16 }}>
             Vous avez une autre question ?
           </p>
-          <a href="/auth/signup" style={{ display:"inline-flex", alignItems:"center", gap:8,
+          <a href="/contact" style={{ display:"inline-flex", alignItems:"center", gap:8,
             color:"#C9A84C", textDecoration:"none", fontSize:14, fontWeight:600,
             padding:"11px 24px", borderRadius:10,
             border:"1px solid rgba(201,168,76,0.3)", transition:"all 0.2s ease" }}

@@ -3,6 +3,8 @@ import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
 
 // ── Tokens ───────────────────────────────────────────────────────────────────
+import { creerUrl, creerUrlSecteur } from "../creer/entry"
+
 const G   = "#C9A84C"
 const INK = "#F5F0E8"
 const MUT = "rgba(138,132,120,0.82)"
@@ -298,7 +300,7 @@ function ExampleCard({ example }: { example: Example }) {
               color: PLAN_COLOR[example.plan], letterSpacing: 1,
             }}>{example.plan.toUpperCase()}</span>
           </div>
-          <Link href="/auth/signup" style={{
+          <Link href={creerUrlSecteur(example.category)} style={{
             display: "inline-flex", alignItems: "center", gap: 5,
             color: hovered ? example.accent : G,
             textDecoration: "none", fontSize: 12, fontWeight: 600,
@@ -349,8 +351,8 @@ export default function ExamplesPage() {
             onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.color=MUT}}>
             ← Retour
           </Link>
-          <Link href="/auth/signup" style={{ background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:BG,textDecoration:"none",fontSize:13,fontWeight:700,padding:"8px 20px",borderRadius:9,boxShadow:"0 2px 14px rgba(201,168,76,0.3)" }}>
-            Commencer
+          <Link href={creerUrl()} style={{ background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:BG,textDecoration:"none",fontSize:13,fontWeight:700,padding:"8px 20px",borderRadius:9,boxShadow:"0 2px 14px rgba(201,168,76,0.3)" }}>
+            Composer ma page
           </Link>
         </div>
       </nav>
@@ -467,7 +469,7 @@ export default function ExamplesPage() {
               <p style={{ color:MUT,fontSize:16,lineHeight:1.7,margin:"0 0 36px" }}>
                 Choisir un template, ajouter son contenu, publier — et recevoir son QR code. C'est tout.
               </p>
-              <Link href="/auth/signup" style={{
+              <Link href={creerUrl()} style={{
                 display:"inline-flex",alignItems:"center",gap:8,
                 background:"linear-gradient(90deg,#C9A84C,#b8953f)",
                 color:BG,textDecoration:"none",fontSize:14,fontWeight:700,

@@ -2,6 +2,8 @@
 import Link from "next/link"
 import { useEffect, useRef } from "react"
 
+import { creerUrl } from "./creer/entry"
+
 const G   = "#C9A84C"
 const INK = "#F5F0E8"
 const MUT = "rgba(138,132,120,0.8)"
@@ -126,11 +128,11 @@ export default function NotFound() {
         <Link href="/" style={{ textDecoration: "none" }}>
           <span style={{ fontFamily: "Fraunces, serif", fontSize: 20, color: G, fontWeight: 700 }}>QRowg</span>
         </Link>
-        <Link href="/auth/signup" style={{
+        <Link href={creerUrl()} style={{
           background: "linear-gradient(90deg,#C9A84C,#b8953f)",
           color: BG, textDecoration: "none", fontSize: 13,
           fontWeight: 700, padding: "8px 18px", borderRadius: 9,
-        }}>Commencer</Link>
+        }}>Composer ma page</Link>
       </nav>
 
       {/* Contenu */}
@@ -163,7 +165,7 @@ export default function NotFound() {
         {/* CTAs */}
         <div className="au4 ctas" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 48 }}>
           <Link href="/" className="cta-sec">← Retour à l'accueil</Link>
-          <Link href="/auth/signup" className="cta-main">Créer mon QRowg gratuit →</Link>
+          <Link href={creerUrl()} className="cta-main">Composer ma page — sans compte →</Link>
         </div>
 
         {/* Séparateur */}

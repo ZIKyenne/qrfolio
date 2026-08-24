@@ -19,6 +19,7 @@ const MAX_DESC = 160
 /** Pages publiques et le fichier qui porte leurs metadata. */
 const PUBLIC_PAGES: { route: string; file: string }[] = [
   { route: "/", file: "page.tsx" },
+  { route: "/creer", file: "creer/page.tsx" },
   { route: "/contact", file: "contact/layout.tsx" },
   { route: "/examples", file: "examples/layout.tsx" },
   { route: "/features", file: "features/layout.tsx" },
@@ -33,8 +34,14 @@ const PUBLIC_PAGES: { route: string; file: string }[] = [
   { route: "/generateur-qr-code-wifi", file: "generateur-qr-code-wifi/page.tsx" },
 ]
 
-const titleOf = (src: string) => src.match(/\n\s{2}title: "(.*?)",/)?.[1]
-const descOf = (src: string) => src.match(/\n\s{2}description:\s*\n?\s*"(.*?)",/)?.[1]
+/** Résout `title: MA_CONSTANTE` en remontant à `const MA_CONSTANTE = "…"`. */
+function deref(src: string, v: string | undefined): string | undefined {
+  if (!v || v.startsWith('"')) return v?.replace(/^"|"$/g, "")
+  const m = src.match(new RegExp(`const ${v}\\s*=\\s*"(.*?)"`))
+  return m?.[1]
+}
+const titleOf = (src: string) => deref(src, src.match(/\n\s{2}title: ("[^"]*"|[A-Z_][A-Z0-9_]*),/)?.[1])
+const descOf = (src: string) => deref(src, src.match(/\n\s{2}description:\s*\n?\s*("[^"]*"|[A-Z_][A-Z0-9_]*),/)?.[1])
 
 describe("titres — le gabarit racine ajoute déjà « | QRowg »", () => {
   it("le layout racine applique bien le gabarit", () => {
@@ -124,8 +131,8 @@ describe("cartes de partage", () => {
     const divergents: string[] = []
     for (const { route, file } of PUBLIC_PAGES) {
       const src = read(file)
-      const og = src.match(/openGraph: \{ title: "(.*?)"/)?.[1]
-      const tw = src.match(/twitter: \{ card: "summary_large_image", title: "(.*?)"/)?.[1]
+      const og = src.match(/openGraph: \{ title: [`"](.*?)[`"],/)?.[1]
+      const tw = src.match(/twitter: \{ card: "summary_large_image", title: [`"](.*?)[`"],/)?.[1]
       if (og && tw && og !== tw) divergents.push(`${route} : « ${og} » ≠ « ${tw} »`)
     }
     expect(divergents).toEqual([])

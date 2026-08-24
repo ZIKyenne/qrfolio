@@ -15,6 +15,7 @@ export default async function sitemap() {
   // elles sont bloquees par robots.txt, les lister ici serait contradictoire).
   const staticPages = [
     { url: baseUrl,               lastModified: CONTENT_REVISED, changeFrequency: "weekly",  priority: 1   },
+    { url: `${baseUrl}/creer`,    lastModified: CONTENT_REVISED, changeFrequency: "monthly", priority: 0.9 },
     { url: `${baseUrl}/features`, lastModified: CONTENT_REVISED, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/examples`, lastModified: CONTENT_REVISED, changeFrequency: "weekly",  priority: 0.7 },
     { url: `${baseUrl}/upgrade`,  lastModified: CONTENT_REVISED, changeFrequency: "monthly", priority: 0.7 },

@@ -62,7 +62,7 @@ const Icon = {
 }
 
 // Routes réelles du projet (cf. dashboard/layout.tsx). "Créer" = sheet, pas de href.
-const TABS: Tab[] = [
+const FULL_TABS: Tab[] = [
   { key: 'home', label: 'Accueil', href: '/dashboard', icon: Icon.home },
   { key: 'pages', label: 'Pages', href: '/dashboard/qr-codes', icon: Icon.qr },
   { key: 'create', label: 'Créer', icon: Icon.plus, create: true },
@@ -70,12 +70,23 @@ const TABS: Tab[] = [
   { key: 'profile', label: 'Profil', href: '/dashboard/profile', icon: Icon.user },
 ]
 
+// Sans compte, quatre des cinq onglets ci-dessus mènent à la page de connexion
+// (Accueil, Pages, Stats, Profil). Un visiteur venu essayer l'éditeur se cognerait
+// donc à un mur au premier appui. On lui donne les destinations qui existent pour lui.
+const GUEST_TABS: Tab[] = [
+  { key: 'templates', label: 'Modèles', href: '/dashboard/templates', icon: Icon.home },
+  { key: 'create', label: 'Créer', icon: Icon.plus, create: true },
+  { key: 'qr', label: 'QR code', href: '/dashboard/qr-link', icon: Icon.qr },
+  { key: 'account', label: 'Compte', href: '/auth/signup', icon: Icon.user },
+]
+
 const GOLD = 'var(--accent, #C9A84C)'
 const MUTED = '#8A8478'
 const EASE = 'cubic-bezier(0.32, 0.02, 0.14, 1)'
 
-export default function MobileNav({ onCreate, unread = 0 }: { onCreate?: () => void; unread?: number }) {
+export default function MobileNav({ onCreate, unread = 0, guest = false }: { onCreate?: () => void; unread?: number; guest?: boolean }) {
   const pathname = usePathname() || '/dashboard'
+  const TABS = guest ? GUEST_TABS : FULL_TABS
 
   const active = useMemo(() => {
     // match le plus long, sur les onglets AYANT une route (Créer exclu)
@@ -87,7 +98,7 @@ export default function MobileNav({ onCreate, unread = 0 }: { onCreate?: () => v
       if (hit && t.href.length > bestLen) { best = i; bestLen = t.href.length }
     })
     return best
-  }, [pathname])
+  }, [pathname, TABS])
 
   const prev = useRef(active)
   const [moving, setMoving] = useState(0)

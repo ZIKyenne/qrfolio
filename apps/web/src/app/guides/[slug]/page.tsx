@@ -6,6 +6,7 @@ import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import { GUIDES, GUIDE_SLUGS, getGuide, GUIDES_UPDATED } from "../guides"
 import { VERTICALS } from "../../qr-code/verticals"
+import { creerUrl } from "../../creer/entry"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.92)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -36,7 +37,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   if (!g) notFound()
 
   const url = `${APP}/guides/${g.slug}`
-  const ctaHref = /dynamique|statistiques/i.test(g.cta) ? "/auth/signup" : "/generateur-qr-code"
+  // Un guide n'indique aucun métier : l'essai s'ouvre sur la galerie complète.
+  const ctaHref = /dynamique|statistiques/i.test(g.cta) ? creerUrl() : "/generateur-qr-code"
   const articleLd = {
     "@context": "https://schema.org", "@type": "Article",
     headline: g.h1, description: g.metaDescription,

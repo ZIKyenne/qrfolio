@@ -4,6 +4,7 @@ import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import { VERTICALS, VERTICAL_ORDER } from "./verticals"
+import { creerUrl } from "../creer/entry"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -53,7 +54,7 @@ export default function QrCodeHub() {
         </section>
 
         <section style={{ textAlign: "center", marginTop: 44 }}>
-          <Link href="/auth/signup" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 800, padding: "14px 30px", borderRadius: 12, boxShadow: "0 6px 26px rgba(201,168,76,0.32)" }}>Créer mon QR code gratuitement →</Link>
+          <Link href={creerUrl()} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 800, padding: "14px 30px", borderRadius: 12, boxShadow: "0 6px 26px rgba(201,168,76,0.32)" }}>Composer ma page — sans compte →</Link>
           <p style={{ color: MUT, fontSize: 12.5, margin: "10px 0 0" }}>Sans carte bancaire · Modifiable à tout moment</p>
           <p style={{ margin: "14px 0 0" }}><Link href="/generateur-qr-code" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>Ou générez un QR code statique gratuit, sans compte →</Link></p>
           <p style={{ margin: "8px 0 0" }}><Link href="/guides" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>Nos guides : créer, imprimer et suivre un QR code →</Link></p>

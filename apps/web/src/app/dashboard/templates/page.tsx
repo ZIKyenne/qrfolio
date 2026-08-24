@@ -15,6 +15,7 @@ import { PAGE_TEMPLATES } from "../builder/page-templates"
 import { TEMPLATE_LAYOUT_LIST, galleryStyleChoices, nativeGalleryStyleKey, galleryComposeBlocks } from "../builder/templateEngine"
 import { useToast } from "@/components/Toast"
 import { browserStorage, saveDraft, makeDraft } from "../builder/draftStore"
+import { safeMetier, SECTEUR_LABEL } from "../../creer/entry"
 
 // Source unique partagée avec le builder : les modèles de page complets (métier + sous-variantes)
 // alimentent AUSSI la galerie d'onboarding (en plus des 14 modèles curés historiques).
@@ -129,7 +130,16 @@ const STARTER_TEMPLATE_ID = "freelance" // modèle recommandé par défaut (nouv
 
 export default function TemplatesPage() {
   const [selected,     setSelected]     = useState<string | null>(null)
+  // ?metier=… : quelqu'un venu de « QR code restaurant » doit voir des restaurants,
+  // pas 48 modèles tous secteurs confondus. Lu une seule fois, au montage.
   const [activeMetier, setActiveMetier] = useState("Tous")
+  const [fromEntry, setFromEntry] = useState("")
+  useEffect(() => {
+    try {
+      const m = safeMetier(new URLSearchParams(window.location.search).get("metier"))
+      if (m) setFromEntry(m)
+    } catch { /* pas de query : galerie complète */ }
+  }, [])
   const [activePlan,   setActivePlan]   = useState("all")
   const [search,       setSearch]       = useState("")
   const [filtersOpen,  setFiltersOpen]  = useState(false) // mobile : bottom sheet filtres
@@ -220,6 +230,21 @@ export default function TemplatesPage() {
       || (t.tags || []).some((tag: string) => tag.toLowerCase().includes(q))
     return matchMetier && matchPlan && matchSearch
   }), [activeMetier, activePlan, search])
+
+  /** Un modèle appartient-il à ce secteur ? (même règle que le filtre ci-dessus) */
+  const dansSecteur = (t: any, secteur: string) =>
+    (CATEGORY_MAP[secteur] || []).includes(t.id) || t.category === secteur
+
+  // Arrivée depuis une page d'entrée : les modèles du secteur passent devant,
+  // le reste du catalogue reste visible dessous. Aucun tri quand on vient
+  // directement — l'ordre d'origine porte déjà la popularité.
+  const ordonnes = useMemo(() => {
+    if (!fromEntry) return filtered
+    const dedans = filtered.filter((t: any) => dansSecteur(t, fromEntry))
+    const dehors = filtered.filter((t: any) => !dansSecteur(t, fromEntry))
+    return [...dedans, ...dehors]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered, fromEntry])
 
   // Compteur par catégorie
   const countByMetier = useMemo(() => {
@@ -312,11 +337,23 @@ export default function TemplatesPage() {
           <span style={{ color: G, fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>Templates</span>
         </div>
         <h1 style={{ fontFamily: "Fraunces, serif", fontSize: "clamp(26px,3.4vw,36px)", color: "#F5F0E8", margin: "0 0 8px", fontWeight: 700 }}>
-          Choisissez votre secteur
+          {fromEntry ? "Vos modèles sont prêts" : "Choisissez votre secteur"}
         </h1>
-        <p style={{ color: MUTED, fontSize: 14.5, margin: "0 0 22px" }}>
-          {TEMPLATES.length} templates pré-configurés pour votre métier
-        </p>
+        {/* On dit d'où l'on vient et pourquoi la liste est déjà réduite — sinon le
+            filtre appliqué d'office passerait pour un catalogue famélique. */}
+        {fromEntry ? (
+          <p style={{ color: MUTED, fontSize: 14.5, margin: "0 0 22px" }}>
+            Ceux de la {SECTEUR_LABEL[fromEntry] || "votre activité"} d'abord, puis les {TEMPLATES.length - 1} autres.{" "}
+            <button type="button" onClick={() => setFromEntry("")}
+              style={{ background: "none", border: "none", padding: 0, color: G, fontSize: 14.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
+              Ordre habituel
+            </button>
+          </p>
+        ) : (
+          <p style={{ color: MUTED, fontSize: 14.5, margin: "0 0 22px" }}>
+            {TEMPLATES.length} templates pré-configurés pour votre métier
+          </p>
+        )}
 
         {/* ── Recherche ───────────────────────────────────────────────────── */}
         <label className="dat-search" style={{ marginBottom: 24 }}>
@@ -415,7 +452,7 @@ export default function TemplatesPage() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(min(290px,100%), 1fr))", gap: isMobile ? 11 : 18 }}>
             <style>{`@keyframes tplUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}`}</style>
-            {filtered.map((template: any, idx: number) => {
+            {ordonnes.map((template: any, idx: number) => {
               const isSelected = selected === template.id
               const planCfg = PLAN_CONFIG[template.plan]
               const locked = !canUse(template.plan)

@@ -6,6 +6,7 @@ import { serializeJsonLd } from "@/lib/jsonLd"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { VERTICAL_ORDER, VERTICALS } from "../qr-code/verticals"
 import GeneratorClient from "./GeneratorClient"
+import { creerUrl } from "../creer/entry"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -116,7 +117,7 @@ export default async function GeneratorPage() {
             </div>
           </div>
           <div style={{ textAlign: "center", marginTop: 22 }}>
-            <Link href="/auth/signup" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 800, padding: "13px 28px", borderRadius: 12, boxShadow: "0 6px 26px rgba(201,168,76,0.3)" }}>Créer un QR code dynamique gratuitement →</Link>
+            <Link href={creerUrl()} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: `linear-gradient(90deg,${G},#b8953f)`, color: "#080808", textDecoration: "none", fontSize: 15, fontWeight: 800, padding: "13px 28px", borderRadius: 12, boxShadow: "0 6px 26px rgba(201,168,76,0.3)" }}>Composer ma page — sans compte →</Link>
           </div>
         </section>
 

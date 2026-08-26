@@ -32,7 +32,9 @@ const PUBLIC_PAGES: { route: string; file: string }[] = [
   { route: "/guides", file: "guides/page.tsx" },
   { route: "/generateur-qr-code", file: "generateur-qr-code/page.tsx" },
   { route: "/generateur-qr-code-wifi", file: "generateur-qr-code-wifi/page.tsx" },
+  { route: "/outils", file: "outils/page.tsx" },
   { route: "/outils/testeur-qr-code", file: "outils/testeur-qr-code/page.tsx" },
+  { route: "/outils/taille-qr-code", file: "outils/taille-qr-code/page.tsx" },
 ]
 
 /** Résout `title: MA_CONSTANTE` en remontant à `const MA_CONSTANTE = "…"`. */
@@ -250,9 +252,56 @@ describe("données structurées", () => {
   })
 
   it("les outils gratuits sont des entités distinctes et identifiées", () => {
-    for (const f of ["generateur-qr-code/page.tsx", "generateur-qr-code-wifi/page.tsx"]) {
+    for (const f of ["generateur-qr-code/page.tsx", "generateur-qr-code-wifi/page.tsx", "outils/testeur-qr-code/page.tsx", "outils/taille-qr-code/page.tsx"]) {
       expect(read(f), f).toContain('"@id": `${URL}/#tool`')
     }
+  })
+})
+
+// Un fil d'Ariane structuré qui pointe vers une page inexistante s'est déjà
+// produit ici : la page /outils était citée dans le JSON-LD du testeur avant
+// d'exister. Un moteur qui suit ce lien tombe sur un 404 et en tire ses
+// conclusions. Ce test relit tous les liens internes des pages publiques.
+describe("aucun lien interne ne mène nulle part", () => {
+  /** Une route correspond-elle à un fichier de page, statique ou dynamique ? */
+  const routeExiste = (route: string): boolean => {
+    const segments = route.replace(/^\//, "").split("/").filter(Boolean)
+    if (segments.length === 0) return existsSync(join(__dirname, "page.tsx"))
+
+    let dossier = __dirname
+    for (const [profondeur, seg] of segments.entries()) {
+      const exact = join(dossier, seg)
+      if (existsSync(exact)) { dossier = exact; continue }
+      // Segment dynamique : /guides/xxx → guides/[slug]. Interdit à la racine :
+      // [slug] y attrape les pages publiques des clients, et un lien marketing
+      // vers /outils doit tomber sur une vraie route, pas sur ce fourre-tout.
+      const dynamique = profondeur > 0 && existsSync(dossier)
+        ? readdirSync(dossier).find(d => d.startsWith("[") && d.endsWith("]"))
+        : undefined
+      if (!dynamique) return false
+      dossier = join(dossier, dynamique)
+    }
+    return existsSync(join(dossier, "page.tsx")) || existsSync(join(dossier, "route.ts"))
+  }
+
+  it("les routes connues sont trouvées, les inventées ne le sont pas", () => {
+    expect(routeExiste("/")).toBe(true)
+    expect(routeExiste("/guides")).toBe(true)
+    expect(routeExiste("/guides/qr-code-scannable")).toBe(true)
+    expect(routeExiste("/outils")).toBe(true)
+    expect(routeExiste("/nawak-inexistant")).toBe(false)
+  })
+
+  it("chaque href interne des pages publiques mène à une page réelle", () => {
+    const morts: string[] = []
+    for (const { route, file } of PUBLIC_PAGES) {
+      const src = read(file)
+      for (const m of src.matchAll(/href="(\/[^"{}]*)"/g)) {
+        const cible = m[1].split("#")[0].split("?")[0].replace(/\/$/, "") || "/"
+        if (!routeExiste(cible)) morts.push(`${route} → ${cible}`)
+      }
+    }
+    expect(morts).toEqual([])
   })
 })
 

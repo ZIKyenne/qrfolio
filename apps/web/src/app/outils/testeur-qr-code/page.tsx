@@ -80,7 +80,7 @@ export default function TesteurPage() {
       <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(9px,2.6vw,14px)" }}>
-          <Link href="/generateur-qr-code" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Générateur</Link>
+          <Link href="/outils" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Outils</Link>
           <Link href={creerUrl()} style={{ background: "rgba(201,168,76,0.1)", border: `1px solid ${BOR}`, color: G, textDecoration: "none", fontSize: "clamp(12px,3.4vw,13.5px)", fontWeight: 700, padding: "9px clamp(10px,3vw,16px)", borderRadius: 10, whiteSpace: "nowrap" }}>Composer ma page</Link>
         </div>
       </header>
@@ -156,6 +156,7 @@ export default function TesteurPage() {
             <Link href="/guides/qr-code-scannable" style={{ color: G }}>rendre un QR code scannable</Link>{" · "}
             <Link href="/guides/taille-qr-code-impression" style={{ color: G }}>quelle taille pour l&apos;impression</Link>{" · "}
             <Link href="/guides/qr-code-ne-fonctionne-pas" style={{ color: G }}>mon QR code ne fonctionne pas</Link>{" · "}
+            <Link href="/outils/taille-qr-code" style={{ color: G }}>quelle taille imprimer</Link>{" · "}
             <Link href="/generateur-qr-code" style={{ color: G }}>générateur de QR code gratuit</Link>
           </p>
         </section>

@@ -31,7 +31,9 @@ export default async function sitemap() {
   const verticalPages = [
     { url: `${baseUrl}/generateur-qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.9 },
     { url: `${baseUrl}/generateur-qr-code-wifi`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${baseUrl}/outils`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${baseUrl}/outils/testeur-qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.9 },
+    { url: `${baseUrl}/outils/taille-qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.9 },
     { url: `${baseUrl}/qr-code`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8 },
     ...VERTICAL_ORDER.map(slug => ({
       url: `${baseUrl}/qr-code/${slug}`, lastModified: CONTENT_REVISED, changeFrequency: "monthly" as const, priority: 0.8,

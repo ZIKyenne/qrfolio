@@ -159,7 +159,7 @@ export default async function GeneratorPage() {
           <Link href="/" style={{ color: MUT, textDecoration: "none" }}>Accueil</Link>{" · "}
           <Link href="/qr-code" style={{ color: MUT, textDecoration: "none" }}>QR codes par usage</Link>{" · "}
           <Link href="/guides" style={{ color: MUT, textDecoration: "none" }}>Guides</Link>{" · "}
-          <Link href="/outils/testeur-qr-code" style={{ color: MUT, textDecoration: "none" }}>Testeur de QR code</Link>{" · "}
+          <Link href="/outils" style={{ color: MUT, textDecoration: "none" }}>Outils gratuits</Link>{" · "}
           <Link href="/features" style={{ color: MUT, textDecoration: "none" }}>Fonctionnalités</Link>{" · "}
           <Link href="/upgrade" style={{ color: MUT, textDecoration: "none" }}>Tarifs</Link>
         </p>

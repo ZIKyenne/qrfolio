@@ -107,7 +107,11 @@ export function edgeMarginPx(objs: Rect[], canvasW: number, canvasH: number): nu
 // Distance de lecture ≈ 10 × la taille du QR (règle 10:1 largement admise).
 export function scanDistanceM(qrSizeMm?: number | null): number | null {
   if (typeof qrSizeMm !== "number" || !(qrSizeMm > 0)) return null
-  return Math.round((qrSizeMm * 10) / 100) / 10   // mm ×10 -> mm de distance -> m, arrondi 0,1
+  // Règle du dixième : le côté du QR vaut ~1/10 de la distance de lecture.
+  // Arrondi vers le BAS, jamais vers le haut : c'est une marge de sécurité, et
+  // un arrondi généreux annonçait 0,3 m pour un QR de 26 mm — 15 % de mieux que
+  // ce que la règle autorise, affiché au client dans le Print Studio.
+  return Math.floor(qrSizeMm / 10) / 10
 }
 
 // Contribution d'un contrôle : ok = plein poids, warn = moitié, fail/na = 0.

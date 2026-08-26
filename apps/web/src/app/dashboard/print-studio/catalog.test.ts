@@ -5,6 +5,8 @@ import {
 } from "./catalog"
 import { paletteFromStyle, scaleFor, sceneLayers, wcag, on, SCENES, TRADES } from "./mockup"
 import { evaluateControls, canExport, LIGNE_DE_CONTROLE, VOLETS, ECRANS } from "./states"
+import { scanDistanceM } from "../qr-codes/printPreflight"
+import { distanceMaximaleCm } from "../../outils/taille-qr-code/taille"
 
 // ── Intégrité : « ne supprime pas d'élément / paramètre » ─────────────────────
 describe("catalogue — intégrité (comptes exacts)", () => {
@@ -150,5 +152,91 @@ describe("structure", () => {
     expect(ECRANS.map(e => e.id)).toEqual(["library", "preview", "ready", "suite"])
     expect(VOLETS).toHaveLength(3)
     expect(VOLETS.every(v => v.ouvertParDefaut === false)).toBe(true)
+  })
+})
+
+// ── Un support doit tenir la distance qu'il annonce ───────────────────────────
+//
+// Ce que ce test a trouvé le jour où il a été écrit :
+//   · l'affiche A3 disait « un QR lisible à deux mètres » et portait 68 mm,
+//     soit un code lisible à 68 cm ;
+//   · l'affiche A2 promettait cinq mètres, ce qui demande un QR de 500 mm sur
+//     une feuille large de 420 — la promesse était impossible ;
+//   · le sticker vitrine, collé côté rue, portait 26 mm : lisible à 26 cm ;
+//   · le panneau horaires, sur une porte, portait 44 mm.
+//
+// La règle est celle du preflight, pas une invention de ce test : le côté du QR
+// vaut environ un dixième de la distance de lecture.
+describe("chaque support tient la distance de lecture qu'il annonce", () => {
+  /** Largeur du support, en millimètres. */
+  const largeurMm = (it: typeof ITEMS[number]) => it.hMm * it.ratio
+  /** Le plus petit côté : c'est lui qui limite la taille du QR. */
+  const petitCoteMm = (it: typeof ITEMS[number]) => Math.min(it.hMm, largeurMm(it))
+
+  it("chaque support déclare sa distance de lecture", () => {
+    for (const it of ITEMS) {
+      expect(typeof it.distanceCm, `${it.id} ${it.name}`).toBe("number")
+      expect(it.distanceCm, `${it.id} ${it.name}`).toBeGreaterThan(0)
+      expect(it.distanceCm, `${it.id} ${it.name}`).toBeLessThanOrEqual(500)
+    }
+  })
+
+  it("le QR par défaut est assez grand pour cette distance", () => {
+    const fautifs = ITEMS
+      .filter(it => distanceMaximaleCm(it.qrMm) < it.distanceCm)
+      .map(it => `${it.name} : ${it.qrMm} mm lisible à ${distanceMaximaleCm(it.qrMm)} cm, annoncé à ${it.distanceCm} cm`)
+    expect(fautifs).toEqual([])
+  })
+
+  it("le QR tient physiquement dans le support, marges comprises", () => {
+    const debordent = ITEMS
+      .filter(it => it.qrMm > petitCoteMm(it) - 2 * it.margin)
+      .map(it => `${it.name} : QR ${it.qrMm} mm dans ${Math.round(petitCoteMm(it))} mm avec ${it.margin} mm de marge`)
+    expect(debordent).toEqual([])
+  })
+
+  it("le QR ne mange pas tout le support (plafond de l'éditeur : 72 %)", () => {
+    const envahissants = ITEMS
+      .filter(it => it.qrMm > 0.72 * petitCoteMm(it))
+      .map(it => `${it.name} : ${it.qrMm} mm sur ${Math.round(petitCoteMm(it))} mm`)
+    expect(envahissants).toEqual([])
+  })
+
+  it("aucun support ne promet dans son texte une distance qu'il ne tient pas", () => {
+    // Les gabarits décrivent leur usage en français. On relit les distances
+    // écrites en toutes lettres et on les confronte à la taille réelle du QR.
+    const ECRIT: [RegExp, number][] = [
+      [/\bà un bon mètre\b/i, 100],
+      [/\bà (?:un|1) mètre\b/i, 100],
+      [/\bà deux mètres\b/i, 200],
+      [/\bà trois mètres\b/i, 300],
+      [/\bà cinq mètres\b/i, 500],
+    ]
+    const menteurs: string[] = []
+    for (const it of ITEMS) {
+      for (const [motif, cm] of ECRIT) {
+        if (!motif.test(it.plain)) continue
+        if (distanceMaximaleCm(it.qrMm) < cm) {
+          menteurs.push(`${it.name} annonce ${cm} cm, son QR de ${it.qrMm} mm se lit à ${distanceMaximaleCm(it.qrMm)} cm`)
+        }
+        if (cm > petitCoteMm(it) * 10) {
+          menteurs.push(`${it.name} annonce ${cm} cm : impossible sur ${Math.round(petitCoteMm(it))} mm de côté`)
+        }
+      }
+    }
+    expect(menteurs).toEqual([])
+  })
+
+  it("la règle du preflight et celle de l'outil public donnent le même résultat", () => {
+    // Deux endroits appliquent la même règle du dixième. Si l'un dérive, les
+    // gabarits et le testeur public se contrediraient devant le client.
+    // Le preflight arrondit à 0,1 m près, toujours vers le bas : il ne doit
+    // jamais annoncer plus loin que la règle, et jamais moins de 10 cm en deçà.
+    for (const mm of [20, 26, 30, 60, 120, 200, 220, 300]) {
+      const annonce = Math.round(scanDistanceM(mm)! * 100)
+      const regle = distanceMaximaleCm(mm)
+      expect(annonce, `${mm} mm annoncé au-delà de la règle`).toBeLessThanOrEqual(regle)
+      expect(regle - annonce, `${mm} mm trop pessimiste`).toBeLessThan(10)
+    }
   })
 })

@@ -28,19 +28,26 @@ export interface RedesignResolveInput {
   envEnabled: boolean
   /** localStorage["qrowg_builder_redesign"] : "1" force ON, "0" force OFF, autre = neutre. */
   localOverride?: string | null
-  /** ?builderRedesign=1 (pris en compte uniquement hors production). */
+  /** ?builderRedesign=1 allume, =0 éteint. Prioritaire, et valable en production. */
   queryOverride?: string | null
   isProduction: boolean
 }
 
 // Résolution PURE et déterministe du flag (testable sans navigateur). Priorité :
-// override local explicite > ENV > query param (hors prod) > OFF.
+// query param explicite > override local explicite > ENV > OFF.
+//
+// Le param passe AVANT le local, et il vaut aussi en production. Sans cela, la
+// seule façon d'essayer le nouveau Builder sur son téléphone était d'ouvrir une
+// console de navigateur pour écrire dans localStorage — infaisable sur iPhone.
+// Un lien doit suffire : ?builderRedesign=1 allume, =0 éteint. Le hook mémorise
+// ensuite le choix, pour que la navigation suivante le garde.
 export function resolveBuilderRedesignEnabled(input: RedesignResolveInput): boolean {
+  const q = input.queryOverride
+  if (q === "1" || q === "true") return true
+  if (q === "0" || q === "false") return false
   if (input.localOverride === "1") return true
   if (input.localOverride === "0") return false
-  if (input.envEnabled) return true
-  if (!input.isProduction && (input.queryOverride === "1" || input.queryOverride === "true")) return true
-  return false
+  return input.envEnabled
 }
 
 // Hook client. Démarre à la valeur ENV (= rendu SSR → pas de mismatch), puis applique l'override
@@ -61,6 +68,13 @@ export function useBuilderRedesign(): boolean {
         isProduction: process.env.NODE_ENV === "production",
       })
     }
+    // Un lien avec ?builderRedesign=1 (ou =0) mémorise le choix : la page
+    // suivante le garde, sans reposer le paramètre dans l'URL.
+    try {
+      const q = new URLSearchParams(window.location.search).get(REDESIGN_QUERY_PARAM)
+      if (q === "1" || q === "true") localStorage.setItem(REDESIGN_STORAGE_KEY, "1")
+      else if (q === "0" || q === "false") localStorage.setItem(REDESIGN_STORAGE_KEY, "0")
+    } catch { /* noop */ }
     setEnabled(compute())
     const onStorage = (e: StorageEvent) => { if (e.key === REDESIGN_STORAGE_KEY) setEnabled(compute()) }
     window.addEventListener("storage", onStorage)

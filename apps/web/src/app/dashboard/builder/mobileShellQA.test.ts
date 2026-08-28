@@ -32,8 +32,24 @@ describe("le drapeau peut réellement s'allumer", () => {
   it("la production reste éteinte par défaut", () => {
     const off = { envEnabled: false, isProduction: true, localOverride: null, queryOverride: null }
     expect(resolveBuilderRedesignEnabled(off)).toBe(false)
-    // …et le paramètre d'adresse ne peut pas l'allumer en production.
-    expect(resolveBuilderRedesignEnabled({ ...off, queryOverride: "1" })).toBe(false)
+  })
+
+  // Règle assouplie sciemment. Elle disait : « le paramètre d'adresse ne peut pas
+  // l'allumer en production ». La conséquence pratique était qu'essayer la
+  // coquille mobile sur un téléphone imposait d'ouvrir une console de navigateur
+  // pour écrire dans localStorage — infaisable sur iPhone, donc personne ne l'a
+  // jamais essayée. Ce que le paramètre peut faire reste borné : l'éditeur est
+  // derrière l'authentification, l'effet ne dépasse pas le navigateur qui a
+  // suivi le lien, et ?builderRedesign=0 revient en arrière.
+  it("un lien suffit à l'allumer sur son propre téléphone, et à l'éteindre", () => {
+    const base = { envEnabled: false, isProduction: true, localOverride: null }
+    expect(resolveBuilderRedesignEnabled({ ...base, queryOverride: "1" })).toBe(true)
+    expect(resolveBuilderRedesignEnabled({ ...base, envEnabled: true, queryOverride: "0" })).toBe(false)
+  })
+
+  it("le lien n'allume rien pour les autres visiteurs", () => {
+    // Aucun effet global : sans le paramètre ni choix mémorisé, tout reste éteint.
+    expect(resolveBuilderRedesignEnabled({ envEnabled: false, isProduction: true, localOverride: null, queryOverride: null })).toBe(false)
   })
 
   it("un navigateur peut l'allumer pour lui seul, même en production", () => {

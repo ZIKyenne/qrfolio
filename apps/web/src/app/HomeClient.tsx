@@ -710,7 +710,7 @@ const PLAN_LANDING_UI = {
 const LANDING_BENEFITS: Record<string, { text: string; ok: boolean }[]> = {
   free: [
     { text: "Votre page en ligne en 5 minutes", ok: true },
-    { text: "Un QR code dynamique prêt à imprimer", ok: true },
+    { text: "3 QR statiques permanents + 2 dynamiques / mois", ok: true },
     { text: "Suivez vos premières visites", ok: true },
     { text: "3 pages · 200 vues / mois", ok: true },
     { text: "Sans la mention QRowg", ok: false },
@@ -1981,7 +1981,7 @@ function BuilderSection(){
           ))}
         </div>
         <div style={{textAlign:"center",marginTop:48,opacity:visible?1:0,transition:"opacity 0.6s ease 0.7s"}}>
-          <a href="/dashboard/builder" style={{display:"inline-flex",alignItems:"center",gap:10,
+          <a href="/dashboard/builder/new" style={{display:"inline-flex",alignItems:"center",gap:10,
             background:"linear-gradient(90deg,#C9A84C,#b8953f)",color:"#080808",textDecoration:"none",
             fontSize:14,fontWeight:700,padding:"13px 30px",borderRadius:11,
             boxShadow:"0 4px 24px rgba(201,168,76,0.35)",transition:"transform 0.2s var(--mo-ease-spring),box-shadow 0.2s"}}
@@ -2971,7 +2971,7 @@ function UseCasesSection() {
 const FAQ_ITEMS = [
   { q:"Le QR code reste-t-il le même si je modifie ma page ?",            a:"Oui, c'est tout l'intérêt d'un QR code dynamique : vous modifiez votre page autant de fois que vous voulez, et le QR code déjà imprimé reste identique et continue de fonctionner." },
   { q:"Qu'est-ce qu'une carte de visite numérique QRowg ?",             a:"Une page mobile professionnelle qui regroupe vos informations, vos liens et vos boutons d'action (appel, WhatsApp, réservation…). On y accède en scannant votre QR code ou via un simple lien." },
-  { q:"Puis-je utiliser QRowg gratuitement ?",                          a:"Oui. Le plan gratuit donne accès à 3 pages, 200 vues par mois, 1 QR statique permanent et 2 QR dynamiques par mois. Aucune carte bancaire n'est demandée pour commencer." },
+  { q:"Puis-je utiliser QRowg gratuitement ?",                          a:"Oui. Le plan gratuit donne accès à 3 pages, 200 vues par mois, 3 QR statiques permanents et 2 QR dynamiques par mois (essai de 30 jours par lien). Aucune carte bancaire n'est demandée pour commencer." },
   { q:"Puis-je connecter mon propre nom de domaine ?",                    a:"Oui, à partir du plan Pro. Vous pouvez utiliser un sous-domaine personnalisé (ex. : carte.votresite.fr) pour une image vraiment professionnelle." },
   { q:"Est-ce que je vois les statistiques de scans ?",                   a:"Oui. Vues, scans, appareils, sources de trafic et pages les plus consultées. Statistiques de base sur le plan gratuit, statistiques avancées sur Pro." },
   { q:"Puis-je retirer la mention QRowg de ma page ?",                  a:"Oui, dès le plan Starter : votre page affiche uniquement votre marque. Sur le plan gratuit, une mention discrète apparaît en bas de page." },
@@ -3882,7 +3882,7 @@ export default function HomeClient() {
           <FooterCol title="Produit">
             <Link href="/features"          className="fl">Fonctionnalités</Link>
             <Link href="/#templates"        className="fl">Templates</Link>
-            <Link href="/dashboard/builder" className="fl">Builder</Link>
+            <Link href="/dashboard/builder/new" className="fl">Builder</Link>
             <Link href="/#analytics"        className="fl">Analytics</Link>
             <Link href="/#features"         className="fl">QR Codes</Link>
             <Link href="/#pricing"          className="fl">Tarifs</Link>

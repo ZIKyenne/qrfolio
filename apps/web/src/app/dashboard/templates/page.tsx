@@ -82,23 +82,33 @@ const PLAN_MARK: Record<string, any> = { free: Sparkles, starter: Zap, pro: Flam
 const PLAN_CLEAN_LABEL: Record<string, string> = { all: "Tous les plans", free: "Gratuit", starter: "Starter", pro: "Pro" }
 
 // Mapping catégorie → ids templates (extensible)
+// Un secteur → les modèles qui lui correspondent, par identifiant OU par groupe.
+//
+// Les 20 modèles partagés portent le NOM DE LEUR GROUPE comme catégorie
+// (« Beauté & bien-être », « Restauration »…), jamais la clé du secteur
+// (« Beaute », « Restaurant »). Comme la carte ne listait que des identifiants,
+// aucun d'eux ne remontait : un visiteur venu de /qr-code/salon voyait en
+// premier « Salon Beauté », un modèle du plan payant, avec son cadenas — alors
+// que cinq modèles beauté gratuits existaient juste en dessous.
 const CATEGORY_MAP: Record<string, string[]> = {
-  Restaurant:  ["restaurant"],
-  Bar:         ["restaurant"],
-  Cafe:        ["restaurant"],
-  Freelance:   ["freelance", "agence"],
-  Consultant:  ["freelance", "agence", "coach"],
-  Coach:       ["coach"],
-  Agence:      ["agence"],
-  Influenceur: ["influenceur", "createur"],
-  Musicien:    ["artiste"],
-  Photographe: ["artiste", "freelance"],
-  Immobilier:  ["immobilier"],
-  Beaute:      ["coiffeur"],
-  Sante:       ["medecin"],
-  Evenement:   ["event"],
-  SaaS:        ["startup"],
-  Ecommerce:   ["ecommerce", "vente_produits"],
+  Restaurant:  ["restaurant", "Restauration", "Food"],
+  Bar:         ["restaurant", "Restauration", "Food"],
+  Cafe:        ["restaurant", "Restauration", "Food"],
+  Freelance:   ["freelance", "agence", "Freelance & Entreprise", "Business"],
+  Consultant:  ["freelance", "agence", "coach", "Freelance & Entreprise", "Coaching & Formation", "Business"],
+  Coach:       ["coach", "Coaching & Formation", "Bien-etre"],
+  Agence:      ["agence", "Freelance & Entreprise", "Business"],
+  Influenceur: ["influenceur", "createur", "Créatif & Média", "Creatif"],
+  Musicien:    ["artiste", "Créatif & Média", "Creatif"],
+  Photographe: ["artiste", "freelance", "Créatif & Média", "Creatif"],
+  Immobilier:  ["immobilier", "Immobilier"],
+  Beaute:      ["coiffeur", "Beauté & bien-être", "Beaute"],
+  Sante:       ["medecin", "Beauté & bien-être", "Sante"],
+  Evenement:   ["event", "Événementiel", "Event"],
+  SaaS:        ["startup", "Freelance & Entreprise", "Tech"],
+  Ecommerce:   ["ecommerce", "vente_produits", "Commerce"],
+  Artisan:     ["Artisan & Services", "Freelance & Entreprise"],
+  Association: ["Association", "Événementiel"],
 }
 
 const TEMPLATES: any[] = [
@@ -252,20 +262,27 @@ export default function TemplatesPage() {
     return matchMetier && matchPlan && matchSearch
   }), [activeMetier, activePlan, search])
 
-  /** Un modèle appartient-il à ce secteur ? (même règle que le filtre ci-dessus) */
-  const dansSecteur = (t: any, secteur: string) =>
-    (CATEGORY_MAP[secteur] || []).includes(t.id) || t.category === secteur
+  /** Un modèle appartient-il à ce secteur ? Par identifiant, par groupe, ou par catégorie. */
+  const dansSecteur = (t: any, secteur: string) => {
+    const cles = CATEGORY_MAP[secteur] || []
+    return cles.includes(t.id) || cles.includes(t.category) || t.category === secteur
+  }
 
-  // Arrivée depuis une page d'entrée : les modèles du secteur passent devant,
-  // le reste du catalogue reste visible dessous. Aucun tri quand on vient
-  // directement — l'ordre d'origine porte déjà la popularité.
+  // Arrivée depuis une page d'entrée : les modèles du secteur passent devant, et
+  // parmi eux CEUX QUI SONT UTILISABLES d'abord. Sans cette seconde règle, le
+  // premier écran d'un visiteur venu du référencement était une carte grisée
+  // avec un cadenas et « Débloquer » — un mur payant à l'entrée d'un produit
+  // que personne ne connaît encore. Les modèles payants restent visibles,
+  // simplement plus bas.
   const ordonnes = useMemo(() => {
     if (!fromEntry) return filtered
     const dedans = filtered.filter((t: any) => dansSecteur(t, fromEntry))
     const dehors = filtered.filter((t: any) => !dansSecteur(t, fromEntry))
-    return [...dedans, ...dehors]
+    const ouverts = dedans.filter((t: any) => canUse(t.plan))
+    const fermes = dedans.filter((t: any) => !canUse(t.plan))
+    return [...ouverts, ...fermes, ...dehors]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtered, fromEntry])
+  }, [filtered, fromEntry, userPlan])
 
   // Compteur par catégorie
   const countByMetier = useMemo(() => {

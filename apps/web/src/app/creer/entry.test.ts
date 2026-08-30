@@ -109,7 +109,13 @@ describe("les pages d'entrée mènent bien à l'essai", () => {
     expect(g).toContain('const m = safeMetier(q.get("metier"))')
     expect(g).toContain("if (m) setFromEntry(m)")
     expect(g, "le secteur ne doit PAS devenir un filtre").not.toContain("setActiveMetier(m)")
-    expect(g).toContain("return [...dedans, ...dehors]")
+    // L'ordre s'affine : à l'intérieur du secteur, les modèles UTILISABLES passent
+    // devant les verrouillés. Un visiteur venu du référencement voyait sinon une
+    // carte grisée avec un cadenas en premier écran. Rien n'est masqué pour autant :
+    // les trois groupes sont toujours concaténés, dans cet ordre.
+    expect(g).toContain("return [...ouverts, ...fermes, ...dehors]")
+    expect(g, "les modèles hors secteur doivent rester affichés").toContain("...dehors")
+    expect(g, "les modèles payants doivent rester affichés").toContain("...fermes")
   })
 
   it("la grille affiche la liste ordonnée, pas la liste brute", () => {

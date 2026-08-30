@@ -972,6 +972,51 @@ export function extHref(url?: string): string {
   return `https://${u.replace(/^\/+/, "")}`
 }
 
+/**
+ * Hôtes autorisés dans un cadre d'intégration.
+ *
+ * Le bloc « Embed » insérait l'adresse saisie telle quelle dans un <iframe>. Sur
+ * une page publique servie par qrowg.com, cela permettait à n'importe quel compte
+ * gratuit d'exécuter du code sur notre propre origine, donc de lire les jetons de
+ * session des visiteurs connectés — la politique de sécurité appliquée n'ayant ni
+ * script-src ni frame-src pour l'en empêcher.
+ *
+ * La liste reprend ce que le bloc promet dans son propre libellé (« Forms,
+ * Typeform, Notion… ») plus les intégrations déjà présentes ailleurs dans le
+ * produit. Tout le reste est refusé : mieux vaut un bloc vide qu'une page
+ * piégée. Correspondance sur le domaine ET ses sous-domaines uniquement — un
+ * hôte comme « google.com.evil.fr » ne passe pas.
+ */
+export const EMBED_HOTES: readonly string[] = [
+  "docs.google.com", "forms.gle", "calendar.google.com", "drive.google.com",
+  "google.com", "maps.google.com",
+  "typeform.com", "notion.so", "notion.site", "airtable.com",
+  "youtube.com", "youtube-nocookie.com", "youtu.be",
+  "vimeo.com", "player.vimeo.com", "dailymotion.com",
+  "open.spotify.com", "spotify.com", "soundcloud.com", "w.soundcloud.com",
+  "calendly.com", "tally.so", "framer.com",
+]
+
+/**
+ * Adresse d'intégration sûre, ou chaîne vide si l'hôte n'est pas autorisé.
+ * Seul `https` est accepté : un cadre en http ferait basculer la page en contenu
+ * mixte, et tout autre schéma (javascript:, data:) n'a rien à faire ici.
+ */
+export function embedHref(url?: string): string {
+  const u = (url || "").trim()
+  if (!u) return ""
+  let hote: string
+  try {
+    const parsed = new URL(u)
+    if (parsed.protocol !== "https:") return ""
+    hote = parsed.hostname.toLowerCase().replace(/^www\./, "")
+  } catch {
+    return ""
+  }
+  const permis = EMBED_HOTES.some(h => hote === h || hote.endsWith("." + h))
+  return permis ? u : ""
+}
+
 // Normalise ce que l'utilisateur saisit pour un reseau en URL cliquable valide :
 //  - URL complete (http/mailto/tel) -> telle quelle
 //  - domaine sans protocole ("instagram.com/jean", "www.x.com") -> prefixe https://

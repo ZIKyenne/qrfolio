@@ -74,7 +74,12 @@ export async function POST(req: NextRequest) {
     const shortCode = await uniqueShortCode(supabaseAdmin)   // crypto (audit 2026-08-16) — plus de Math.random prédictible
     await supabaseAdmin.from("qr_codes").insert({ page_id: newPage.id, user_id: user.id, short_code: shortCode, status: qrStatus })
 
-    return NextResponse.json({ pageId: newPage.id, slug: newPage.slug, success: true, qrStatus, atActiveLimit: qrStatus === "draft" })
+    // shortCode RENVOYÉ : sans lui, le parcours « je compose sans compte puis je publie »
+    // n'avait aucun moyen d'afficher le QR à la fin. L'éditeur saute volontairement le
+    // rechargement sur ce chemin (le contenu est en mémoire, pas encore en base), et le
+    // code court n'était lu que dans ce rechargement. Résultat : écran de fin sans QR,
+    // sans adresse, sans « testez avant d'imprimer ».
+    return NextResponse.json({ pageId: newPage.id, slug: newPage.slug, shortCode, success: true, qrStatus, atActiveLimit: qrStatus === "draft" })
   } catch (err: any) {
     return serverError("pages/create", err)
   }

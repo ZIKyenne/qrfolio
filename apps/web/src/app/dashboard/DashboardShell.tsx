@@ -163,7 +163,13 @@ const GUEST_NAV: { label: string; items: { href: string; glyph: string; label: s
 // Actions du bouton central "Créer".
 const CREATE_ACTIONS = [
   { href: "/dashboard/onboarding", icon: Sparkles, label: "Créer par objectif", sub: "Guidé — on génère tout pour vous" },
-  { href: "/dashboard/builder", icon: FileText, label: "Créer une page", sub: "Une page pro éditable" },
+  // /new et non /builder : sans identifiant, l'éditeur d'une personne CONNECTÉE
+  // démarre en mode démo et n'enregistre rien (la garde du bootstrap sort, ready
+  // reste false, buildSnapshot rend null). On composait une page entière et on la
+  // perdait, avec pour seul avertissement un « Mode démo » en 9 px masqué sur
+  // téléphone. Les deux liens du menu invité, eux, restent tels quels : sans
+  // compte, le brouillon est sauvegardé en local et rien n'est perdu.
+  { href: "/dashboard/builder/new", icon: FileText, label: "Créer une page", sub: "Une page pro éditable" },
   { href: "/dashboard/qr-codes", icon: QrCode, label: "Créer un QR code", sub: "Dynamique, modifiable" },
   { href: "/dashboard/qr-link", icon: Link2, label: "QR Dynamique", sub: "Modifiable · suivi des scans" },
   { href: "/dashboard/print-studio", icon: Printer, label: "Créer un support imprimable", sub: "Sticker, chevalet, affiche…" },

@@ -58,7 +58,7 @@ export const PLANS: Record<PlanId, Plan> = {
     badge: null,
     limits: { pages: 3, views: 200, qr: 3, team: null },
     caps: { printStudio: false, qrStudioAdvanced: false, ai: false, removeBranding: false, pageIntro: false, exportFormats: ["png"] },
-    features: ["3 pages", "200 vues/mois", "3 QR statiques + 2 dynamiques/mois", "Branding QRowg visible", "Analytics de base", "6 templates gratuits"],
+    features: ["3 pages", "200 vues/mois", "3 QR statiques + 2 dynamiques/mois", "Branding QRowg visible", "Analytics de base", "27 modèles gratuits"],
     perks: [
       { text: "3 pages", included: true },
       { text: "200 vues / mois", included: true },
@@ -66,7 +66,7 @@ export const PLANS: Record<PlanId, Plan> = {
       { text: "2 QR dynamiques / mois (essai 30 j)", included: true },
       { text: "Hébergement inclus", included: true },
       { text: "Analytics de base", included: true },
-      { text: "6 templates gratuits", included: true },
+      { text: "27 modèles gratuits", included: true },
       { text: "Branding QRowg visible", included: true },
       { text: "QR Studio", included: false },
       { text: "QR Print Studio", included: false },

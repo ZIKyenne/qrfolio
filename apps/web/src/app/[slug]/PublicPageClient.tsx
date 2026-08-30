@@ -13,7 +13,7 @@ import { pricingCtaModel } from "../dashboard/builder/pricingCta"
 import { normalizePageTheme } from "../dashboard/builder/types"
 import { resolvePublicBlock } from "../dashboard/builder/shared-renderer/publicRegistry"
 import { albumBlockCtaModel } from "../dashboard/builder/shared-renderer/models/albumBlockCta"
-import { themeBackgroundStyle, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, buildVCard, mapEmbedUrl, shareLinks, calendarLinks, spotifyEmbedUrl, youtubeId, socialHref, extHref, docTypeMeta, docActionLabel, announcementMeta, blockDecoration, waLink, telLink, directionsLink, embedVideoUrl, stickyActionHref, ctaButtonStyle, CTA_ANIM_CSS, SOCIAL_NETWORKS_MAP, BANNER_ANIM_CSS } from "../dashboard/builder/types"
+import { themeBackgroundStyle, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, buildVCard, mapEmbedUrl, shareLinks, calendarLinks, spotifyEmbedUrl, youtubeId, socialHref, extHref, embedHref, docTypeMeta, docActionLabel, announcementMeta, blockDecoration, waLink, telLink, directionsLink, embedVideoUrl, stickyActionHref, ctaButtonStyle, CTA_ANIM_CSS, SOCIAL_NETWORKS_MAP, BANNER_ANIM_CSS } from "../dashboard/builder/types"
 
 type Block = { id: string; type: string; content: Record<string, any>; position: number }
 type Page = { id: string; title: string; slug: string; theme: any; total_views: number; profiles: any }
@@ -834,7 +834,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
       )
       const wrapped = c.link
-        ? <a href={c.link} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.link)} style={{ display: "block", textDecoration: "none" }}>{imgEl}</a>
+        ? <a href={extHref(c.link)} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.link)} style={{ display: "block", textDecoration: "none" }}>{imgEl}</a>
         : imgEl
       return (
         <div style={{ overflow: "hidden", padding: isCircle ? "8px 24px 0" : 0 }}>
@@ -1034,7 +1034,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           {c.artist_name && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 12px", textAlign: "center", fontFamily: FONT_D }}>{c.artist_name}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {platforms.map(([k,icon,color,label]) => (
-              <a key={k} href={(c as any)[k as string]} target="_blank" rel="noopener noreferrer"
+              <a key={k} href={extHref((c as any)[k as string])} target="_blank" rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center", gap: 13, background: (color as string)+"10", border: `1px solid ${color}22`, borderRadius: 12, padding: "12px 15px", textDecoration: "none", transition: "transform 0.15s" }}
                 onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
                 onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}>
@@ -1957,7 +1957,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             </div>
           </div>
           <audio src={c.src} controls preload="none" style={{ width: "100%", display: "block" }} />
-          {c.show_download === "yes" && <a href={c.src} download onClick={() => trackLinkClick(pageId, block.id, "audio-download")} style={{ display: "inline-block", marginTop: 9, color: MUTED, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>↓ Télécharger</a>}
+          {c.show_download === "yes" && <a href={extHref(c.src)} download onClick={() => trackLinkClick(pageId, block.id, "audio-download")} style={{ display: "inline-block", marginTop: 9, color: MUTED, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>↓ Télécharger</a>}
         </div>
       </div>
     ) : null
@@ -2790,7 +2790,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               {c.subtitle && <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 14, margin: "0 0 15px", textAlign: ta }}>{c.subtitle}</p>}
               <div style={{ display: "flex", gap: 9, flexWrap: "wrap", justifyContent: align === "center" ? "center" : "flex-start" }}>
                 {c.cta_label && <a href={extHref(c.cta_url) || "#"} target={/^https?:/.test(c.cta_url || "") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.cta_url || "hero")} style={{ background: `linear-gradient(90deg,${G},${G}cc)`, borderRadius: 10, padding: "11px 20px", fontSize: 13, fontWeight: 700, color: "#080808", textDecoration: "none" }}>{c.cta_label}</a>}
-                {c.cta2_label && <a href={c.cta2_url || "#"} target={/^https?:/.test(c.cta2_url || "") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.cta2_url || "hero2")} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 10, padding: "11px 20px", fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none" }}>{c.cta2_label}</a>}
+                {c.cta2_label && <a href={extHref(c.cta2_url) || "#"} target={/^https?:/.test(c.cta2_url || "") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.cta2_url || "hero2")} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 10, padding: "11px 20px", fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none" }}>{c.cta2_label}</a>}
               </div>
             </div>
           </div>
@@ -2841,7 +2841,10 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
     case "embed_block": return c.url ? (
       <div style={{ padding: "10px 24px 14px" }}>
         {c.title && <p style={{ color: MUTED, fontSize: 11, margin: "0 0 9px", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: FONT_B }}>{c.title}</p>}
-        <iframe src={c.url} width="100%" height={parseInt(c.height || "400")} style={{ border: "none", borderRadius: 13, display: "block" }} loading="lazy" />
+        {/* Hôte contrôlé : une adresse arbitraire ici s'exécutait sur notre origine. */}
+        {embedHref(c.url)
+          ? <iframe src={embedHref(c.url)} width="100%" height={parseInt(c.height || "400")} style={{ border: "none", borderRadius: 13, display: "block" }} loading="lazy" sandbox="allow-scripts allow-forms allow-popups allow-same-origin" referrerPolicy="no-referrer" />
+          : null}
       </div>
     ) : null
     case "qr_code_block": return null

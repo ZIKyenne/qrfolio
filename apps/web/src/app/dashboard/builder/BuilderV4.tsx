@@ -639,6 +639,10 @@ import { BLOCK_DEFS } from "./blockDefs"
             // Repère 5 — bout du parcours : le compte existe ET le travail a été retrouvé.
             marque(FUNNEL.brouillonRepris, { modele: etiquette(claimed?.templateKey) })
             skipLoadRef.current = true
+            // On saute le rechargement (le contenu est en mémoire, le relire l'effacerait),
+            // donc le code court du QR doit venir d'ici : c'est la seule autre source.
+            // Sans lui, qrTarget reste vide et l'écran de fin du parcours ne s'affiche pas.
+            if (json.shortCode) setQrShortCode(String(json.shortCode))
           } else {
             // Normalise les IDs de blocs par defaut (\"1\"/\"2\"/\"3\") en UUID -> chemin upsert propre.
             setBlocksRaw(prev => prev.map(b => IS_UUID(b.id) ? b : { ...b, id: genId() }))

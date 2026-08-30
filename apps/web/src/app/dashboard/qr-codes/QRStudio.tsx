@@ -673,6 +673,9 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
     ;(async () => {
       try {
         const blob = await getQRBlob({ data: qrUrl, fg, bg, ecc: effectiveEcc, style: renderStyle, size: 600 }, "png")
+        // getQRBlob peut rendre null (canvas indisponible, rendu annulé) : sans ce
+        // garde-fou, blobToDataUrl recevait null et l'aperçu de scène plantait.
+        if (!blob) return
         const url = await blobToDataUrl(blob)
         if (!cancelled) setQrPng(url)
       } catch { /* ignore */ }

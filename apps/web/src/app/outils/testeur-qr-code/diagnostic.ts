@@ -6,6 +6,8 @@
 //
 // Aucune image ne quitte le navigateur : tout est calculé sur place.
 
+import { CONTRASTE_FAIBLE, CONTRASTE_FRANC } from "@/lib/contrasteQr"
+
 /** Un point de l'image, en pixels. */
 export type Point = { x: number; y: number }
 
@@ -177,9 +179,9 @@ export function diagnostiquer(l: Lecture, nombreModules: number): Diagnostic {
 
   const c = contraste(l.luminanceSombre, l.luminanceClaire)
   constats.push(
-    c >= 7
+    c >= CONTRASTE_FRANC
       ? { cle: "contraste", gravite: "bon", titre: "Le contraste est franc", detail: "Les modules sombres et clairs se distinguent nettement, y compris sous un éclairage médiocre.", mesure: `${arrondi(c)}:1` }
-      : c >= 3
+      : c >= CONTRASTE_FAIBLE
       ? { cle: "contraste", gravite: "risque", titre: "Le contraste est juste", detail: "Le code passe sur un bon téléphone en bonne lumière, et devient capricieux ailleurs : vitrine le soir, salle sombre, appareil ancien.", correction: "Foncez la couleur des modules ou éclaircissez le fond. Du noir sur blanc reste ce qui se lit le mieux.", mesure: `${arrondi(c)}:1` }
       : { cle: "contraste", gravite: "bloquant", titre: "Le contraste est insuffisant", detail: "À ce niveau, une partie des téléphones ne verra pas la différence entre les modules et le fond.", correction: "Repassez à des modules très sombres sur un fond très clair avant toute impression.", mesure: `${arrondi(c)}:1` },
   )

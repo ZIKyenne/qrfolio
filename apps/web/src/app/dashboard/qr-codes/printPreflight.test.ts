@@ -106,11 +106,17 @@ describe("printPreflight — score global", () => {
 })
 
 describe("printPreflight — seuils par contrôle", () => {
-  it("contraste : >=4 ok, 2.5–4 warn, <2.5 fail", () => {
-    expect(get({ ...perfect, contrastRatio: 4 }, "contrast").status).toBe("ok")
-    expect(get({ ...perfect, contrastRatio: 3.9 }, "contrast").status).toBe("warn")
-    expect(get({ ...perfect, contrastRatio: 2.5 }, "contrast").status).toBe("warn")
-    expect(get({ ...perfect, contrastRatio: 2.4 }, "contrast").status).toBe("fail")
+  // Seuils désormais partagés avec le QR Studio et le testeur public
+  // (lib/contrasteQr) : ok à partir de 4,5, alerte de 3 à 4,5, échec en dessous
+  // de 3. Le Print Studio validait auparavant dès 4:1 pendant que le testeur du
+  // même site annonçait un risque sur le même fichier.
+  it("contraste : >=4,5 ok, 3–4,5 warn, <3 fail — comme les deux autres outils", () => {
+    expect(get({ ...perfect, contrastRatio: 4.5 }, "contrast").status).toBe("ok")
+    expect(get({ ...perfect, contrastRatio: 7 }, "contrast").status).toBe("ok")
+    expect(get({ ...perfect, contrastRatio: 4.2 }, "contrast").status).toBe("warn")
+    expect(get({ ...perfect, contrastRatio: 3 }, "contrast").status).toBe("warn")
+    expect(get({ ...perfect, contrastRatio: 2.9 }, "contrast").status).toBe("fail")
+    expect(get({ ...perfect, contrastRatio: 1.5 }, "contrast").status).toBe("fail")
   })
   it("taille QR : >=25mm ok, 15–25 warn, <15 fail (+ distance dans le détail ok)", () => {
     expect(get({ ...perfect, qrSizeMm: 25 }, "qrsize").status).toBe("ok")

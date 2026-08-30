@@ -192,7 +192,7 @@ export default function UpgradePage() {
                 )}
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
-                  {plan.perks.map((perk, i) => (
+                  {plan.perks.map((perk: { text: string; included: boolean; soon?: boolean }, i: number) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, opacity: perk.included ? 1 : 0.35 }}>
                       <div style={{ width: 16, height: 16, borderRadius: "50%", background: perk.included ? pc + "20" : "rgba(255,255,255,0.04)", border: "1px solid " + (perk.included ? pc + "40" : "rgba(255,255,255,0.08)"), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         {perk.included ? <Check size={9} color={pc} /> : <span style={{ color: MUTED, fontSize: 8 }}>—</span>}

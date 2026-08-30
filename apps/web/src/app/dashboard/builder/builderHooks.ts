@@ -16,7 +16,11 @@ export function reorderArray<T>(arr: T[], from: number, insertBefore: number): T
 
 // Clone des blocs avec des identifiants NEUFS (copier/coller, duplication). PURE :
 // genId injecté (testable). Copie le contenu (nouvelle référence), préserve le reste.
-export function cloneBlocks<T extends { id: string; content: Record<string, string> }>(items: T[], genId: () => string): T[] {
+// Le contenu d'un bloc n'est PAS fait que de chaînes : on y trouve des booléens
+// (__visible, __locked), des nombres et des tableaux. La contrainte
+// `Record<string, string>` était donc fausse — elle ne passait que parce que le
+// mode strict était éteint, et elle rejetait les vrais blocs du produit.
+export function cloneBlocks<T extends { id: string; content: Record<string, unknown> }>(items: T[], genId: () => string): T[] {
   return items.map(b => ({ ...b, id: genId(), content: { ...b.content } }))
 }
 

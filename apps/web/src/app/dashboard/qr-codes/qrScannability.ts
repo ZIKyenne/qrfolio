@@ -7,6 +7,7 @@
 // =============================================================================
 
 import { hexContrastRatio, relLuminance } from "./printPreflight"
+import { CONTRASTE_INSUFFISANT, CONTRASTE_FAIBLE, CONTRASTE_JUSTE, CONTRASTE_FRANC } from "@/lib/contrasteQr"
 
 export type Ecc = "L" | "M" | "Q" | "H"
 export type QrScanLevel = "excellent" | "bon" | "moyen" | "risque"
@@ -51,13 +52,13 @@ export function qrScannability(input: QrScanInput): QrScanResult {
     notes.push({ msg: "Fond transparent : imprimez le QR sur un aplat clair et uni, jamais sur une photo.", penalty: 22 })
   } else if (contrast == null) {
     notes.push({ msg: "Couleur de QR ou de fond invalide.", penalty: 55 })
-  } else if (contrast < 2) {
+  } else if (contrast < CONTRASTE_INSUFFISANT) {
     notes.push({ msg: "Contraste insuffisant : le QR sera probablement illisible. Foncez les modules ou éclaircissez le fond.", penalty: 62 })
-  } else if (contrast < 3) {
+  } else if (contrast < CONTRASTE_FAIBLE) {
     notes.push({ msg: "Contraste faible : risque de non-lecture à l'impression. Visez un fond clair et des modules foncés.", penalty: 40 })
-  } else if (contrast < 4.5) {
+  } else if (contrast < CONTRASTE_JUSTE) {
     notes.push({ msg: "Contraste juste : acceptable, mais un fond plus clair fiabilisera le scan.", penalty: 18 })
-  } else if (contrast < 7) {
+  } else if (contrast < CONTRASTE_FRANC) {
     notes.push({ msg: "Bon contraste — idéalement noir sur blanc pour une marge maximale.", penalty: 5 })
   }
 

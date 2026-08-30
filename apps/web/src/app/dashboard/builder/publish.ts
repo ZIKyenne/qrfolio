@@ -78,7 +78,10 @@ export function createPublishController(deps: PublishDeps) {
       }
       const alreadyPublished = res.alreadyPublished ?? false
       emit({ phase: "published", message: "", alreadyPublished })
-      return { ok: true, publishedAt: res.publishedAt, alreadyPublished }
+      // publishedAt est optionnel dans le résultat brut (une réponse tronquée le
+      // laisse absent) alors que le contrat de sortie le promet : on retombe sur
+      // l'instant courant plutôt que de propager un undefined dans l'écran de fin.
+      return { ok: true, publishedAt: res.publishedAt ?? new Date().toISOString(), alreadyPublished }
     } finally {
       inFlight = false
     }

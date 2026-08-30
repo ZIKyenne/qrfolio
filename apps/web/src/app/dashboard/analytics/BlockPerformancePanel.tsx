@@ -295,7 +295,7 @@ export default function BlockPerformancePanel({ blocks, clicks, pageViews, pages
                 <span style={{ color: MUTED, fontSize: 11 }}>{row.count}x</span>
                 <span style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{row.clics}</span>
                 <span title={row.ctrIsReal ? "CTR réel : clics ÷ impressions (bloc réellement vu)" : "Estimation : clics ÷ vues de page (pas encore d'impressions mesurées)"}
-                  style={{ color: row.effCtr >= 10 ? "var(--success)" : row.effCtr >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
+                  style={{ color: (row.effCtr ?? 0) >= 10 ? "var(--success)" : (row.effCtr ?? 0) >= 5 ? G : MUTED, fontSize: 12, fontWeight: 600 }}>
                   {row.effCtr == null ? "—" : `${row.ctrIsReal ? "" : "~"}${row.effCtr}%`}
                 </span>
                 <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>

@@ -1,3 +1,4 @@
+import { libelleSource } from "@/lib/sourcesTrafic"
 // analyticsAgg.ts — Agregations pures et testables pour le tableau de bord analytics.
 // Aucune dependance React : ces fonctions sont couvertes par des tests unitaires.
 // `now` est injectable partout ou une fenetre glissante est calculee (testabilite).
@@ -52,7 +53,12 @@ export function buildSourceData(views: AggView[]): NameValue[] {
     const src = v.source || "direct"
     counts[src] = (counts[src] || 0) + 1
   }
-  return Object.entries(counts).map(([name, value]) => ({ name, value }))
+  // Nom lisible dès l'agrégation : le graphique affiche `name` tel quel, et le
+  // client lisait donc « qr_scan » et « direct ». Les libellés français vivaient
+  // dans un composant que plus rien ne montait.
+  return Object.entries(counts)
+    .map(([name, value]) => ({ name: libelleSource(name), value }))
+    .sort((a, b) => b.value - a.value)
 }
 
 // ── Engagement (page_events : scroll + impressions + temps par bloc + clics) ───

@@ -57,14 +57,32 @@ describe("buildDeviceData", () => {
 })
 
 describe("buildSourceData", () => {
-  it("compte par source", () => {
+  // Le graphique affiche `name` tel quel : l'agrégation rend donc le nom LISIBLE.
+  // Avant, le commerçant lisait « qr_scan » et « direct » sur son tableau de bord,
+  // parce que les libellés français vivaient dans un composant que plus rien ne montait.
+  it("compte par source, et rend un nom lisible", () => {
     const r = buildSourceData([{ viewed_at: "x", source: "instagram" }, { viewed_at: "x", source: "instagram" }, { viewed_at: "x", source: "google" }])
-    expect(r).toContainEqual({ name: "instagram", value: 2 })
-    expect(r).toContainEqual({ name: "google", value: 1 })
+    expect(r).toContainEqual({ name: "Instagram", value: 2 })
+    expect(r).toContainEqual({ name: "Google", value: 1 })
+  })
+  it("un scan de QR code est nommé en toutes lettres", () => {
+    const r = buildSourceData([{ viewed_at: "x", source: "qr_scan" }])
+    expect(r).toContainEqual({ name: "QR Scan", value: 1 })
+  })
+  it("le trafic venu du site lui-même est nommé pour le client, pas pour nous", () => {
+    const r = buildSourceData([{ viewed_at: "x", source: "interne" }])
+    expect(r).toContainEqual({ name: "Votre site", value: 1 })
+  })
+  it("la source la plus fréquente arrive en tête", () => {
+    const r = buildSourceData([
+      { viewed_at: "x", source: "google" },
+      { viewed_at: "x", source: "qr_scan" }, { viewed_at: "x", source: "qr_scan" },
+    ])
+    expect(r[0]).toEqual({ name: "QR Scan", value: 2 })
   })
   it("source absente/vide -> 'direct'", () => {
     const r = buildSourceData([{ viewed_at: "x" }, { viewed_at: "x", source: "" }, { viewed_at: "x", source: null }])
-    expect(r).toContainEqual({ name: "direct", value: 3 })
+    expect(r).toContainEqual({ name: "Direct", value: 3 })
   })
 })
 

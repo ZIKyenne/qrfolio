@@ -11,7 +11,14 @@ import { useEffect, useRef, createElement, type CSSProperties } from "react"
 
 interface Props {
   as?: keyof React.JSX.IntrinsicElements
-  value: string
+  /**
+   * Le texte affiché. Peut être absent : les modèles de blocs rendent des champs
+   * optionnels (`e3_date` d'une frise vide, par exemple), et le composant les
+   * normalise déjà en chaîne vide plus bas. Le type disait `string` alors que le
+   * comportement acceptait `undefined` — cinq appelants étaient en faute pour un
+   * défaut qui n'existait pas.
+   */
+  value: string | undefined
   onCommit: (v: string) => void
   editable: boolean
   style?: CSSProperties

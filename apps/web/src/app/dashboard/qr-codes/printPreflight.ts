@@ -1,4 +1,5 @@
 // printPreflight.ts — Contrôle qualité AVANT impression (pré-vol) pour le QR Print Studio.
+import { verdictContraste } from "@/lib/contrasteQr"
 // Moteur PUR (aucun React, aucun canvas) -> entièrement testable (printPreflight.test.ts).
 // L'adaptateur (PrintStudio) mesure le design réel et remplit PreflightMetrics ; ce moteur note.
 
@@ -136,7 +137,9 @@ export function printPreflight(m: PreflightMetrics): PreflightResult {
 
   // 1) Contraste QR / fond — le plus critique pour la lecture.
   {
-    const s = grade3(m.contrastRatio, 4, 2.5)
+    // Seuils partagés (lib/contrasteQr) : le Print Studio annonçait « conforme »
+    // dès 4:1 pendant que le testeur public du même site annonçait « risque ».
+    const s = verdictContraste(m.contrastRatio)
     const r = m.contrastRatio
     checks.push({
       id: "contrast", label: "Contraste QR / fond", status: s, weight: 26,

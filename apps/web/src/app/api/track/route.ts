@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/server"
 import { rateLimit, ipOf } from "@/lib/rateLimit"
+import { estUnScan } from "@/lib/premierScan"
+import { previenirPremierScan } from "@/lib/premierScanEnvoi"
 
 // Endpoint de tracking (vues / clics / événements d'engagement). Remplace les
 // inserts anonymes directs (RLS "insert with check(true)") qui permettaient
@@ -21,10 +23,16 @@ function clampNum(v: unknown, lo: number, hi: number): number { const n = Number
 
 // Insert résilient pour l'attribution par support : tente avec qr_source ; si la colonne
 // n'existe pas encore (migration non appliquée), réessaie SANS -> le tracking ne casse jamais.
-async function insertTracked(admin: any, table: string, row: Record<string, unknown>, qs: string | null) {
-  if (!qs) return admin.from(table).insert(row)
-  const { error } = await admin.from(table).insert({ ...row, qr_source: qs })
-  if (error) return admin.from(table).insert(row)
+// Renvoie l'identifiant de la ligne écrite (null si l'écriture a échoué) : l'alerte
+// « premier scan » s'en sert pour savoir si c'est bien elle qui a écrit la première.
+async function insertTracked(admin: any, table: string, row: Record<string, unknown>, qs: string | null): Promise<string | null> {
+  const ecrire = (r: Record<string, unknown>) => admin.from(table).insert(r).select("id").maybeSingle()
+  if (qs) {
+    const { data, error } = await ecrire({ ...row, qr_source: qs })
+    if (!error) return (data as { id?: string } | null)?.id ?? null
+  }
+  const { data } = await ecrire(row)
+  return (data as { id?: string } | null)?.id ?? null
 }
 
 export async function POST(req: NextRequest) {
@@ -43,14 +51,18 @@ export async function POST(req: NextRequest) {
 
     const qs = str(body.qrSource, 40)
     if (type === "view") {
-      await insertTracked(admin, "page_views", {
+      const source = str(body.source, 40)
+      const idVue = await insertTracked(admin, "page_views", {
         country: (req.headers.get("x-vercel-ip-country") || "").slice(0, 2).toUpperCase() || null,
         page_id: pageId,
-        source: str(body.source, 40),
+        source,
         referrer: str(body.referrer, 200),
         device: str(body.device, 20),
         session_id: str(body.session_id, 80),
       }, qs)
+      // « Alertes de scans » : le tout premier scan d'une page prévient son
+      // propriétaire. C'est le seul email du produit qui ne dépend d'aucun cron.
+      if (estUnScan(source)) await previenirPremierScan(admin, pageId, idVue)
     } else if (type === "click") {
       if (!str(body.clickTarget, 500)) return NextResponse.json({ ok: true })
       await insertTracked(admin, "block_clicks", {

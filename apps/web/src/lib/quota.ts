@@ -3,10 +3,12 @@
 // Deux limites DISTINCTES :
 //  1) Plafond anti-abus : un utilisateur peut CRÉER jusqu'à MAX_PAGES pages,
 //     quel que soit son plan. La création n'est jamais bloquée par le plan.
-//  2) Quota du plan (pageLimit) : ne compte QUE les QR ACTIFS (= visitables au
-//     scan). Un QR en pause (orange) ou en brouillon (rouge, non publié) ne
-//     consomme aucun slot. Activer un QR au-delà du quota est refusé ; il faut
-//     d'abord en mettre un autre en pause.
+//  2) Quota du plan (pageLimit) : ne compte QUE les QR DE PAGE ACTIFS (= visitables
+//     au scan). Une page = un QR de page, d'où le partage du quota `pages`. Un QR en
+//     pause (orange) ou en brouillon (rouge, non publié) ne consomme aucun slot.
+//     Activer un QR au-delà du quota est refusé ; il faut d'abord en mettre un autre
+//     en pause. À ne pas confondre avec `limits.qr`, qui borne les QR AUTONOMES
+//     (instant_qrs) — un lien, un wifi, un contact, sans page derrière.
 //
 // L'axe de visibilité est `qr_codes.status` (lu par /q/[code]) : active = vert
 // = visitable, paused = orange, draft = rouge = non publié.
@@ -39,45 +41,28 @@ export async function countPages(supabase: any, userId: string): Promise<number>
   return count ?? 0
 }
 
-// Nombre de QR instantanés STATIQUES enregistrés (WiFi, Contact, ou tout QR non
-// dynamique) — consomme le quota `limits.qr` du plan QRowg. Les QR DYNAMIQUES sont
-// exclus : ils relèvent de l'abonnement dédié « QR Dynamique » (quota séparé, cf.
-// countPermanentDynamicQrs + lib/dynamicPlans). DISTINCT du quota de pages.
+// Nombre de QR AUTONOMES enregistrés — statiques ET modifiables. Consomme le quota
+// `limits.qr` du plan. Distinct des QR de page (`qr_codes`, bornés par le quota de
+// pages) : ce sont deux choses différentes, et les avoir toutes deux appelées « QR »
+// dans l'interface est ce qui rendait l'écran incompréhensible.
 export async function countInstantQrs(supabase: any, userId: string): Promise<number> {
   const { count } = await supabase
     .from("instant_qrs")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
-    .or("dynamic.eq.false,dynamic.is.null")
   return count ?? 0
 }
 
-// Nombre de QR DYNAMIQUES PERMANENTS actifs (= slots consommés du quota « QR
-// Dynamique »). Permanent = redirigé, actif, SANS expiration (expires_at NULL).
-// Les liens d'ESSAI (expires_at renseigné) ne comptent pas : ils expirent seuls.
-export async function countPermanentDynamicQrs(supabase: any, userId: string): Promise<number> {
+// Nombre de QR MODIFIABLES après impression actuellement actifs — consomme le
+// sous-quota `limits.dyn`. Il n'y a plus d'essai de 30 jours : un QR collé sur une
+// table ne doit pas mourir. Le plan donne un nombre de QR modifiables, point.
+export async function countDynamicQrs(supabase: any, userId: string): Promise<number> {
   const { count } = await supabase
     .from("instant_qrs")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .eq("dynamic", true)
     .eq("status", "active")
-    .is("expires_at", null)
-  return count ?? 0
-}
-
-// Nombre de QR DYNAMIQUES d'ESSAI créés depuis le début du MOIS calendaire courant
-// (UTC). Un compte sans abonnement « QR Dynamique » est plafonné à
-// DYN_FREE_TRIALS_PER_MONTH essais/mois. Essai = dynamique avec expires_at renseigné.
-export async function countDynamicTrialsThisMonth(supabase: any, userId: string, now: Date = new Date()): Promise<number> {
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
-  const { count } = await supabase
-    .from("instant_qrs")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("dynamic", true)
-    .not("expires_at", "is", null)
-    .gte("created_at", start)
   return count ?? 0
 }
 

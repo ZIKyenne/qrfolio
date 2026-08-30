@@ -17,7 +17,13 @@ function statCard(value: string, label: string, side: "left" | "right"): string 
   </td>`
 }
 
-export async function POST(req: NextRequest) {
+// Vercel Cron appelle en GET. Cette route n'exportait que POST : planifiée telle
+// quelle, elle aurait répondu 405 sans que rien ne le signale. Les deux verbes
+// mènent au même traitement.
+export async function GET(req: NextRequest) { return envoyer(req) }
+export async function POST(req: NextRequest) { return envoyer(req) }
+
+async function envoyer(req: NextRequest) {
   try {
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) return NextResponse.json({ error: "Service email non configuré" }, { status: 503 })
@@ -39,20 +45,31 @@ export async function POST(req: NextRequest) {
     // hebdo n'était donc jamais envoyé). L'admin lit bien tous les profils actifs.
     const supabase = createAdminClient()
 
-    // Recuperer tous les users actifs
+    // Qui reçoit : ceux qui ont au moins une page. `profiles.total_pages` semblait
+    // dire cela — la colonne vaut 0 pour tout le monde, y compris un compte à douze
+    // pages : rien ne l'incrémente. Le rapport n'avait donc aucun destinataire.
+    // On compte les pages réelles, une fois, et la boucle réutilise le résultat.
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, email, full_name, total_scans, total_pages, preferences")
-      .gt("total_pages", 0)
+      .select("id, email, full_name, total_scans, preferences")
 
-    if (!profiles?.length) return NextResponse.json({ sent: 0 })
+    const { data: toutesLesPages } = await supabase.from("pages").select("id, user_id")
+    const pagesDe = new Map<string, string[]>()
+    for (const pg of (toutesLesPages ?? []) as { id: string; user_id: string }[]) {
+      const liste = pagesDe.get(pg.user_id) ?? []
+      liste.push(pg.id)
+      pagesDe.set(pg.user_id, liste)
+    }
+
+    const destinataires = (profiles ?? []).filter(p => (pagesDe.get(p.id)?.length ?? 0) > 0)
+    if (!destinataires.length) return NextResponse.json({ sent: 0 })
 
     const dateLabel = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" })
     // Un rapport de période doit parler de la période : on borne les sept derniers jours.
     const { debutIso, libelle: periode } = semaineEcoulee(new Date())
 
     let sent = 0
-    for (const profile of profiles) {
+    for (const profile of destinataires) {
       // Respecte la préférence utilisateur (opt-out) : rapport hebdo désactivé.
       if ((profile as any).preferences?.weekly_report === false) continue
       const clean = profile.full_name && String(profile.full_name).trim() ? escapeHtml(String(profile.full_name).trim()) : ""
@@ -61,8 +78,7 @@ export async function POST(req: NextRequest) {
       // les cumuls de toujours et n'apprenait rien à personne.
       let vuesSemaine = 0, scansSemaine = 0
       try {
-        const { data: pagesUser } = await supabase.from("pages").select("id").eq("user_id", profile.id)
-        const ids = (pagesUser ?? []).map((p: any) => p.id)
+        const ids = pagesDe.get(profile.id) ?? []
         if (ids.length) {
           const [{ count: v }, { count: sc }] = await Promise.all([
             supabase.from("page_views").select("id", { count: "exact", head: true }).in("page_id", ids).gte("viewed_at", debutIso),

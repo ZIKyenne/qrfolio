@@ -12,8 +12,7 @@ import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../dashboard/qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail, buildSms, buildVCard } from "../dashboard/qr-link/qrLinkUtils"
 import { creerUrl } from "../creer/entry"
-import { qrLimit } from "@/lib/plans"
-import { DYN_FREE_TRIALS_PER_MONTH } from "@/lib/dynamicPlans"
+import { qrLimit, dynLimit } from "@/lib/plans"
 
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(168,161,144,0.92)", BOR = "rgba(255,255,255,0.1)"
 
@@ -70,7 +69,6 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
   // Usage réel du compte (pour connaître le quota EN AMONT et neutraliser l'aperçu).
   const [usage, setUsage] = useState<any[]>([])
   const [plan, setPlan] = useState("free")
-  const [dynPlan, setDynPlan] = useState("none")
 
   useEffect(() => {
     if (!authed) return // anonyme : aucun compte, donc aucun quota à charger
@@ -78,7 +76,6 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
       if (!d) return
       if (Array.isArray(d.items)) setUsage(d.items)
       if (d.plan) setPlan(d.plan)
-      if (d.dyn_plan) setDynPlan(d.dyn_plan)
     }).catch(() => {})
   }, [authed])
 
@@ -112,26 +109,21 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
   const sig = `${qrType}|${data}|${isDyn ? "D" : "S"}`
   const encodedValue = saved && saved.sig === sig ? saved.encoded : data
 
-  // Quota atteint pour le TYPE courant — MÊME règle que le serveur (lib/quota) :
-  //  · statique : nb de QR non-dynamiques >= limits.qr du plan (gratuit = 1).
-  //  · dynamique (non abonné) : nb d'essais dynamiques créés ce mois-ci (UTC) >= 2.
+  // Quota atteint — MÊME règle que le serveur (lib/quota, api/qr-instant) :
+  //  · tout QR enregistré compte dans `limits.qr` du plan ;
+  //  · un QR MODIFIABLE compte en plus dans le sous-quota `limits.dyn`.
   // Au-delà, on neutralise l'aperçu (encode qrowg.com) et on bloque le téléchargement,
   // AUCUNE extraction d'un QR fonctionnel n'est possible. Un QR DÉJÀ créé (design en
   // cache, sig sauvegardé) reste re-téléchargeable (PNG puis SVG).
   const isSavedCurrent = !!(saved && saved.sig === sig)
   const overQuota = useMemo(() => {
-    if (isDyn) {
-      if (dynPlan !== "none") return false // abonné dynamique : quota géré côté serveur
-      const now = new Date()
-      const startMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
-      const trials = usage.filter(i => i?.dynamic === true && i?.expires_at != null && Date.parse(i?.created_at) >= startMs).length
-      return trials >= DYN_FREE_TRIALS_PER_MONTH
-    }
     const lim = qrLimit(plan)
-    if (lim === null) return false
-    const staticCount = usage.filter(i => i?.dynamic === false || i?.dynamic == null).length
-    return staticCount >= lim
-  }, [isDyn, dynPlan, plan, usage])
+    if (lim !== null && usage.length >= lim) return true
+    if (!isDyn) return false
+    const limDyn = dynLimit(plan)
+    if (limDyn === null) return false
+    return usage.filter(i => i?.dynamic === true).length >= limDyn
+  }, [isDyn, plan, usage])
   const blocked = overQuota && !isSavedCurrent
   // Sans compte, « QR dynamique » ne peut pas produire de fichier : il mène à l'essai.
   // Le bouton principal change donc de libellé — on n'emmène personne par surprise.
@@ -153,7 +145,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
     // Quota atteint : on ne tente même pas la création/téléchargement (défense en
     // profondeur ; le serveur renvoie de toute façon 403). Re-download d'un QR déjà
     // créé (isSavedCurrent) autorisé car `blocked` est déjà faux dans ce cas.
-    if (blocked) { setErr({ msg: isDyn ? `Limite de ${DYN_FREE_TRIALS_PER_MONTH} QR dynamiques gratuits atteinte ce mois-ci.` : "Limite de QR de votre plan gratuit atteinte.", upgrade: true, dyn: isDyn }); return }
+    if (blocked) { setErr({ msg: isDyn ? `Limite de ${dynLimit(plan) ?? 0} QR modifiable${(dynLimit(plan) ?? 0) > 1 ? "s" : ""} atteinte sur votre plan.` : "Limite de QR atteinte sur votre plan.", upgrade: true, dyn: isDyn }); return }
     setErr(null); setBusy(ext)
     try {
       let enc = data
@@ -307,7 +299,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
           {!ready
             ? <p style={{ color: MUT, fontSize: 12.5, margin: 0, textAlign: "center" }}>Renseignez le contenu pour générer votre QR code.</p>
             : blocked
-              ? <Link href={isDyn ? "/dashboard/qr-dynamique" : "/upgrade"} style={{ display: "flex", alignItems: "center", gap: 7, color: "#FBBF24", fontSize: 12, fontWeight: 700, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: 999, padding: "6px 14px", textDecoration: "none" }}><Lock size={13} /> Limite atteinte — voir les offres</Link>
+              ? <Link href="/upgrade" style={{ display: "flex", alignItems: "center", gap: 7, color: "#FBBF24", fontSize: 12, fontWeight: 700, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: 999, padding: "6px 14px", textDecoration: "none" }}><Lock size={13} /> Limite atteinte — voir les offres</Link>
             : ratio < 3
               ? <button type="button" onClick={() => { setFg("#080808"); setBg("#FFFFFF") }} style={{ display: "flex", alignItems: "center", gap: 7, color: "#FF6B6B", fontSize: 12, fontWeight: 600, background: "rgba(255,107,107,0.1)", border: "1px solid rgba(255,107,107,0.3)", borderRadius: 999, padding: "6px 14px", cursor: "pointer" }}><AlertTriangle size={14} /> Risque de non-scan — corriger</button>
               : inverted
@@ -332,7 +324,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
         {err && (
           <div style={{ ...card, padding: "12px 14px", borderColor: "rgba(255,107,107,0.35)", background: "rgba(255,107,107,0.08)" }}>
             <p style={{ color: "#FF9B9B", fontSize: 12.5, margin: 0, lineHeight: 1.5 }}>{err.msg}</p>
-            {err.upgrade && <Link href={err.dyn ? "/dashboard/qr-dynamique" : "/upgrade"} style={{ color: G, fontSize: 12.5, fontWeight: 700, textDecoration: "none", display: "inline-block", marginTop: 6 }}>{err.dyn ? "Voir les abonnements QR Dynamique →" : "Voir les plans →"}</Link>}
+            {err.upgrade && <Link href="/upgrade" style={{ color: G, fontSize: 12.5, fontWeight: 700, textDecoration: "none", display: "inline-block", marginTop: 6 }}>Voir les plans →</Link>}
           </div>
         )}
 
@@ -377,7 +369,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
           <p style={{ color: MUT, fontSize: 12, margin: 0, lineHeight: 1.5 }}>{dynGuest
             ? <>Un QR dynamique pointe vers une adresse qui lui appartient : elle doit être créée quelque part, donc dans un compte. Sans compte, une <strong style={{ color: MUT }}>page modifiable</strong> rend le même service — le QR imprimé ne change jamais, son contenu, si.</>
             : isDyn
-            ? <>Ce QR pointera vers un lien <strong style={{ color: MUT }}>traçable et modifiable</strong>. Gratuit 30 j (2/mois) ; pour le garder actif ensuite, <Link href="/dashboard/qr-dynamique" style={{ color: G, textDecoration: "none", fontWeight: 700 }}>un abonnement QR Dynamique</Link>.</>
+            ? <>Ce QR pointera vers un lien <strong style={{ color: MUT }}>traçable et modifiable après impression</strong>, sans expiration. Le nombre est compris dans <Link href="/upgrade" style={{ color: G, textDecoration: "none", fontWeight: 700 }}>votre plan</Link>.</>
             : qrType === "link"
               ? <>Activez <strong style={{ color: MUT }}>« QR dynamique »</strong> ci-dessus pour changer la destination sans réimprimer et suivre les scans.</>
               : <>Le contenu est encodé directement : il <strong style={{ color: MUT }}>fonctionne hors ligne</strong> et ne périme jamais. Les liens peuvent, eux, être rendus dynamiques.</>}</p>

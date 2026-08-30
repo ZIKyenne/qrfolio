@@ -64,7 +64,7 @@ const Icon = {
 // Routes réelles du projet (cf. dashboard/layout.tsx). "Créer" = sheet, pas de href.
 const FULL_TABS: Tab[] = [
   { key: 'home', label: 'Accueil', href: '/dashboard', icon: Icon.home },
-  { key: 'pages', label: 'Pages', href: '/dashboard/qr-codes', icon: Icon.qr },
+  { key: 'pages', label: 'Mes pages', href: '/dashboard/qr-codes', icon: Icon.qr },
   { key: 'create', label: 'Créer', icon: Icon.plus, create: true },
   { key: 'stats', label: 'Stats', href: '/dashboard/analytics', icon: Icon.stats },
   { key: 'profile', label: 'Profil', href: '/dashboard/profile', icon: Icon.user },
@@ -76,7 +76,7 @@ const FULL_TABS: Tab[] = [
 const GUEST_TABS: Tab[] = [
   { key: 'templates', label: 'Modèles', href: '/dashboard/templates', icon: Icon.home },
   { key: 'create', label: 'Créer', icon: Icon.plus, create: true },
-  { key: 'qr', label: 'QR code', href: '/dashboard/qr-link', icon: Icon.qr },
+  { key: 'qr', label: 'Créer un QR', href: '/dashboard/qr-link', icon: Icon.qr },
   { key: 'account', label: 'Compte', href: '/auth/signup', icon: Icon.user },
 ]
 

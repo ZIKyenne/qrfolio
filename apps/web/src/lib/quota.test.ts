@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import {
   MAX_PAGES, ACTIVE_QR_FILTER,
-  countActiveQrs, countPages, countInstantQrs, countPermanentDynamicQrs, countDynamicTrialsThisMonth, initialQrStatus,
+  countActiveQrs, countPages, countInstantQrs, countDynamicQrs, initialQrStatus,
 } from "./quota"
 
 // Faux client Supabase chaînable : chaque méthode renvoie le builder, qui est « thenable »
@@ -48,33 +48,27 @@ describe("countInstantQrs — STATIQUES seulement (quota séparé)", () => {
     const { supa, calls } = fakeSupabase(3)
     expect(await countInstantQrs(supa, "u")).toBe(3)
     expect(calls.from).toContain("instant_qrs")
-    expect(calls.or.flat()).toContain("dynamic.eq.false,dynamic.is.null")
+    // Le quota `limits.qr` couvre TOUS les QR autonomes : plus de filtre par nature.
+    expect(calls.or.flat()).not.toContain("dynamic.eq.false,dynamic.is.null")
   })
 })
 
-describe("countPermanentDynamicQrs — permanents actifs seulement", () => {
-  it("filtre dynamic=true, status=active, expires_at IS NULL", async () => {
+describe("countDynamicQrs — les QR modifiables actifs", () => {
+  it("ne compte que le dynamique et l'actif", async () => {
     const { supa, calls } = fakeSupabase(2)
-    expect(await countPermanentDynamicQrs(supa, "u")).toBe(2)
+    expect(await countDynamicQrs(supa, "u")).toBe(2)
+    expect(calls.from).toContain("instant_qrs")
     const eqPairs = calls.eq.map(a => `${a[0]}=${a[1]}`)
     expect(eqPairs).toContain("dynamic=true")
     expect(eqPairs).toContain("status=active")
-    expect(calls.is.some(a => a[0] === "expires_at" && a[1] === null)).toBe(true)
   })
-})
 
-describe("countDynamicTrialsThisMonth — essais dynamiques du mois calendaire courant", () => {
-  it("filtre dynamic=true, expires_at NOT NULL, created_at >= 1er du mois (UTC)", async () => {
-    const now = new Date(Date.UTC(2026, 7, 15, 10, 30)) // 15 août 2026
-    const { supa, calls } = fakeSupabase(2)
-    expect(await countDynamicTrialsThisMonth(supa, "u", now)).toBe(2)
-    expect(calls.from).toContain("instant_qrs")
-    expect(calls.eq.map(a => `${a[0]}=${a[1]}`)).toContain("dynamic=true")
-    expect(calls.not.some(a => a[0] === "expires_at" && a[1] === "is" && a[2] === null)).toBe(true)
-    expect(calls.gte.some(a => a[0] === "created_at" && a[1] === "2026-08-01T00:00:00.000Z")).toBe(true)
-  })
-  it("renvoie 0 si count null", async () => {
-    expect(await countDynamicTrialsThisMonth(fakeSupabase(null).supa, "u", new Date(Date.UTC(2026, 0, 5)))).toBe(0)
+  it("ne filtre plus sur une date d'expiration — il n'y a plus d'essai", async () => {
+    // Un QR collé sur une table ne meurt plus au bout de 30 jours : le compteur
+    // n'a plus à distinguer « permanent » et « essai ».
+    const { supa, calls } = fakeSupabase(0)
+    await countDynamicQrs(supa, "u")
+    expect(calls.is.length + calls.not.length + calls.gte.length).toBe(0)
   })
 })
 

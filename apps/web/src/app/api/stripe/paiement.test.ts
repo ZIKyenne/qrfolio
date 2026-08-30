@@ -27,8 +27,10 @@ describe("on ne peut pas se faire attribuer le plan de quelqu'un d'autre", () =>
 
   it("le plan attribué voyage dans les métadonnées de l'abonnement, pas seulement de la session", () => {
     // Le webhook lit `subscription_data.metadata` lors des renouvellements.
-    expect(checkout).toContain("subscription_data")
-    expect((checkout.match(/metadata/g) || []).length).toBeGreaterThanOrEqual(4)
+    // On vérifie les DEUX emplacements plutôt que de compter les occurrences :
+    // le compte tombait à 3 dès qu'on retirait un second tunnel de paiement.
+    expect(checkout).toMatch(/metadata:\s*\{[^}]*\bplan\b[^}]*\}/)
+    expect(checkout).toMatch(/subscription_data:\s*\{\s*\n\s*metadata:/)
   })
 })
 
@@ -63,10 +65,17 @@ describe("l'essai et la facturation annoncés correspondent à ce qui est factur
     expect(checkout).toContain('const billing = (annual && ANNUAL_PRICE_IDS[plan]) ? "annual" : "monthly"')
   })
 
-  it("l'abonnement QR Dynamique facture immédiatement, sans essai", () => {
-    // L'essai est PAR LIEN (30 j), pas au niveau de l'abonnement.
-    const i = checkout.indexOf('if (product === "dynamic")')
-    const bloc = checkout.slice(i, checkout.indexOf("return NextResponse.json({ url: session.url })", i))
-    expect(bloc).not.toContain("trial_period_days")
+  it("seul le plan Starter ouvre un essai de 7 jours", () => {
+    // Annoncer « votre essai gratuit » à un client Pro qui vient d'être débité
+    // est la promesse la plus coûteuse à démentir.
+    expect(checkout).toMatch(/plan === "starter" \? \{ trial_period_days: 7/)
+    expect((checkout.match(/trial_period_days/g) || []).length).toBe(1)
+  })
+
+  it("il n'y a plus qu'un seul tunnel de paiement", () => {
+    // Un second existait pour l'abonnement « QR Dynamique », avec ses propres
+    // paliers « Pro » et « Business » à d'autres prix.
+    expect(checkout).not.toContain('product === "dynamic"')
+    expect((checkout.match(/stripe\.checkout\.sessions\.create/g) || []).length).toBe(1)
   })
 })

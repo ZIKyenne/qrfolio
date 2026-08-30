@@ -1,11 +1,11 @@
 // /api/qr-instant/stats?id=<uuid> — statistiques DÉTAILLÉES d'un lien dynamique
-// (par jour / appareil / pays, 30 derniers jours). Réservé au palier Pro+ de l'offre
-// « QR Dynamique » (canDynDetailedAnalytics). Données réelles agrégées depuis
+// (par jour / appareil / pays, 30 derniers jours). Réservé au plan Pro et au-dessus
+// (canDynStats). Données réelles agrégées depuis
 // instant_scan_events (RLS : le propriétaire ne lit que ses événements).
 
 import { NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
-import { canDynDetailedAnalytics } from "@/lib/dynamicPlans"
+import { canDynStats } from "@/lib/plans"
 import { aggregateScanEvents } from "@/lib/scanStats"
 
 export async function GET(req: NextRequest) {
@@ -16,9 +16,9 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id")
   if (!id) return NextResponse.json({ error: "id requis" }, { status: 400 })
 
-  // Gating : stats détaillées uniquement à partir du palier Pro.
-  const { data: prof } = await supabase.from("profiles").select("dyn_plan").eq("id", user.id).single()
-  if (!canDynDetailedAnalytics(prof?.dyn_plan)) return NextResponse.json({ detailed: false })
+  // Gating : stats détaillées uniquement à partir du plan Pro.
+  const { data: prof } = await supabase.from("profiles").select("plan").eq("id", user.id).single()
+  if (!canDynStats(prof?.plan)) return NextResponse.json({ detailed: false })
 
   const since = new Date(Date.now() - 30 * 86400000).toISOString()
   const { data: events } = await supabase

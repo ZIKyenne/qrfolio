@@ -17,7 +17,8 @@ export type PlanId = "free" | "starter" | "pro" | "business"
 export type PlanLimits = {
   pages: number | null // null = illimité
   views: number | null
-  qr: number | null
+  qr: number | null    // QR autonomes enregistrés (hors QR de page) : statiques ET modifiables
+  dyn: number | null   // ...dont MODIFIABLES après impression (sous-ensemble de `qr`)
   team: number | null
 }
 
@@ -31,6 +32,15 @@ export type PlanCaps = {
   removeBranding: boolean   // retire le "Créé avec QRowg" des pages publiques
   pageIntro: boolean        // animation d'entrée personnalisée sur la page publique
   exportFormats: ExportFormat[]
+  // ── QR modifiables après impression ────────────────────────────────────────
+  // Ces quatre capacités venaient d'un SECOND abonnement (lib/dynamicPlans.ts),
+  // avec ses propres paliers « Pro » et « Business » à d'autres prix. Deux grilles
+  // homonymes sur le même écran : personne ne pouvait dire de quel « Pro » on
+  // parlait. Fondues ici, il n'y a plus qu'un abonnement et qu'un seul « Pro ».
+  dynStatsDetaillees: boolean // stats par jour / appareil / pays (sinon total + dernier scan)
+  dynDomaineMarque: boolean   // lien court à la marque du commerçant
+  dynSecuriteLien: boolean    // mot de passe, expiration programmée, pause manuelle
+  dynEnMasse: boolean         // création en masse par import CSV
 }
 
 export interface Plan {
@@ -56,14 +66,15 @@ export const PLANS: Record<PlanId, Plan> = {
     priceMonthly: 0,
     priceAnnual: 0,
     badge: null,
-    limits: { pages: 3, views: 200, qr: 3, team: null },
-    caps: { printStudio: false, qrStudioAdvanced: false, ai: false, removeBranding: false, pageIntro: false, exportFormats: ["png"] },
-    features: ["3 pages", "200 vues/mois", "3 QR statiques + 2 dynamiques/mois", "Branding QRowg visible", "Analytics de base", "27 modèles gratuits"],
+    limits: { pages: 3, views: 200, qr: 3, dyn: 1, team: null },
+    caps: { printStudio: false, qrStudioAdvanced: false, ai: false, removeBranding: false, pageIntro: false, exportFormats: ["png"],
+            dynStatsDetaillees: false, dynDomaineMarque: false, dynSecuriteLien: false, dynEnMasse: false },
+    features: ["3 pages", "200 vues/mois", "3 QR autonomes, dont 1 modifiable", "Branding QRowg visible", "Analytics de base", "27 modèles gratuits"],
     perks: [
       { text: "3 pages", included: true },
       { text: "200 vues / mois", included: true },
-      { text: "3 QR statiques permanents", included: true },
-      { text: "2 QR dynamiques / mois (essai 30 j)", included: true },
+      { text: "3 QR autonomes", included: true },
+      { text: "1 QR modifiable après impression", included: true },
       { text: "Hébergement inclus", included: true },
       { text: "Analytics de base", included: true },
       { text: "27 modèles gratuits", included: true },
@@ -81,13 +92,14 @@ export const PLANS: Record<PlanId, Plan> = {
     priceMonthly: 4.90,
     priceAnnual: 3.90,
     badge: "MEILLEUR RAPPORT Q/P",
-    limits: { pages: 5, views: 850, qr: 7, team: null },
-    caps: { printStudio: true, qrStudioAdvanced: true, ai: false, removeBranding: true, pageIntro: false, exportFormats: ["png"] },
-    features: ["5 pages", "850 vues/mois", "7 QR codes personnalisés", "Sans branding", "10 templates premium", "QR Studio (limité)", "QR Print Studio (limité)"],
+    limits: { pages: 5, views: 850, qr: 7, dyn: 5, team: null },
+    caps: { printStudio: true, qrStudioAdvanced: true, ai: false, removeBranding: true, pageIntro: false, exportFormats: ["png"],
+            dynStatsDetaillees: false, dynDomaineMarque: false, dynSecuriteLien: false, dynEnMasse: false },
+    features: ["5 pages", "850 vues/mois", "7 QR autonomes, dont 5 modifiables", "Sans branding", "10 templates premium", "QR Studio (limité)", "QR Print Studio (limité)"],
     perks: [
       { text: "5 pages", included: true },
       { text: "850 vues / mois", included: true },
-      { text: "7 QR codes personnalisés", included: true },
+      { text: "7 QR autonomes, dont 5 modifiables après impression", included: true },
       { text: "Branding QRowg retiré", included: true },
       { text: "Domaine personnalisé", included: false },
       { text: "Analytics standards", included: true },
@@ -107,13 +119,15 @@ export const PLANS: Record<PlanId, Plan> = {
     priceMonthly: 12.90,
     priceAnnual: 9.90,
     badge: "POPULAIRE",
-    limits: { pages: 25, views: 15000, qr: 35, team: null },
-    caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"] },
-    features: ["25 pages", "15 000 vues/mois", "35 QR codes avancés", "Tous les templates", "QR Studio complet", "QR Print Studio complet", "Génération IA", "Export PNG / JPG / PDF HD"],
+    limits: { pages: 25, views: 15000, qr: 35, dyn: 25, team: null },
+    caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"],
+            dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: false },
+    features: ["25 pages", "15 000 vues/mois", "35 QR autonomes, dont 25 modifiables", "Tous les templates", "QR Studio complet", "QR Print Studio complet", "Génération IA", "Export PNG / JPG / PDF HD"],
     perks: [
       { text: "25 pages", included: true },
       { text: "15 000 vues / mois", included: true },
-      { text: "35 QR codes avancés", included: true },
+      { text: "35 QR autonomes, dont 25 modifiables après impression", included: true },
+      { text: "Statistiques détaillées, domaine de marque, sécurité du lien", included: true },
       { text: "Domaine personnalisé", included: true },
       { text: "Branding retiré", included: true },
       { text: "Analytics avancés + export", included: true },
@@ -136,13 +150,15 @@ export const PLANS: Record<PlanId, Plan> = {
     priceMonthly: 29.90,
     priceAnnual: 24.90,
     badge: null,
-    limits: { pages: null, views: null, qr: null, team: 5 },
-    caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"] },
+    limits: { pages: null, views: null, qr: null, dyn: null, team: 5 },
+    caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"],
+            dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: true },
     features: ["Pages illimitées", "Vues illimitées", "QR codes illimités", "Génération IA illimitée", "Équipe · 5 membres", "Marque blanche", "Accès API"],
     perks: [
       { text: "Pages illimitées", included: true },
       { text: "Vues illimitées", included: true },
-      { text: "QR codes avancés illimités", included: true },
+      { text: "QR autonomes illimités", included: true },
+      { text: "QR modifiables illimités + création en masse (CSV)", included: true },
       { text: "Domaine personnalisé", included: true },
       { text: "Branding retiré", included: true },
       { text: "Analytics avancés + export", included: true },
@@ -168,8 +184,12 @@ export const getPlan = (id?: string | null): Plan => PLANS[(id as PlanId)] ?? PL
 // Limite de pages d'un plan (null = illimité) — utilisée par l'enforcement
 export const pageLimit = (id?: string | null): number | null => getPlan(id).limits.pages
 
-// Limite de QR instantanés enregistrés (null = illimité) — feature « QR instantané ».
+// Limite de QR autonomes enregistrés, statiques ET modifiables (null = illimité).
 export const qrLimit = (id?: string | null): number | null => getPlan(id).limits.qr
+
+// Combien de ces QR peuvent être MODIFIABLES après impression (null = illimité).
+// Sous-ensemble de `qrLimit` : un QR modifiable consomme aussi un slot de `qr`.
+export const dynLimit = (id?: string | null): number | null => getPlan(id).limits.dyn
 
 // Équipe : nombre de membres invitables (null = fonctionnalité indisponible sur ce plan).
 export const teamLimit = (id?: string | null): number | null => getPlan(id).limits.team
@@ -183,11 +203,16 @@ export const canAI = (id?: string | null): boolean => getPlan(id).caps.ai
 // true = le plan retire le branding "Créé avec QRowg" des pages publiques
 export const canRemoveBranding = (id?: string | null): boolean => getPlan(id).caps.removeBranding
 export const canPageIntro = (id?: string | null): boolean => getPlan(id).caps.pageIntro
+// QR modifiables après impression : les quatre capacités de l'ancien second abonnement.
+export const canDynStats = (id?: string | null): boolean => getPlan(id).caps.dynStatsDetaillees
+export const canDynDomaine = (id?: string | null): boolean => getPlan(id).caps.dynDomaineMarque
+export const canDynSecurite = (id?: string | null): boolean => getPlan(id).caps.dynSecuriteLien
+export const canDynMasse = (id?: string | null): boolean => getPlan(id).caps.dynEnMasse
 // Accès à l'API publique (clés qrk_ + endpoints /v1) : réservé Pro et Business.
 export const canApi = (id?: string | null): boolean => PLAN_RANK[getPlan(id).id] >= PLAN_RANK.pro
 export const canExport = (id: string | null | undefined, fmt: ExportFormat): boolean => getPlan(id).caps.exportFormats.includes(fmt)
 // Plan minimum requis pour une capacité (pour les messages d'upsell)
-export const minPlanFor = (cap: "printStudio" | "qrStudioAdvanced" | "ai"): PlanId => {
+export const minPlanFor = (cap: "printStudio" | "qrStudioAdvanced" | "ai" | "dynStatsDetaillees" | "dynDomaineMarque" | "dynSecuriteLien" | "dynEnMasse"): PlanId => {
   const found = PLAN_LIST.find(p => p.caps[cap])
   return (found?.id ?? "pro")
 }
@@ -205,7 +230,8 @@ export const fmtPrice = (n: number): string =>
 export const PLAN_COMPARISON: { feature: string; free: string; starter: string; pro: string; business: string }[] = [
   { feature: "Pages", free: "3", starter: "5", pro: "25", business: "Illimitées" },
   { feature: "Vues / mois", free: "200", starter: "850", pro: "15 000", business: "Illimitées" },
-  { feature: "QR codes", free: "3 statiques + 2 dyn./mois", starter: "7 personnalisés", pro: "35 avancés", business: "Illimités" },
+  { feature: "QR autonomes", free: "3", starter: "7", pro: "35", business: "Illimités" },
+  { feature: "…dont modifiables après impression", free: "1", starter: "5", pro: "25", business: "Illimités" },
   { feature: "QR Studio", free: "—", starter: "Version limitée", pro: "Complet", business: "Complet" },
   { feature: "QR Print Studio", free: "—", starter: "Version limitée", pro: "Complet", business: "Complet" },
   { feature: "IA", free: "—", starter: "—", pro: "✓", business: "✓ illimité" },

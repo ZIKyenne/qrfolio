@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client"
 import { Check, Zap, Crown, Star, ArrowLeft, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { PLAN_LIST, PLAN_COMPARISON, fmtPrice } from "@/lib/plans"
-import { DYN_PLANS, DYN_PAID_PLANS, DYN_TRIAL_DAYS, dynMonthlyLabel, dynAnnualTotalLabel, type DynPlanId } from "@/lib/dynamicPlans"
 import { useAccent } from "@/lib/useAccent"
 import Particles from "@/components/Particles"
 import SubscribeButton from "@/components/SubscribeButton"
@@ -84,20 +83,6 @@ export default function UpgradePage() {
     return data.url as string
   }
 
-  // URL de paiement pour l'offre SÉPARÉE « QR Dynamique » (product: "dynamic").
-  async function dynCheckoutUrl(planId: string): Promise<string | void> {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { window.location.href = "/auth/login"; return }
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ product: "dynamic", plan: planId, annual, userId: user.id }),
-    })
-    const data = await res.json()
-    if (!data.url) throw new Error(data.error || "Le paiement n'a pas pu démarrer. Réessayez.")
-    return data.url as string
-  }
 
   const G = useAccent(); const MUTED = "#8A8478"
 
@@ -153,7 +138,7 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* Plans grid — encadré harmonisé avec l'offre QR Dynamique ci-dessous */}
+        {/* Plans grid — un seul abonnement, une seule grille */}
         <div style={{ position: "relative", margin: "8px 0 40px", padding: "30px 22px 26px", borderRadius: 24, background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.10), transparent 60%), #0E0D0A", border: "1px solid rgba(201,168,76,0.2)" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: 16, alignItems: "start" }}>
           {PLANS.map(plan => {
@@ -230,63 +215,32 @@ export default function UpgradePage() {
         </div>
         </div>
 
-        {/* ── Offre SÉPARÉE : QR Dynamique ─────────────────────────────────────── */}
-        <div style={{ position: "relative", margin: "8px 0 44px", padding: "34px 22px", borderRadius: 24, overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), #0E0D0A", border: "1px solid rgba(201,168,76,0.22)" }}>
-          <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 26px" }}>
+        {/* ── Les QR modifiables sont INCLUS dans les plans ────────────────────── */}
+        {/* Il y avait ici une seconde grille tarifaire, avec ses propres « Pro » et  */}
+        {/* « Business » à d'autres prix. Deux abonnements homonymes sur le même site :*/}
+        {/* personne ne pouvait dire lequel il payait. Un seul abonnement désormais.   */}
+        <div style={{ position: "relative", margin: "8px 0 44px", padding: "30px 22px", borderRadius: 24, overflow: "hidden", background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.10), transparent 60%), #0E0D0A", border: "1px solid rgba(201,168,76,0.22)" }}>
+          <div style={{ textAlign: "center", maxWidth: 660, margin: "0 auto" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 999, padding: "5px 14px", color: G, fontSize: 12, fontWeight: 800, letterSpacing: 0.5, marginBottom: 14 }}>
-              <Zap size={14} /> NOUVEAU · OFFRE SÉPARÉE
+              <Zap size={14} /> INCLUS DANS VOTRE PLAN
             </span>
-            <h2 style={{ color: "#F5F0E8", fontSize: 30, fontWeight: 800, margin: "0 0 10px", letterSpacing: -0.5, lineHeight: 1.1 }}>QR Dynamique — des QR modifiables, pour toujours</h2>
-            <p style={{ color: MUTED, fontSize: 14.5, margin: 0, lineHeight: 1.55 }}>
-              Changez la destination d'un QR déjà imprimé et suivez les scans. Abonnement <strong style={{ color: "#F5F0E8" }}>dédié</strong>, indépendant de votre plan QRowg — chaque lien est gratuit <strong style={{ color: "#FBBF24" }}>{DYN_TRIAL_DAYS} jours</strong>.
+            <h2 style={{ color: "#F5F0E8", fontSize: 28, fontWeight: 800, margin: "0 0 10px", letterSpacing: -0.5, lineHeight: 1.15 }}>Des QR modifiables après impression</h2>
+            <p style={{ color: MUTED, fontSize: 14.5, margin: "0 0 22px", lineHeight: 1.55 }}>
+              Changez la destination d'un QR déjà collé sur une table, et suivez les scans. Pas d'abonnement séparé, pas d'expiration&nbsp;: le nombre est compris dans votre plan.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 12, maxWidth: 560, margin: "0 auto" }}>
+              {PLAN_LIST.map(pl => (
+                <div key={pl.id} style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${pl.id === "pro" ? pl.color + "66" : "rgba(255,255,255,0.09)"}`, borderRadius: 14, padding: "14px 10px" }}>
+                  <div style={{ color: pl.color, fontSize: 11.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", marginBottom: 7 }}>{pl.label}</div>
+                  <div style={{ color: "#F5F0E8", fontSize: 25, fontWeight: 800, letterSpacing: -0.5, lineHeight: 1 }}>{pl.limits.dyn === null ? "∞" : pl.limits.dyn}</div>
+                  <div style={{ color: "#6E685E", fontSize: 10.5, marginTop: 5 }}>QR modifiables</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ color: "#6E685E", fontSize: 12, margin: "20px 0 0", lineHeight: 1.5 }}>
+              Statistiques détaillées, domaine de marque et sécurité du lien à partir du plan Pro&nbsp;; création en masse en Business.
             </p>
           </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14, maxWidth: 1080, margin: "0 auto" }}>
-            {[DYN_PLANS.none, ...DYN_PAID_PLANS].map(p => {
-              const isFree = p.id === "none"
-              const highlight = p.id === "pro"
-              const icon = isFree ? <Star size={17} /> : p.id === "basique" ? <Zap size={17} /> : p.id === "pro" ? <Sparkles size={17} /> : <Crown size={17} />
-              return (
-                <div key={p.id} style={{ position: "relative", background: highlight ? `linear-gradient(180deg, ${p.color}14, rgba(255,255,255,0.02))` : "rgba(255,255,255,0.025)", border: `1px solid ${highlight ? p.color + "77" : "rgba(255,255,255,0.09)"}`, borderRadius: 18, padding: "20px 18px", display: "flex", flexDirection: "column" }}>
-                  {p.badge && <span style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: G, color: "#080808", fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "3px 11px", letterSpacing: 0.5, whiteSpace: "nowrap" }}>{p.badge}</span>}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <span style={{ width: 32, height: 32, borderRadius: 9, background: `${p.color}1f`, border: `1px solid ${p.color}55`, display: "flex", alignItems: "center", justifyContent: "center", color: p.color, flexShrink: 0 }}>{icon}</span>
-                    <span style={{ color: "#F5F0E8", fontSize: 16, fontWeight: 800 }}>{isFree ? "Gratuit" : p.label}</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 2 }}>
-                    <span style={{ color: "#F5F0E8", fontSize: 30, fontWeight: 800, letterSpacing: -1 }}>{isFree ? "Gratuit" : `${dynMonthlyLabel(p.id as DynPlanId, annual)}€`}</span>
-                    {!isFree && <span style={{ color: MUTED, fontSize: 12.5 }}>/mois</span>}
-                  </div>
-                  <p style={{ color: "#6E685E", fontSize: 11, margin: "0 0 14px", minHeight: 15 }}>{isFree ? "sans abonnement · 2 essais / mois" : (annual ? `soit ${dynAnnualTotalLabel(p.id as DynPlanId)}€/an` : "sans engagement")}</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 16, flex: 1 }}>
-                    {p.features.slice(0, 4).map((f, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                        <Check size={13} color={p.color} style={{ flexShrink: 0, marginTop: 2 }} />
-                        <span style={{ color: "#D8D2C6", fontSize: 12.5, lineHeight: 1.35 }}>{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                  {isFree ? (
-                    <Link href="/dashboard/qr-link" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 44, borderRadius: 12, textDecoration: "none", fontSize: 14, fontWeight: 800, background: "transparent", color: p.color, border: `1px solid ${p.color}66`, boxSizing: "border-box" }}>Créer un lien gratuit</Link>
-                  ) : (
-                    <SubscribeButton
-                      label={`Choisir ${p.label}`}
-                      accent={p.color}
-                      successLabel="Redirection vers le paiement…"
-                      minScanMs={1600}
-                      height={44}
-                      onSubscribe={() => dynCheckoutUrl(p.id as DynPlanId)}
-                      onError={(e) => { setPayErr(e instanceof Error ? e.message : "Le paiement n'a pas pu démarrer. Réessayez.") }}
-                    />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-          <p style={{ textAlign: "center", color: "#6E685E", fontSize: 12, margin: "20px 0 0" }}>
-            <Link href="/dashboard/qr-dynamique" style={{ color: G, textDecoration: "none", fontWeight: 600 }}>Voir tous les détails de l'offre QR Dynamique →</Link>
-          </p>
         </div>
 
         {/* Tableau comparatif */}

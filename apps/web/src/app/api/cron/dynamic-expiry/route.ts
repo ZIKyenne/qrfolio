@@ -1,6 +1,10 @@
 // app/api/cron/dynamic-expiry/route.ts
-// Alerte email « votre QR dynamique gratuit expire bientôt » — prévient le PROPRIÉTAIRE
-// avant que son essai gratuit (30 j par lien) ne coupe la redirection du QR imprimé.
+// Alerte email « votre QR modifiable expire bientôt » — prévient le PROPRIÉTAIRE
+// avant qu'une expiration QU'IL A PROGRAMMÉE ne coupe la redirection du QR imprimé.
+//
+// Il n'y a plus d'essai de 30 jours : un QR n'expire que si son propriétaire a posé
+// une date (capacité « sécurité du lien », plan Pro et au-dessus). L'alerte reste
+// utile — on oublie une date posée trois mois plus tôt sur un support déjà collé.
 // Appelé par cron (Vercel Cron / pg_cron). Protégé par CRON_SECRET (fail-closed).
 //
 // Dédup : colonne `instant_qrs.expiry_alert_stage` (text : "d3" / "d1"), tolérante si absente.
@@ -23,13 +27,13 @@ function expiryHtml(name: string, label: string, daysLeft: number, appUrl: strin
   const when = daysLeft <= 1 ? "demain" : `dans ${daysLeft} jours`
   const which = label ? ` « ${escapeHtml(label)} »` : ""
   const content = `
-    ${emailH1(`Votre QR dynamique gratuit expire ${when}`)}
+    ${emailH1(`Votre QR modifiable expire ${when}`)}
     ${emailP(greeting)}
-    ${emailP(`Votre essai gratuit de QR dynamique${which} arrive à échéance. Passé ce délai, ce QR <strong style="color:#F5F0E8;">cessera de rediriger</strong> : le support déjà imprimé ne fonctionnera plus.`)}
-    ${emailP(`Pour qu'il reste actif (redirection modifiable + suivi des scans), passez à un abonnement QR Dynamique.`, 24)}
-    ${emailButton("Garder mon QR actif →", `${appUrl}/dashboard/qr-dynamique`)}
+    ${emailP(`L'expiration que vous avez programmée sur ce QR${which} arrive à échéance. Passé ce délai, il <strong style="color:#F5F0E8;">cessera de rediriger</strong> : le support déjà imprimé ne fonctionnera plus.`)}
+    ${emailP(`Si ce n'est pas ce que vous voulez, retirez la date d'expiration — le QR restera actif.`, 24)}
+    ${emailButton("Voir mes QR codes →", `${appUrl}/dashboard/qr-link`)}
   `
-  return emailShell({ preheader: `Votre QR dynamique gratuit expire ${when}.`, content })
+  return emailShell({ preheader: `Votre QR modifiable expire ${when}.`, content })
 }
 
 export async function GET(req: NextRequest) {

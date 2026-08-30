@@ -19,7 +19,6 @@ const paymentFailed = (subscription: string) =>
   ({ type: "invoice.payment_failed", data: { object: { subscription } } }) as unknown as Stripe.Event
 
 const asPro = (pid?: string | null) => (pid === "price_pro" ? "pro" : null)
-const asDynPro = (pid?: string | null) => (pid === "price_dyn_pro" ? "pro" : null)
 
 describe("metaUser", () => {
   it("accepte userId ET supabase_user_id", () => {
@@ -83,32 +82,22 @@ describe("resolveStripeEvent — subscription.deleted / payment_failed", () => {
   })
 })
 
-describe("resolveStripeEvent — abonnement « QR Dynamique » (product=dynamic)", () => {
-  it("checkout dynamique -> dyn_checkout_completed (palier via prix)", () => {
-    const o = resolveStripeEvent(checkout({ userId: "u1", product: "dynamic", priceId: "price_dyn_pro", billing: "monthly" }), asPro, asDynPro)
-    expect(o).toEqual({ type: "dyn_checkout_completed", userId: "u1", dynPlan: "pro", customerId: "cus_1", subscriptionId: "sub_1", priceId: "price_dyn_pro", billing: "monthly" })
+describe("le second abonnement a disparu", () => {
+  // « QR Dynamique » était un DEUXIÈME abonnement Stripe, avec ses propres paliers
+  // « Pro » et « Business » à d'autres prix, routé vers profiles.dyn_*. Deux grilles
+  // homonymes : personne ne pouvait dire lequel il payait. Le quota de QR modifiables
+  // vient maintenant du plan principal, et metadata.product n'est plus lu.
+  it("un événement marqué product=dynamic suit le chemin normal", () => {
+    const o = resolveStripeEvent(checkout({ userId: "u1", plan: "pro", product: "dynamic", priceId: "price_pro" }), asPro)
+    expect(o.type).toBe("checkout_completed")
   })
-  it("checkout dynamique : repli sur metadata.dynPlan si prix inconnu", () => {
-    const o = resolveStripeEvent(checkout({ userId: "u1", product: "dynamic", dynPlan: "basique", priceId: "price_x" }), asPro, asDynPro)
-    if (o.type === "dyn_checkout_completed") expect(o.dynPlan).toBe("basique")
-    else throw new Error("attendu dyn_checkout_completed")
+
+  it("aucune issue ne parle encore de dyn_", () => {
+    for (const e of [checkout({ userId: "u1", plan: "pro", priceId: "price_pro" }), subUpdated({ userId: "u1" }, "price_pro"), subDeleted({ userId: "u1" })]) {
+      expect(resolveStripeEvent(e, asPro).type.startsWith("dyn_")).toBe(false)
+    }
   })
-  it("checkout dynamique : noop si userId manquant", () => {
-    expect(resolveStripeEvent(checkout({ product: "dynamic", priceId: "price_dyn_pro" }), asPro, asDynPro).type).toBe("noop")
-  })
-  it("subscription.updated dynamique -> dyn_subscription_updated (sans periodStart)", () => {
-    const o = resolveStripeEvent(subUpdated({ userId: "u1", product: "dynamic" }, "price_dyn_pro"), asPro, asDynPro)
-    expect(o).toEqual({ type: "dyn_subscription_updated", userId: "u1", dynPlan: "pro", status: "active", periodEnd: 2000, cancelAtEnd: false, subId: "sub_9" })
-  })
-  it("subscription.updated dynamique : prix inconnu -> dynPlan null (pas de rétrogradation)", () => {
-    const o = resolveStripeEvent(subUpdated({ userId: "u1", product: "dynamic" }, "price_inconnu"), asPro, asDynPro)
-    if (o.type === "dyn_subscription_updated") expect(o.dynPlan).toBeNull()
-    else throw new Error("attendu dyn_subscription_updated")
-  })
-  it("subscription.deleted dynamique -> dyn_subscription_deleted", () => {
-    const o = resolveStripeEvent(subDeleted({ userId: "u1", product: "dynamic" }), asPro, asDynPro)
-    expect(o).toEqual({ type: "dyn_subscription_deleted", userId: "u1", subId: "sub_9" })
-  })
+
   it("un événement SANS product reste sur le chemin QRowg (non-régression)", () => {
     expect(resolveStripeEvent(checkout({ userId: "u1", plan: "pro", priceId: "price_pro" })).type).toBe("checkout_completed")
     expect(resolveStripeEvent(subDeleted({ userId: "u1" })).type).toBe("subscription_deleted")

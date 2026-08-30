@@ -1,4 +1,5 @@
-// dynamicExpiry.ts — Fenêtre d'alerte « essai QR dynamique gratuit bientôt expiré ».
+// dynamicExpiry.ts — Fenêtre d'alerte « QR modifiable bientôt expiré ». L'expiration
+// n'est plus jamais automatique : elle n'existe que si le propriétaire l'a programmée.
 // Moteur PUR (aucune I/O) -> testable (dynamicExpiry.test.ts). Le cron dynamic-expiry
 // lit les QR proches de l'échéance et utilise ces helpers pour décider quoi notifier.
 

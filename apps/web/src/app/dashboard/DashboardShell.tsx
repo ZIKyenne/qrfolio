@@ -129,10 +129,14 @@ const NAV_GROUPS = [
     { href: "/dashboard/templates", glyph: "templates", label: "Templates" },
     { href: "/dashboard/assets", glyph: "media", label: "Médias" },
   ] },
+  // Deux entrées fabriquent des QR codes. Elles s'appelaient « QR Codes » et
+  // « QR Dynamique », et toutes deux se décrivaient comme « créez un QR code » :
+  // aucun moyen de choisir. Elles portent maintenant le nom de ce vers quoi le QR
+  // mène — la seule question que se pose vraiment un commerçant.
   { label: "QR & impression", items: [
-    { href: "/dashboard/qr-codes", glyph: "qr", label: "QR Codes" },
+    { href: "/dashboard/qr-codes", glyph: "qr", label: "QR de mes pages" },
     { href: "/dashboard/print-studio", glyph: "print", label: "Print Studio" },
-    { href: "/dashboard/qr-link", glyph: "dynamic", label: "QR Dynamique" },
+    { href: "/dashboard/qr-link", glyph: "dynamic", label: "Créer un QR" },
   ] },
   { label: "Mesure", items: [
     { href: "/dashboard/analytics", glyph: "analytics", label: "Analytics" },
@@ -156,7 +160,7 @@ const GUEST_NAV: { label: string; items: { href: string; glyph: string; label: s
   { label: "", items: [
     { href: "/dashboard/templates", glyph: "templates", label: "Modèles" },
     { href: "/dashboard/builder", glyph: "dashboard", label: "Ma page" },
-    { href: "/dashboard/qr-link", glyph: "dynamic", label: "QR code" },
+    { href: "/dashboard/qr-link", glyph: "dynamic", label: "Créer un QR" },
   ] },
 ]
 
@@ -170,8 +174,8 @@ const CREATE_ACTIONS = [
   // téléphone. Les deux liens du menu invité, eux, restent tels quels : sans
   // compte, le brouillon est sauvegardé en local et rien n'est perdu.
   { href: "/dashboard/builder/new", icon: FileText, label: "Créer une page", sub: "Une page pro éditable" },
-  { href: "/dashboard/qr-codes", icon: QrCode, label: "Créer un QR code", sub: "Dynamique, modifiable" },
-  { href: "/dashboard/qr-link", icon: Link2, label: "QR Dynamique", sub: "Modifiable · suivi des scans" },
+  { href: "/dashboard/qr-codes", icon: QrCode, label: "QR de mes pages", sub: "Le QR d'une page QRowg" },
+  { href: "/dashboard/qr-link", icon: Link2, label: "Créer un QR", sub: "Lien, WiFi, contact, numéro" },
   { href: "/dashboard/print-studio", icon: Printer, label: "Créer un support imprimable", sub: "Sticker, chevalet, affiche…" },
   { href: "/dashboard/templates", icon: Sparkles, label: "Utiliser un modèle", sub: "Partir d'un design" },
   { href: "/dashboard/assets", icon: Upload, label: "Importer un média", sub: "Photos, logos…" },
@@ -182,7 +186,7 @@ const CREATE_ACTIONS = [
 const GUEST_CREATE_ACTIONS = [
   { href: "/dashboard/templates", icon: Sparkles, label: "Partir d'un modèle", sub: "Le plus rapide — 48 modèles par métier" },
   { href: "/dashboard/builder", icon: FileText, label: "Page vierge", sub: "Composer à partir de rien" },
-  { href: "/dashboard/qr-link", icon: Link2, label: "QR code", sub: "Lien, WiFi, contact — sans compte" },
+  { href: "/dashboard/qr-link", icon: Link2, label: "Créer un QR", sub: "Lien, WiFi, contact — sans compte" },
 ]
 
 export default function DashboardShell({ children, initialSignedIn }: { children: React.ReactNode; initialSignedIn: boolean }) {
@@ -472,6 +476,10 @@ export default function DashboardShell({ children, initialSignedIn }: { children
             const plan = profile?.plan || "free"
             const isPaid = plan === "pro" || plan === "business" || plan === "starter"
             const planLabel = plan === "business" ? "Business" : plan === "pro" ? "Plan Pro" : plan === "starter" ? "Starter" : "Passer au Pro"
+            // La jauge annonçait « QR utilisés N / 25 » : elle comptait bien des QR
+            // de page, mais divisait par la limite de PAGES. Sur Pro, la vraie limite
+            // de QR autonomes est 35 — trois nombres appelés « QR » sur le même écran.
+            // Une page = un QR de page : la jauge parle donc de pages, et le dit.
             const planLimit = pageLimit(plan)
             const pct = planLimit && qrActive != null ? Math.min(100, Math.round((qrActive / planLimit) * 100)) : 0
             return (
@@ -498,7 +506,7 @@ export default function DashboardShell({ children, initialSignedIn }: { children
                         {planLimit && qrActive != null ? (
                           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-                              <span style={{ fontSize: 11, color: MUTED }}>QR utilisés</span>
+                              <span style={{ fontSize: 11, color: MUTED }}>Pages publiées</span>
                               <span style={{ fontSize: 11, color: "#b8b1a6" }}>{qrActive} / {planLimit}</span>
                             </div>
                             <div style={{ height: 2, borderRadius: 2, background: "#221f1b", overflow: "hidden" }}>
@@ -506,7 +514,7 @@ export default function DashboardShell({ children, initialSignedIn }: { children
                             </div>
                           </div>
                         ) : planLimit == null && qrActive != null ? (
-                          <span style={{ fontSize: 11, color: MUTED }}>{qrActive} QR · illimité</span>
+                          <span style={{ fontSize: 11, color: MUTED }}>{qrActive} pages · illimité</span>
                         ) : (
                           <span style={{ fontSize: 11, color: MUTED }}>{isPaid ? "Abonnement actif" : "Débloquez tout QRowg"}</span>
                         )}

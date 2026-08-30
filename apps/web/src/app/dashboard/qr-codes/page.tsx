@@ -7,7 +7,7 @@ import { accessibleOwnerIds } from "@/lib/team"
 import { pageLimit } from "@/lib/plans"
 import { Plus, Link2 } from "lucide-react"
 
-export const metadata: Metadata = { title: "QR Codes Studio - QRowg" }
+export const metadata: Metadata = { title: "QR de mes pages - QRowg" }
 
 export default async function QRCodesPage() {
   const supabase = await createServerSupabaseClient()
@@ -59,7 +59,7 @@ export default async function QRCodesPage() {
           /* KPIs (QR actifs / scans total) masques sur mobile : peu d'info pour la
              place prise ; les scans restent consultables dans l'onglet Stats. */
           .qrh-kpis { display:none !important; }
-          /* QR Dynamique + Nouvelle page + QR masqués sur mobile : déjà accessibles via le « + » de la barre du bas. */
+          /* « Créer un QR » + Nouvelle page + QR masqués sur mobile : déjà accessibles via le « + » de la barre du bas. */
           .qrh-cta-group { display:none !important; }
           .qrh-content { padding:16px 16px 130px !important; }
         }
@@ -88,10 +88,10 @@ export default async function QRCodesPage() {
             </span>
             <div>
               <h1 style={{ fontFamily: "Fraunces, serif", fontSize: 22, color: "#F5F0E8", fontWeight: 700, margin: 0, lineHeight: 1.15 }}>
-                QR Codes Studio
+                QR de mes pages
               </h1>
               <p style={{ color: "#A8A190", fontSize: 11, margin: 0 }}>
-                Créez, personnalisez et exportez vos QR Codes
+                Le QR code de chacune de vos pages QRowg — personnalisez-le et exportez-le
               </p>
             </div>
           </div>
@@ -137,11 +137,11 @@ export default async function QRCodesPage() {
               </div>
             </div>
 
-            {/* QR Dynamique + Nouvelle page + QR — masqués sur mobile (redondants avec le « + » de la barre du bas). */}
+            {/* « Créer un QR » + Nouvelle page + QR — masqués sur mobile (redondants avec le « + » de la barre du bas). */}
             <div className="qrh-cta-group">
-              {/* QR Dynamique — secondaire or contour (handoff « Boutons d'en-tête »). */}
+              {/* « Créer un QR » — secondaire or contour (handoff « Boutons d'en-tête »). */}
               <a href="/dashboard/qr-link" className="qb-hsec">
-                <span className="qb-ico" aria-hidden="true" style={{ display: "inline-flex" }}><Link2 size={15}/></span> QR Dynamique
+                <span className="qb-ico" aria-hidden="true" style={{ display: "inline-flex" }}><Link2 size={15}/></span> Créer un QR
               </a>
 
               {/* Nouvelle page + QR — primaire or (halo respirant + reflet au survol). */}

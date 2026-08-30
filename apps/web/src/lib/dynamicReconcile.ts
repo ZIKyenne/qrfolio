@@ -1,10 +1,11 @@
-// Réconciliation PURE du quota « QR Dynamique » après un changement d'abonnement.
+// Réconciliation PURE du quota de QR MODIFIABLES après un changement de plan.
 //
 // Règle (décidée avec le propriétaire) : les liens les PLUS ANCIENS sont prioritaires
-// pour les slots permanents. Après souscription/upgrade, les liens d'essai encore
-// valides deviennent PERMANENTS dans la limite du quota (et les liens mis en pause pour
-// dépassement sont réactivés). Après downgrade/résiliation, les liens permanents EN TROP
-// (les plus récents) passent EN PAUSE — rien n'est supprimé, réactivation au ré-upgrade.
+// pour les slots. Après une montée de plan, les liens mis en pause pour dépassement
+// sont réactivés, et les anciens liens d'essai (héritage de la période où un QR
+// mourait au bout de 30 jours) deviennent permanents dans la limite du quota. Après
+// une descente de plan, les liens EN TROP (les plus récents) passent EN PAUSE —
+// rien n'est supprimé, réactivation dès que le quota les re-couvre.
 //
 // Aucune I/O : renvoie la liste des mises à jour à appliquer. La route webhook applique.
 

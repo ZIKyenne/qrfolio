@@ -100,10 +100,12 @@ export default function SettingsPage() {
   }
 
   async function saveNotifications() {
-    // Toutes les préférences sont désormais persistées en base et RESPECTÉES côté
-    // envoi : email_leads (/api/emails/new-lead), scan_alert (/api/emails/first-scan),
-    // weekly_report (/api/emails/weekly). product_updates/marketing sont stockées
-    // pour les futures campagnes (pas d'envoi automatique à ce jour).
+    // Chaque préférence est persistée ET lue par un envoi qui existe vraiment :
+    // email_leads par /api/emails/new-lead (appelé par le formulaire public),
+    // scan_alert par lib/premierScanEnvoi (appelé par /api/track au premier scan),
+    // weekly_report par /api/emails/weekly (tâche planifiée du lundi).
+    // product_updates et marketing sont stockées pour de futures campagnes : aucun
+    // envoi ne part aujourd'hui, l'interrupteur ne promet donc rien qu'on trahisse.
     if (profile) {
       const supabase = createClient()
       const { data: cur } = await supabase.from("profiles").select("preferences").eq("id", profile.id).single()
@@ -281,7 +283,7 @@ export default function SettingsPage() {
             <Toggle value={notifs.email_leads} onChange={v => setNotifs(n => ({ ...n, email_leads: v }))}
               label="Nouveaux messages" description="Recevez un e-mail à chaque demande (devis, réservation, inscription, RSVP...)" />
             <Toggle value={notifs.scan_alert} onChange={v => setNotifs(n => ({ ...n, scan_alert: v }))}
-              label="Alertes de scans" description="Recevez un e-mail quand votre QR code est scanné" />
+              label="Alertes de scans" description="Recevez un e-mail au tout premier scan de chacune de vos pages" />
             <Toggle value={notifs.weekly_report} onChange={v => setNotifs(n => ({ ...n, weekly_report: v }))}
               label="Rapport hebdomadaire" description="Résumé de vos stats chaque lundi" />
             <Toggle value={notifs.product_updates} onChange={v => setNotifs(n => ({ ...n, product_updates: v }))}

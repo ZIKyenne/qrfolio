@@ -3,11 +3,12 @@ import { redirect } from "next/navigation"
 import DashboardClient from "./DashboardClient"
 import GoalsShell from "./goals/GoalsShell"
 import { accessibleOwnerIds } from "@/lib/team"
+import { destinationApresConnexion, ECHAPPE } from "./atterrissage"
 
 // Rendu SERVEUR des données initiales du dashboard : évite le 2e getUser() côté
 // client + le waterfall de requêtes + le spinner. DashboardClient garde son
 // load() pour rafraîchir après une mutation (suppression / publication).
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect("/auth/login")
@@ -17,6 +18,17 @@ export default async function DashboardPage() {
     supabase.from("profiles").select("full_name,plan,total_scans,total_pages,avatar_url").eq("id", user.id).single(),
     supabase.from("pages").select("id,title,slug,status,total_views,created_at").in("user_id", ownerIds).order("created_at", { ascending: false }).limit(20),
   ])
+
+  // Un compte qui n'a jamais rien créé n'a rien à administrer : on l'emmène
+  // créer sa page au lieu de lui montrer un écran vide. Voir atterrissage.ts.
+  const params = (await searchParams) ?? {}
+  const lu = (k: string) => { const v = params[k]; return Array.isArray(v) ? v[0] : v }
+  const versCreation = destinationApresConnexion({
+    nbPages: (pgs ?? []).length,
+    demande: lu("next"),
+    dejaOriente: lu(ECHAPPE) === "1",
+  })
+  if (versCreation) redirect(versCreation)
 
   const ids = (pgs ?? []).map((p) => p.id)
   let monthViews = 0, todayViews = 0, weekViews: number[] = []

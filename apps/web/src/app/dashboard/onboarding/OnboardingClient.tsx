@@ -80,7 +80,7 @@ export default function OnboardingClient() {
               <ArrowLeft size={16} /> Changer d'objectif
             </button>
           ) : (
-            <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUT, textDecoration: "none", fontSize: 13 }}>
+            <Link href="/dashboard?vue=1" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUT, textDecoration: "none", fontSize: 13 }}>
               <ArrowLeft size={16} /> Retour
             </Link>
           )}

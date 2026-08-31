@@ -11,7 +11,7 @@
 // alors qu'elle fabrique surtout des QR ordinaires, et que la page voisine
 // s'annonçait aussi comme celle qui « crée des QR codes ». Elle porte maintenant
 // le nom de ce qu'elle fait.
-import { useMemo, useRef, useState, useEffect } from "react"
+import { useCallback, useMemo, useRef, useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Download, Check, QrCode as QrIcon, ShieldCheck, AlertTriangle, Upload, X, Link2, Wifi, Type, Contact, Phone, Mail, Save, Trash2, ChevronDown, Zap, BarChart3, Clock, Calendar, TrendingUp, Activity, Pencil, Lock, Pause, Play } from "lucide-react"
 import Particles from "@/components/Particles"
@@ -24,6 +24,11 @@ import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
 import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
 import PostCheckoutBanner from "@/components/PostCheckoutBanner"
+import Dialogue from "@/components/Dialogue"
+import ImportEnMasse from "./ImportEnMasse"
+import StatistiquesQr from "./StatistiquesQr"
+import { useFermetureModale, carteCliquable } from "@/lib/useFermetureModale"
+import { etatLien, styleSur, type InstantQr, type StatsLien } from "./instantQr"
 import { Button } from "@/components/ui/Button"
 
 const G = "#C9A84C"
@@ -34,6 +39,14 @@ const ECC_OPTS: { k: "L" | "M" | "Q" | "H"; label: string }[] = [
 ]
 const FG_SWATCHES = ["#080808", "#C9A84C", "#1D4ED8", "#059669", "#DB2777", "#DC2626", "#7C3AED", "#0F766E"]
 const BG_SWATCHES = ["#FFFFFF", "#F5F0E8", "#FEF3C7", "#E0F2FE", "#F0FDF4", "#111111"]
+// Un lecteur d'écran annonçait « Couleur dièse C 9 A 8 4 C ». Les pastilles ont un nom.
+const NOM_COULEUR: Record<string, string> = {
+  "#080808": "noir", "#C9A84C": "or", "#1D4ED8": "bleu", "#059669": "vert",
+  "#DB2777": "rose", "#DC2626": "rouge", "#7C3AED": "violet", "#0F766E": "sarcelle",
+  "#FFFFFF": "blanc", "#F5F0E8": "ivoire", "#FEF3C7": "crème", "#E0F2FE": "bleu pâle",
+  "#F0FDF4": "vert pâle", "#111111": "noir",
+}
+const nommer = (c: string) => NOM_COULEUR[c.toUpperCase()] ?? c
 const STYLE_PRESETS: { k: string; label: string; dotStyle: QRStyleConfig["dotStyle"]; cornerStyle: QRStyleConfig["cornerStyle"] }[] = [
   { k: "carre", label: "Carré", dotStyle: "square", cornerStyle: "square" },
   { k: "arrondi", label: "Arrondi", dotStyle: "rounded", cornerStyle: "rounded" },
@@ -56,6 +69,17 @@ type EmailFields = { to?: string; subject?: string; body?: string }
 const EMPTY_VC: VCardFields = { firstName: "", lastName: "", phone: "", email: "", org: "", title: "", url: "" }
 const EMPTY_EM: EmailFields = { to: "", subject: "", body: "" }
 
+// Ce que la boîte de dialogue demande. Une seule à la fois, jamais deux invites
+// empilées comme le permettaient les prompt natifs enchaînés.
+type Demande =
+  | { type: "destination"; qr: InstantQr; valeur: string }
+  | { type: "motDePasse"; qr: InstantQr; valeur: string }
+  | { type: "retirerMotDePasse"; qr: InstantQr }
+  | { type: "expiration"; qr: InstantQr; valeur: string }
+  | { type: "supprimer"; qr: InstantQr }
+  | { type: "message"; titre: string; texte: string }
+  | null
+
 // Types éligibles au QR DYNAMIQUE (redirigé + expirable). WiFi/Contact restent statiques.
 const isDynamicType = (t: QrType) => t !== "wifi" && t !== "contact"
 
@@ -66,24 +90,6 @@ type QrSource = {
 }
 type QrHistEntry = QrSource & {
   fg: string; bg: string; ecc: "L" | "M" | "Q" | "H"; styleKey: string
-}
-
-// Détecte un écran étroit (pop-up en feuille sur mobile, ancrée à droite sur PC).
-function useIsMobile(bp = 768): boolean {
-  const [m, setM] = useState(false)
-  useEffect(() => {
-    const check = () => setM(window.innerWidth < bp)
-    check(); window.addEventListener("resize", check)
-    return () => window.removeEventListener("resize", check)
-  }, [bp])
-  return m
-}
-
-// Date lisible en français (jour mois · heure).
-function fmtDateTime(iso?: string | null): string {
-  if (!iso) return "—"
-  try { return new Date(iso).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) }
-  catch { return "—" }
 }
 
 // Charge utile encodee dans le QR selon le type.
@@ -116,36 +122,42 @@ export default function QrLinkPage() {
   const [done, setDone] = useState(false)
   const logoInput = useRef<HTMLInputElement>(null)
   // QR instantanés ENREGISTRÉS (persistants, comptent dans le quota du plan limits.qr)
-  const [saved, setSaved] = useState<any[]>([])
+  const [saved, setSaved] = useState<InstantQr[]>([])
   const [plan, setPlan] = useState("free")
   const [dlSig, setDlSig] = useState<string | null>(null) // design déjà consommé au téléchargement (évite de reconsommer PNG→SVG du même design)
   const [saveBusy, setSaveBusy] = useState(false)
   const [saveMsg, setSaveMsg] = useState<{ text: string; ok: boolean } | null>(null)
-  const [detail, setDetail] = useState<any | null>(null) // aperçu détaillé d'un QR enregistré (clic)
+  // Un seul minuteur pour le bandeau volant : deux enregistrements rapprochés
+  // faisaient effacer le message du second par le minuteur du premier.
+  const minuteurMsg = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [demande, setDemande] = useState<Demande>(null)
+  const [detail, setDetail] = useState<InstantQr | null>(null) // aperçu détaillé d'un QR enregistré (clic)
   const [detailCopied, setDetailCopied] = useState(false)
-  const [stats, setStats] = useState<any | null>(null) // pop-up statistiques d'un lien dynamique
-  const [statsData, setStatsData] = useState<any | null>(null) // stats détaillées (Pro+) chargées
-  const [statsLoading, setStatsLoading] = useState(false)
-  const [bulkOpen, setBulkOpen] = useState(false) // modal génération en masse (Business)
-  const [bulkText, setBulkText] = useState("")
-  const [bulkBusy, setBulkBusy] = useState(false)
-  const [bulkMsg, setBulkMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [stats, setStats] = useState<InstantQr | null>(null) // pop-up statistiques d'un lien dynamique
+  const [bulkOpen, setBulkOpen] = useState(false) // fenêtre d'import en masse (Business)
   const bulkFileInput = useRef<HTMLInputElement>(null)
-  const bulkParse = useMemo(() => parseBulkCsv(bulkText), [bulkText])
-  const isMobile = useIsMobile(768)
 
   // Sur desktop (2 colonnes), on déplie « Apparence » par défaut pour remplir la colonne
   // de gauche et équilibrer avec l'aperçu à droite. Sur mobile, elle reste repliée.
-  useEffect(() => { if (typeof window !== "undefined" && window.innerWidth >= 920) setShowStyle(true) }, [])
-
-  // Charge les stats détaillées (par jour/appareil/pays) à l'ouverture de la pop-up.
+  // Déplié dès qu'il y a deux colonnes. Évalué au montage ET au redimensionnement :
+  // ouvrir la page en petit puis élargir laissait le panneau replié, l'inverse
+  // exact de ce que la mise en page à deux colonnes attend.
   useEffect(() => {
-    if (!stats?.id) { setStatsData(null); return }
-    setStatsLoading(true); setStatsData(null)
-    fetch(`/api/qr-instant/stats?id=${stats.id}`).then(r => r.json())
-      .then(d => setStatsData(d)).catch(() => setStatsData(null))
-      .finally(() => setStatsLoading(false))
-  }, [stats])
+    const mq = window.matchMedia("(min-width: 920px)")
+    const suivre = () => { if (mq.matches) setShowStyle(true) }
+    suivre()
+    mq.addEventListener("change", suivre)
+    return () => mq.removeEventListener("change", suivre)
+  }, [])
+
+
+  // Affiche un message éphémère, en annulant celui d'avant. Nettoyé au démontage.
+  const annoncer = (text: string, ok: boolean, ms = 3500) => {
+    if (minuteurMsg.current) clearTimeout(minuteurMsg.current)
+    setSaveMsg({ text, ok })
+    minuteurMsg.current = setTimeout(() => setSaveMsg(null), ms)
+  }
+  useEffect(() => () => { if (minuteurMsg.current) clearTimeout(minuteurMsg.current) }, [])
 
   const data = useMemo(() => payload({ type: qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em }), [qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em])
   const ready = data.length > 0
@@ -159,19 +171,30 @@ export default function QrLinkPage() {
   // UNE seule source pour « peut-on, et sinon pourquoi » (voir quotaQr.ts). Trois
   // compteurs indépendants vivaient ici, tous appelés « QR », et leurs messages
   // s'affichaient ensemble en se contredisant.
-  const quota = etatQuota(plan, saved as any[])
+  const quota = etatQuota(plan, saved)
   const staticBlocked = !quota.peutEnregistrer && dlSig !== curSig
   const dynBlocked = dynamic && !quota.peutCreerModifiable
   // Aperçu neutralisé si AUCUNE action possible ne produit un QR fonctionnel : statique →
   // download statique bloqué ; dynamique → download statique ET création dynamique bloqués.
   const previewBlocked = dynamic ? (staticBlocked && dynBlocked) : staticBlocked
 
+  // Échap, gel du défilement et restitution du focus pour les trois fenêtres.
+  const fermerDetail = useCallback(() => setDetail(null), [])
+  const fermerStats = useCallback(() => setStats(null), [])
+  const fermerBulk = useCallback(() => setBulkOpen(false), [])
+  useFermetureModale(detail !== null, fermerDetail)
+  useFermetureModale(stats !== null, fermerStats)
+  useFermetureModale(bulkOpen, fermerBulk)
+
   const [history, setHistory] = useState<QrHistEntry[]>([])
   useEffect(() => { try { const h = JSON.parse(localStorage.getItem("qrfolio_qr_history") || "[]"); if (Array.isArray(h)) setHistory(h.slice(0, 8)) } catch {} }, [])
   // Charge les QR instantanés enregistrés (serveur).
   useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.plan) setPlan(d.plan) }).catch(() => {}) }, [])
   const saveToHistory = () => setHistory(prev => {
-    const entry: QrHistEntry = { type: qrType, url: url.trim(), ssid, wifiPass, wifiEnc, text: text.trim(), vc, phone, em, fg, bg, ecc, styleKey }
+    // Le mot de passe WiFi était écrit en clair dans localStorage à chaque
+    // téléchargement — alors que le même fichier refuse explicitement de l'envoyer
+    // au serveur. Le brouillon garde tout sauf lui ; on le retape, c'est tout.
+    const entry: QrHistEntry = { type: qrType, url: url.trim(), ssid, wifiPass: "", wifiEnc, text: text.trim(), vc, phone, em, fg, bg, ecc, styleKey }
     const next = [entry, ...prev.filter(e => payload(e) !== data)].slice(0, 8)
     try { localStorage.setItem("qrfolio_qr_history", JSON.stringify(next)) } catch {}
     return next
@@ -207,7 +230,7 @@ export default function QrLinkPage() {
 
   async function download(ext: "png" | "svg") {
     if (!ready) return
-    if (staticBlocked) { setSaveMsg({ text: quota.raison ?? "Limite atteinte sur votre plan.", ok: false }); setTimeout(() => setSaveMsg(null), 4500); return }
+    if (staticBlocked) { annoncer(quota.raison ?? "Limite atteinte sur votre plan.", false, 4500); return }
     setBusy(ext)
     try {
       // Le QR statique téléchargé est enregistré via l'API, qui applique le quota du plan
@@ -223,7 +246,7 @@ export default function QrLinkPage() {
         })
         if (res.status === 401) { window.location.href = "/auth/login"; return }
         const d = await res.json().catch(() => ({}))
-        if (!res.ok) { setSaveMsg({ text: d.error || quota.raison || "Limite atteinte sur votre plan.", ok: false }); setTimeout(() => setSaveMsg(null), 4500); return }
+        if (!res.ok) { annoncer(d.error || quota.raison || "Limite atteinte sur votre plan.", false, 4500); return }
         if (d.item) setSaved(prev => [d.item, ...prev])
         setDlSig(sig)
       }
@@ -240,6 +263,10 @@ export default function QrLinkPage() {
   // Enregistre le QR courant côté serveur (STATIQUE : contenu encodé, hors ligne). WiFi/Contact.
   async function saveInstant() {
     if (!ready || saveBusy) return
+    // Le contrôle manquait ici : le bouton restait cliquable au quota, partait en
+    // 403, et la limite se découvrait APRÈS le clic — pendant que le bouton de
+    // téléchargement, lui, était déjà verrouillé juste au-dessus.
+    if (!quota.peutEnregistrer) { annoncer(quota.raison ?? "Limite atteinte sur votre plan.", false, 4500); return }
     setSaveBusy(true); setSaveMsg(null)
     try {
       // On ne stocke pas le mot de passe WiFi en clair dans `inputs` (il figure de
@@ -250,10 +277,10 @@ export default function QrLinkPage() {
         body: JSON.stringify({ kind: qrType, label: previewLabel || null, payload: data, inputs, style: { fg, bg, ecc: effectiveEcc, styleKey } }),
       })
       const d = await res.json().catch(() => ({}))
-      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setSaveMsg({ text: "Enregistré ✓", ok: true }) }
-      else setSaveMsg({ text: d.error || "Enregistrement impossible", ok: false })
-    } catch { setSaveMsg({ text: "Erreur réseau", ok: false }) }
-    finally { setSaveBusy(false); setTimeout(() => setSaveMsg(null), 3500) }
+      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); annoncer("Enregistré ✓", true) }
+      else annoncer(d.error || "Enregistrement impossible", false)
+    } catch { annoncer("Erreur réseau", false) }
+    finally { setSaveBusy(false) }
   }
   async function deleteInstant(id: string) {
     try {
@@ -265,7 +292,7 @@ export default function QrLinkPage() {
   // QR DYNAMIQUE (lien/texte/appel/email) : le QR encode qrowg.com/q/<code>, expirable (essai 30 j).
   async function createDynamic() {
     if (!ready || saveBusy) return
-    if (dynBlocked) { setSaveMsg({ text: quota.raisonModifiable ?? "Limite atteinte sur votre plan.", ok: false }); setTimeout(() => setSaveMsg(null), 4500); return }
+    if (dynBlocked) { annoncer(quota.raisonModifiable ?? "Limite atteinte sur votre plan.", false, 4500); return }
     setSaveBusy(true); setSaveMsg(null)
     try {
       const inputs = { type: qrType, url, ssid, wifiEnc, text, vc, phone, em }
@@ -274,104 +301,76 @@ export default function QrLinkPage() {
         body: JSON.stringify({ kind: qrType, dynamic: true, payload: data, dest: qrType === "link" ? url : data, label: previewLabel || null, inputs, style: { fg, bg, ecc: effectiveEcc, styleKey } }),
       })
       const d = await res.json().catch(() => ({}))
-      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setDetail(d.item); setSaveMsg({ text: "QR modifiable créé ✓", ok: true }) }
-      else setSaveMsg({ text: d.error || "Création impossible", ok: false })
-    } catch { setSaveMsg({ text: "Erreur réseau", ok: false }) }
-    finally { setSaveBusy(false); setTimeout(() => setSaveMsg(null), 4000) }
+      if (res.ok && d.item) { setSaved(prev => [d.item, ...prev]); setDetail(d.item); annoncer("QR modifiable créé ✓", true, 4000) }
+      else annoncer(d.error || "Création impossible", false, 4000)
+    } catch { annoncer("Erreur réseau", false, 4000) }
+    finally { setSaveBusy(false) }
   }
-  async function editDest(s: any) {
-    const next = typeof window !== "undefined" ? window.prompt("Nouvelle destination du lien :", s.dest_url || "") : null
-    if (next === null) return
-    try {
-      const res = await fetch("/api/qr-instant", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: s.id, dest: next }) })
-      const d = await res.json().catch(() => ({}))
-      if (res.ok && d.item) setSaved(prev => prev.map(x => x.id === s.id ? d.item : x))
-      else alert(d.error || "Modification impossible")
-    } catch {}
-  }
-  // Applique un item mis à jour (PATCH) à la liste + à la fiche ouverte.
-  function applyItem(item: any) {
+  // Applique un item mis à jour (PATCH) à la liste, à la fiche ouverte ET à la
+  // fenêtre de statistiques. `editDest` n'écrivait que dans la liste : on modifiait
+  // la destination depuis la fiche, l'API répondait OK, et la fiche continuait
+  // d'afficher l'ancienne URL. Les trois copies bougent maintenant ensemble.
+  function applyItem(item: InstantQr) {
     setSaved(prev => prev.map(x => x.id === item.id ? item : x))
-    setDetail((d: any) => (d && d.id === item.id ? item : d))
+    setDetail(d => (d && d.id === item.id ? item : d))
+    setStats(st => (st && st.id === item.id ? item : st))
   }
-  async function patchLink(id: string, body: any): Promise<boolean> {
+  async function patchLink(id: string, body: Record<string, unknown>): Promise<boolean> {
     try {
       const res = await fetch("/api/qr-instant", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...body }) })
       const d = await res.json().catch(() => ({}))
-      if (res.ok && d.item) { applyItem(d.item); return true }
-      alert(d.error || "Modification impossible"); return false
-    } catch { alert("Erreur réseau"); return false }
+      if (res.ok && d.item) { applyItem(d.item as InstantQr); return true }
+      erreur(d.error || "Modification impossible"); return false
+    } catch { erreur("Erreur réseau"); return false }
   }
-  // ── Sécurité du lien (Pro+) ──
-  async function setLinkPassword(s: any) {
-    const pw = typeof window !== "undefined" ? window.prompt("Mot de passe pour protéger ce lien :", "") : null
-    if (pw === null || !pw.trim()) return
-    await patchLink(s.id, { password: pw })
-  }
-  async function removeLinkPassword(s: any) {
-    if (typeof window !== "undefined" && window.confirm("Retirer le mot de passe de ce lien ?")) await patchLink(s.id, { password: "" })
-  }
-  async function scheduleExpiry(s: any) {
-    const cur = s.expires_at ? new Date(s.expires_at).toISOString().slice(0, 10) : ""
-    const v = typeof window !== "undefined" ? window.prompt("Date d'expiration (AAAA-MM-JJ) — laisser vide pour un lien permanent :", cur) : null
-    if (v === null) return
-    if (!v.trim()) { await patchLink(s.id, { expires_at: null }); return }
-    const t = Date.parse(`${v.trim()}T23:59:59`)
-    if (isNaN(t)) { alert("Date invalide (format AAAA-MM-JJ)."); return }
-    await patchLink(s.id, { expires_at: new Date(t).toISOString() })
-  }
-  async function toggleManualPause(s: any) {
+
+  // ── Dialogues ─────────────────────────────────────────────────────────────
+  // Huit invites natives vivaient ici : window.prompt pour la destination, pour un
+  // MOT DE PASSE saisi en clair, pour une date à taper au format AAAA-MM-JJ, plus
+  // cinq alert. Elles bloquent l'onglet, n'offrent aucun champ adapté, et une date
+  // refusée renvoyait à zéro sans garder la saisie. Une seule boîte les remplace.
+  const fermerDialogue = () => setDemande(null)
+  const erreur = (texte: string) => setDemande({ type: "message", titre: "Impossible", texte })
+
+  const demanderDestination = (s: InstantQr) => setDemande({ type: "destination", qr: s, valeur: s.dest_url || "" })
+  const demanderMotDePasse = (s: InstantQr) => setDemande({ type: "motDePasse", qr: s, valeur: "" })
+  const demanderRetraitMotDePasse = (s: InstantQr) => setDemande({ type: "retirerMotDePasse", qr: s })
+  const demanderExpiration = (s: InstantQr) =>
+    setDemande({ type: "expiration", qr: s, valeur: s.expires_at ? new Date(s.expires_at).toISOString().slice(0, 10) : "" })
+  const demanderSuppression = (s: InstantQr) => setDemande({ type: "supprimer", qr: s })
+
+  async function toggleManualPause(s: InstantQr) {
     await patchLink(s.id, { action: s.status === "active" ? "pause" : "resume" })
   }
 
-  // ── Génération en masse (Business) ──
-  function onBulkFile(file: File) {
-    const r = new FileReader()
-    r.onload = () => setBulkText(String(r.result || ""))
-    r.readAsText(file)
-  }
-  async function runBulk() {
-    const items = bulkParse.rows.filter(r => r.valid).map(r => ({ label: r.label, dest: r.dest }))
-    if (items.length === 0 || bulkBusy) return
-    setBulkBusy(true); setBulkMsg(null)
-    try {
-      const res = await fetch("/api/qr-instant/bulk", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) })
-      const d = await res.json().catch(() => ({}))
-      if (res.ok && Array.isArray(d.items)) {
-        setSaved(prev => [...d.items, ...prev])
-        const extra = [d.skipped ? `${d.skipped} ignoré(s)` : "", d.truncated ? `${d.truncated} au-delà de la limite (100)` : ""].filter(Boolean).join(" · ")
-        setBulkMsg({ ok: true, text: `${d.created} lien(s) créé(s)${extra ? " · " + extra : ""}` })
-        setBulkText("")
-      } else setBulkMsg({ ok: false, text: d.error || "Import impossible" })
-    } catch { setBulkMsg({ ok: false, text: "Erreur réseau" }) }
-    finally { setBulkBusy(false) }
+  async function validerDialogue() {
+    const d = demande
+    if (!d || d.type === "message") { setDemande(null); return }
+    setDemande(null)
+    switch (d.type) {
+      case "destination":
+        if (d.valeur.trim()) await patchLink(d.qr.id, { dest: d.valeur.trim() })
+        return
+      case "motDePasse":
+        if (d.valeur.trim()) await patchLink(d.qr.id, { password: d.valeur })
+        return
+      case "retirerMotDePasse":
+        await patchLink(d.qr.id, { password: "" })
+        return
+      case "expiration": {
+        if (!d.valeur) { await patchLink(d.qr.id, { expires_at: null }); return }
+        const t = Date.parse(`${d.valeur}T23:59:59`)
+        if (Number.isNaN(t)) { erreur("Cette date n'est pas lisible. Choisissez-la dans le calendrier."); return }
+        if (t <= Date.now()) { erreur("Choisissez une date dans le futur : une date passée couperait le QR tout de suite."); return }
+        await patchLink(d.qr.id, { expires_at: new Date(t).toISOString() })
+        return
+      }
+      case "supprimer":
+        await deleteInstant(d.qr.id)
+        return
+    }
   }
 
-  // Statut lisible d'un lien dynamique (essai 30 j par lien).
-  function dynStatus(s: any): { label: string; color: string; expired: boolean } {
-    if (s.status === "expired") return { label: "Expiré", color: "#FF6B6B", expired: true }
-    if (s.status === "paused") return { label: "En pause", color: "#FBBF24", expired: false }
-    if (s.expires_at) {
-      const ms = new Date(s.expires_at).getTime() - Date.now()
-      if (ms <= 0) return { label: "Expiré", color: "#FF6B6B", expired: true }
-      const days = Math.ceil(ms / 86400000)
-      return { label: `Essai · expire dans ${days} j`, color: "#FBBF24", expired: false }
-    }
-    return { label: "Actif", color: "var(--success)", expired: false }
-  }
-  // Décompte précis avant expiration (aperçu détaillé).
-  function expiryText(s: any): { text: string; color: string; expired: boolean } {
-    if (!s?.dynamic) return { text: "Contenu encodé — n'expire pas", color: MUTED, expired: false }
-    if (s.status === "expired") return { text: "Expiré", color: "#FF6B6B", expired: true }
-    if (s.status === "paused") return { text: "En pause", color: "#FBBF24", expired: false }
-    if (!s.expires_at) return { text: "Permanent (aucune expiration)", color: "var(--success)", expired: false }
-    const ms = new Date(s.expires_at).getTime() - Date.now()
-    if (ms <= 0) return { text: "Expiré", color: "#FF6B6B", expired: true }
-    const d = Math.floor(ms / 86400000), h = Math.floor((ms % 86400000) / 3600000), m = Math.floor((ms % 3600000) / 60000)
-    const left = d > 0 ? `${d} j ${h} h` : h > 0 ? `${h} h ${m} min` : `${m} min`
-    const date = new Date(s.expires_at).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })
-    return { text: `Expire dans ${left} · le ${date}`, color: "#FBBF24", expired: false }
-  }
   async function copyDetail() {
     try { await navigator.clipboard.writeText(detail?.payload || ""); setDetailCopied(true); setTimeout(() => setDetailCopied(false), 1600) } catch {}
   }
@@ -401,8 +400,8 @@ export default function QrLinkPage() {
   const secRowLabel: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, color: "#D8D2C6", fontSize: 12.5, width: 110, flexShrink: 0 }
   const secBtn: React.CSSProperties = { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 8, color: "#F5F0E8", fontSize: 11.5, fontWeight: 600, cursor: "pointer", padding: "6px 10px", flexShrink: 0 }
   const swatch = (c: string, on: boolean, onClick: () => void, aria: string) => (
-    <button key={c} onClick={onClick} aria-label={aria} className={`da-swatch${on ? " on" : ""}`}
-      style={{ width: 40, height: 40, background: c, flexShrink: 0 }} />
+    <button key={c} onClick={onClick} aria-label={aria} aria-pressed={on} title={aria} className={`da-swatch${on ? " on" : ""}`}
+      style={{ width: 44, height: 44, background: c, flexShrink: 0 }} />
   )
 
   const previewLabel =
@@ -465,7 +464,7 @@ export default function QrLinkPage() {
           const on = qrType === t.k
           const Icon = t.icon
           return (
-            <button key={t.k} onClick={() => setQrType(t.k)} className={`da-tile${on ? " on" : ""}`} style={{ minHeight: 60 }}>
+            <button key={t.k} onClick={() => setQrType(t.k)} aria-pressed={on} className={`da-tile${on ? " on" : ""}`} style={{ minHeight: 60 }}>
               <Icon size={19} /> {t.label}
             </button>
           )
@@ -491,7 +490,7 @@ export default function QrLinkPage() {
           )}
           <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3 }}>
             {([["WPA", "WPA/WPA2"], ["WEP", "WEP"], ["nopass", "Ouvert"]] as [WifiEnc, string][]).map(([k, l]) => (
-              <button key={k} onClick={() => setWifiEnc(k)}
+              <button key={k} onClick={() => setWifiEnc(k)} aria-pressed={wifiEnc === k}
                 style={{ flex: 1, minHeight: 42, borderRadius: 8, border: "none", cursor: "pointer", background: wifiEnc === k ? G : "transparent", color: wifiEnc === k ? "#080808" : MUTED, fontSize: 12, fontWeight: wifiEnc === k ? 800 : 600 }}>{l}</button>
             ))}
           </div>
@@ -560,7 +559,7 @@ export default function QrLinkPage() {
               {STYLE_PRESETS.map(p => {
                 const on = styleKey === p.k
                 return (
-                  <button key={p.k} onClick={() => setStyleKey(p.k)}
+                  <button key={p.k} onClick={() => setStyleKey(p.k)} aria-pressed={on}
                     style={{ flex: "1 1 0", minWidth: 0, minHeight: 42, borderRadius: 10, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : "rgba(255,255,255,0.1)"}`, color: on ? G : MUTED, fontSize: 11.5, fontWeight: on ? 800 : 600, transition: "all .15s" }}>{p.label}</button>
                 )
               })}
@@ -568,24 +567,24 @@ export default function QrLinkPage() {
 
             <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Couleur du QR</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 4 }}>
-              {FG_SWATCHES.map(c => swatch(c, fg === c, () => setFg(c), `Couleur ${c}`))}
+              {FG_SWATCHES.map(c => swatch(c, fg === c, () => setFg(c), `QR en ${nommer(c)}`))}
               <label style={{ width: 38, height: 38, borderRadius: 11, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
-                <input type="color" value={fg} onChange={e => setFg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
+                <input type="color" aria-label="Couleur du QR, choix libre" title="Couleur du QR" value={fg} onChange={e => setFg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
               </label>
             </div>
 
             <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Couleur du fond</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
-              {BG_SWATCHES.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${c}`))}
+              {BG_SWATCHES.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${nommer(c)}`))}
               <label style={{ width: 38, height: 38, borderRadius: 11, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
-                <input type="color" value={bg} onChange={e => setBg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
+                <input type="color" aria-label="Couleur du fond, choix libre" title="Couleur du fond" value={bg} onChange={e => setBg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
               </label>
             </div>
 
             <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Correction d&apos;erreur</p>
             <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3 }}>
               {ECC_OPTS.map(o => (
-                <button key={o.k} onClick={() => setEcc(o.k)}
+                <button key={o.k} onClick={() => setEcc(o.k)} aria-pressed={ecc === o.k}
                   style={{ flex: 1, minHeight: 42, borderRadius: 8, border: "none", cursor: "pointer", background: ecc === o.k ? G : "transparent", color: ecc === o.k ? "#080808" : MUTED, fontSize: 12.5, fontWeight: ecc === o.k ? 800 : 600, transition: "all .15s" }}>{o.label}</button>
               ))}
             </div>
@@ -703,7 +702,7 @@ export default function QrLinkPage() {
 
       {/* Génération en masse (Business) : créer plusieurs liens dynamiques depuis un CSV. */}
       {canDynMasse(plan) && (
-        <button onClick={() => { setBulkOpen(true); setBulkMsg(null) }}
+        <button onClick={() => setBulkOpen(true)}
           style={{ marginTop: 22, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 46, borderRadius: 12, border: "1.5px dashed rgba(201,168,76,0.35)", background: "rgba(201,168,76,0.05)", color: G, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>
           <Upload size={16} /> Importer des liens en masse (CSV)
         </button>
@@ -717,8 +716,8 @@ export default function QrLinkPage() {
           {dynamicLinks.length > 0 && (<>
             <p style={subLabel}>Liens dynamiques</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: staticQrs.length > 0 ? 18 : 0 }}>
-              {dynamicLinks.map(s => { const st = dynStatus(s); return (
-                <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail" style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 16, padding: 12, cursor: "pointer" }}>
+              {dynamicLinks.map(s => { const st = etatLien(s); return (
+                <div key={s.id} {...carteCliquable(() => setDetail(s))} title="Voir le détail" aria-label={`Voir le détail de ${s.label || s.dest_url || "ce QR"}`} style={{ display: "flex", alignItems: "center", gap: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 16, padding: 12, cursor: "pointer" }}>
                   <div style={{ background: "#fff", borderRadius: 12, padding: 8, lineHeight: 0, flexShrink: 0, boxShadow: "0 3px 14px rgba(0,0,0,0.32)" }}>
                     <QRCanvas value={s.payload || "https://qrowg.com"} size={92} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
@@ -726,13 +725,13 @@ export default function QrLinkPage() {
                     <p style={{ color: "#F5F0E8", fontSize: 13.5, fontWeight: 700, margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label || (s.dest_url || "").replace(/^https?:\/\//, "")}</p>
                     <p style={{ color: MUTED, fontSize: 11, margin: "0 0 5px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>→ {s.dest_url}</p>
                     <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: st.color, fontSize: 10.5, fontWeight: 700, background: `${st.color}18`, borderRadius: 999, padding: "3px 8px" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: st.color }} />{st.label}</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: st.couleur, fontSize: 10.5, fontWeight: 700, background: `${st.couleur}18`, borderRadius: 999, padding: "3px 8px" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: st.couleur }} />{st.badge}</span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#6E685E", fontSize: 10.5, fontWeight: 600 }}><BarChart3 size={11} />{s.total_scans ?? 0} scan{(s.total_scans ?? 0) > 1 ? "s" : ""}</span>
                     </div>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
-                    <button onClick={e => { e.stopPropagation(); editDest(s) }} title="Modifier la destination" aria-label="Modifier la destination" className="da-btn-icon" style={{ width: 34, height: 34 }}><Pencil className="da-ic da-ic-edit" size={14} /></button>
-                    <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer" className="da-btn-icon da-btn-icon--danger" style={{ width: 34, height: 34 }}><Trash2 className="da-ic da-ic-trash" size={14} /></button>
+                    <button onClick={e => { e.stopPropagation(); demanderDestination(s) }} title="Modifier la destination" aria-label="Modifier la destination" className="da-btn-icon" style={{ width: 44, height: 44 }}><Pencil className="da-ic da-ic-edit" size={14} /></button>
+                    <button onClick={e => { e.stopPropagation(); demanderSuppression(s) }} aria-label="Supprimer ce QR" title="Supprimer ce QR" className="da-btn-icon da-btn-icon--danger" style={{ width: 44, height: 44 }}><Trash2 className="da-ic da-ic-trash" size={14} /></button>
                   </div>
                 </div>
               ) })}
@@ -743,13 +742,13 @@ export default function QrLinkPage() {
             <p style={subLabel}>Enregistrés (statiques)</p>
             <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
               {staticQrs.map(s => (
-                <div key={s.id} onClick={() => setDetail(s)} title="Voir le détail"
+                <div key={s.id} {...carteCliquable(() => setDetail(s))} title="Voir le détail" aria-label={`Voir le détail de ${s.label || s.kind}`}
                   style={{ position: "relative", flexShrink: 0, width: 124, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
                   <div style={{ background: "#fff", borderRadius: 10, padding: 7, lineHeight: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
                     <QRCanvas value={s.payload || "https://qrowg.com"} size={82} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
                   <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || s.kind}</span>
-                  <button onClick={e => { e.stopPropagation(); deleteInstant(s.id) }} aria-label="Supprimer ce QR" className="da-btn-icon da-btn-icon--danger"
+                  <button onClick={e => { e.stopPropagation(); demanderSuppression(s) }} aria-label="Supprimer ce QR" className="da-btn-icon da-btn-icon--danger"
                     style={{ position: "absolute", top: 5, right: 5, width: 26, height: 26, borderRadius: 8 }}><Trash2 className="da-ic da-ic-trash" size={13} /></button>
                 </div>
               ))}
@@ -780,12 +779,12 @@ export default function QrLinkPage() {
       )}
 
       {/* Aperçu détaillé d'un QR enregistré (clic) : grand QR + infos + décompte d'expiration */}
-      {detail && (() => { const ex = expiryText(detail); return (
-        <div onClick={() => setDetail(null)} style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      {detail && (() => { const ex = etatLien(detail); return (
+        <div onClick={fermerDetail} style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, maxHeight: "90vh", overflowY: "auto", background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 20, padding: 20, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
               <p style={{ flex: 1, color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{detail.label || (detail.dynamic ? "Lien dynamique" : detail.kind)}</p>
-              <button onClick={() => setDetail(null)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30 }}><X size={15} /></button>
+              <button onClick={fermerDetail} aria-label="Fermer la fiche" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30 }}><X size={15} /></button>
             </div>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
               <div style={{ background: detail.style?.bg || "#fff", borderRadius: 14, padding: 12, lineHeight: 0 }}>
@@ -793,10 +792,10 @@ export default function QrLinkPage() {
               </div>
             </div>
 
-            {/* Expiration (au premier plan) */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 13px", borderRadius: 12, background: `${ex.color}14`, border: `1px solid ${ex.color}44`, marginBottom: 12 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: ex.color, flexShrink: 0 }} />
-              <span style={{ color: ex.color, fontSize: 12.5, fontWeight: 700 }}>{ex.text}</span>
+            {/* État du QR (au premier plan) */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 13px", borderRadius: 12, background: `${ex.couleur}14`, border: `1px solid ${ex.couleur}44`, marginBottom: 12 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: ex.couleur, flexShrink: 0 }} />
+              <span style={{ color: ex.couleur, fontSize: 12.5, fontWeight: 700 }}>{ex.phrase}</span>
             </div>
 
             {detail.dynamic ? (
@@ -808,7 +807,7 @@ export default function QrLinkPage() {
                 <div>
                   <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 4px" }}>Destination (modifiable)</p>
                   <p style={{ color: "#F5F0E8", fontSize: 12.5, margin: "0 0 6px", wordBreak: "break-all" }}>{detail.dest_url}</p>
-                  <button onClick={() => editDest(detail)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "8px 12px" }}>Modifier la destination</button>
+                  <button onClick={() => demanderDestination(detail)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#F5F0E8", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "8px 12px" }}>Modifier la destination</button>
                 </div>
                 <button onClick={() => setStats(detail)}
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, alignSelf: "flex-start", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 10, color: G, fontSize: 12.5, fontWeight: 700, cursor: "pointer", padding: "9px 14px" }}>
@@ -822,12 +821,12 @@ export default function QrLinkPage() {
                     <div style={secRow}>
                       <span style={secRowLabel}><Lock size={14} /> Mot de passe</span>
                       <span style={{ flex: 1, fontSize: 12, color: detail.has_password ? "var(--success)" : MUTED }}>{detail.has_password ? "Activé" : "Aucun"}</span>
-                      <button style={secBtn} onClick={() => detail.has_password ? removeLinkPassword(detail) : setLinkPassword(detail)}>{detail.has_password ? "Retirer" : "Ajouter"}</button>
+                      <button style={secBtn} onClick={() => detail.has_password ? demanderRetraitMotDePasse(detail) : demanderMotDePasse(detail)}>{detail.has_password ? "Retirer" : "Ajouter"}</button>
                     </div>
                     <div style={secRow}>
                       <span style={secRowLabel}><Clock size={14} /> Expiration</span>
                       <span style={{ flex: 1, fontSize: 12, color: detail.expires_at ? "#FBBF24" : MUTED }}>{detail.expires_at ? new Date(detail.expires_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "Permanent"}</span>
-                      <button style={secBtn} onClick={() => scheduleExpiry(detail)}>Modifier</button>
+                      <button style={secBtn} onClick={() => demanderExpiration(detail)}>Modifier</button>
                     </div>
                     <div style={secRow}>
                       <span style={secRowLabel}>{detail.status === "active" ? <Pause size={14} /> : <Play size={14} />} État</span>
@@ -866,193 +865,93 @@ export default function QrLinkPage() {
 
       {/* Pop-up statistiques d'un lien dynamique — ancrée à droite sur PC, feuille par-dessus sur mobile.
           Données 100% réelles (aucun graphe fictif) : total, dernier scan, moyenne/jour, création, statut. */}
-      {stats && (() => {
-        const total = stats.total_scans ?? 0
-        const created = stats.created_at ? new Date(stats.created_at) : null
-        const daysActive = created ? Math.max(1, Math.round((Date.now() - created.getTime()) / 86400000)) : 1
-        const perDay = total / daysActive
-        const st = dynStatus(stats)
-        const ex = expiryText(stats)
-        const rows: { icon: any; label: string; value: string; color?: string }[] = [
-          { icon: Clock, label: "Dernier scan", value: stats.last_scan_at ? fmtDateTime(stats.last_scan_at) : "Aucun scan pour l'instant" },
-          { icon: TrendingUp, label: "Moyenne par jour", value: `${perDay.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} / jour · sur ${daysActive} j` },
-          { icon: Calendar, label: "Créé le", value: fmtDateTime(stats.created_at) },
-          { icon: Activity, label: "Statut", value: st.label, color: st.color },
-        ]
-        const panel: React.CSSProperties = {
-          background: "#141210", border: "1px solid rgba(201,168,76,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
-          zIndex: 401, overflowY: "auto", position: "fixed",
-          ...(isMobile
-            ? { left: 0, right: 0, bottom: 0, width: "100%", maxHeight: "85dvh", borderRadius: "22px 22px 0 0", padding: 20, paddingBottom: "calc(20px + env(safe-area-inset-bottom))", animation: "mo-slide-up .22s ease" }
-            : { top: "50%", right: 24, transform: "translateY(-50%)", width: 380, maxHeight: "88vh", borderRadius: 20, padding: 22 }),
-        }
-        return (
-          <div onClick={() => setStats(null)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)" }}>
-            {isMobile && <div style={{ position: "absolute", bottom: "calc(85dvh - 4px)", left: "50%", transform: "translateX(-50%)", width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.25)" }} />}
-            <div onClick={e => e.stopPropagation()} style={panel}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}>
-                <BarChart3 size={18} color={G} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 800, margin: 0 }}>Statistiques</p>
-                  <p style={{ color: MUTED, fontSize: 11.5, margin: "1px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{stats.label || stats.dest_url || "Lien dynamique"}</p>
-                </div>
-                <button onClick={() => setStats(null)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30, flexShrink: 0 }}><X size={15} /></button>
-              </div>
-
-              {/* Total (chiffre héro) */}
-              <div style={{ textAlign: "center", padding: "18px 12px", borderRadius: 16, background: "radial-gradient(120% 100% at 50% 0%, rgba(201,168,76,0.14), transparent 65%), rgba(255,255,255,0.02)", border: "1px solid rgba(201,168,76,0.16)", marginBottom: 14 }}>
-                <p style={{ color: G, fontSize: 44, fontWeight: 800, margin: 0, lineHeight: 1, letterSpacing: -1 }}>{total.toLocaleString("fr-FR")}</p>
-                <p style={{ color: MUTED, fontSize: 12, fontWeight: 600, margin: "7px 0 0", textTransform: "uppercase", letterSpacing: 1.2 }}>scan{total > 1 ? "s" : ""} au total</p>
-              </div>
-
-              {/* Expiration (essai) */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 12, background: `${ex.color}14`, border: `1px solid ${ex.color}44`, marginBottom: 14 }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: ex.color, flexShrink: 0 }} />
-                <span style={{ color: ex.color, fontSize: 12, fontWeight: 700 }}>{ex.text}</span>
-              </div>
-
-              {/* Détail */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {rows.map((r, i) => { const Icon = r.icon; return (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, padding: "11px 2px", borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.06)" }}>
-                    <Icon size={16} color={MUTED} style={{ flexShrink: 0 }} />
-                    <span style={{ flex: 1, color: MUTED, fontSize: 12.5 }}>{r.label}</span>
-                    <span style={{ color: r.color || "#F5F0E8", fontSize: 12.5, fontWeight: 700, textAlign: "right" }}>{r.value}</span>
-                  </div>
-                ) })}
-              </div>
-
-              {/* Stats détaillées (Pro+) : graphe par jour, appareils, pays — données réelles. */}
-              {statsLoading && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", margin: "16px 0 0" }}>Chargement des statistiques…</p>}
-
-              {statsData?.detailed && (() => {
-                const days = (statsData.byDay || []).slice(-14)
-                const maxDay = Math.max(1, ...days.map((d: any) => d.count))
-                const totalWindow = (statsData.byDevice || []).reduce((n: number, d: any) => n + d.count, 0)
-                return (
-                  <div style={{ marginTop: 18 }}>
-                    <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 9px", display: "flex", justifyContent: "space-between" }}>
-                      <span>Scans · 14 derniers jours</span>
-                      {statsData.peakDay && <span style={{ color: "#6E685E", textTransform: "none", letterSpacing: 0 }}>pic : {statsData.peakDay.count}</span>}
-                    </p>
-                    {/* Histogramme par jour */}
-                    <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 56, marginBottom: 4 }}>
-                      {days.map((d: any, i: number) => (
-                        <div key={i} title={`${d.date} · ${d.count} scan${d.count > 1 ? "s" : ""}`}
-                          style={{ flex: 1, minWidth: 0, height: `${Math.max(3, (d.count / maxDay) * 100)}%`, borderRadius: 3,
-                            background: d.count > 0 ? "linear-gradient(180deg, #E6C766, #C9A84C)" : "rgba(255,255,255,0.06)" }} />
-                      ))}
-                    </div>
-                    {totalWindow === 0 && <p style={{ color: "#6E685E", fontSize: 11, textAlign: "center", margin: "6px 0 0" }}>Aucun scan sur la période — partagez votre QR pour voir les données arriver.</p>}
-
-                    {/* Appareils */}
-                    {(statsData.byDevice || []).length > 0 && (
-                      <div style={{ marginTop: 16 }}>
-                        <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 8px" }}>Appareils</p>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                          {statsData.byDevice.map((d: any) => {
-                            const pct = totalWindow ? Math.round((d.count / totalWindow) * 100) : 0
-                            return (
-                              <div key={d.device} style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                                <span style={{ width: 78, flexShrink: 0, color: "#D8D2C6", fontSize: 12 }}>{DEVICE_LABEL[d.device as keyof typeof DEVICE_LABEL] || d.device}</span>
-                                <div style={{ flex: 1, height: 7, borderRadius: 4, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                                  <div style={{ width: `${pct}%`, height: "100%", borderRadius: 4, background: G }} />
-                                </div>
-                                <span style={{ width: 40, flexShrink: 0, textAlign: "right", color: MUTED, fontSize: 11.5, fontVariantNumeric: "tabular-nums" }}>{d.count} · {pct}%</span>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Pays */}
-                    {(statsData.byCountry || []).length > 0 && (
-                      <div style={{ marginTop: 16 }}>
-                        <p style={{ color: MUTED, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 8px" }}>Pays</p>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                          {statsData.byCountry.slice(0, 5).map((c: any) => (
-                            <div key={c.country} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5 }}>
-                              <span style={{ fontSize: 15 }}>{countryFlag(c.country)}</span>
-                              <span style={{ flex: 1, color: "#D8D2C6" }}>{c.country === "??" ? "Inconnu" : c.country}</span>
-                              <span style={{ color: MUTED, fontVariantNumeric: "tabular-nums" }}>{c.count}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })()}
-
-              {/* Upsell : stats détaillées réservées au Pro */}
-              {statsData && statsData.detailed === false && (
-                <a href="/upgrade" style={{ display: "block", marginTop: 16, padding: "13px 14px", borderRadius: 12, background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.28)", textDecoration: "none" }}>
-                  <p style={{ color: G, fontSize: 12.5, fontWeight: 700, margin: "0 0 3px", display: "flex", alignItems: "center", gap: 6 }}><BarChart3 size={14} /> Statistiques détaillées</p>
-                  <p style={{ color: MUTED, fontSize: 11.5, margin: 0, lineHeight: 1.5 }}>Scans par jour, appareil et pays à partir du plan <strong style={{ color: "#F5F0E8" }}>Pro</strong>. Toucher pour découvrir →</p>
-                </a>
-              )}
-
-              <div style={{ marginTop: 16, padding: "11px 13px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                <p style={{ color: "#6E685E", fontSize: 10.5, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 3px" }}>Lien suivi</p>
-                <p style={{ color: "#F5F0E8", fontSize: 12, margin: 0, wordBreak: "break-all", fontFamily: "monospace" }}>{stats.payload}</p>
-              </div>
-              <p style={{ color: "#6E685E", fontSize: 10.5, margin: "10px 2px 0", lineHeight: 1.5, textAlign: "center" }}>Mis à jour à chaque scan.</p>
-            </div>
-          </div>
-        )
-      })()}
+      <StatistiquesQr qr={stats} onFermer={fermerStats} />
 
       {/* Modal génération en masse (Business) : coller/charger un CSV → créer N liens dynamiques. */}
-      {bulkOpen && (
-        <div onClick={() => setBulkOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 320, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, maxHeight: "90vh", overflowY: "auto", background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 20, padding: 20, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 6 }}>
-              <Upload size={17} color={G} />
-              <p style={{ flex: 1, color: "#F5F0E8", fontSize: 16, fontWeight: 800, margin: 0 }}>Importer en masse</p>
-              <button onClick={() => setBulkOpen(false)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30 }}><X size={15} /></button>
-            </div>
-            <p style={{ color: MUTED, fontSize: 12, margin: "0 0 14px", lineHeight: 1.55 }}>
-              Une ligne par lien : <code style={{ color: "#F5F0E8" }}>destination</code> ou <code style={{ color: "#F5F0E8" }}>libellé,destination</code>. En-tête (<code style={{ color: "#F5F0E8" }}>label,url</code>) et point-virgule acceptés. Jusqu'à 100 liens.
-            </p>
-
-            <div style={{ display: "flex", gap: 9, marginBottom: 10 }}>
-              <button onClick={() => bulkFileInput.current?.click()} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 10, color: "#F5F0E8", fontSize: 12.5, fontWeight: 600, cursor: "pointer", padding: "9px 13px" }}><Upload size={14} /> Charger un .csv</button>
-              {bulkText && <button onClick={() => { setBulkText(""); setBulkMsg(null) }} style={{ background: "transparent", border: "none", color: MUTED, fontSize: 12.5, cursor: "pointer" }}>Effacer</button>}
-              <input ref={bulkFileInput} type="file" accept=".csv,text/csv,text/plain" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onBulkFile(f); e.target.value = "" }} />
-            </div>
-
-            <textarea value={bulkText} onChange={e => setBulkText(e.target.value)} rows={7} placeholder={"label,url\nMa boutique,maboutique.fr\nInstagram,instagram.com/moncompte"}
-              style={{ width: "100%", boxSizing: "border-box", resize: "vertical", minHeight: 130, background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, color: "#F5F0E8", fontSize: 13, padding: "12px 14px", lineHeight: 1.5, fontFamily: "monospace", outline: "none" }} />
-
-            {bulkText.trim() && (
-              <div style={{ marginTop: 12 }}>
-                <p style={{ color: MUTED, fontSize: 11.5, margin: "0 0 8px" }}>
-                  <strong style={{ color: "var(--success)" }}>{bulkParse.validCount}</strong> valide{bulkParse.validCount > 1 ? "s" : ""}
-                  {bulkParse.rows.length - bulkParse.validCount > 0 && <> · <strong style={{ color: "#FF6B6B" }}>{bulkParse.rows.length - bulkParse.validCount}</strong> à corriger</>}
-                  {bulkParse.truncated > 0 && <> · {bulkParse.truncated} au-delà de 100 (ignorées)</>}
-                </p>
-                <div style={{ maxHeight: 150, overflowY: "auto", display: "flex", flexDirection: "column", gap: 5 }}>
-                  {bulkParse.rows.slice(0, 30).map((r, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11.5 }}>
-                      {r.valid ? <Check size={13} color="var(--success)" style={{ flexShrink: 0 }} /> : <X size={13} color="#FF6B6B" style={{ flexShrink: 0 }} />}
-                      <span style={{ color: "#D8D2C6", flexShrink: 0, maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || "—"}</span>
-                      <span style={{ color: r.valid ? MUTED : "#FF6B6B", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.valid ? r.dest : `${r.dest || "(vide)"} · ${r.error}`}</span>
-                    </div>
-                  ))}
-                  {bulkParse.rows.length > 30 && <p style={{ color: "#6E685E", fontSize: 11, margin: 0 }}>… et {bulkParse.rows.length - 30} autres</p>}
-                </div>
-              </div>
-            )}
-
-            {bulkMsg && <p style={{ color: bulkMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "12px 0 0" }}>{bulkMsg.text}</p>}
-
-            <Button onClick={runBulk} disabled={bulkParse.validCount === 0 || bulkBusy} style={{ width: "100%", marginTop: 14 }}>
-              {bulkBusy ? "Création…" : `Créer ${bulkParse.validCount} lien${bulkParse.validCount > 1 ? "s" : ""} dynamique${bulkParse.validCount > 1 ? "s" : ""}`}
-            </Button>
-          </div>
-        </div>
-      )}
+      <ImportEnMasse
+        ouvert={bulkOpen}
+        onFermer={fermerBulk}
+        onCrees={items => setSaved(prev => [...items, ...prev])}
+      />
+      {/* Une seule boîte de dialogue pour tout ce que faisaient prompt/confirm/alert. */}
+      <Dialogue
+        ouvert={demande !== null}
+        titre={
+          demande?.type === "destination" ? "Modifier la destination"
+          : demande?.type === "motDePasse" ? "Protéger ce QR par un mot de passe"
+          : demande?.type === "retirerMotDePasse" ? "Retirer le mot de passe ?"
+          : demande?.type === "expiration" ? "Date de fin"
+          : demande?.type === "supprimer" ? "Supprimer ce QR ?"
+          : demande?.type === "message" ? demande.titre
+          : ""
+        }
+        description={
+          demande?.type === "destination" ? "Le QR déjà imprimé continuera de fonctionner : il pointera simplement ailleurs."
+          : demande?.type === "motDePasse" ? "Il sera demandé au scan, avant la redirection."
+          : demande?.type === "retirerMotDePasse" ? "Le QR redeviendra accessible à tous ceux qui le scannent."
+          : demande?.type === "expiration" ? "Passé cette date, le QR cessera de rediriger. Laissez vide pour qu'il reste actif indéfiniment."
+          : demande?.type === "supprimer" ? "C'est définitif. Si ce QR est déjà imprimé quelque part, il ne mènera plus nulle part."
+          : demande?.type === "message" ? demande.texte
+          : undefined
+        }
+        onFermer={fermerDialogue}
+        onConfirmer={validerDialogue}
+        destructif={demande?.type === "supprimer"}
+        libelleConfirmer={
+          demande?.type === "destination" ? "Enregistrer"
+          : demande?.type === "motDePasse" ? "Protéger"
+          : demande?.type === "retirerMotDePasse" ? "Retirer"
+          : demande?.type === "expiration" ? "Enregistrer"
+          : demande?.type === "supprimer" ? "Supprimer"
+          : undefined
+        }
+        confirmerDesactive={
+          (demande?.type === "destination" && !demande.valeur.trim()) ||
+          (demande?.type === "motDePasse" && demande.valeur.trim().length < 4)
+        }
+      >
+        {demande?.type === "destination" && (
+          <label style={{ display: "block" }}>
+            <span style={{ display: "block", color: MUTED, fontSize: 11.5, fontWeight: 600, marginBottom: 6 }}>Nouvelle adresse</span>
+            <input
+              type="url" inputMode="url" autoComplete="off" placeholder="https://…"
+              value={demande.valeur}
+              onChange={e => setDemande({ ...demande, valeur: e.target.value })}
+              onKeyDown={e => { if (e.key === "Enter" && demande.valeur.trim()) validerDialogue() }}
+              style={field}
+            />
+          </label>
+        )}
+        {demande?.type === "motDePasse" && (
+          <label style={{ display: "block" }}>
+            <span style={{ display: "block", color: MUTED, fontSize: 11.5, fontWeight: 600, marginBottom: 6 }}>Mot de passe (4 caractères minimum)</span>
+            <input
+              type="password" autoComplete="new-password"
+              value={demande.valeur}
+              onChange={e => setDemande({ ...demande, valeur: e.target.value })}
+              onKeyDown={e => { if (e.key === "Enter" && demande.valeur.trim().length >= 4) validerDialogue() }}
+              style={field}
+            />
+          </label>
+        )}
+        {demande?.type === "expiration" && (
+          <label style={{ display: "block" }}>
+            <span style={{ display: "block", color: MUTED, fontSize: 11.5, fontWeight: 600, marginBottom: 6 }}>Le QR cessera de fonctionner après le</span>
+            {/* Un champ de date, et non plus « tapez AAAA-MM-JJ » suivi d'un alert
+                qui perdait la saisie quand le format n'était pas le bon. */}
+            <input
+              type="date"
+              min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
+              value={demande.valeur}
+              onChange={e => setDemande({ ...demande, valeur: e.target.value })}
+              style={{ ...field, colorScheme: "dark" }}
+            />
+          </label>
+        )}
+        {demande?.type === "supprimer" && demande.qr.label && (
+          <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700, margin: 0, wordBreak: "break-word" }}>{demande.qr.label}</p>
+        )}
+      </Dialogue>
     </div>
   )
 }

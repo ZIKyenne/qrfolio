@@ -19,7 +19,9 @@ const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "emai
 // Types éligibles au DYNAMIQUE (redirigé + expirable). WiFi et Contact restent STATIQUES : ils
 // doivent fonctionner hors ligne (auto-connexion WiFi, ajout de contact) — impossible via redirection.
 const DYNAMIC_KINDS = new Set(["link", "text", "phone", "call", "email"])
-const COLS = "id, kind, label, payload, inputs, style, created_at, dynamic, short_code, dest_url, status, expires_at, total_scans, paused_reason, password_hash"
+// `last_scan_at` manquait : la fiche affichait « Aucun scan pour l'instant » même
+// sur un QR scanné cent fois, parce que le champ n'était simplement jamais envoyé.
+const COLS = "id, kind, label, payload, inputs, style, created_at, dynamic, short_code, dest_url, status, expires_at, total_scans, last_scan_at, paused_reason, password_hash"
 
 // Ne JAMAIS renvoyer le hash du mot de passe au client : on expose seulement `has_password`.
 function pub(row: any): any {

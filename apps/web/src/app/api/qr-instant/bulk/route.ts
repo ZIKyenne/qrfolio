@@ -11,7 +11,7 @@ import { uniqueShortCode } from "@/lib/shortCode"
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
 const MAX_BULK = 100 // borne par requête (anti-abus)
-const OUT_COLS = "id, kind, label, payload, inputs, style, created_at, dynamic, short_code, dest_url, status, expires_at, total_scans, paused_reason"
+const OUT_COLS = "id, kind, label, payload, inputs, style, created_at, dynamic, short_code, dest_url, status, expires_at, total_scans, last_scan_at, paused_reason"
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()

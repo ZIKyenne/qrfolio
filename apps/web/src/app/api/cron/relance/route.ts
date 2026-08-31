@@ -18,11 +18,11 @@ import { EMAIL_FROM } from "@/lib/emailFrom"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { comptesARelancer, fenetreInscription, prenom, type Compte } from "@/lib/relance"
-import { noterPassage } from "@/lib/journalCron"
+import { noterPassage, sansAdresses } from "@/lib/journalCron"
+import { gardeCron } from "@/lib/gardeCron"
 
 export const runtime = "nodejs"
 
-const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
 // Un email court. Il ne redit pas la bienvenue : il propose UN geste, et rappelle
 // que la page peut être faite avant même d'y réfléchir longtemps.
@@ -48,14 +48,12 @@ function relanceHtml(nom: string, appUrl: string): string {
 const TACHE = "cron/relance" as const
 
 export async function GET(req: NextRequest) {
-  const auth = req.headers.get("authorization")
-  const secret = req.nextUrl.searchParams.get("secret")
-  if (CRON_SECRET === "" || (auth !== `Bearer ${CRON_SECRET}` && secret !== CRON_SECRET)) {
-    return NextResponse.json({ error: "Non autorise" }, { status: 401 })
-  }
-
-  const resendKey = process.env.RESEND_API_KEY
-  if (!resendKey) return NextResponse.json({ error: "RESEND_API_KEY absente" }, { status: 500 })
+  // Contrôle d'entrée commun aux cinq tâches (lib/gardeCron) : un refus laisse
+  // une trace dans le journal. (Cette route renvoyait un 500 pour une clé d'envoi
+  // absente — une panne du serveur pour un défaut de configuration.)
+  const refus = await gardeCron(req, TACHE, { resendRequis: true })
+  if (refus) return refus
+  const resendKey = process.env.RESEND_API_KEY as string
 
   const debut = Date.now()
   try {
@@ -111,7 +109,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    await noterPassage(supabase, TACHE, erreurs.length ? "erreur" : envoyes > 0 ? "ok" : "rien", erreurs.join(" · ") || `${envoyes} envoyé(s)`, Date.now() - debut)
+    await noterPassage(supabase, TACHE, erreurs.length ? "erreur" : envoyes > 0 ? "ok" : "rien", sansAdresses(erreurs.join(" · ")) || `${envoyes} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ examines: comptes.length, envoyes, erreurs: erreurs.length ? erreurs : undefined })
   } catch (e: any) {
     // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas

@@ -55,7 +55,12 @@ describe("le rapport interroge vraiment la période", () => {
 
   it("compte les vues et les scans depuis le début de la semaine", () => {
     expect(route).toContain('gte("viewed_at", debutIso)')
-    expect(route).toContain('gte("created_at", debutIso)')
+    // Ce test épinglait `created_at` — la colonne que la table `scans` n'a PAS.
+    // Le test et le code étaient d'accord ; seul le schéma disait le contraire, et
+    // c'est lui qui décide. L'email annonçait « 0 scan cette semaine » à tout le
+    // monde. La vérification contre le schéma vit désormais dans
+    // app/api/emails/weekly/rapportHebdo.test.ts.
+    expect(route).toContain('gte("scanned_at", debutIso)')
   })
 
   it("n'affiche plus les cumuls comme s'ils étaient l'activité du moment", () => {

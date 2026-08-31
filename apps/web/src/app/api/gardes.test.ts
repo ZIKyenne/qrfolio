@@ -24,6 +24,7 @@ function routes(dir: string, acc: string[] = []): string[] {
 const GARDES: [RegExp, string][] = [
   [/getUser\(\)/, "session utilisateur"],
   [/CRON_SECRET/, "secret de tâche planifiée"],
+  [/gardeCron\(/, "garde commune des tâches planifiées (lib/gardeCron)"],
   [/x-internal-token/, "jeton interne"],
   [/x-upload-token/, "jeton de dépôt partagé"],
   [/stripe-signature/, "signature Stripe"],

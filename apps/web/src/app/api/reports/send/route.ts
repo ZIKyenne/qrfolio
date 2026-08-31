@@ -8,9 +8,10 @@ import { serverError } from "@/lib/apiError"
 import { escapeHtml as esc } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { EMAIL_FROM } from "@/lib/emailFrom"
-import { noterPassage } from "@/lib/journalCron"
+import { noterPassage, sansAdresses } from "@/lib/journalCron"
+import { gardeCron } from "@/lib/gardeCron"
+import { estDuPourEnvoi } from "@/lib/abonnementsRapport"
 
-const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
 function buildEmailHtml(params: {
   userName:   string
@@ -92,14 +93,15 @@ const TACHE = "reports/send" as const
 
 export async function GET(req: NextRequest) {
   // Vérifier le secret cron
-  const auth = req.headers.get("authorization")
-  const secret = req.nextUrl.searchParams.get("secret")
-  // Fail-closed : sans CRON_SECRET configure, ou sans preuve valide, on refuse
-  // (evite tout envoi d'emails en masse non autorise).
-  if (CRON_SECRET === "" || (auth !== `Bearer ${CRON_SECRET}` && secret !== CRON_SECRET)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  // Contrôle d'entrée commun aux cinq tâches (lib/gardeCron) : un refus laisse
+  // une trace dans le journal.
+  const refus = await gardeCron(req, TACHE, { resendRequis: true })
+  if (refus) return refus
 
+  // Sans paramètre, on traite les deux fréquences : c'est le filtre `last_sent_at`
+  // ci-dessous qui décide qui est dû. La tâche planifiée passait `?frequency=monthly`
+  // et tournait le 1er du mois — l'abonnement HEBDOMADAIRE, proposé et vendu dans
+  // l'écran Analytics, n'était donc jamais envoyé à personne.
   const frequencyParam = req.nextUrl.searchParams.get("frequency") as "weekly" | "monthly" | null
 
   const debut = Date.now()
@@ -120,13 +122,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ sent: 0, message: "Aucun abonnement actif" })
     }
 
-    // Filtrer selon la date du dernier envoi
-    const due = subs.filter(sub => {
-      if (!sub.last_sent_at) return true
-      const last = new Date(sub.last_sent_at)
-      const diffDays = (now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24)
-      return sub.frequency === "weekly" ? diffDays >= 7 : diffDays >= 28
-    })
+    // Qui est dû aujourd'hui (lib/abonnementsRapport) : c'est ce filtre, et non
+    // l'horaire de la tâche, qui espace les envois.
+    const due = subs.filter(sub => estDuPourEnvoi(sub.frequency, sub.last_sent_at, now))
 
     let sent = 0
     const errors: string[] = []
@@ -197,15 +195,27 @@ export async function GET(req: NextRequest) {
           .slice(0, 5)
           .map(([target, clicks]) => ({ target, clicks }))
 
-        // Top pages par vues sur la période
-        const topPages = (pages ?? [])
-          .sort((a, b) => b.total_views - a.total_views)
-          .slice(0, 5)
-          .map(p => ({ title: p.title, views: p.total_views }))
+        // Top pages SUR LA PÉRIODE. `pages.total_views` est le cumul depuis la
+        // création de la page : le tableau annonçait « Menu — 5 400 » sous un titre
+        // « Mois de … » où la carte « Vues » affichait 0. Deux chiffres contradictoires
+        // dans le même email.
+        const { data: vuesPeriode } = await supabase
+          .from("page_views").select("page_id")
+          .in("page_id", pageIds).gte("viewed_at", since.toISOString())
+        const parPage: Record<string, number> = {}
+        for (const v of (vuesPeriode ?? [])) if (v.page_id) parPage[v.page_id] = (parPage[v.page_id] || 0) + 1
+        const titreDe = new Map((pages ?? []).map(p => [p.id as string, p.title as string]))
+        const topPages = Object.entries(parPage)
+          .sort((a, b) => b[1] - a[1]).slice(0, 5)
+          .map(([id, views]) => ({ title: titreDe.get(id) ?? "Page", views }))
 
+        // Le libellé mensuel nommait le mois de `since` : un rapport envoyé le 1er mars
+        // couvre le 30 janvier au 1er mars et s'intitulait « Mois de janvier ».
+        // On annonce la période réellement mesurée.
+        const jour = (d: Date) => d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })
         const periodLabel = sub.frequency === "weekly"
-          ? `Semaine du ${since.toLocaleDateString("fr-FR")}`
-          : `Mois de ${since.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}`
+          ? `Semaine du ${jour(since)}`
+          : `Du ${jour(since)} au ${jour(now)}`
 
         const unsubUrl = `${appUrl}/api/reports/unsubscribe?user=${sub.user_id}&freq=${sub.frequency}&token=${Buffer.from(sub.id).toString("base64url")}`
 
@@ -222,11 +232,10 @@ export async function GET(req: NextRequest) {
         })
 
         // 3. Envoyer via Resend (ou autre provider configuré)
-        const resendKey = process.env.RESEND_API_KEY
-        if (!resendKey) {
-          console.warn("[reports] RESEND_API_KEY manquant — email non envoyé pour", sub.email)
-          continue
-        }
+        // Le garde d'entrée refuse déjà l'appel sans clé d'envoi : arriver ici sans
+        // elle est impossible. L'ancienne version passait au suivant en silence, et
+        // la tâche se journalisait « rien » — un état trompeusement sain.
+        const resendKey = process.env.RESEND_API_KEY as string
 
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -255,11 +264,11 @@ export async function GET(req: NextRequest) {
 
         sent++
       } catch (e: any) {
-        errors.push(`${sub.email}: ${e.message}`)
+        errors.push(sansAdresses(`${sub.email}: ${e.message}`))
       }
     }
 
-    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", errors.join(" · ") || `${sent} envoyé(s)`, Date.now() - debut)
+    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", sansAdresses(errors.join(" · ")) || `${sent} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ sent, total: due.length, errors })
   } catch (err: any) {
     // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas

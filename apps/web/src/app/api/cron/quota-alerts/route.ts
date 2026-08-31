@@ -16,9 +16,9 @@ import { getPlan } from "@/lib/plans"
 import { EMAIL_FROM } from "@/lib/emailFrom"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { escapeHtml } from "@/lib/escapeHtml"
-import { noterPassage } from "@/lib/journalCron"
+import { noterPassage, sansAdresses } from "@/lib/journalCron"
+import { gardeCron } from "@/lib/gardeCron"
 
-const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
 // Alerte de quota, sur la coquille partagée (vouvoiement, nom échappé) — cohérente
 // avec tous les autres emails transactionnels.
@@ -42,16 +42,12 @@ function alertHtml(name: string, views: number, limit: number, over: boolean, ap
 const TACHE = "cron/quota-alerts" as const
 
 export async function GET(req: NextRequest) {
-  const auth = req.headers.get("authorization")
-  const secret = req.nextUrl.searchParams.get("secret")
-  // Fail-closed : sans CRON_SECRET configure, ou sans preuve valide, on refuse
-  // (coherent avec /api/emails/weekly ; empeche tout declenchement non autorise).
-  if (CRON_SECRET === "" || (auth !== `Bearer ${CRON_SECRET}` && secret !== CRON_SECRET)) {
-    return NextResponse.json({ error: "Non autorise" }, { status: 401 })
-  }
-
-  const resendKey = process.env.RESEND_API_KEY
-  if (!resendKey) return NextResponse.json({ error: "Service email non configure", sent: 0 }, { status: 503 })
+  // Contrôle d'entrée commun aux cinq tâches (lib/gardeCron) : un refus laisse
+  // une trace dans le journal, sans quoi « jamais déclenchée » et « refusée faute
+  // de secret » se ressemblent trait pour trait.
+  const refus = await gardeCron(req, TACHE, { resendRequis: true })
+  if (refus) return refus
+  const resendKey = process.env.RESEND_API_KEY as string
 
   const debut = Date.now()
   try {
@@ -111,7 +107,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", errors.join(" · ") || `${sent} envoyé(s)`, Date.now() - debut)
+    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", sansAdresses(errors.join(" · ")) || `${sent} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ sent, errors: errors.length ? errors : undefined })
   } catch (e: any) {
     // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas

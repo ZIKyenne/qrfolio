@@ -18,9 +18,9 @@ import { EMAIL_FROM } from "@/lib/emailFrom"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { daysUntil, expiryAlertStage, expiryHorizonIso } from "@/lib/dynamicExpiry"
-import { noterPassage } from "@/lib/journalCron"
+import { noterPassage, sansAdresses } from "@/lib/journalCron"
+import { gardeCron } from "@/lib/gardeCron"
 
-const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
 function expiryHtml(name: string, label: string, daysLeft: number, appUrl: string): string {
   const safeName = name ? escapeHtml(String(name).trim()) : ""
@@ -42,15 +42,11 @@ function expiryHtml(name: string, label: string, daysLeft: number, appUrl: strin
 const TACHE = "cron/dynamic-expiry" as const
 
 export async function GET(req: NextRequest) {
-  const auth = req.headers.get("authorization")
-  const secret = req.nextUrl.searchParams.get("secret")
-  // Fail-closed : sans CRON_SECRET configuré, ou sans preuve valide, on refuse.
-  if (CRON_SECRET === "" || (auth !== `Bearer ${CRON_SECRET}` && secret !== CRON_SECRET)) {
-    return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
-  }
-
-  const resendKey = process.env.RESEND_API_KEY
-  if (!resendKey) return NextResponse.json({ error: "Service email non configuré", sent: 0 }, { status: 503 })
+  // Contrôle d'entrée commun aux cinq tâches (lib/gardeCron) : un refus laisse
+  // une trace dans le journal.
+  const refus = await gardeCron(req, TACHE, { resendRequis: true })
+  if (refus) return refus
+  const resendKey = process.env.RESEND_API_KEY as string
 
   const debut = Date.now()
   try {
@@ -112,7 +108,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", errors.join(" · ") || `${sent} envoyé(s)`, Date.now() - debut)
+    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", sansAdresses(errors.join(" · ")) || `${sent} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ sent, total: rows.length, errors: errors.length ? errors : undefined })
   } catch (e: any) {
     // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas

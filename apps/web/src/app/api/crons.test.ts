@@ -29,9 +29,14 @@ describe("les tâches planifiées mènent quelque part", () => {
         expect(/export\s+(async\s+function|const)\s+GET/.test(src), `${c.path} : pas de GET`).toBe(true)
       })
 
-      it("refuse un appel sans le secret", () => {
+      it("passe par le garde commun, qui trace les refus", () => {
+        // Les cinq routes recopiaient le même contrôle, avec trois messages
+        // différents — et toutes refusaient AVANT d'écrire dans le journal : un
+        // CRON_SECRET absent des variables d'environnement laissait exactement la
+        // même trace qu'une tâche jamais déclenchée, c'est-à-dire aucune.
         const src = readFileSync(fichierDe(c.path), "utf8")
-        expect(src).toContain("CRON_SECRET")
+        expect(src, `${c.path} : n'utilise pas gardeCron`).toContain("gardeCron(req, TACHE")
+        expect(src, `${c.path} : redéclare son propre contrôle de secret`).not.toContain("CRON_SECRET ===")
       })
 
       it("a un horaire lisible par cron", () => {
@@ -83,6 +88,41 @@ describe("les tâches planifiées mènent quelque part", () => {
     const etat = readFileSync(join(__dirname, "cron/etat/route.ts"), "utf8")
     expect(etat).toContain('select("tache, lance_le, statut")')
     expect(etat).not.toMatch(/select\([^)]*detail/)
+  })
+
+
+  it("le refus est tracé, et au plus une fois par heure", () => {
+    // Ce chemin-là est atteignable par n'importe qui : sans étranglement, une
+    // boucle sur une route de cron remplirait la table du journal.
+    const garde = readFileSync(join(__dirname, "../../lib/gardeCron.ts"), "utf8")
+    expect(garde).toContain("noterRefus")
+    const journal = readFileSync(join(__dirname, "../../lib/journalCron.ts"), "utf8")
+    expect(journal).toMatch(/eq\("statut", "refuse"\)/)
+    expect(journal).toContain("3600_000")
+  })
+
+  it("le journal ne conserve aucune adresse email", () => {
+    // `detail` citait « client@resto.fr: rate_limit_exceeded » : le journal
+    // devenait un fichier d'adresses.
+    for (const c of crons) {
+      const src = readFileSync(fichierDe(c.path), "utf8")
+      const lignes = src.split("\n").filter(l => l.includes('.join(" · ")'))
+      expect(lignes.length, `${c.path} : plus aucune liste d'erreurs ?`).toBeGreaterThan(0)
+      for (const l of lignes) {
+        expect(l.includes("sansAdresses("), `${c.path} : ${l.trim()}`).toBe(true)
+      }
+    }
+  })
+
+  it("les abonnements hebdomadaires sont réellement envoyés", () => {
+    // La tâche passait « ?frequency=monthly » et ne tournait que le 1er du mois :
+    // l'abonnement hebdomadaire, proposé dans l'écran Analytics et réservé aux
+    // plans payants, n'était envoyé à personne.
+    const rapport = crons.find(c => c.path.startsWith("/api/reports/send"))
+    expect(rapport, "la tâche des rapports n'est plus planifiée").toBeTruthy()
+    expect(rapport!.path, "un filtre de fréquence exclut une partie des abonnés").not.toContain("frequency=")
+    const src = readFileSync(fichierDe(rapport!.path), "utf8")
+    expect(src, "c'est last_sent_at qui doit espacer les envois").toContain("last_sent_at")
   })
 
   it("une seule tâche envoie le rapport hebdomadaire", () => {

@@ -152,8 +152,14 @@ describe("la relance est réellement programmée", () => {
 
   it("la route refuse sans secret, comme les autres crons", () => {
     const src = readFileSync(join(__dirname, "../app/api/cron/relance/route.ts"), "utf8")
-    expect(src).toContain('CRON_SECRET === ""')
-    expect(src).toMatch(/status: 401/)
+    // Le contrôle est commun aux cinq tâches (lib/gardeCron) : mêmes messages, et
+    // surtout un refus TRACÉ dans le journal — sinon un CRON_SECRET absent laisse
+    // exactement la même trace qu'une tâche jamais déclenchée : aucune.
+    expect(src).toContain("gardeCron(req, TACHE")
+    // Le 401 est rendu par la garde commune ; c'est elle qui doit le prouver.
+    const garde = readFileSync(join(__dirname, "./gardeCron.ts"), "utf8")
+    expect(garde).toMatch(/status: 401/)
+    expect(garde, "une clé d'envoi absente n'est pas une panne du serveur").toMatch(/status: 503/)
   })
 
   it("la route n'interroge que la fenêtre, jamais toute la table", () => {

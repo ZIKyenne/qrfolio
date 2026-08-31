@@ -82,7 +82,7 @@ export function jugerPassage(p: Passage | undefined, attenduToutesLesHeures: num
 /** Intervalle nominal de chaque tâche, en heures. */
 export const INTERVALLE_H: Record<string, number> = {
   "emails/weekly": 24 * 7,
-  "reports/send": 24 * 31,
+  "reports/send": 24, // passage QUOTIDIEN : c'est `last_sent_at` qui espace les envois
   "cron/quota-alerts": 24 * 7,
   "cron/dynamic-expiry": 24,
   "cron/relance": 24,
@@ -115,4 +115,43 @@ export async function noterPassage(
     const q = (admin as unknown as { from: (t: string) => { delete: () => { lt: (c: string, v: string) => Promise<unknown> } } })
     await q.from("cron_runs").delete().lt("lance_le", limite)
   } catch { /* idem : jamais bloquant */ }
+}
+
+/**
+ * Une trace de REFUS, au plus une par heure et par tâche.
+ *
+ * Sans elle, le journal ne distinguait pas « l'hébergeur n'a jamais déclenché la
+ * tâche » de « il l'a déclenchée et la route a répondu 401 ». Les deux laissaient
+ * exactement zéro ligne — or le second cas est celui d'un `CRON_SECRET` absent ou
+ * mal recopié, c'est-à-dire la panne la plus probable, et la plus muette.
+ *
+ * L'étranglement à une trace par heure existe parce que ce chemin est, lui,
+ * atteignable par n'importe qui : sans lui, une boucle sur /api/cron/relance
+ * remplirait la table.
+ */
+export async function noterRefus(
+  admin: any,
+  tache: Tache,
+  motif: string,
+): Promise<void> {
+  try {
+    const depuis = new Date(Date.now() - 3600_000).toISOString()
+    const { data } = await admin
+      .from("cron_runs").select("id")
+      .eq("tache", tache).eq("statut", "refuse").gte("lance_le", depuis)
+      .limit(1)
+    if (Array.isArray(data) && data.length) return // déjà tracé dans l'heure
+  } catch { return /* table absente : rien à tracer, et surtout rien à casser */ }
+  await noterPassage(admin, tache, "refuse", motif, 0)
+}
+
+/**
+ * Un détail de journal sans adresse email.
+ *
+ * Les tâches y écrivaient « client@resto.fr: rate_limit_exceeded » : le journal
+ * devenait un fichier d'adresses, et c'est ce qui obligeait /api/cron/etat à
+ * masquer la colonne entière. On garde le message d'erreur, on retire l'adresse.
+ */
+export function sansAdresses(texte: string): string {
+  return texte.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "un destinataire")
 }

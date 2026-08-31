@@ -5,8 +5,8 @@
       "schedule": "0 8 * * 1"
     },
     {
-      "path": "/api/reports/send?frequency=monthly",
-      "schedule": "0 8 1 * *"
+      "path": "/api/reports/send",
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/cron/quota-alerts",

@@ -5,7 +5,8 @@ import { EMAIL_FROM } from "@/lib/emailFrom"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { semaineEcoulee, resumeSemaine, nombre } from "@/lib/weeklyReport"
-import { noterPassage } from "@/lib/journalCron"
+import { noterPassage, sansAdresses } from "@/lib/journalCron"
+import { gardeCron } from "@/lib/gardeCron"
 
 // Carte de statistique (nombre dore + libelle). Cellule d'une rangee a 2 colonnes.
 function statCard(value: string, label: string, side: "left" | "right"): string {
@@ -30,22 +31,14 @@ export async function POST(req: NextRequest) { return envoyer(req) }
 
 async function envoyer(req: NextRequest) {
   const debut = Date.now()
-  try {
-    const apiKey = process.env.RESEND_API_KEY
-    if (!apiKey) return NextResponse.json({ error: "Service email non configuré" }, { status: 503 })
-    const resend = new Resend(apiKey)
+  // Contrôle d'entrée commun aux cinq tâches (lib/gardeCron) : un refus laisse
+  // désormais une trace dans le journal. Sans elle, « jamais déclenchée » et
+  // « déclenchée puis refusée faute de secret » étaient le même silence.
+  const refus = await gardeCron(req, TACHE, { resendRequis: true })
+  if (refus) return refus
 
-    // Verifier secret (fail-closed) — accepté via header Authorization: Bearer,
-    // query ?secret= (pattern des autres crons) OU body (compat). Vercel Cron
-    // ne peut poser que header/query, d'où la souplesse.
-    const CRON = process.env.CRON_SECRET ?? ""
-    const auth = req.headers.get("authorization")
-    const qsecret = req.nextUrl.searchParams.get("secret")
-    const body = await req.json().catch(() => ({} as any))
-    const bsecret = body?.secret
-    if (CRON === "" || (auth !== `Bearer ${CRON}` && qsecret !== CRON && bsecret !== CRON)) {
-      return NextResponse.json({ error: "Non autorise" }, { status: 401 })
-    }
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY as string)
 
     // Client SERVICE-ROLE : sans session, un client RLS lirait 0 profil (l'email
     // hebdo n'était donc jamais envoyé). L'admin lit bien tous les profils actifs.
@@ -75,6 +68,7 @@ async function envoyer(req: NextRequest) {
     const { debutIso, libelle: periode } = semaineEcoulee(new Date())
 
     let sent = 0
+    const echecs: string[] = []
     for (const profile of destinataires) {
       // Respecte la préférence utilisateur (opt-out) : rapport hebdo désactivé.
       if ((profile as any).preferences?.weekly_report === false) continue
@@ -88,7 +82,10 @@ async function envoyer(req: NextRequest) {
         if (ids.length) {
           const [{ count: v }, { count: sc }] = await Promise.all([
             supabase.from("page_views").select("id", { count: "exact", head: true }).in("page_id", ids).gte("viewed_at", debutIso),
-            supabase.from("scans").select("id", { count: "exact", head: true }).in("page_id", ids).gte("created_at", debutIso),
+            // `scans` n'a pas de colonne de ce nom — son horodatage est `scanned_at`.
+            // PostgREST répondait 42703, supabase-js ne lève rien, `count` valait null :
+            // TOUS les rapports hebdomadaires annonçaient « 0 scan cette semaine ».
+            supabase.from("scans").select("id", { count: "exact", head: true }).in("page_id", ids).gte("scanned_at", debutIso),
           ])
           vuesSemaine = v ?? 0
           scansSemaine = sc ?? 0
@@ -111,17 +108,24 @@ async function envoyer(req: NextRequest) {
         ${emailButton("Voir mes statistiques →", "https://qrowg.com/dashboard/analytics")}
       `
 
-      await resend.emails.send({
+      // Le SDK Resend ne LÈVE PAS : un 429, un 403 ou une panne réseau reviennent
+      // dans `error`. `sent++` était inconditionnel — la tâche annonçait « 12
+      // envoyé(s) » et le journal « ok » quand rien n'était parti.
+      const { error: echec } = await resend.emails.send({
         from: EMAIL_FROM,
         to: profile.email,
         subject: resume.creux ? `Semaine calme sur QRowg — ${dateLabel}` : `${scans} scan${scansSemaine > 1 ? "s" : ""} cette semaine — QRowg`,
         html: emailShell({ preheader: "Votre activité QRowg en un coup d'œil.", content }),
       })
-      sent++
+      if (echec) echecs.push(echec.message ?? String(echec))
+      else sent++
     }
 
-    await noterPassage(supabase, TACHE, sent > 0 ? "ok" : "rien", `${sent} envoyé(s)`, Date.now() - debut)
-    return NextResponse.json({ success: true, sent })
+    const detail = echecs.length
+      ? sansAdresses(`${sent} envoyé(s), ${echecs.length} échec(s) : ${echecs.join(" · ")}`)
+      : `${sent} envoyé(s)`
+    await noterPassage(supabase, TACHE, echecs.length ? "erreur" : sent > 0 ? "ok" : "rien", detail, Date.now() - debut)
+    return NextResponse.json({ success: echecs.length === 0, sent, echecs: echecs.length })
   } catch (e: any) {
     // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas
     // qu'on veut voir dans le journal.

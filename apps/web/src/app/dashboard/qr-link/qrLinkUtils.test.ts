@@ -1,16 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { lum, contrast, normalizeUrl, escapeWifi, buildWifi, escapeVCard, buildVCard, buildTel, buildEmail, buildSms, isInverted } from "./qrLinkUtils"
-
-describe("isInverted", () => {
-  it("clair sur fond sombre = inverse (a eviter)", () => {
-    expect(isInverted("#FFFFFF", "#000000")).toBe(true)
-    expect(isInverted("#F5F0E8", "#111111")).toBe(true)
-  })
-  it("sombre sur fond clair = normal", () => {
-    expect(isInverted("#080808", "#FFFFFF")).toBe(false)
-    expect(isInverted("#1D4ED8", "#FEF3C7")).toBe(false)
-  })
-})
+import { normalizeUrl, escapeWifi, buildWifi, buildTel, buildSms, buildEmail, buildVCard } from "./qrLinkUtils"
+import { echapperVCard } from "@/lib/vcard"
 
 describe("buildSms", () => {
   it("format SMSTO avec numero nettoye et message", () => {
@@ -56,6 +46,11 @@ describe("buildEmail", () => {
 })
 
 describe("buildVCard", () => {
+  it("joint ses lignes en CRLF, comme l'exige la norme", () => {
+    // Cette version joignait en LF simple — et c'est elle qui fabrique les QR
+    // de contact réellement imprimés.
+    expect(buildVCard({ firstName: "Marie", lastName: "Durand" })).toContain("\r\n")
+  })
   it("construit une vCard 3.0 complete", () => {
     const out = buildVCard({ firstName: "Marie", lastName: "Durand", phone: "+33600000000", email: "marie@resto.fr", org: "Le Resto", title: "Gerante", url: "resto.fr" })
     expect(out).toContain("BEGIN:VCARD")
@@ -81,7 +76,7 @@ describe("buildVCard", () => {
     expect(buildVCard({})).toBe("")
   })
   it("echappe les caracteres speciaux", () => {
-    expect(escapeVCard("Durand, Marie; SARL")).toBe("Durand\\, Marie\\; SARL")
+    expect(echapperVCard("Durand, Marie; SARL")).toBe("Durand\\, Marie\\; SARL")
     expect(buildVCard({ firstName: "Jean", org: "Dupont; Fils" })).toContain("ORG:Dupont\\; Fils")
   })
 })
@@ -121,24 +116,3 @@ describe("normalizeUrl", () => {
   })
 })
 
-describe("lum + contrast", () => {
-  it("luminance : blanc ~1, noir ~0", () => {
-    expect(lum("#FFFFFF")).toBeCloseTo(1, 4)
-    expect(lum("#000000")).toBeCloseTo(0, 4)
-  })
-  it("contraste noir vs blanc = 21", () => {
-    expect(contrast("#000000", "#FFFFFF")).toBeCloseTo(21, 5)
-  })
-  it("contraste couleurs identiques = 1", () => {
-    expect(contrast("#C9A84C", "#C9A84C")).toBeCloseTo(1, 5)
-  })
-  it("contraste est symetrique", () => {
-    expect(contrast("#080808", "#FEF3C7")).toBeCloseTo(contrast("#FEF3C7", "#080808"), 6)
-  })
-  it("gris clair sur blanc = faible contraste (<2.5, avertissement)", () => {
-    expect(contrast("#CCCCCC", "#FFFFFF")).toBeLessThan(2.5)
-  })
-  it("noir sur blanc = bon contraste (>=2.5)", () => {
-    expect(contrast("#080808", "#FFFFFF")).toBeGreaterThanOrEqual(2.5)
-  })
-})

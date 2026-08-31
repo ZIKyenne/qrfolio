@@ -1,5 +1,5 @@
 // printPreflight.ts — Contrôle qualité AVANT impression (pré-vol) pour le QR Print Studio.
-import { verdictContraste } from "@/lib/contrasteQr"
+import { verdictContraste, luminance, rapportAffiche } from "@/lib/contrasteQr"
 // Moteur PUR (aucun React, aucun canvas) -> entièrement testable (printPreflight.test.ts).
 // L'adaptateur (PrintStudio) mesure le design réel et remplit PreflightMetrics ; ce moteur note.
 
@@ -33,26 +33,11 @@ export type PreflightResult = {
   applicable: number             // nb de contrôles applicables
 }
 
-// Luminance relative sRGB (WCAG) d'une couleur hex #rgb ou #rrggbb. null si invalide.
-export function relLuminance(hex: string): number | null {
-  if (typeof hex !== "string") return null
-  let h = hex.trim().replace(/^#/, "")
-  if (h.length === 3) h = h.split("").map(c => c + c).join("")
-  if (!/^[0-9a-fA-F]{6}$/.test(h)) return null
-  const lin = (v: number) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4) }
-  const r = lin(parseInt(h.slice(0, 2), 16))
-  const g = lin(parseInt(h.slice(2, 4), 16))
-  const b = lin(parseInt(h.slice(4, 6), 16))
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-
-// Ratio de contraste WCAG entre deux couleurs (1..21). null si l'une est invalide.
-export function hexContrastRatio(a: string, b: string): number | null {
-  const la = relLuminance(a), lb = relLuminance(b)
-  if (la == null || lb == null) return null
-  const hi = Math.max(la, lb), lo = Math.min(la, lb)
-  return Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100
-}
+// Luminance et rapport de contraste : une seule implémentation pour tout le
+// produit (lib/contrasteQr). Ces deux noms restent pour leurs appelants.
+export const relLuminance = luminance
+/** Rapport arrondi à deux décimales — c'est un chiffre d'affichage. */
+export const hexContrastRatio = rapportAffiche
 
 // ── Géométrie (pure) pour la zone silencieuse & les marges ────────────────────
 export type Rect = { left: number; top: number; width: number; height: number }

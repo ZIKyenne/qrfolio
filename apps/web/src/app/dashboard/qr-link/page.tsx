@@ -22,7 +22,9 @@ import { parseBulkCsv } from "@/lib/bulkCsv"
 import QRCanvas from "../qr-codes/QRCanvas"
 import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../qr-codes/qrRender"
-import { contrast, isInverted, normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
+import { normalizeUrl, buildWifi, buildVCard, buildTel, buildEmail, type VCardFields } from "./qrLinkUtils"
+import { rapportContraste, estInverse, CONTRASTE_INSUFFISANT } from "@/lib/contrasteQr"
+import { STYLES_QR, formeQr, ENCRES_QR, FONDS_QR, NIVEAUX_ECC, typesQr, presetQr, nommerCouleur, estTypeDynamique, libelleTypeQr, STYLE_QR_DEFAUT, ENCRE_QR_DEFAUT, FOND_QR_DEFAUT, ECC_DEFAUT, type TypeQr, type NiveauEcc } from "@/lib/stylesQr"
 import PostCheckoutBanner from "@/components/PostCheckoutBanner"
 import Dialogue from "@/components/Dialogue"
 import ImportEnMasse from "./ImportEnMasse"
@@ -34,35 +36,13 @@ import { Button } from "@/components/ui/Button"
 const G = "#C9A84C"
 const MUTED = "#A8A190"
 
-const ECC_OPTS: { k: "L" | "M" | "Q" | "H"; label: string }[] = [
-  { k: "L", label: "Faible" }, { k: "M", label: "Moyen" }, { k: "Q", label: "Élevé" }, { k: "H", label: "Maximum" },
-]
-const FG_SWATCHES = ["#080808", "#C9A84C", "#1D4ED8", "#059669", "#DB2777", "#DC2626", "#7C3AED", "#0F766E"]
-const BG_SWATCHES = ["#FFFFFF", "#F5F0E8", "#FEF3C7", "#E0F2FE", "#F0FDF4", "#111111"]
-// Un lecteur d'écran annonçait « Couleur dièse C 9 A 8 4 C ». Les pastilles ont un nom.
-const NOM_COULEUR: Record<string, string> = {
-  "#080808": "noir", "#C9A84C": "or", "#1D4ED8": "bleu", "#059669": "vert",
-  "#DB2777": "rose", "#DC2626": "rouge", "#7C3AED": "violet", "#0F766E": "sarcelle",
-  "#FFFFFF": "blanc", "#F5F0E8": "ivoire", "#FEF3C7": "crème", "#E0F2FE": "bleu pâle",
-  "#F0FDF4": "vert pâle", "#111111": "noir",
-}
-const nommer = (c: string) => NOM_COULEUR[c.toUpperCase()] ?? c
-const STYLE_PRESETS: { k: string; label: string; dotStyle: QRStyleConfig["dotStyle"]; cornerStyle: QRStyleConfig["cornerStyle"] }[] = [
-  { k: "carre", label: "Carré", dotStyle: "square", cornerStyle: "square" },
-  { k: "arrondi", label: "Arrondi", dotStyle: "rounded", cornerStyle: "rounded" },
-  { k: "points", label: "Points", dotStyle: "dot", cornerStyle: "circle" },
-  { k: "doux", label: "Doux", dotStyle: "softSquare", cornerStyle: "rounded" },
-  { k: "luxe", label: "Luxe", dotStyle: "luxury", cornerStyle: "luxury" },
-]
-const TYPES = [
-  { k: "link" as const, label: "Lien", icon: Link2 },
-  { k: "wifi" as const, label: "WiFi", icon: Wifi },
-  { k: "text" as const, label: "Texte", icon: Type },
-  { k: "contact" as const, label: "Contact", icon: Contact },
-  { k: "phone" as const, label: "Appel", icon: Phone },
-  { k: "email" as const, label: "Email", icon: Mail },
-]
-type QrType = "link" | "wifi" | "text" | "contact" | "phone" | "email"
+// Styles, pastilles, noms de couleurs et niveaux de correction viennent tous de
+// @/lib/stylesQr : cet écran et le générateur public fabriquent le même objet et
+// ne doivent plus pouvoir en donner deux descriptions différentes. Ne restent ici
+// que l'icône et l'ordre des types offerts SUR CET ÉCRAN.
+const ICONES: Partial<Record<TypeQr, any>> = { link: Link2, wifi: Wifi, text: Type, contact: Contact, phone: Phone, email: Mail }
+const TYPES = typesQr(["link", "wifi", "text", "contact", "phone", "email"])
+
 type WifiEnc = "WPA" | "WEP" | "nopass"
 type EmailFields = { to?: string; subject?: string; body?: string }
 
@@ -81,15 +61,15 @@ type Demande =
   | null
 
 // Types éligibles au QR DYNAMIQUE (redirigé + expirable). WiFi/Contact restent statiques.
-const isDynamicType = (t: QrType) => t !== "wifi" && t !== "contact"
+
 
 // Champs qui determinent la charge utile du QR (partages entre l'etat live et l'historique).
 type QrSource = {
-  type: QrType; url: string; ssid: string; wifiPass: string; wifiEnc: WifiEnc; text: string
+  type: TypeQr; url: string; ssid: string; wifiPass: string; wifiEnc: WifiEnc; text: string
   vc: VCardFields; phone: string; em: EmailFields
 }
 type QrHistEntry = QrSource & {
-  fg: string; bg: string; ecc: "L" | "M" | "Q" | "H"; styleKey: string
+  fg: string; bg: string; ecc: NiveauEcc; styleKey: string
 }
 
 // Charge utile encodee dans le QR selon le type.
@@ -103,7 +83,7 @@ function payload(s: QrSource): string {
 }
 
 export default function QrLinkPage() {
-  const [qrType, setQrType] = useState<QrType>("link")
+  const [qrType, setQrType] = useState<TypeQr>("link")
   const [url, setUrl] = useState("")
   const [ssid, setSsid] = useState("")
   const [wifiPass, setWifiPass] = useState("")
@@ -112,10 +92,10 @@ export default function QrLinkPage() {
   const [vc, setVc] = useState<VCardFields>(EMPTY_VC)
   const [phone, setPhone] = useState("")
   const [em, setEm] = useState<EmailFields>(EMPTY_EM)
-  const [fg, setFg] = useState("#080808")
-  const [bg, setBg] = useState("#FFFFFF")
-  const [ecc, setEcc] = useState<"L" | "M" | "Q" | "H">("M")
-  const [styleKey, setStyleKey] = useState("carre")
+  const [fg, setFg] = useState<string>(ENCRE_QR_DEFAUT)
+  const [bg, setBg] = useState<string>(FOND_QR_DEFAUT)
+  const [ecc, setEcc] = useState<NiveauEcc>(ECC_DEFAUT)
+  const [styleKey, setStyleKey] = useState<string>(STYLE_QR_DEFAUT)
   const [logo, setLogo] = useState<string | null>(null)
   const [showStyle, setShowStyle] = useState(false) // « Apparence » repliée par défaut (montrer moins)
   const [busy, setBusy] = useState<null | "png" | "svg">(null)
@@ -161,9 +141,9 @@ export default function QrLinkPage() {
 
   const data = useMemo(() => payload({ type: qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em }), [qrType, url, ssid, wifiPass, wifiEnc, text, vc, phone, em])
   const ready = data.length > 0
-  const ratio = contrast(fg, bg)
-  const inverted = isInverted(fg, bg)
-  const dynamic = isDynamicType(qrType)
+  const ratio = rapportContraste(fg, bg) ?? 0
+  const inverted = estInverse(fg, bg)
+  const dynamic = estTypeDynamique(qrType)
   // Quota atteint — MÊME règle que le serveur (lib/quota). Neutralise l'aperçu + désactive
   // les actions qui donneraient un QR fonctionnel du design courant (fermeture de la fuite
   // par screenshot, cf. générateur). Un design DÉJÀ téléchargé (dlSig) reste re-téléchargeable.
@@ -214,8 +194,8 @@ export default function QrLinkPage() {
     : h.type === "email" ? `✉️ ${h.em?.to || ""}`
     : normalizeUrl(h.url).replace(/^https?:\/\//, "")
 
-  const preset = STYLE_PRESETS.find(p => p.k === styleKey) || STYLE_PRESETS[0]
-  const effectiveEcc: "L" | "M" | "Q" | "H" = logo ? "H" : ecc
+  const preset = presetQr(styleKey)
+  const effectiveEcc: NiveauEcc = logo ? "H" : ecc
   const qrStyle: QRStyleConfig = {
     dotStyle: preset.dotStyle, cornerStyle: preset.cornerStyle,
     ...(logo ? { logoUrl: logo, logoSize: 22, logoShape: "rounded" as const, logoBg: "white" as const, logoPadding: 5 } : {}),
@@ -376,10 +356,10 @@ export default function QrLinkPage() {
   }
   async function downloadDetail() {
     if (!detail) return
-    const p = STYLE_PRESETS.find(x => x.k === (detail.style?.styleKey || "carre")) || STYLE_PRESETS[0]
-    const opts: QROptions = { data: detail.payload, fg: detail.style?.fg || "#080808", bg: detail.style?.bg || "#FFFFFF", ecc: (detail.style?.ecc || "M"), style: { dotStyle: p.dotStyle, cornerStyle: p.cornerStyle }, size: 1024 }
+    const st = styleSur(detail)
+    const opts: QROptions = { data: detail.payload, fg: st.fg, bg: st.bg, ecc: st.ecc, style: formeQr(st.styleKey), size: 1024 }
     const blob = await getQRBlob(opts, "png")
-    if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${detail.label || detail.kind || "qr"}.png`; a.click(); URL.revokeObjectURL(a.href) }
+    if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${detail.label || libelleTypeQr(detail.kind)}.png`; a.click(); URL.revokeObjectURL(a.href) }
   }
 
   const dynamicLinks = saved.filter(s => s.dynamic)
@@ -394,7 +374,7 @@ export default function QrLinkPage() {
   const dot = (c: string): React.CSSProperties => ({ width: 15, height: 15, borderRadius: 5, background: c, border: "1px solid rgba(255,255,255,0.22)", flexShrink: 0 })
   // Couleur d'avant-plan sûre pour les MINI-vignettes (toujours sur fond blanc) : si le QR enregistré
   // est trop clair/peu contrasté (ex. blanc sur fond sombre), on retombe sur du noir pour rester net.
-  const safeFg = (c?: string) => (contrast(c || "#080808", "#FFFFFF") >= 2 ? (c || "#080808") : "#080808")
+  const safeFg = (c?: string) => ((rapportContraste(c || "#080808", "#FFFFFF") ?? 0) >= CONTRASTE_INSUFFISANT ? (c || "#080808") : "#080808")
   // Lignes de la section « Sécurité » (fiche détaillée d'un lien dynamique, Pro+).
   const secRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10 }
   const secRowLabel: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, color: "#D8D2C6", fontSize: 12.5, width: 110, flexShrink: 0 }
@@ -462,7 +442,7 @@ export default function QrLinkPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 14 }}>
         {TYPES.map(t => {
           const on = qrType === t.k
-          const Icon = t.icon
+          const Icon = ICONES[t.k]
           return (
             <button key={t.k} onClick={() => setQrType(t.k)} aria-pressed={on} className={`da-tile${on ? " on" : ""}`} style={{ minHeight: 60 }}>
               <Icon size={19} /> {t.label}
@@ -556,7 +536,7 @@ export default function QrLinkPage() {
           <div style={{ padding: "0 18px 18px" }}>
             <p style={secTitle}>{accentBar} Style</p>
             <div style={{ display: "flex", gap: 7, marginBottom: 4 }}>
-              {STYLE_PRESETS.map(p => {
+              {STYLES_QR.map(p => {
                 const on = styleKey === p.k
                 return (
                   <button key={p.k} onClick={() => setStyleKey(p.k)} aria-pressed={on}
@@ -567,7 +547,7 @@ export default function QrLinkPage() {
 
             <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Couleur du QR</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 4 }}>
-              {FG_SWATCHES.map(c => swatch(c, fg === c, () => setFg(c), `QR en ${nommer(c)}`))}
+              {ENCRES_QR.map(c => swatch(c, fg === c, () => setFg(c), `QR en ${nommerCouleur(c)}`))}
               <label style={{ width: 38, height: 38, borderRadius: 11, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
                 <input type="color" aria-label="Couleur du QR, choix libre" title="Couleur du QR" value={fg} onChange={e => setFg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
               </label>
@@ -575,7 +555,7 @@ export default function QrLinkPage() {
 
             <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Couleur du fond</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
-              {BG_SWATCHES.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${nommer(c)}`))}
+              {FONDS_QR.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${nommerCouleur(c)}`))}
               <label style={{ width: 38, height: 38, borderRadius: 11, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
                 <input type="color" aria-label="Couleur du fond, choix libre" title="Couleur du fond" value={bg} onChange={e => setBg(e.target.value)} style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
               </label>
@@ -583,7 +563,7 @@ export default function QrLinkPage() {
 
             <p style={{ ...secTitle, marginTop: 20 }}>{accentBar} Correction d&apos;erreur</p>
             <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3 }}>
-              {ECC_OPTS.map(o => (
+              {NIVEAUX_ECC.map(o => (
                 <button key={o.k} onClick={() => setEcc(o.k)} aria-pressed={ecc === o.k}
                   style={{ flex: 1, minHeight: 42, borderRadius: 8, border: "none", cursor: "pointer", background: ecc === o.k ? G : "transparent", color: ecc === o.k ? "#080808" : MUTED, fontSize: 12.5, fontWeight: ecc === o.k ? 800 : 600, transition: "all .15s" }}>{o.label}</button>
               ))}
@@ -742,12 +722,12 @@ export default function QrLinkPage() {
             <p style={subLabel}>Enregistrés (statiques)</p>
             <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
               {staticQrs.map(s => (
-                <div key={s.id} {...carteCliquable(() => setDetail(s))} title="Voir le détail" aria-label={`Voir le détail de ${s.label || s.kind}`}
+                <div key={s.id} {...carteCliquable(() => setDetail(s))} title="Voir le détail" aria-label={`Voir le détail de ${s.label || libelleTypeQr(s.kind)}`}
                   style={{ position: "relative", flexShrink: 0, width: 124, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 11, cursor: "pointer" }}>
                   <div style={{ background: "#fff", borderRadius: 10, padding: 7, lineHeight: 0, boxShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
                     <QRCanvas value={s.payload || "https://qrowg.com"} size={82} fg={safeFg(s.style?.fg)} bg="#FFFFFF" />
                   </div>
-                  <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || s.kind}</span>
+                  <span style={{ color: MUTED, fontSize: 10, maxWidth: 108, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{s.label || libelleTypeQr(s.kind)}</span>
                   <button onClick={e => { e.stopPropagation(); demanderSuppression(s) }} aria-label="Supprimer ce QR" className="da-btn-icon da-btn-icon--danger"
                     style={{ position: "absolute", top: 5, right: 5, width: 26, height: 26, borderRadius: 8 }}><Trash2 className="da-ic da-ic-trash" size={13} /></button>
                 </div>
@@ -783,12 +763,17 @@ export default function QrLinkPage() {
         <div onClick={fermerDetail} style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, maxHeight: "90vh", overflowY: "auto", background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 20, padding: 20, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-              <p style={{ flex: 1, color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{detail.label || (detail.dynamic ? "Lien dynamique" : detail.kind)}</p>
+              <p style={{ flex: 1, color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{detail.label || (detail.dynamic ? "Lien dynamique" : libelleTypeQr(detail.kind))}</p>
               <button onClick={fermerDetail} aria-label="Fermer la fiche" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30 }}><X size={15} /></button>
             </div>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
               <div style={{ background: detail.style?.bg || "#fff", borderRadius: 14, padding: 12, lineHeight: 0 }}>
-                <QRCanvas value={detail.payload || "https://qrowg.com"} size={196} fg={detail.style?.fg || "#080808"} bg={detail.style?.bg || "#FFFFFF"} />
+                {(() => { const st = styleSur(detail); return (
+                  // La fiche montrait un QR CARRÉ quel que soit le style enregistré, alors que
+                  // le bouton « Télécharger » juste en dessous produisait le vrai style : le
+                  // fichier ne ressemblait pas à l'aperçu qui l'annonçait.
+                  <QRCanvas value={detail.payload || "https://qrowg.com"} size={196} fg={st.fg} bg={st.bg} ecc={st.ecc} style={formeQr(st.styleKey)} />
+                ) })()}
               </div>
             </div>
 

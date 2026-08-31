@@ -10,41 +10,27 @@ import { Download, Check, Link2, Type, Wifi, Phone, Mail, MessageSquare, Contact
 import QRCanvas from "../dashboard/qr-codes/QRCanvas"
 import QrWatermark from "@/components/QrWatermark"
 import { getQRBlob, type QROptions, type QRStyleConfig } from "../dashboard/qr-codes/qrRender"
-import { contrast, isInverted, normalizeUrl, buildWifi, buildTel, buildEmail, buildSms, buildVCard } from "../dashboard/qr-link/qrLinkUtils"
+import { normalizeUrl, buildWifi, buildTel, buildEmail, buildSms, buildVCard } from "../dashboard/qr-link/qrLinkUtils"
+import { rapportContraste, estInverse } from "@/lib/contrasteQr"
+import { STYLES_QR, ENCRES_QR, FONDS_QR, NIVEAUX_ECC, TYPES_QR, presetQr, nommerCouleur, STYLE_QR_DEFAUT, ENCRE_QR_DEFAUT, FOND_QR_DEFAUT, ECC_DEFAUT, type TypeQr, type NiveauEcc } from "@/lib/stylesQr"
 import { creerUrl } from "../creer/entry"
 import { qrLimit, dynLimit } from "@/lib/plans"
 
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(168,161,144,0.92)", BOR = "rgba(255,255,255,0.1)"
 
-type QrType = "link" | "text" | "wifi" | "email" | "phone" | "sms" | "contact"
 type WifiEnc = "WPA" | "WEP" | "nopass"
 
-const TYPES: { k: QrType; label: string; icon: any }[] = [
-  { k: "link", label: "Lien", icon: Link2 },
-  { k: "text", label: "Texte", icon: Type },
-  { k: "wifi", label: "WiFi", icon: Wifi },
-  { k: "email", label: "Email", icon: Mail },
-  { k: "phone", label: "Appel", icon: Phone },
-  { k: "sms", label: "SMS", icon: MessageSquare },
-  { k: "contact", label: "vCard", icon: Contact },
-]
-const STYLE_PRESETS: { k: string; label: string; dotStyle: QRStyleConfig["dotStyle"]; cornerStyle: QRStyleConfig["cornerStyle"] }[] = [
-  { k: "carre", label: "Carré", dotStyle: "square", cornerStyle: "square" },
-  { k: "arrondi", label: "Arrondi", dotStyle: "rounded", cornerStyle: "rounded" },
-  { k: "points", label: "Points", dotStyle: "dot", cornerStyle: "circle" },
-  { k: "doux", label: "Doux", dotStyle: "softSquare", cornerStyle: "rounded" },
-]
-const FG_SWATCHES = ["#080808", "#C9A84C", "#1D4ED8", "#059669", "#DB2777", "#DC2626", "#7C3AED"]
-const BG_SWATCHES = ["#FFFFFF", "#F5F0E8", "#FEF3C7", "#E0F2FE", "#F0FDF4", "#111111"]
-const ECC_OPTS: { k: "L" | "M" | "Q" | "H"; label: string }[] = [
-  { k: "L", label: "Faible" }, { k: "M", label: "Moyen" }, { k: "Q", label: "Élevé" }, { k: "H", label: "Max" },
-]
+// Libellés, styles, pastilles et niveaux de correction viennent tous de
+// @/lib/stylesQr : cet écran et le tableau de bord fabriquent le même objet et
+// ne doivent plus pouvoir en donner deux descriptions différentes. Ne reste ici
+// que l'icône, propre à cet écran.
+const ICONES: Record<TypeQr, any> = { link: Link2, text: Type, wifi: Wifi, email: Mail, phone: Phone, sms: MessageSquare, contact: Contact }
 
 const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", height: 50, background: "#0A0A0A", border: `1px solid ${BOR}`, borderRadius: 12, color: INK, fontSize: 16, padding: "0 15px", outline: "none" }
 const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: `1px solid ${BOR}`, borderRadius: 18, padding: 18 }
 
-export default function GeneratorClient({ defaultType = "link", authed = false }: { defaultType?: QrType; authed?: boolean }) {
-  const [qrType, setQrType] = useState<QrType>(defaultType)
+export default function GeneratorClient({ defaultType = "link", authed = false }: { defaultType?: TypeQr; authed?: boolean }) {
+  const [qrType, setQrType] = useState<TypeQr>(defaultType)
   const [url, setUrl] = useState("")
   const [text, setText] = useState("")
   const [ssid, setSsid] = useState(""); const [wifiPass, setWifiPass] = useState(""); const [wifiEnc, setWifiEnc] = useState<WifiEnc>("WPA")
@@ -53,9 +39,9 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
   const [smsPhone, setSmsPhone] = useState(""); const [smsBody, setSmsBody] = useState("")
   const [vcFirst, setVcFirst] = useState(""); const [vcLast, setVcLast] = useState(""); const [vcOrg, setVcOrg] = useState("")
   const [vcPhone, setVcPhone] = useState(""); const [vcEmail, setVcEmail] = useState(""); const [vcUrl, setVcUrl] = useState("")
-  const [fg, setFg] = useState("#080808"); const [bg, setBg] = useState("#FFFFFF")
-  const [ecc, setEcc] = useState<"L" | "M" | "Q" | "H">("M")
-  const [styleKey, setStyleKey] = useState("carre")
+  const [fg, setFg] = useState<string>(ENCRE_QR_DEFAUT); const [bg, setBg] = useState<string>(FOND_QR_DEFAUT)
+  const [ecc, setEcc] = useState<NiveauEcc>(ECC_DEFAUT)
+  const [styleKey, setStyleKey] = useState<string>(STYLE_QR_DEFAUT)
   const [logo, setLogo] = useState<string | null>(null)
   const [busy, setBusy] = useState<null | "png" | "svg">(null)
   const [done, setDone] = useState(false)
@@ -90,9 +76,9 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
   }, [qrType, url, text, ssid, wifiPass, wifiEnc, email, subject, phone, smsPhone, smsBody, vcFirst, vcLast, vcPhone, vcEmail, vcOrg, vcUrl])
 
   const ready = data.length > 0
-  const ratio = contrast(fg, bg)
-  const inverted = isInverted(fg, bg)
-  const preset = STYLE_PRESETS.find(p => p.k === styleKey) || STYLE_PRESETS[0]
+  const ratio = rapportContraste(fg, bg) ?? 0
+  const inverted = estInverse(fg, bg)
+  const preset = presetQr(styleKey)
   const effectiveEcc = logo ? "H" : ecc
   const qrStyle: QRStyleConfig = {
     dotStyle: preset.dotStyle, cornerStyle: preset.cornerStyle,
@@ -190,7 +176,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
       <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
         {/* Types */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
-          {TYPES.map(t => { const on = qrType === t.k; const Icon = t.icon; return (
+          {TYPES_QR.map(t => { const on = qrType === t.k; const Icon = ICONES[t.k]; return (
             <button key={t.k} type="button" onClick={() => setQrType(t.k)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, minHeight: 56, borderRadius: 12, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : BOR}`, color: on ? G : MUT, fontSize: 11.5, fontWeight: on ? 800 : 600 }}>
               <Icon size={17} /> {t.label}
@@ -245,27 +231,27 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
         <div style={card}>
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Style</p>
           <div style={{ display: "flex", gap: 7, marginBottom: 16 }}>
-            {STYLE_PRESETS.map(p => { const on = styleKey === p.k; return (
+            {STYLES_QR.map(p => { const on = styleKey === p.k; return (
               <button key={p.k} type="button" onClick={() => setStyleKey(p.k)} style={{ flex: 1, minHeight: 40, borderRadius: 10, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : BOR}`, color: on ? G : MUT, fontSize: 11.5, fontWeight: on ? 800 : 600 }}>{p.label}</button>
             ) })}
           </div>
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Couleur du QR</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-            {FG_SWATCHES.map(c => swatch(c, fg === c, () => setFg(c), `Couleur ${c}`))}
+            {ENCRES_QR.map(c => swatch(c, fg === c, () => setFg(c), `QR en ${nommerCouleur(c)}`))}
             <label style={{ width: 36, height: 36, borderRadius: 10, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
               <input type="color" value={fg} onChange={e => setFg(e.target.value)} aria-label="Couleur personnalisée du QR" style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
             </label>
           </div>
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Fond</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-            {BG_SWATCHES.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${c}`))}
+            {FONDS_QR.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${nommerCouleur(c)}`))}
             <label style={{ width: 36, height: 36, borderRadius: 10, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
               <input type="color" value={bg} onChange={e => setBg(e.target.value)} aria-label="Couleur personnalisée du fond" style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
             </label>
           </div>
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Correction d'erreur</p>
           <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3, marginBottom: 16 }}>
-            {ECC_OPTS.map(o => (
+            {NIVEAUX_ECC.map(o => (
               <button key={o.k} type="button" onClick={() => setEcc(o.k)} style={{ flex: 1, minHeight: 40, borderRadius: 8, border: "none", cursor: "pointer", background: ecc === o.k ? G : "transparent", color: ecc === o.k ? "#080808" : MUT, fontSize: 12, fontWeight: ecc === o.k ? 800 : 600 }}>{o.label}</button>
             ))}
           </div>

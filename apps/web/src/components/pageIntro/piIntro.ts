@@ -1,3 +1,4 @@
+import { encreLisible } from "@/lib/contrasteQr"
 /**
  * QRowg — Intro d'entrée thémable (runtime vanilla, zéro dépendance).
  * Issu du handoff design. Scopé sous #pi-intro / .pi-* ; SSR-safe.
@@ -166,12 +167,16 @@ function hex2rgb(h: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
 }
 function rgba(h: string, a: number): string { const c = hex2rgb(h); return `rgba(${c[0]},${c[1]},${c[2]},${a})` }
-function lum(h: string): number {
-  const c = hex2rgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4) })
-  return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]
-}
-/** Noir ou blanc selon la luminance de l'accent — lisible en clair ET en sombre. */
-function onColor(h: string): string { return lum(h) > .48 ? "#111111" : "#FFFFFF" }
+/**
+ * Noir ou blanc sur l'accent, celui des deux qui se lit vraiment.
+ *
+ * La version d'avant comparait la luminance à un seuil de 0,48. Sur l'or QRowg
+ * #C9A84C (luminance 0,409) elle choisissait du BLANC : 2,4 pour 1, sous le
+ * minimum lisible de 4,5 — du texte illisible sur la couleur de marque, à
+ * l'ouverture de la page publique. Huit couleurs de la palette sur vingt-deux
+ * étaient dans ce cas.
+ */
+const onColor = (h: string): string => encreLisible(h)
 function esc(s: unknown): string {
   return String(s == null ? "" : s).replace(/[&<>"]/g, m => (({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as Record<string, string>)[m]))
 }

@@ -933,10 +933,18 @@ describe("buildVCard", () => {
   it("utilise CRLF entre les lignes", () => {
     expect(buildVCard({ name: "A B" }).includes("\r\n")).toBe(true)
   })
-  it("sans nom -> FN reprend l'entreprise", () => {
+  it("sans nom -> FN reprend l'entreprise, sans en faire un prénom", () => {
     const v = buildVCard({ company: "ACME" })
     expect(v).toContain("FN:ACME")
-    expect(v).not.toContain("\nN:")
+    // La ligne N est obligatoire en vCard 3.0 (RFC 2426) ; cette version l'omettait.
+    // Le nom de l'entité va dans le champ FAMILLE : rangé dans « ACME » comme prénom,
+    // le téléphone crée un contact prénommé ACME.
+    expect(v).toContain("N:ACME;;;;")
+  })
+  it("sans nom ni entreprise -> repli « Contact », jamais une carte vide", () => {
+    const v = buildVCard({ phone: "+33600000000" })
+    expect(v).toContain("FN:Contact")
+    expect(v).toContain("TEL;TYPE=CELL:+33600000000")
   })
   it("champs vides omis", () => {
     const v = buildVCard({ name: "Jean" })

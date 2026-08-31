@@ -93,7 +93,9 @@ describe("ce qui est cliquable est atteignable au clavier", () => {
 
   it("les pastilles se nomment par leur couleur, pas par leur code hexadécimal", () => {
     // Un lecteur d'écran annonçait « Couleur dièse C 9 A 8 4 C ».
-    expect(page).toContain("nommer(c)")
+    // Les noms viennent maintenant de la table partagée (@/lib/stylesQr), avec le
+    // générateur public — qui, lui, annonçait encore le code hexadécimal.
+    expect(page).toContain("nommerCouleur(c)")
     expect(page).not.toMatch(/aria-label=\{`Couleur \$\{c\}`\}/)
   })
 })

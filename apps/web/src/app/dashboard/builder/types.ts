@@ -1,3 +1,5 @@
+import { rapportOuPire, niveauContraste } from "@/lib/contrasteQr"
+import { construireVCard, echapperVCard, separerNom } from "@/lib/vcard"
 // QRowg Builder — Types & Definitions
 
 // ── Types de base ─────────────────────────────────────────────────────────────
@@ -226,16 +228,11 @@ export function rgbToHsl(r: number, g: number, b: number): { h: number; s: numbe
   return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) }
 }
 
+// Dérivé de lib/contrasteQr : cette fonction recalculait la même formule, avec
+// une luminance de 0 pour une couleur invalide — donc un rapport de 21 pour 1,
+// soit « contraste parfait » sur une couleur qu'on n'arrive même pas à lire.
 export function contrastRatio(hex1: string, hex2: string): number {
-  function lum(hex: string) {
-    const rgb = hexToRgb(hex)
-    if (!rgb) return 0
-    const { r, g, b } = rgb
-    const [R,G,B] = [r,g,b].map(v => { v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4) })
-    return 0.2126*R + 0.7152*G + 0.0722*B
-  }
-  const l1 = lum(hex1), l2 = lum(hex2)
-  return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05)
+  return rapportOuPire(hex1, hex2)
 }
 
 export function wcagLevel(ratio: number): "AAA" | "AA" | "fail" {
@@ -802,37 +799,29 @@ export function openStatus(
   return { open: false, label: "Fermé", color: "#EF4444" }
 }
 
-// ── vCard (fiche contact .vcf) conforme RFC 6350 / 2426 ──────────────────────
-// Echappe les caracteres reserves d'une valeur vCard : \ , ; et retours ligne.
-export function vcardEscape(v: string): string {
-  return String(v ?? "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;")
+// ── vCard : une seule implémentation, dans lib/vcard ─────────────────────────
+// Elle était écrite ici ET dans qr-link/qrLinkUtils, avec deux échappements
+// distincts et deux séparateurs de lignes différents.
+export const vcardEscape = echapperVCard
+export const splitName = (full?: string) => {
+  const { prenom, nom } = separerNom(full)
+  return { given: prenom, family: nom }
 }
 
-// Separe un nom complet en prenom(s) / nom pour le champ structure N.
-export function splitName(full?: string): { given: string; family: string } {
-  const parts = (full || "").trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return { given: "", family: "" }
-  if (parts.length === 1) return { given: parts[0], family: "" }
-  return { given: parts.slice(0, -1).join(" "), family: parts[parts.length - 1] }
-}
-
-// Genere une vCard 3.0 valide (CRLF, FN obligatoire, N, ORG, TEL/EMAIL types, URL, ADR).
 export function buildVCard(d: { name?: string; phone?: string; email?: string; company?: string; website?: string; address?: string; title?: string }): string {
-  const name = (d.name || "").trim()
-  const fn = name || (d.company || "").trim() || "Contact"
-  const lines: string[] = ["BEGIN:VCARD", "VERSION:3.0", `FN:${vcardEscape(fn)}`]
-  if (name) {
-    const { given, family } = splitName(name)
-    lines.push(`N:${vcardEscape(family)};${vcardEscape(given)};;;`)
+  // Repli historique : une fiche sans nom prend celui de l'entreprise, puis
+  // « Contact ». Le bloc public ne doit jamais rendre une carte vide.
+  const autres = {
+    telephone: d.phone, email: d.email,
+    organisation: d.company, fonction: d.title, siteWeb: d.website, adresse: d.address,
   }
-  if (d.company) lines.push(`ORG:${vcardEscape(d.company)}`)
-  if (d.title)   lines.push(`TITLE:${vcardEscape(d.title)}`)
-  if (d.phone)   lines.push(`TEL;TYPE=CELL:${vcardEscape(d.phone)}`)
-  if (d.email)   lines.push(`EMAIL;TYPE=INTERNET:${vcardEscape(d.email)}`)
-  if (d.website) lines.push(`URL:${vcardEscape(d.website)}`)
-  if (d.address) lines.push(`ADR;TYPE=WORK:;;${vcardEscape(d.address)};;;;`)
-  lines.push("END:VCARD")
-  return lines.join("\r\n")
+  const personne = (d.name || "").trim()
+  if (personne) return construireVCard({ nomComplet: personne, ...autres })
+  // Personne n'est nommé : la fiche est celle d'une ENTITÉ. Son nom va dans le
+  // champ « famille », jamais dans le prénom — sinon le téléphone enregistre
+  // « ACME » comme prénom de quelqu'un. (L'ancienne version omettait la ligne N,
+  // que la RFC 2426 rend pourtant obligatoire en 3.0.)
+  return construireVCard({ nom: (d.company || "").trim() || "Contact", ...autres })
 }
 
 // URL d'iframe Google Maps. Priorite a une URL embed personnalisee (pb=...) ; sinon

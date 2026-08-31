@@ -7,6 +7,7 @@
 // (ao) et une ombre portée (cast), plus un reflet optionnel (mirror).
 
 import type { Style } from './catalog'
+import { rapportOuPire, encreLisible } from '@/lib/contrasteQr'
 
 // ao   : [scaleX, opacité, flou px]         — ombre de contact, sous l'objet
 // cast : [scaleX, opacité, flou px, dx, dy] — ombre portée, décalée
@@ -100,12 +101,12 @@ export const darken = (hex: string, amt: number): string => {
   const c = rgb(hex).map(v => Math.round(v * (1 - amt)))
   return `rgb(${c[0]},${c[1]},${c[2]})`
 }
-const lum = (hex: string): number => rgb(hex).map(v => v / 255)
-  .map(v => v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4))
-  .reduce((a, v, i) => a + [.2126, .7152, .0722][i] * v, 0)
-export const wcag = (a: string, b: string): number => { const l1 = lum(a), l2 = lum(b); return (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05) }
-// encre lisible sur un fond donné (noir ou blanc, celui qui contraste le plus)
-export const on = (hex: string): string => wcag('#0A0A0A', hex) >= wcag('#FFFFFF', hex) ? '#0A0A0A' : '#FFFFFF'
+// Contraste : dérivé de lib/contrasteQr. Une couleur illisible vaut désormais 1
+// (le pire), et non un rapport calculé sur une luminance inventée — un contrôle
+// avant impression ne doit jamais dire « conforme » par accident.
+export const wcag = rapportOuPire
+// Encre lisible sur un fond donné (noir ou blanc, celui qui contraste le plus).
+export const on = (hex: string): string => encreLisible(hex, '#0A0A0A', '#FFFFFF')
 
 // #2 — encre du bouton « trait » : l'accent, sauf s'il se fond dans le fond (< 2.2:1),
 // auquel cas on se rabat sur l'encre du thème. Sert pour la bordure ET le libellé.

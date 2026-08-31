@@ -7,13 +7,15 @@
 // lien avec des mots différents — côte à côte, dans la même fenêtre.
 
 import type { ScanStats } from "@/lib/scanStats"
+import { eccOuDefaut, presetQr, ENCRE_QR_DEFAUT, FOND_QR_DEFAUT, type NiveauEcc } from "@/lib/stylesQr"
 
 export type StatutQr = "active" | "paused" | "expired"
 
 export type StyleQr = {
   fg?: string
   bg?: string
-  ecc?: "L" | "M" | "Q" | "H"
+  ecc?: NiveauEcc
+  /** Clé de @/lib/stylesQr. Une clé inconnue retombe sur « Carré », jamais sur rien. */
   styleKey?: string
 }
 
@@ -103,6 +105,10 @@ export function dateLisible(iso?: string | null): string {
 /** Le style enregistré, avec des valeurs de repli sûres — jamais `any`. */
 export function styleSur(qr: Pick<InstantQr, "style"> | null | undefined): Required<Omit<StyleQr, never>> {
   const s = qr?.style ?? {}
-  const ecc = s.ecc === "L" || s.ecc === "M" || s.ecc === "Q" || s.ecc === "H" ? s.ecc : "M"
-  return { fg: s.fg || "#080808", bg: s.bg || "#FFFFFF", ecc, styleKey: s.styleKey || "carre" }
+  return {
+    fg: s.fg || ENCRE_QR_DEFAUT,
+    bg: s.bg || FOND_QR_DEFAUT,
+    ecc: eccOuDefaut(s.ecc),
+    styleKey: presetQr(s.styleKey).k,
+  }
 }

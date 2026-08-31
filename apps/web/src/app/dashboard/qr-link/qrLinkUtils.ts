@@ -1,29 +1,10 @@
+import { construireVCard } from "@/lib/vcard"
+
 // Helpers purs de la page "QR d'un lien" — isoles ici pour rester testables
 // sans dependre du gros builder/types (garde le bundle de la page leger).
 
-// Luminance relative (sRGB) d'une couleur hex 6 chiffres.
-export function lum(hex: string): number {
-  const m = hex.replace("#", "").match(/.{2}/g)
-  if (!m || m.length < 3) return 1
-  const [r, g, b] = m.map(h => {
-    const v = parseInt(h, 16) / 255
-    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
-  })
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-
-// Ratio de contraste WCAG entre deux couleurs (1 = identique, 21 = noir/blanc).
-export function contrast(a: string, b: string): number {
-  const l1 = lum(a), l2 = lum(b)
-  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
-}
-
-// Un QR se lit de maniere fiable quand les modules sont plus SOMBRES que le fond.
-// Inverse (clair sur fond sombre), certains scanners et impressions echouent —
-// meme si le ratio de contraste (symetrique) reste eleve.
-export function isInverted(fg: string, bg: string): boolean {
-  return lum(fg) > lum(bg)
-}
+// Le contraste vit dans lib/contrasteQr : il était réécrit ici pour la cinquième
+// fois, avec un traitement des couleurs invalides qui lui était propre.
 
 // Ajoute https:// si aucun schema reconnu (site tape sans protocole).
 export function normalizeUrl(v: string): string {
@@ -73,31 +54,18 @@ export function buildEmail(to: string, subject?: string, body?: string): string 
   return `mailto:${t}${params.length ? "?" + params.join("&") : ""}`
 }
 
-// Echappe les caracteres speciaux du format vCard (\ , ; et retours ligne).
-export function escapeVCard(s: string): string {
-  return s.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;")
-}
-
 export type VCardFields = {
   firstName?: string; lastName?: string; phone?: string
   email?: string; org?: string; title?: string; url?: string
 }
 
-// Construit une carte de visite vCard 3.0 (scan -> propose d'ajouter le contact).
-// Au moins un nom est requis (FN obligatoire), sinon chaine vide.
+// La fiche contact vit dans lib/vcard : elle était écrite deux fois, et CETTE
+// version-ci joignait ses lignes en LF simple là où la norme impose CRLF — or
+// c'est elle qui fabrique les QR de contact réellement imprimés.
 export function buildVCard(v: VCardFields): string {
-  const first = (v.firstName ?? "").trim()
-  const last = (v.lastName ?? "").trim()
-  const fn = [first, last].filter(Boolean).join(" ")
-  if (!fn) return ""
-  const lines = ["BEGIN:VCARD", "VERSION:3.0"]
-  lines.push(`N:${escapeVCard(last)};${escapeVCard(first)};;;`)
-  lines.push(`FN:${escapeVCard(fn)}`)
-  if (v.org?.trim()) lines.push(`ORG:${escapeVCard(v.org.trim())}`)
-  if (v.title?.trim()) lines.push(`TITLE:${escapeVCard(v.title.trim())}`)
-  if (v.phone?.trim()) lines.push(`TEL;TYPE=CELL:${escapeVCard(v.phone.trim())}`)
-  if (v.email?.trim()) lines.push(`EMAIL;TYPE=INTERNET:${escapeVCard(v.email.trim())}`)
-  if (v.url?.trim()) lines.push(`URL:${escapeVCard(normalizeUrl(v.url.trim()))}`)
-  lines.push("END:VCARD")
-  return lines.join("\n")
+  return construireVCard({
+    prenom: v.firstName, nom: v.lastName, telephone: v.phone,
+    email: v.email, organisation: v.org, fonction: v.title,
+    siteWeb: v.url ? normalizeUrl(v.url) : undefined,
+  })
 }

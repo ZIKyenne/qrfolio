@@ -650,12 +650,17 @@ export default function ProfilePage() {
     }
     setUsernameStatus("checking"); setUsernameMsg("Verification...")
     usernameTimer.current = setTimeout(async () => {
-      const sb = createClient()
-      const { data } = await sb.from("profiles").select("id").eq("username", clean2).single()
-      if (data) {
-        setUsernameStatus("taken"); setUsernameMsg("Déjà utilise")
-      } else {
-        setUsernameStatus("ok"); setUsernameMsg("Disponible")
+      // Passe par le serveur : la version d'avant lisait la table `profiles`
+      // avec la clé publique, ce qui obligeait à la laisser ouverte en lecture
+      // à tous les comptes connectés — emails compris.
+      try {
+        const r = await fetch(`/api/account/username-libre?u=${encodeURIComponent(clean2)}`)
+        const d = await r.json().catch(() => ({}))
+        if (!r.ok) { setUsernameStatus("invalid"); setUsernameMsg(d.error || "Vérification impossible"); return }
+        if (d.libre) { setUsernameStatus("ok"); setUsernameMsg("Disponible") }
+        else { setUsernameStatus("taken"); setUsernameMsg("Déjà utilisé") }
+      } catch {
+        setUsernameStatus("invalid"); setUsernameMsg("Vérification impossible")
       }
     }, 500)
   }

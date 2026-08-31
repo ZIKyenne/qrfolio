@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server"
 import { rateLimit, ipOf } from "@/lib/rateLimit"
 import { estUnScan } from "@/lib/premierScan"
 import { previenirPremierScan } from "@/lib/premierScanEnvoi"
+import { codeDansUrl, estUnCode, sourceRetenue, appareilRetenu } from "@/lib/sourceVue"
 
 // Endpoint de tracking (vues / clics / événements d'engagement). Remplace les
 // inserts anonymes directs (RLS "insert with check(true)") qui permettaient
@@ -35,6 +36,26 @@ async function insertTracked(admin: any, table: string, row: Record<string, unkn
   return (data as { id?: string } | null)?.id ?? null
 }
 
+/**
+ * Ce code de support mène-t-il à CETTE page ?
+ *
+ * Le code voyage dans l'URL (`?s=`) depuis la redirection /q/[code]. Il mène à la
+ * page du QR, ou à celle que pointe une destination modifiée (« override » de type
+ * page) — les deux comptent. Sans cette vérification, n'importe qui pouvait
+ * attribuer des scans au support de son choix, y compris inexistant.
+ */
+async function codeMeneALaPage(admin: any, code: string, pageId: string): Promise<boolean> {
+  try {
+    const { data } = await admin
+      .from("qr_codes").select("page_id, dest_override")
+      .eq("short_code", code).maybeSingle()
+    if (!data) return false
+    if (data.page_id === pageId) return true
+    const o = data.dest_override as { type?: string; value?: string } | null
+    return o?.type === "page" && o.value === pageId
+  } catch { return false }
+}
+
 export async function POST(req: NextRequest) {
   try {
     if (!(await rateLimit("track:" + ipOf(req), 60, 60_000))) return NextResponse.json({ ok: false }, { status: 429 })
@@ -49,20 +70,32 @@ export async function POST(req: NextRequest) {
     const { data: page } = await admin.from("pages").select("id").eq("id", pageId).eq("status", "published").maybeSingle()
     if (!page) return NextResponse.json({ ok: true, skipped: true })
 
-    const qs = str(body.qrSource, 40)
+    // Le code de support : d'abord celui que porte l'URL de la page appelante
+    // (en-tête Referer, posé par le navigateur sur une requête de même origine),
+    // sinon celui annoncé par le client. Dans les deux cas il doit MENER à cette
+    // page — sans quoi il n'est ni retenu, ni compté comme un scan.
+    const codeAnnonce = codeDansUrl(req.headers.get("referer")) ?? (estUnCode(body.qrSource) ? body.qrSource : null)
+    const scanProuve = codeAnnonce ? await codeMeneALaPage(admin, codeAnnonce, pageId) : false
+    const qs = scanProuve ? codeAnnonce : null
+
     if (type === "view") {
-      const source = str(body.source, 40)
+      // Une deuxième limite, par page : la première est globale par IP (60/min) et
+      // laissait boucler sur une seule page. Le même plafond que la redirection.
+      if (!(await rateLimit(`track:vue:${pageId}:${ipOf(req)}`, 20, 60_000))) return NextResponse.json({ ok: true, skipped: true })
+      const source = sourceRetenue(body.source, scanProuve)
       const idVue = await insertTracked(admin, "page_views", {
         country: (req.headers.get("x-vercel-ip-country") || "").slice(0, 2).toUpperCase() || null,
         page_id: pageId,
         source,
         referrer: str(body.referrer, 200),
-        device: str(body.device, 20),
+        device: appareilRetenu(body.device),
         session_id: str(body.session_id, 80),
       }, qs)
       // « Alertes de scans » : le tout premier scan d'une page prévient son
       // propriétaire. C'est le seul email du produit qui ne dépend d'aucun cron.
-      if (estUnScan(source)) await previenirPremierScan(admin, pageId, idVue)
+      // L'email « premier scan » ne part que sur un scan PROUVÉ : il partait
+      // jusqu'ici sur la seule parole du client, donc au premier appel fabriqué.
+      if (scanProuve && estUnScan(source)) await previenirPremierScan(admin, pageId, idVue)
     } else if (type === "click") {
       if (!str(body.clickTarget, 500)) return NextResponse.json({ ok: true })
       await insertTracked(admin, "block_clicks", {

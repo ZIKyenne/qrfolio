@@ -163,6 +163,49 @@ button{width:100%;height:50px;border:none;border-radius:12px;background:#C9A84C;
 </body></html>`
 }
 
+/**
+ * Page de RELAIS après un déverrouillage par mot de passe.
+ *
+ * Pourquoi elle existe. Le site envoie l'en-tête
+ *   Content-Security-Policy: … form-action 'self' …
+ * qui interdit à un FORMULAIRE d'envoyer l'internaute ailleurs que sur le site.
+ * WebKit (donc Safari, donc tout iPhone) et Chrome appliquent cette règle à
+ * TOUTE la chaîne de redirections qui suit l'envoi du formulaire — pas seulement
+ * à la première étape.
+ *
+ * Or le formulaire du mot de passe répondait par une redirection 302 vers la
+ * destination du QR, qui est par nature un autre site. Le navigateur annulait
+ * donc la navigation, en silence : pas d'erreur, pas de page, rien. Le bon mot
+ * de passe donnait exactement le même résultat visible qu'un mauvais.
+ * Neuf redirections 302 dans les journaux, aucune suivie.
+ *
+ * Une navigation lancée par la PAGE (et non par l'envoi du formulaire) n'est pas
+ * concernée par `form-action`. On rend donc une page du site, qui part d'elle-même
+ * vers la destination — avec un bouton visible si le renvoi automatique ne se fait
+ * pas (c'est le cas des liens `tel:` et `mailto:` sur certains téléphones).
+ */
+function relaisHtml(dest: string, appUrl: string): string {
+  const url = escapeHtml(dest)
+  return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="0;url=${url}">
+<title>Redirection…</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:#080808;color:#F5F0E8;font-family:'DM Sans',Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#0F0E0B;border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:36px 30px;max-width:400px;width:100%;text-align:center}
+.icon{font-size:44px;margin-bottom:14px}
+h1{font-size:20px;font-weight:700;margin-bottom:10px}
+p{font-size:14px;line-height:1.6;color:#8A8478;margin-bottom:20px;word-break:break-all}
+a.btn{display:block;height:50px;line-height:50px;border-radius:12px;background:#C9A84C;color:#080808;font-size:15px;font-weight:700;text-decoration:none}
+</style></head>
+<body><div class="card">
+  <div class="icon">🔓</div>
+  <h1>Lien déverrouillé</h1>
+  <p>Redirection en cours…</p>
+  <a class="btn" href="${url}">Continuer →</a>
+</div></body></html>`
+}
+
 // Page de contenu pour un QR instantané DYNAMIQUE non-redirigeable (texte / WiFi / contact).
 // Le QR encode /q/<code> → cette page affiche le contenu (ne fonctionne donc plus hors ligne, mais
 // devient expirable). Contenu échappé (anti-XSS).
@@ -235,11 +278,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         if (st === "expired") return htmlNoStore(expiredHtml(appUrl), 410)
 
         // Mot de passe (sécurité du lien, Pro+) : exiger le bon pw avant de résoudre/compter le scan.
+        // `viaFormulaire` retient qu'on arrive de l'envoi du formulaire : la réponse ne
+        // peut alors PAS être une redirection vers un autre site (cf. relaisHtml).
+        let viaFormulaire = false
         if (inst.password_hash) {
           const pw = req.nextUrl.searchParams.get("pw") || ""
           if (!verifyLinkPassword(pw, inst.password_hash)) {
             return htmlNoStore(passwordPromptHtml(appUrl, pw.length > 0), 401)
           }
+          viaFormulaire = true
         }
 
         // Scan best-effort (anti-abus + incrément non bloquant) — pour TOUS les types.
@@ -265,11 +312,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         // Non redirigeables (texte/WiFi/contact) : page de contenu (le QR encode /q/<code>).
         const content = String(inst.dest_url || "")
         const kind = String(inst.kind || "link")
-        if (kind === "link" && /^https?:\/\//i.test(content)) return redirectNoStore(content)
-        if ((kind === "phone" || kind === "call") && /^tel:/i.test(content)) return redirectNoStore(content)
-        if (kind === "email" && /^mailto:/i.test(content)) return redirectNoStore(content)
+        // Après le formulaire du mot de passe : page-relais au lieu d'une redirection,
+        // que le navigateur refuserait de suivre (form-action 'self').
+        const sortir = (url: string) => viaFormulaire ? htmlNoStore(relaisHtml(url, appUrl), 200) : redirectNoStore(url)
+        if (kind === "link" && /^https?:\/\//i.test(content)) return sortir(content)
+        if ((kind === "phone" || kind === "call") && /^tel:/i.test(content)) return sortir(content)
+        if (kind === "email" && /^mailto:/i.test(content)) return sortir(content)
         if (kind === "text" || kind === "wifi" || kind === "contact") return htmlNoStore(instantContentHtml(kind, content, appUrl), 200)
-        if (/^https?:\/\//i.test(content)) return redirectNoStore(content) // repli
+        if (/^https?:\/\//i.test(content)) return sortir(content) // repli
       }
       return noticeResponse("🔍", "QR Code introuvable", "Ce QR Code n'existe pas ou n'est plus actif.", appUrl, 404)
     }

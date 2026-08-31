@@ -88,7 +88,9 @@ declare
   v_max    integer;
   v_actuel integer;
 begin
-  select plan into v_plan from public.profiles where id = new.user_id;
+  -- `profiles.plan` est une ÉNUMÉRATION (subscription_plan), pas du texte : la
+  -- conversion doit être explicite, ici comme à chaque appel de limite_plan.
+  select plan::text into v_plan from public.profiles where id = new.user_id;
   -- Profil illisible (règle de lecture, ligne absente) : on retombe sur le plan
   -- gratuit. Se tromper vers le plus strict, jamais vers le plus permissif.
 
@@ -164,7 +166,9 @@ begin
   if coalesce(new.status, 'active') <> 'active' then return new; end if;
   if tg_op = 'UPDATE' and coalesce(old.status, 'active') = 'active' then return new; end if;
 
-  select plan into v_plan from public.profiles where id = new.user_id;
+  -- `profiles.plan` est une ÉNUMÉRATION (subscription_plan), pas du texte : la
+  -- conversion doit être explicite, ici comme à chaque appel de limite_plan.
+  select plan::text into v_plan from public.profiles where id = new.user_id;
   v_max := public.limite_plan(v_plan, 'pages');
   if v_max is null then return new; end if;
 
@@ -200,20 +204,20 @@ order by 1, 4;
 --     afficher « DÉPASSÉ » : les comptes existants ne sont jamais bloqués
 --     rétroactivement, mais autant le savoir.
 select
-  coalesce(pr.plan, 'free') as plan,
+  coalesce(pr.plan::text, 'free') as plan,
   (select count(*) from public.instant_qrs i where i.user_id = pr.id) as qr_enregistres,
-  coalesce(public.limite_plan(pr.plan, 'qr')::text, '∞') as limite_qr,
+  coalesce(public.limite_plan(pr.plan::text, 'qr')::text, '∞') as limite_qr,
   (select count(*) from public.instant_qrs i
      where i.user_id = pr.id and i.dynamic and coalesce(i.status,'active') = 'active') as qr_modifiables_actifs,
-  coalesce(public.limite_plan(pr.plan, 'dyn')::text, '∞') as limite_modifiables,
+  coalesce(public.limite_plan(pr.plan::text, 'dyn')::text, '∞') as limite_modifiables,
   (select count(*) from public.qr_codes q
      where q.user_id = pr.id and coalesce(q.status,'active') = 'active') as qr_pages_actifs,
-  coalesce(public.limite_plan(pr.plan, 'pages')::text, '∞') as limite_pages,
+  coalesce(public.limite_plan(pr.plan::text, 'pages')::text, '∞') as limite_pages,
   case when (select count(*) from public.instant_qrs i where i.user_id = pr.id)
-            > coalesce(public.limite_plan(pr.plan, 'qr'), 2147483647)
+            > coalesce(public.limite_plan(pr.plan::text, 'qr'), 2147483647)
          or (select count(*) from public.qr_codes q
                where q.user_id = pr.id and coalesce(q.status,'active') = 'active')
-            > coalesce(public.limite_plan(pr.plan, 'pages'), 2147483647)
+            > coalesce(public.limite_plan(pr.plan::text, 'pages'), 2147483647)
        then 'DÉPASSÉ' else 'ok' end as etat
 from public.profiles pr
 order by plan;

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { PLANS, qrLimit, dynLimit, pageLimit, canDynSecurite, type PlanId } from "./plans"
+import { readdirSync } from "node:fs"
 
 // Les limites de plan ne vivaient que dans les routes /api. La base est joignable
 // directement avec la clé publique, et la règle RLS autorise le propriétaire à
@@ -73,5 +74,44 @@ describe("la migration ne peut pas casser un compte existant", () => {
 
   it("se replie sur le plan gratuit quand le profil est illisible", () => {
     expect(SQL).toContain("coalesce(p_plan, 'free')")
+  })
+})
+
+
+// ── Le plan vendu doit exister dans la base ──────────────────────────────────
+
+describe("chaque plan vendu est une valeur que la base accepte", () => {
+  // `profiles.plan` n'est pas du texte : c'est l'énumération `subscription_plan`,
+  // déclarée avec trois valeurs — free, pro, business. La page /upgrade en vend
+  // QUATRE. Un client qui achetait le Starter payait, le webhook tentait d'écrire
+  // 'starter', Postgres refusait (22P02) et le compte restait gratuit.
+  const MIGRATIONS = join(__dirname, "../../../../supabase/migrations")
+
+  function valeursEnum(): string[] {
+    const fichiers = readdirSync(MIGRATIONS).filter(f => f.endsWith(".sql")).sort()
+    let valeurs: string[] = []
+    for (const f of fichiers) {
+      const sql = readFileSync(join(MIGRATIONS, f), "utf8")
+      const creation = sql.match(/create type (?:public\.)?subscription_plan as enum \(([^)]*)\)/i)
+      if (creation) valeurs = creation[1].split(",").map(v => v.trim().replace(/'/g, ""))
+      for (const m of sql.matchAll(/alter type (?:public\.)?subscription_plan add value(?: if not exists)? '([a-z_]+)'/gi)) {
+        if (!valeurs.includes(m[1])) valeurs.push(m[1])
+      }
+    }
+    return valeurs
+  }
+
+  it("les quatre plans du code sont dans l'énumération", () => {
+    const acceptes = valeursEnum()
+    expect(acceptes.length, "énumération introuvable dans les migrations").toBeGreaterThan(0)
+    for (const p of Object.keys(PLANS)) {
+      expect(acceptes.includes(p), `le plan « ${p} » est vendu mais la base ne l'accepte pas`).toBe(true)
+    }
+  })
+
+  it("et l'énumération n'invente pas de plan que le code ignore", () => {
+    for (const v of valeursEnum()) {
+      expect(Object.keys(PLANS).includes(v), `la base accepte « ${v} », inconnu de plans.ts`).toBe(true)
+    }
   })
 })

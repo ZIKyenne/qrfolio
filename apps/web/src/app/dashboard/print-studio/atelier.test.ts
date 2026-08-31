@@ -44,7 +44,7 @@ describe("l'atelier : créer à gauche, régler à droite", () => {
 
 describe("le contenu ne déborde plus du support", () => {
   it("le rendu passe par le calcul d'ajustement", () => {
-    expect(SRC).toContain('import { ajusterAuSupport, lignesDeTitre } from "./ajustement"')
+    expect(SRC).toContain("from \"./ajustement\"")
     expect(SRC).toContain("const fit = pileVerticale ? ajusterAuSupport(besoin,")
   })
 

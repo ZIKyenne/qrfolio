@@ -24,7 +24,7 @@ import { sceneLayers, paletteFromStyle, scaleFor, SCENES, finishLayer, grad, gra
 import { filterTemplates, type PrintTemplate, type TemplateVariant } from "./templates"
 import { printPreflight, hexContrastRatio } from "../qr-codes/printPreflight"
 import { color as C, radius as R } from "./tokens"
-import { ajusterAuSupport, lignesDeTitre } from "./ajustement"
+import { ajusterAuSupport, lignesDeTitre, partQrMax, type Pastille } from "./ajustement"
 
 // item.layout est parfois une clé de contenu ('stack'), parfois un id de layout ('orne').
 // On résout toujours vers un id de LAYOUTS valide (pour le volet Mise en page).
@@ -1059,7 +1059,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         {/* Canvas héros (#2) + shell ZÉRO-SCROLL (§11) : sur desktop le root est une colonne 100dvh (header figé,
             grille flex:1 à overflow interne, barre d'action en pied statique) → aucun scroll de page, seuls les
             panneaux/canvas scrollent en interne. Mobile inchangé (scroll doux + sheet). */}
-        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:64px minmax(0,1fr) 356px!important;align-items:start;position:relative}.ps-aside{position:sticky;top:14px;align-self:start}.ps-rail{position:sticky;top:14px;align-self:start}.ps-panels{position:sticky;top:14px;align-self:start;max-height:calc(100dvh - 190px)}}.ps-chip{transition:border-color var(--mo-fast) var(--mo-ease-standard),background var(--mo-fast) var(--mo-ease-standard),color var(--mo-fast) var(--mo-ease-standard)}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color var(--mo-fast) var(--mo-ease-standard)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash var(--mo-slow) var(--mo-ease-emphasized)}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}@media(prefers-reduced-motion:reduce){.ps-flash{animation:none}.ps-foc{transition:none}}`}</style>
+        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:92px minmax(0,1fr) 356px!important;align-items:start;position:relative}.ps-aside{position:sticky;top:14px;align-self:start}.ps-rail{position:sticky;top:14px;align-self:start}.ps-panels{position:sticky;top:14px;align-self:start;max-height:calc(100dvh - 190px)}}.ps-chip{transition:border-color var(--mo-fast) var(--mo-ease-standard),background var(--mo-fast) var(--mo-ease-standard),color var(--mo-fast) var(--mo-ease-standard)}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color var(--mo-fast) var(--mo-ease-standard)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash var(--mo-slow) var(--mo-ease-emphasized)}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}@media(prefers-reduced-motion:reduce){.ps-flash{animation:none}.ps-foc{transition:none}}`}</style>
 
         {/* ── RAIL D'OUTILS (gauche) ────────────────────────────────────────
             Les modèles et les calques ne sont plus des accordéons empilés dans la
@@ -1067,18 +1067,18 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             côté de l'aperçu, et se referment. On ne déroule plus une colonne pour
             trouver un réglage. */}
         {!isMobile && (
-        <nav className="ps-rail" aria-label="Outils" style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center", paddingTop: 2 }}>
+        <nav className="ps-rail" aria-label="Outils" style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center", paddingTop: 2 }}>
           {RAIL_OUTILS.map(o => {
             const Ico = o.icone
             const actif = volet === o.id
             return (
               <button key={o.id} onClick={() => o.action ? o.action() : setVolet(v => (v === o.id ? null : (o.id as "modeles" | "calques")))}
                 title={o.titre} aria-label={o.titre} aria-pressed={actif}
-                style={{ width: 48, height: 48, borderRadius: 13, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
+                style={{ width: 80, minHeight: 62, borderRadius: 14, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, padding: "8px 4px",
                   background: actif ? "color-mix(in srgb, var(--accent) 16%, transparent)" : "transparent",
-                  border: `1px solid ${actif ? C.goldA55 : "transparent"}`, color: actif ? C.gold : C.fgMuted }}>
-                <Ico size={17} />
-                <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: ".02em" }}>{o.court}</span>
+                  border: `1px solid ${actif ? C.goldA55 : "transparent"}`, color: actif ? C.gold : C.fgMuted, transition: "background var(--mo-fast) var(--mo-ease-standard)" }}>
+                <Ico size={21} />
+                <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em" }}>{o.court}</span>
               </button>
             )
           })}
@@ -1087,15 +1087,45 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
         {/* Volet latéral : un seul à la fois, largeur fixe, défilement interne. */}
         {!isMobile && volet && (
-          <aside className="ps-volet" style={{ position: "absolute", left: 76, top: 0, width: 340, maxHeight: "calc(100dvh - 210px)", overflowY: "auto", zIndex: 20,
+          <aside className="ps-volet" style={{ position: "absolute", left: 104, top: 0, width: 344, maxHeight: "calc(100dvh - 210px)", overflowY: "auto", zIndex: 20,
             background: C.surface, border: `1px solid ${C.goldA33}`, borderRadius: R.card, padding: 14, boxShadow: "0 24px 60px rgba(0,0,0,.55)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
               <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600, color: C.fg }}>{volet === "modeles" ? "Modèles" : "Calques"}</span>
               <button onClick={() => setVolet(null)} aria-label="Fermer le volet" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
             </div>
-            {volet === "modeles" && (
+            {volet === "modeles" && (<>
             <TemplateLibrary item={item} onApply={applyTemplate} onApplyVariant={(t, v) => applyTemplate(t, v)} />
-            )}
+            {/* Les styles rapides et les modèles enregistrés vivent ICI, avec les
+                modèles — pas une deuxième fois dans la colonne des réglages, où
+                ils occupaient le haut de l'onglet « Style » sans y appartenir. */}
+            <div style={{ height: 1, background: C.hairline, margin: "16px 0 14px" }} />
+          <div>
+            <p style={secLabel}>Modèles prêts</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(72px,1fr))", gap: 8 }}>
+              {PRESETS.map(p => <PresetThumb key={p.id} preset={p} item={item} on={activePreset === p.id} onClick={() => applyPreset(p)} />)}
+            </div>
+          </div>
+          <div>
+            <p style={secLabel}>Mes modèles</p>
+            <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
+              {savedPresets.map(p => (
+                <span key={p.id} style={{ ...chipStyle(activeSavedId === p.id), padding: "0 4px 0 12px", gap: 2 }}>
+                  <button onClick={() => applyCfg(p.cfg)} style={{ background: "none", border: "none", color: "inherit", font: "inherit", fontWeight: "inherit", cursor: "pointer", padding: "8px 2px 8px 0" }}>{p.name}</button>
+                  <button onClick={() => deletePreset(p.id)} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 8px", opacity: 0.6, fontSize: 15, lineHeight: 1 }}>×</button>
+                </span>
+              ))}
+              {saving ? (
+                <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                  <input autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveCurrent(); if (e.key === "Escape") { setSaving(false); setSaveName("") } }} placeholder="Nom du modèle…" style={{ ...inputStyle, height: 40, width: 160 }} />
+                  <button onClick={saveCurrent} style={{ ...chipStyle(true), minHeight: 40 }}>OK</button>
+                  <button onClick={() => { setSaving(false); setSaveName("") }} aria-label="Annuler" style={{ ...chipStyle(false), minHeight: 40, padding: "0 12px" }}>×</button>
+                </span>
+              ) : (
+                <button onClick={() => setSaving(true)} style={{ ...chipStyle(false), whiteSpace: "nowrap", flexShrink: 0 }}>＋ Enregistrer ce style</button>
+              )}
+            </div>
+          </div>
+            </>)}
             {volet === "calques" && (freeEls.length === 0
               ? <p style={{ color: C.fgMuted, fontSize: 12, margin: 0 }}>Aucun élément ajouté. Utilisez « Texte » ou « Élément » dans le rail.</p>
               : <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1254,15 +1284,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 plage SÛRE par support (anti-overflow : le QR ne peut plus écraser la composition — audit §6/§8). */}
             {(() => {
               const minDimMm = Math.min(trimWidthMm(item), item.hMm)
-              const qMax = Math.max(1.05, Math.min(2.2, (0.72 * minDimMm) / item.qrMm))
-              const qMin = Math.max(0.55, Math.min(0.95, 20 / item.qrMm))
+              // Borne RÉELLE du support (ajustement.partQrMax), pas une estimation : le
+              // curseur annonçait des millimètres que le rendu ne pouvait pas donner.
+              const qMax = (partQrMax(item.shape === "round", qrBadge as Pastille, item.shape === "round" ? 0.15 : 0.09, layout.content === "qrbig") * minDimMm) / item.qrMm
+              const qMin = Math.min(qMax * 0.55, Math.max(0.55, Math.min(0.95, 20 / item.qrMm)))
               const clampS = (v: number) => Math.min(qMax, Math.max(qMin, v))
-              const sem = qrScale <= qMin + (1 - qMin) * 0.5 ? "compact" : qrScale >= 1 + (qMax - 1) * 0.5 ? "max" : "reco"
-              const chips: [string, string, number][] = [["compact", "Compact", clampS(qMin)], ["reco", "Recommandé", clampS(1)], ["max", "Maximum", qMax]]
+              const sem = qrScale <= qMin + (qMax - qMin) * 0.34 ? "compact" : qrScale >= qMin + (qMax - qMin) * 0.67 ? "max" : "reco"
+              const chips: [string, string, number][] = [["compact", "Compact", qMin], ["reco", "Recommandé", qMax < 1 ? (qMin + qMax) / 2 : 1], ["max", "Maximum", qMax]]
               return <Field label="Taille du QR">
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div style={{ display: "flex", gap: 6 }}>{chips.map(([cid, lab, val]) => (
-                    <button key={cid} onClick={() => setQrScale(val)} className="ps-chip" style={{ flex: 1, background: sem === cid ? C.goldSoft : "transparent", border: `1px solid ${sem === cid ? C.gold : C.hairline}`, color: sem === cid ? C.gold : C.fg, borderRadius: 10, padding: "8px 4px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{lab}</button>
+                  <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 4 }}>{chips.map(([cid, lab, val]) => (
+                    <button key={cid} onClick={() => setQrScale(val)} style={{ flex: 1, minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer", background: sem === cid ? C.gold : "transparent", color: sem === cid ? "#080808" : C.fgMuted, fontSize: 12.5, fontWeight: sem === cid ? 800 : 600 }}>{lab}</button>
                   ))}</div>
                   <Range value={clampS(qrScale)} min={qMin} max={qMax} step={0.02} onChange={v => setQrScale(clampS(v))} hint={`${Math.round(item.qrMm * size.factor * qrScale)} mm${preflight.scanDistanceM ? ` · lisible ~${preflight.scanDistanceM} m` : ""}`} />
                 </div>
@@ -1307,32 +1339,6 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </>)}
             {ongletEffectif === "style" && (<>
             {mode === "studio" && <>
-            <div>
-              <p style={secLabel}>Modèles prêts</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(72px,1fr))", gap: 8 }}>
-                {PRESETS.map(p => <PresetThumb key={p.id} preset={p} item={item} on={activePreset === p.id} onClick={() => applyPreset(p)} />)}
-              </div>
-            </div>
-            <div>
-              <p style={secLabel}>Mes modèles</p>
-              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
-                {savedPresets.map(p => (
-                  <span key={p.id} style={{ ...chipStyle(activeSavedId === p.id), padding: "0 4px 0 12px", gap: 2 }}>
-                    <button onClick={() => applyCfg(p.cfg)} style={{ background: "none", border: "none", color: "inherit", font: "inherit", fontWeight: "inherit", cursor: "pointer", padding: "8px 2px 8px 0" }}>{p.name}</button>
-                    <button onClick={() => deletePreset(p.id)} aria-label="Supprimer ce modèle" style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 8px", opacity: 0.6, fontSize: 15, lineHeight: 1 }}>×</button>
-                  </span>
-                ))}
-                {saving ? (
-                  <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
-                    <input autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveCurrent(); if (e.key === "Escape") { setSaving(false); setSaveName("") } }} placeholder="Nom du modèle…" style={{ ...inputStyle, height: 40, width: 160 }} />
-                    <button onClick={saveCurrent} style={{ ...chipStyle(true), minHeight: 40 }}>OK</button>
-                    <button onClick={() => { setSaving(false); setSaveName("") }} aria-label="Annuler" style={{ ...chipStyle(false), minHeight: 40, padding: "0 12px" }}>×</button>
-                  </span>
-                ) : (
-                  <button onClick={() => setSaving(true)} style={{ ...chipStyle(false), whiteSpace: "nowrap", flexShrink: 0 }}>＋ Enregistrer ce style</button>
-                )}
-              </div>
-            </div>
             <div>
               <p style={secLabel}>Ma charte</p>
               {brandKit && (
@@ -1498,15 +1504,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               </Field>
               {(() => {
                 const minDimMm = Math.min(trimWidthMm(item), item.hMm)
-                const qMax = Math.max(1.05, Math.min(2.2, (0.72 * minDimMm) / item.qrMm))
-                const qMin = Math.max(0.55, Math.min(0.95, 20 / item.qrMm))
+                // Borne RÉELLE du support (ajustement.partQrMax), pas une estimation : le
+              // curseur annonçait des millimètres que le rendu ne pouvait pas donner.
+              const qMax = (partQrMax(item.shape === "round", qrBadge as Pastille, item.shape === "round" ? 0.15 : 0.09, layout.content === "qrbig") * minDimMm) / item.qrMm
+                const qMin = Math.min(qMax * 0.55, Math.max(0.55, Math.min(0.95, 20 / item.qrMm)))
                 const clampS = (v: number) => Math.min(qMax, Math.max(qMin, v))
-                const sem = qrScale <= qMin + (1 - qMin) * 0.5 ? "compact" : qrScale >= 1 + (qMax - 1) * 0.5 ? "max" : "reco"
-                const chips: [string, string, number][] = [["compact", "Compact", clampS(qMin)], ["reco", "Recommandé", clampS(1)], ["max", "Maximum", qMax]]
+                const sem = qrScale <= qMin + (qMax - qMin) * 0.34 ? "compact" : qrScale >= qMin + (qMax - qMin) * 0.67 ? "max" : "reco"
+                const chips: [string, string, number][] = [["compact", "Compact", qMin], ["reco", "Recommandé", qMax < 1 ? (qMin + qMax) / 2 : 1], ["max", "Maximum", qMax]]
                 return <Field label="Taille du QR">
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <div style={{ display: "flex", gap: 6 }}>{chips.map(([cid, lab, val]) => (
-                      <button key={cid} onClick={() => setQrScale(val)} className="ps-chip" style={{ flex: 1, background: sem === cid ? C.goldSoft : "transparent", border: `1px solid ${sem === cid ? C.gold : C.hairline}`, color: sem === cid ? C.gold : C.fg, borderRadius: 10, padding: "8px 4px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{lab}</button>
+                    <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 4 }}>{chips.map(([cid, lab, val]) => (
+                      <button key={cid} onClick={() => setQrScale(val)} style={{ flex: 1, minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer", background: sem === cid ? C.gold : "transparent", color: sem === cid ? "#080808" : C.fgMuted, fontSize: 12.5, fontWeight: sem === cid ? 800 : 600 }}>{lab}</button>
                     ))}</div>
                     <Range value={clampS(qrScale)} min={qMin} max={qMax} step={0.02} onChange={v => setQrScale(clampS(v))} hint={`${Math.round(item.qrMm * size.factor * qrScale)} mm${preflight.scanDistanceM ? ` · ~${preflight.scanDistanceM} m` : ""}`} />
                   </div>
@@ -1819,8 +1827,12 @@ function SuggRow({ items, active, onPick }: { items: string[]; active: string; o
 }
 function Seg({ value, options, onPick, labels }: { value: string; options: string[]; onPick: (v: string) => void; labels?: string[] }) {
   return (
-    <div style={{ display: "flex", gap: 4, background: C.surfaceUp, borderRadius: 11, padding: 3 }}>
-      {options.map((o, i) => <button key={o} onClick={() => onPick(o)} style={{ flex: 1, minHeight: 44, borderRadius: 8, border: value === o ? `1px solid ${C.gold}` : "1px solid transparent", cursor: "pointer", background: value === o ? C.goldSoft : "transparent", color: value === o ? C.gold : C.fgMuted, fontSize: 12.5, fontWeight: value === o ? 800 : 600 }}>{labels ? labels[i] : o}</button>)}
+    // MÊME dessin que les onglets de réglages : une piste, une pastille dorée
+    // pleine sur le choix retenu. Les deux commandes disaient la même chose —
+    // « c'est celui-ci » — avec deux vocabulaires différents (bord + or faible
+    // ici, pastille pleine là), dans la même colonne, à trois centimètres d'écart.
+    <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 4 }}>
+      {options.map((o, i) => <button key={o} onClick={() => onPick(o)} style={{ flex: 1, minHeight: 40, borderRadius: 9, border: "none", cursor: "pointer", background: value === o ? C.gold : "transparent", color: value === o ? "#080808" : C.fgMuted, fontSize: 12.5, fontWeight: value === o ? 800 : 600, transition: "background var(--mo-fast) var(--mo-ease-standard)" }}>{labels ? labels[i] : o}</button>)}
     </div>
   )
 }
@@ -1874,7 +1886,11 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   // Taille du QR pilotée par la PHYSIQUE (item.qrMm × facteur), convertie en px via l'échelle du support.
   // Garde-fou anti-débordement : rond = QR modeste (cercle inscrit + kicker retiré) ; « QR géant » = laisse la place
   // au titre/bouton ; sinon borné à la largeur. Aperçu/planche/contrôle réfèrent toujours le MÊME mm hors garde-fou.
-  const qrMax = isRound ? unit * 0.44 : (layout.content === "qrbig" ? unit * 0.5 : unit * 0.86)
+  // Borne PARTAGÉE avec le curseur du panneau (ajustement.partQrMax) : c'étaient
+  // deux nombres sans rapport — 72 % de la plus petite dimension côté réglage,
+  // 44 % du diamètre côté rendu. Le panneau annonçait 36 mm, le dessin en faisait
+  // 22, et de « Compact » à « Maximum » l'image ne bougeait presque pas.
+  const qrMax = unit * partQrMax(isRound, qrBadge as Pastille, isRound ? 0.15 : pad / unit, layout.content === "qrbig")
   const qrPx = Math.min(qrMax, Math.max(24, item.qrMm * size.factor * (w / physW)))
   const radiusEl = eCorner === "vif" ? 0 : eCorner === "rond" ? 999 : 10
 
@@ -1894,7 +1910,13 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   // ce qui dépasse, le titre était tranché par le haut et le bouton par le bas.
   // On mesure, on réduit, et on ne coupe plus.
   const pileVerticale = layout.content === "stack" || layout.content === "center" || layout.content === "qrbig"
-  const padBadge0 = qrBadge === "aucune" ? 0 : unit * (qrBadge === "cercle" ? 0.05 : 0.028)
+  // La pastille RONDE doit CIRCONSCRIRE le QR, qui est carré : son diamètre vaut
+  // au moins la diagonale du carré, soit q√2. Avec une marge fixe de 0,05 × le
+  // support, le disque était plus PETIT que cette diagonale — les quatre coins du
+  // QR dépassaient du blanc et se posaient sur le fond sombre. Un QR dont les
+  // coins mordent le fond, c'est un QR qu'une partie des lecteurs refuse.
+  const padCercle = (q: number) => q * ((Math.SQRT2 - 1) / 2 + 0.035)
+  const padBadge0 = qrBadge === "aucune" ? 0 : (qrBadge === "cercle" ? padCercle(qrPx) : unit * 0.028)
   const ecartBloc = layout.content === "qrbig" ? unit * (isRound ? 0.028 : 0.04) : unit * (isRound ? 0.032 : 0.045)
   const titre0 = titleSize * (layout.content === "qrbig" ? 0.72 : 1)
   const besoin = {
@@ -1906,12 +1928,16 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     bouton: eAccent === "aucun" ? 0 : sizeRef * 0.05 * 1.2 + unit * 0.07,
     ecart: ecartBloc,
   }
-  const fit = pileVerticale ? ajusterAuSupport(besoin, Math.max(1, h - pad * 2)) : { k: 1, qr: besoin.qr, deborde: false }
+  const fit = pileVerticale ? ajusterAuSupport(besoin, Math.max(1, h - pad * 2)) : { k: 1, qr: besoin.qr, masquer: [] as string[], deborde: false }
   const k = fit.k
   const rQr = besoin.qr > 0 ? fit.qr / besoin.qr : 1
   const qrPxFit = Math.max(24, qrPx * rQr)
-  const padBadge = padBadge0 * rQr
+  const padBadge = qrBadge === "cercle" ? padCercle(qrPxFit) : padBadge0 * rQr
   const gap = ecartBloc * k
+  // Quand la place manque, on RETIRE le décoratif au lieu de rapetisser le QR
+  // (voir ajustement.ts) : c'est ce qui rendait le curseur « Taille du QR » sans
+  // effet visible — Compact, Recommandé et Maximum donnaient la même image.
+  const masque = (bloc: "sousTitre" | "bouton") => (fit.masquer as string[]).includes(bloc)
 
   // Couleurs par élément : "" = auto (couleur du thème/accent). Le bouton peut avoir sa propre couleur.
   const titleCol = titleColor || pal.fg
@@ -1928,7 +1954,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const fclick = (panel: string) => onFocus ? (e: React.MouseEvent) => { e.stopPropagation(); onFocus(panel) } : undefined
   const kickerEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.045 * k, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: traitInk(bandColor, pal.flat, pal.fg), ...clampTxt, ...fcur }}>{brand}</div>
   const titleEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize * k, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol, ...clampTxt, ...fcur }}>{shownTitle}</div>
-  const subtitleEl = subtitle.trim() ? <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05 * k, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt, ...fcur }}>{subtitle}</div> : null
+  const subtitleEl = subtitle.trim() && !masque("sousTitre") ? <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05 * k, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt, ...fcur }}>{subtitle}</div> : null
   // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
   const qrInner = qrImg
     ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPxFit), height: Math.round(qrPxFit), objectFit: "contain" }} />
@@ -1942,7 +1968,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     : <div className={fcls} onClick={fclick("qr")} style={{ background: pal.qrBg, padding: padBadge, borderRadius: qrBadge === "cercle" ? "50%" : (eCorner === "rond" ? 16 : eCorner === "vif" ? 2 : 8), lineHeight: 0, display: "inline-block", ...fcur }}>{qrInner}</div>
   // QR libre : retiré du flux de la mise en page (rendu en absolu à qrFx/qrFy plus bas). Sinon, décalage fin X/Y.
   const qrEl = qrFree ? null : ((qrDx || qrDy) ? <div style={{ transform: `translate(${qrDx * 18}%, ${qrDy * 18}%)`, display: "inline-block" }}>{qrBadgeEl}</div> : qrBadgeEl)
-  const ctaEl = eAccent === "aucun" ? null : (
+  const ctaEl = (eAccent === "aucun" || masque("bouton")) ? null : (
     <div className={fcls} onClick={fclick("texte")} style={{ ...fcur, fontFamily: bodyFont, fontSize: sizeRef * 0.05 * k, fontWeight: 800, padding: `${unit * 0.035 * k}px ${unit * 0.09 * k}px`, borderRadius: radiusEl, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxSizing: "border-box",
       ...(eAccent === "trait" ? { border: `2px solid ${btnStroke}`, color: btnStroke }
         : eAccent === "degrade" ? { background: `linear-gradient(135deg, ${shade(btnBg, 0.12)}, ${shade(btnBg, -0.28)})`, color: btnFg }

@@ -44,6 +44,8 @@ export type Ajustement = {
   k: number
   /** Côté du QR après ajustement (≤ besoin.qr). */
   qr: number
+  /** Blocs retirés faute de place, dans l'ordre où on les sacrifie. */
+  masquer: ("sousTitre" | "bouton")[]
   /** Vrai si, même au minimum, le contenu ne rentre pas. */
   deborde: boolean
 }
@@ -96,19 +98,80 @@ export function lignesDeTitre(texte: string, taillePolice: number, largeurDispo:
  * `dispo` et les champs de `besoin` sont dans la même unité (fraction du support).
  */
 export function ajusterAuSupport(besoin: BesoinContenu, dispo: number): Ajustement {
-  const demande = hauteurDemandee(besoin)
-  if (dispo <= 0) return { k: 1, qr: besoin.qr, deborde: true }
-  if (demande <= dispo) return { k: 1, qr: besoin.qr, deborde: false }
+  if (dispo <= 0) return { k: 1, qr: besoin.qr, masquer: [], deborde: true }
+  if (hauteurDemandee(besoin) <= dispo) return { k: 1, qr: besoin.qr, masquer: [], deborde: false }
 
-  const textes = demande - besoin.qr
-  // 1) Réduire les textes, le QR intact.
-  const kBrut = textes > 0 ? (dispo - besoin.qr) / textes : 1
-  const k = Math.min(1, Math.max(REDUCTION_TEXTE_MIN, kBrut))
-  const restant = dispo - textes * k
-  if (besoin.qr <= restant) return { k, qr: besoin.qr, deborde: false }
+  // 1) Les textes rétrécissent, le QR garde la taille DEMANDÉE.
+  const masquer: ("sousTitre" | "bouton")[] = []
+  let b: BesoinContenu = besoin
+  let k = reduireTextes(b, dispo)
+  if (tient(b, k, dispo)) return { k, qr: b.qr, masquer, deborde: false }
 
-  // 2) Le QR cède à son tour, mais pas en dessous du minimum lisible.
-  const qrMin = besoin.qr * REDUCTION_QR_MIN
-  const qr = Math.max(qrMin, restant)
-  return { k, qr, deborde: textes * k + qr > dispo + 1e-9 }
+  // 2) Toujours trop : on RETIRE des blocs plutôt que de rapetisser le QR.
+  //    Le QR est la seule chose que le support doit absolument faire ; le
+  //    sous-titre est décoratif, le bouton répète souvent le titre. Rapetisser
+  //    le QR à leur place donnait un curseur « Taille du QR » sans effet
+  //    visible : Compact, Recommandé et Maximum rendaient la même image.
+  for (const bloc of ["sousTitre", "bouton"] as const) {
+    if (b[bloc] <= 0) continue
+    masquer.push(bloc)
+    b = { ...b, [bloc]: 0 }
+    k = reduireTextes(b, dispo)
+    if (tient(b, k, dispo)) return { k, qr: b.qr, masquer, deborde: false }
+  }
+
+  // 3) Il ne reste que le titre et le QR : c'est au QR de céder, en dernier,
+  //    et jamais sous sa taille lisible.
+  const textes = hauteurDemandee(b) - b.qr
+  const qr = Math.max(b.qr * REDUCTION_QR_MIN, dispo - textes * k)
+  return { k, qr, masquer, deborde: textes * k + qr > dispo + 1e-9 }
+}
+
+/** Facteur de réduction des textes, à QR constant, borné au seuil de lisibilité. */
+function reduireTextes(b: BesoinContenu, dispo: number): number {
+  const textes = hauteurDemandee(b) - b.qr
+  if (textes <= 0) return 1
+  return Math.min(1, Math.max(REDUCTION_TEXTE_MIN, (dispo - b.qr) / textes))
+}
+
+function tient(b: BesoinContenu, k: number, dispo: number): boolean {
+  return (hauteurDemandee(b) - b.qr) * k + b.qr <= dispo + 1e-9
+}
+
+
+// ── Jusqu'où le QR peut-il grandir sur ce support ? ──────────────────────────
+//
+// Le panneau promettait « 36 mm » sur un sticker de 50 mm, le rendu en dessinait
+// 22 : la borne du curseur (72 % de la plus petite dimension) et la borne du
+// rendu (44 % du diamètre) étaient deux nombres écrits à deux endroits, sans
+// rapport l'un avec l'autre. Résultat, de « Compact » à « Maximum » l'image ne
+// bougeait presque pas — le curseur semblait cassé, et l'étiquette mentait.
+//
+// Une seule formule, tirée de la géométrie, sert maintenant aux deux.
+
+export type Pastille = "carre" | "cercle" | "aucune"
+
+/** Marge de la pastille carrée, en fraction du support. */
+export const PAD_PASTILLE_CARREE = 0.028
+/** Marge de la pastille ronde, en fraction du CÔTÉ du QR (la moitié de √2−1, plus un filet). */
+export const PAD_PASTILLE_RONDE = (Math.SQRT2 - 1) / 2 + 0.035
+
+/**
+ * Côté maximal du QR, en fraction de min(largeur, hauteur) du support.
+ *
+ * `marge` = marge de sécurité, en fraction du support (0,15 sur un rond).
+ * Sur un support ROND, tout doit tenir dans le cercle : un carré de côté c y
+ * entre si c√2 ≤ diamètre utile. La pastille agrandit ce carré, donc réduit
+ * d'autant le QR — une pastille ronde coûte plus qu'une carrée.
+ */
+export function partQrMax(rond: boolean, badge: Pastille, marge: number, qrGeant = false): number {
+  if (rond) {
+    const zone = Math.max(0.1, 1 - 2 * marge)          // diamètre utile
+    if (badge === "cercle") return zone / (1 + 2 * PAD_PASTILLE_RONDE)
+    if (badge === "carre") return Math.max(0.1, zone / Math.SQRT2 - 2 * PAD_PASTILLE_CARREE)
+    return zone / Math.SQRT2
+  }
+  const plafond = qrGeant ? 0.5 : 0.86
+  if (badge === "carre") return Math.max(0.1, plafond - 2 * PAD_PASTILLE_CARREE)
+  return plafond
 }

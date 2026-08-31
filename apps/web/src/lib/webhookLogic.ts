@@ -11,8 +11,8 @@ export function metaUser(m?: Stripe.Metadata | null): string | undefined {
 }
 
 export type WebhookOutcome =
-  | { type: "checkout_completed"; userId: string; plan: string; customerId: string; subscriptionId: string; priceId?: string; billing?: string }
-  | { type: "subscription_updated"; userId: string; plan: string | null; status: string; periodStart: number; periodEnd: number; cancelAtEnd: boolean; subId: string }
+  | { type: "checkout_completed"; userId: string; plan: string; customerId: string; subscriptionId: string; priceId?: string; billing?: string; status: "active" | "trialing" }
+  | { type: "subscription_updated"; userId: string; plan: string | null; status: string; periodStart: number; periodEnd: number; cancelAtEnd: boolean; subId: string; priceId?: string }
   | { type: "subscription_deleted"; userId: string; subId: string }
   | { type: "payment_failed"; subId: string }
   | { type: "noop" }
@@ -39,6 +39,13 @@ export function resolveStripeEvent(
       const plan = resolvePlan(priceId) ?? s.metadata?.plan
       // Il faut userId ET plan pour activer -> sinon on ne touche à rien.
       if (!userId || !plan) return { type: "noop" }
+      // Le statut ne peut PAS etre « trialing » en dur : il n'y a plus d'essai
+      // gratuit depuis le retrait du palier Starter. Un client qui vient de payer
+      // 19 EUR etait enregistre en essai, et son abonnement s'affichait comme non
+      // paye. Stripe dit lui-meme ce qui s'est passe : `payment_status` vaut
+      // « paid » quand la carte a ete debitee, « no_payment_required » quand la
+      // periode d'essai couvre la premiere echeance.
+      const status = s.payment_status === "no_payment_required" ? "trialing" : "active"
       return {
         type: "checkout_completed",
         userId,
@@ -47,8 +54,13 @@ export function resolveStripeEvent(
         subscriptionId: s.subscription as string,
         priceId,
         billing: s.metadata?.billing ?? undefined,
+        status,
       }
     }
+    // `created` arrive a la souscription, `updated` aux changements ensuite.
+    // Seul `updated` etait ecoute : les dates de periode d'un abonnement tout
+    // neuf n'etaient donc ecrites qu'au premier renouvellement, un mois plus tard.
+    case "customer.subscription.created":
     case "customer.subscription.updated": {
       const sub = event.data.object as Stripe.Subscription
       const userId = metaUser(sub.metadata)
@@ -66,6 +78,7 @@ export function resolveStripeEvent(
         periodEnd: (sub as any).current_period_end,
         cancelAtEnd: sub.cancel_at_period_end,
         subId: sub.id,
+        priceId: priceId ?? undefined,
       }
     }
     case "customer.subscription.deleted": {

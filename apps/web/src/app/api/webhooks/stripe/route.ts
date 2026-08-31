@@ -66,23 +66,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e.message }, { status: 400 })
   }
 
+  // supabase-js NE LEVE PAS d'exception : une écriture refusée renvoie un objet
+  // { error } que personne ne lisait. Le webhook répondait donc « received: true »
+  // à Stripe sans avoir rien écrit, et l'événement était perdu pour de bon.
+  // Ici chaque écriture est vérifiée ; s'il en rate une, on répond 500 et Stripe
+  // rejoue l'événement (il réessaie pendant 3 jours).
+  const echecs: string[] = []
+  const ecrire = async (quoi: string, ecriture: PromiseLike<{ error: { message: string } | null }>) => {
+    const { error } = await ecriture
+    if (error) {
+      echecs.push(quoi)
+      console.error(`[stripe webhook] ECHEC ECRITURE ${quoi} (${event.type}) :`, error.message)
+    }
+    return !error
+  }
+
   try {
     // Décision pure (testée : lib/webhookLogic.test.ts), puis application des effets.
     const outcome = resolveStripeEvent(event)
 
     switch (outcome.type) {
       case "checkout_completed":
-        await supabase.from("profiles").update({
+        await ecrire("profiles.plan", supabase.from("profiles").update({
           plan: outcome.plan,
           stripe_customer_id: outcome.customerId,
-        }).eq("id", outcome.userId)
-        await supabase.from("subscriptions").upsert({
+        }).eq("id", outcome.userId))
+        await ecrire("subscriptions.upsert", supabase.from("subscriptions").upsert({
           user_id: outcome.userId,
           stripe_subscription_id: outcome.subscriptionId,
           stripe_price_id: outcome.priceId,
           plan: outcome.plan,
-          status: "trialing",
-        }, { onConflict: "user_id" })
+          status: outcome.status,
+        }, { onConflict: "user_id" }))
         // Le plan porte aussi le quota de QR modifiables : le faire suivre.
         await reconcileDynamicLinks(outcome.userId, outcome.plan)
         // Email de bienvenue (essai/achat) — ne bloque pas la reponse au webhook
@@ -91,30 +106,36 @@ export async function POST(req: NextRequest) {
 
       case "subscription_updated":
         if (!outcome.plan) console.warn("[stripe webhook] price non mappe, plan inchange")
-        if (outcome.plan) await supabase.from("profiles").update({ plan: outcome.plan }).eq("id", outcome.userId)
-        await supabase.from("subscriptions").update({
+        if (outcome.plan) await ecrire("profiles.plan", supabase.from("profiles").update({ plan: outcome.plan }).eq("id", outcome.userId))
+        // UPSERT et non UPDATE : si l'événement `checkout.session.completed` a été
+        // manqué (rejeu, panne, ordre d'arrivée), un UPDATE ne touchait aucune ligne
+        // et l'abonnement n'existait nulle part. L'upsert répare la ligne manquante.
+        await ecrire("subscriptions.upsert", supabase.from("subscriptions").upsert({
+          user_id: outcome.userId,
+          stripe_subscription_id: outcome.subId,
+          ...(outcome.priceId ? { stripe_price_id: outcome.priceId } : {}),
           ...(outcome.plan ? { plan: outcome.plan } : {}),
           status: outcome.status,
           current_period_start: new Date(outcome.periodStart * 1000).toISOString(),
           current_period_end: new Date(outcome.periodEnd * 1000).toISOString(),
           cancel_at_period_end: outcome.cancelAtEnd,
-        }).eq("stripe_subscription_id", outcome.subId)
+        }, { onConflict: "user_id" }))
         if (outcome.plan) await reconcileDynamicLinks(outcome.userId, outcome.plan)
         break
 
       case "subscription_deleted":
-        await supabase.from("profiles").update({ plan: "free" }).eq("id", outcome.userId)
-        await supabase.from("subscriptions").update({
+        await ecrire("profiles.plan", supabase.from("profiles").update({ plan: "free" }).eq("id", outcome.userId))
+        await ecrire("subscriptions.annulation", supabase.from("subscriptions").update({
           plan: "free",
           status: "canceled",
           canceled_at: new Date().toISOString(),
-        }).eq("stripe_subscription_id", outcome.subId)
+        }).eq("stripe_subscription_id", outcome.subId))
         // Retour au gratuit : les QR modifiables au-delà du quota passent en pause.
         await reconcileDynamicLinks(outcome.userId, "free")
         break
 
       case "payment_failed":
-        await supabase.from("subscriptions").update({ status: "past_due" }).eq("stripe_subscription_id", outcome.subId)
+        await ecrire("subscriptions.past_due", supabase.from("subscriptions").update({ status: "past_due" }).eq("stripe_subscription_id", outcome.subId))
         break
 
     }
@@ -122,5 +143,8 @@ export async function POST(req: NextRequest) {
     return serverError("stripe/webhook", e)
   }
 
+  if (echecs.length) {
+    return NextResponse.json({ error: `ecritures refusees: ${echecs.join(", ")}` }, { status: 500 })
+  }
   return NextResponse.json({ received: true })
 }

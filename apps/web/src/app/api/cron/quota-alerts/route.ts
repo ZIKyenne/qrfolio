@@ -16,6 +16,7 @@ import { getPlan } from "@/lib/plans"
 import { EMAIL_FROM } from "@/lib/emailFrom"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { escapeHtml } from "@/lib/escapeHtml"
+import { noterPassage } from "@/lib/journalCron"
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
@@ -36,6 +37,10 @@ function alertHtml(name: string, views: number, limit: number, over: boolean, ap
   return emailShell({ preheader: over ? "Votre quota de vues est atteint ce mois-ci." : "Vous approchez de votre quota de vues.", content })
 }
 
+// Nom de cette tâche dans le journal (lib/journalCron) : sans trace, personne ne
+// pouvait dire si elle s'exécutait.
+const TACHE = "cron/quota-alerts" as const
+
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization")
   const secret = req.nextUrl.searchParams.get("secret")
@@ -48,6 +53,7 @@ export async function GET(req: NextRequest) {
   const resendKey = process.env.RESEND_API_KEY
   if (!resendKey) return NextResponse.json({ error: "Service email non configure", sent: 0 }, { status: 503 })
 
+  const debut = Date.now()
   try {
     const supabase = createAdminClient()
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
@@ -56,7 +62,7 @@ export async function GET(req: NextRequest) {
     const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
 
     const { data: profiles } = await supabase.from("profiles").select("id, email, full_name, plan")
-    if (!profiles?.length) return NextResponse.json({ sent: 0 })
+    if (!profiles?.length) { await noterPassage(supabase, TACHE, "rien", "aucun profil", Date.now() - debut); return NextResponse.json({ sent: 0 }) }
 
     let sent = 0
     const errors: string[] = []
@@ -105,8 +111,12 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", errors.join(" · ") || `${sent} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ sent, errors: errors.length ? errors : undefined })
   } catch (e: any) {
+    // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas
+    // qu'on veut voir dans le journal.
+    await noterPassage(createAdminClient(), TACHE, "erreur", e?.message ?? "erreur inconnue", Date.now() - debut)
     return serverError("cron/quota-alerts", e)
   }
 }

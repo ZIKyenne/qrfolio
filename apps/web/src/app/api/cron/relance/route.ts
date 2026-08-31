@@ -18,6 +18,7 @@ import { EMAIL_FROM } from "@/lib/emailFrom"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { comptesARelancer, fenetreInscription, prenom, type Compte } from "@/lib/relance"
+import { noterPassage } from "@/lib/journalCron"
 
 export const runtime = "nodejs"
 
@@ -42,6 +43,10 @@ function relanceHtml(nom: string, appUrl: string): string {
   })
 }
 
+// Nom de cette tâche dans le journal (lib/journalCron) : sans trace, personne ne
+// pouvait dire si elle s'exécutait.
+const TACHE = "cron/relance" as const
+
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization")
   const secret = req.nextUrl.searchParams.get("secret")
@@ -52,6 +57,7 @@ export async function GET(req: NextRequest) {
   const resendKey = process.env.RESEND_API_KEY
   if (!resendKey) return NextResponse.json({ error: "RESEND_API_KEY absente" }, { status: 500 })
 
+  const debut = Date.now()
   try {
     const supabase = createAdminClient()
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
@@ -68,7 +74,7 @@ export async function GET(req: NextRequest) {
     if (error) throw new Error(error.message)
 
     const ids = (profs ?? []).map(p => p.id as string)
-    if (ids.length === 0) return NextResponse.json({ examines: 0, envoyes: 0 })
+    if (ids.length === 0) { await noterPassage(supabase, TACHE, "rien", "aucun compte dans la fenêtre", Date.now() - debut); return NextResponse.json({ examines: 0, envoyes: 0 }) }
 
     // Une seule requête pour savoir qui a déjà créé quelque chose.
     const { data: pages } = await supabase.from("pages").select("user_id").in("user_id", ids)
@@ -105,8 +111,12 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    await noterPassage(supabase, TACHE, erreurs.length ? "erreur" : envoyes > 0 ? "ok" : "rien", erreurs.join(" · ") || `${envoyes} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ examines: comptes.length, envoyes, erreurs: erreurs.length ? erreurs : undefined })
   } catch (e: any) {
+    // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas
+    // qu'on veut voir dans le journal.
+    await noterPassage(createAdminClient(), TACHE, "erreur", e?.message ?? "erreur inconnue", Date.now() - debut)
     return serverError("cron/relance", e)
   }
 }

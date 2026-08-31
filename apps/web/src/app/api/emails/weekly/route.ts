@@ -5,6 +5,7 @@ import { EMAIL_FROM } from "@/lib/emailFrom"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { semaineEcoulee, resumeSemaine, nombre } from "@/lib/weeklyReport"
+import { noterPassage } from "@/lib/journalCron"
 
 // Carte de statistique (nombre dore + libelle). Cellule d'une rangee a 2 colonnes.
 function statCard(value: string, label: string, side: "left" | "right"): string {
@@ -20,10 +21,15 @@ function statCard(value: string, label: string, side: "left" | "right"): string 
 // Vercel Cron appelle en GET. Cette route n'exportait que POST : planifiée telle
 // quelle, elle aurait répondu 405 sans que rien ne le signale. Les deux verbes
 // mènent au même traitement.
+// Nom de cette tâche dans le journal (lib/journalCron) : sans trace, personne ne
+// pouvait dire si elle s'exécutait.
+const TACHE = "emails/weekly" as const
+
 export async function GET(req: NextRequest) { return envoyer(req) }
 export async function POST(req: NextRequest) { return envoyer(req) }
 
 async function envoyer(req: NextRequest) {
+  const debut = Date.now()
   try {
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) return NextResponse.json({ error: "Service email non configuré" }, { status: 503 })
@@ -62,7 +68,7 @@ async function envoyer(req: NextRequest) {
     }
 
     const destinataires = (profiles ?? []).filter(p => (pagesDe.get(p.id)?.length ?? 0) > 0)
-    if (!destinataires.length) return NextResponse.json({ sent: 0 })
+    if (!destinataires.length) { await noterPassage(supabase, TACHE, "rien", "aucun destinataire", Date.now() - debut); return NextResponse.json({ sent: 0 }) }
 
     const dateLabel = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" })
     // Un rapport de période doit parler de la période : on borne les sept derniers jours.
@@ -114,8 +120,12 @@ async function envoyer(req: NextRequest) {
       sent++
     }
 
+    await noterPassage(supabase, TACHE, sent > 0 ? "ok" : "rien", `${sent} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ success: true, sent })
-  } catch (e) {
+  } catch (e: any) {
+    // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas
+    // qu'on veut voir dans le journal.
+    await noterPassage(createAdminClient(), TACHE, "erreur", e?.message ?? "erreur inconnue", Date.now() - debut)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

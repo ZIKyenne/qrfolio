@@ -18,6 +18,7 @@ import { EMAIL_FROM } from "@/lib/emailFrom"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { escapeHtml } from "@/lib/escapeHtml"
 import { daysUntil, expiryAlertStage, expiryHorizonIso } from "@/lib/dynamicExpiry"
+import { noterPassage } from "@/lib/journalCron"
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
@@ -36,6 +37,10 @@ function expiryHtml(name: string, label: string, daysLeft: number, appUrl: strin
   return emailShell({ preheader: `Votre QR modifiable expire ${when}.`, content })
 }
 
+// Nom de cette tâche dans le journal (lib/journalCron) : sans trace, personne ne
+// pouvait dire si elle s'exécutait.
+const TACHE = "cron/dynamic-expiry" as const
+
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization")
   const secret = req.nextUrl.searchParams.get("secret")
@@ -47,6 +52,7 @@ export async function GET(req: NextRequest) {
   const resendKey = process.env.RESEND_API_KEY
   if (!resendKey) return NextResponse.json({ error: "Service email non configuré", sent: 0 }, { status: 503 })
 
+  const debut = Date.now()
   try {
     const supabase = createAdminClient()
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
@@ -106,8 +112,12 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", errors.join(" · ") || `${sent} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ sent, total: rows.length, errors: errors.length ? errors : undefined })
   } catch (e: any) {
+    // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas
+    // qu'on veut voir dans le journal.
+    await noterPassage(createAdminClient(), TACHE, "erreur", e?.message ?? "erreur inconnue", Date.now() - debut)
     return serverError("cron/dynamic-expiry", e)
   }
 }

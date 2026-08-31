@@ -8,6 +8,7 @@ import { serverError } from "@/lib/apiError"
 import { escapeHtml as esc } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailP, emailButton } from "@/lib/emailLayout"
 import { EMAIL_FROM } from "@/lib/emailFrom"
+import { noterPassage } from "@/lib/journalCron"
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ""
 
@@ -85,6 +86,10 @@ function buildEmailHtml(params: {
   return emailShell({ preheader: `Vos performances QRowg · ${esc(params.period)}`, content, footer })
 }
 
+// Nom de cette tâche dans le journal (lib/journalCron) : sans trace, personne ne
+// pouvait dire si elle s'exécutait.
+const TACHE = "reports/send" as const
+
 export async function GET(req: NextRequest) {
   // Vérifier le secret cron
   const auth = req.headers.get("authorization")
@@ -97,6 +102,7 @@ export async function GET(req: NextRequest) {
 
   const frequencyParam = req.nextUrl.searchParams.get("frequency") as "weekly" | "monthly" | null
 
+  const debut = Date.now()
   try {
     const supabase = createAdminClient()
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
@@ -110,6 +116,7 @@ export async function GET(req: NextRequest) {
       .in("frequency", frequencyParam ? [frequencyParam] : ["weekly", "monthly"])
 
     if (!subs?.length) {
+      await noterPassage(supabase, TACHE, "rien", "aucun abonnement actif", Date.now() - debut)
       return NextResponse.json({ sent: 0, message: "Aucun abonnement actif" })
     }
 
@@ -252,8 +259,12 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    await noterPassage(supabase, TACHE, errors.length ? "erreur" : sent > 0 ? "ok" : "rien", errors.join(" · ") || `${sent} envoyé(s)`, Date.now() - debut)
     return NextResponse.json({ sent, total: due.length, errors })
   } catch (err: any) {
+    // Une tâche qui plante ne laissait AUCUNE trace : c'est justement le cas
+    // qu'on veut voir dans le journal.
+    await noterPassage(createAdminClient(), TACHE, "erreur", err?.message ?? "erreur inconnue", Date.now() - debut)
     return serverError("reports/send", err)
   }
 }

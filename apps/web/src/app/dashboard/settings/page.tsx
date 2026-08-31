@@ -7,6 +7,16 @@ import Particles from "@/components/Particles"
 import { Button } from "@/components/ui/Button"
 import { Switch } from "@/components/ui/Switch"
 import { Input } from "@/components/ui/Input"
+import { jugerPassage, INTERVALLE_H, type Passage } from "@/lib/journalCron"
+
+// Les trois interrupteurs de notification qui dépendent d'une tâche planifiée,
+// et le nom de cette tâche dans le journal.
+const ENVOIS: { cle: string; nom: string }[] = [
+  { cle: "cron/relance", nom: "Relance des comptes sans page" },
+  { cle: "emails/weekly", nom: "Rapport hebdomadaire" },
+  { cle: "cron/quota-alerts", nom: "Alerte de quota de vues" },
+  { cle: "cron/dynamic-expiry", nom: "Alerte d'expiration d'un QR" },
+]
 
 type Profile = { id: string; email: string; full_name: string | null; plan: string }
 
@@ -53,6 +63,10 @@ export default function SettingsPage() {
   // Notifications
   const [notifs, setNotifs] = useState({ email_leads: true, scan_alert: true, weekly_report: true, product_updates: false, marketing: false })
   const [notifSaved, setNotifSaved] = useState(false)
+  // État des tâches planifiées : trois de ces interrupteurs promettent un email
+  // envoyé par une tâche, et rien ne permettait de savoir si elle tournait.
+  const [passages, setPassages] = useState<Record<string, Passage> | null>(null)
+  const [journalOuvert, setJournalOuvert] = useState(true)
 
   // Export RGPD
   const [exporting, setExporting] = useState(false)
@@ -98,6 +112,12 @@ export default function SettingsPage() {
     setCurrentPwd(""); setNewPwd(""); setConfirmPwd("")
     setPwdSaving(false); setPwdSaved(true); setTimeout(() => setPwdSaved(false), 3000)
   }
+
+  useEffect(() => {
+    fetch("/api/cron/etat").then(r => r.json())
+      .then(d => { setJournalOuvert(d?.disponible !== false); setPassages(d?.passages ?? {}) })
+      .catch(() => {})
+  }, [])
 
   async function saveNotifications() {
     // Chaque préférence est persistée ET lue par un envoi qui existe vraiment :
@@ -296,6 +316,33 @@ export default function SettingsPage() {
                 {notifSaved ? "Préférences enregistrées !" : "Sauvegarder les préférences"}
               </Button>
             </div>
+
+            {/* Les envois automatiques, et la preuve qu'ils tournent. Sans cette
+                ligne, un interrupteur allumé ne garantissait rien du tout. */}
+            {passages && (
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                <p style={{ color: "#8A8478", fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 10px" }}>Envois automatiques</p>
+                {!journalOuvert ? (
+                  <p style={{ color: "#6E685E", fontSize: 12, lineHeight: 1.55, margin: 0 }}>
+                    Le journal des envois n&apos;est pas encore activé sur cette base. Une fois la table <code style={{ color: "#8A8478" }}>cron_runs</code> créée, chaque envoi automatique laissera une trace ici.
+                  </p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                    {ENVOIS.map(({ cle, nom }) => {
+                      const v = jugerPassage(passages[cle], INTERVALLE_H[cle] ?? 24)
+                      const couleur = v.niveau === "ok" ? "var(--success)" : v.niveau === "attention" ? "#FBBF24" : "#FF6B6B"
+                      return (
+                        <div key={cle} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, flexShrink: 0 }} />
+                          <span style={{ color: "#D8D2C6", fontSize: 12.5, flex: 1, minWidth: 0 }}>{nom}</span>
+                          <span style={{ color: couleur, fontSize: 11.5, fontWeight: 600, flexShrink: 0 }}>{v.texte}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </Section>
 

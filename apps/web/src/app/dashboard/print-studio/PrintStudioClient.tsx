@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Lock, Unlock, Eye, EyeOff, ChevronUp, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2, Plus, MoreVertical,
   Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap,
-  Award, Sun, Moon, Leaf, Navigation, Home, Users, Utensils, Wine, Beer, Pizza, ShoppingBag, ShoppingCart,
+  Award, Sun, Moon, Leaf, Navigation, Home, Users, Type, LayoutGrid, Wand2, Move, Utensils, Wine, Beer, Pizza, ShoppingBag, ShoppingCart,
   CreditCard, Percent, MessageCircle, ThumbsUp, Share2, Send, AtSign, Link2, QrCode, Smartphone, Calendar, Bell, Info, Scissors, ArrowDown } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import Particles from "@/components/Particles"
@@ -24,6 +24,7 @@ import { sceneLayers, paletteFromStyle, scaleFor, SCENES, finishLayer, grad, gra
 import { filterTemplates, type PrintTemplate, type TemplateVariant } from "./templates"
 import { printPreflight, hexContrastRatio } from "../qr-codes/printPreflight"
 import { color as C, radius as R } from "./tokens"
+import { ajusterAuSupport, lignesDeTitre } from "./ajustement"
 
 // item.layout est parfois une clé de contenu ('stack'), parfois un id de layout ('orne').
 // On résout toujours vers un id de LAYOUTS valide (pour le volet Mise en page).
@@ -39,6 +40,15 @@ const FRAME_LABEL: Record<string, string> = { aucun: "sans cadre", filet: "filet
 // Mises en page adaptées aux supports RONDS (centrées/symétriques) : les autres (bandeau, affiche, colonnes…)
 // supposent un rectangle et se retrouvent rognées par le cercle.
 const ROUND_LAYOUTS = new Set(["centre", "qrgeant", "cadre", "orne"])
+// Les réglages tiennent en TROIS onglets toujours visibles. Ils étaient répartis
+// en cinq accordéons empilés dans une colonne qui défilait : changer une couleur
+// puis une marge demandait de replier l'un, déplier l'autre, et se retrouver.
+const ONGLETS_DROITE = [
+  { id: "contenu" as const, label: "Contenu" },
+  { id: "style" as const, label: "Style" },
+  { id: "page" as const, label: "Page" },
+]
+type OngletDroite = (typeof ONGLETS_DROITE)[number]["id"] | "selection"
 // Bottom sheet mobile (#17) : 3 positions ancrées (repère + hauteur en vh). Canvas visible dès « peek »/« half ».
 const SHEET_ORDER = ["peek", "half", "full"] as const
 type SheetPos = typeof SHEET_ORDER[number]
@@ -266,8 +276,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const [advSel, setAdvSel] = useState(false)          // repli des réglages avancés de l'élément sélectionné (X/Y/rotation/opacité)
   const [bgFinish, setBgFinish] = useState("uni")      // fini du fond du support (uni / dégradé / grain)
   const [frame, setFrame] = useState("aucun")          // cadre décoratif indépendant
-  const [open, setOpen] = useState<string | null>("modeles")   // un seul volet ouvert (Modèles à l'entrée — templates = primaire)
-  const [flashPanel, setFlashPanel] = useState<string | null>(null)   // volet à surligner brièvement après une sélection contextuelle (#12/#32)
+  const [ongletDroite, setOngletDroite] = useState<OngletDroite>("contenu")   // onglet des réglages (droite)
+  const [volet, setVolet] = useState<null | "modeles" | "calques">(null)      // volet latéral (gauche), un seul à la fois
   const [mode, setMode] = useState<"simple" | "studio">("studio")   // #34 : Studio (édition libre) par défaut ; Simple = essentiel. Desktop uniquement, persisté localStorage.
   const [moreMenu, setMoreMenu] = useState(false)   // menu « ··· » : actions secondaires (Décliner/Planche) hors du header principal
   // Mode unique « Studio » : la bascule Simple/Studio a été retirée (un seul canvas, sûr par conception).
@@ -698,12 +708,25 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setBgFinish(L.bgFinish); setFrame(L.frame); setTitleCase(L.titleCase); setTitleWeight(L.titleWeight)
     setQrBadge(L.qrBadge); setECorner(L.eCorner); setEAccent(L.eAccent); setEAlign(L.eAlign)
     if (L.eTypo) setETypo(L.eTypo)
+    // Un modèle REMPLACE le design : il ne se pose pas par-dessus les réglages
+    // du précédent. Sans ça, un titre agrandi à la main, un bloc décalé, un QR
+    // déplacé ou les éléments d'un modèle antérieur survivaient à l'application
+    // du suivant — c'est ce qui donnait le titre géant et le rectangle vide en
+    // pointillés qui débordait du cercle.
+    setETitle(1); setEPad(1); setBlockY(0); setQrPos("centre"); setQrDx(0); setQrDy(0); setQrScale(1)
+    setTitleColor(""); setSubColor(""); setCtaColor("")
+    setContentFree(false); setQrFree(false); setSelEl(null)
+    // On efface ce qui a été POSÉ AUTOMATIQUEMENT (compositions `f_<ts>_<i>`,
+    // germes de « Tout déplacer » `fc_*`) et on garde ce que l'utilisateur a
+    // ajouté lui-même (`f_<ts>`) : son travail ne disparaît pas sous un modèle.
+    setFreeEls(els => els.filter(e => !e.id.startsWith("fc_") && !/^f_\d+_\d+$/.test(e.id)))
     if (t.content.brand) setBrandText(t.content.brand)
     setMessage(t.content.title ?? ""); setSubtitle(t.content.subtitle ?? ""); setCtaText(t.content.cta ?? "")
     // Compositions (comp) NON auto-injectées : posées en absolu, elles chevauchaient le titre/QR du layout
     // (surtout sur les supports ronds/petits). Elles restent disponibles à la demande dans « + Ajouter »
     // (éditeur libre), où l'utilisateur les positionne. Le modèle rend un design propre, sans superposition.
   }
+  useEffect(() => { if (selEl) setOngletDroite("selection") }, [selEl])
   function updateEl(id: string, patch: Partial<FreeEl>) { setFreeEls(els => els.map(e => e.id === id ? { ...e, ...patch } : e)) }
   function deleteEl(id: string) { setFreeEls(els => els.filter(e => e.id !== id)); setSelEl(s => (s === id ? null : s)) }
   // Dupliquer un élément libre (léger décalage) et sélectionner la copie ; déplacer au clavier (flèches).
@@ -750,7 +773,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
     setETitle(1); setEPad(1); setECorner("adouci"); setEAccent("plein"); setETypo("auto"); setEAlign("center")
     setAccent("auto"); setTitleCase("normal"); setTitleWeight("normal"); setQrBadge("carre"); setQrPos("centre"); setQrScale(1); setBlockY(0); setBgImage(null); setBgCredit("")
     setQrDx(0); setQrDy(0); setTitleColor(""); setSubColor(""); setCtaColor(""); setAdvColor(false); setAdvQr(false)
-    setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setOpen(null); setShowAllColors(false); setControl(false)
+    setBgFinish("uni"); setFrame("aucun"); setLogoUrl(null); setShowAllColors(false); setControl(false)
     setLibre(true); setFreeEls([]); setSelEl(null); setQrFree(false); setQrFx(0.32); setQrFy(0.55); setContentFree(false); setPhase("studio")
     undoRef.current = { past: [], future: [], apply: false, last: "", t: null }; setCanUndo(false); setCanRedo(false)
     applyHandoff()
@@ -771,11 +794,11 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // « Corriger » un contrôle de pré-vol : ferme le contrôle, ouvre le bon volet, applique un correctif sûr quand c'est net.
   function fixCheck(id: string) {
     setControl(false)
-    if (id === "contrast") setOpen("style")                                   // changer l'ambiance (couleurs du QR)
-    else if (id === "qrsize") { setQrScale(v => Math.min(1.6, v + 0.3)); setOpen("contenu") }  // agrandir le QR
-    else if (id === "quiet") { setQrBadge(qrBadge === "aucune" ? "carre" : "cercle"); setOpen("contenu") }  // pastille = zone franche
-    else if (id === "margin") { if (!freeEls.length) setOpen("page") }        // en libre : l'utilisateur écarte l'élément du bord
-    else setOpen("page")
+    if (id === "contrast") setOngletDroite("style")                                   // changer l'ambiance (couleurs du QR)
+    else if (id === "qrsize") { setQrScale(v => Math.min(1.6, v + 0.3)); setOngletDroite("contenu") }  // agrandir le QR
+    else if (id === "quiet") { setQrBadge(qrBadge === "aucune" ? "carre" : "cercle"); setOngletDroite("contenu") }  // pastille = zone franche
+    else if (id === "margin") { if (!freeEls.length) setOngletDroite("page") }        // en libre : l'utilisateur écarte l'élément du bord
+    else setOngletDroite("page")
   }
 
   // Dernières closures pour les raccourcis clavier (montés une seule fois plus haut).
@@ -951,6 +974,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // Planche = chaque format retenu, répété `campaignQty` fois (imposition N-up : N exemplaires par format).
   const campaignItems = (campaign.length ? campaign : [item.id]).flatMap(id => Array(Math.max(1, campaignQty)).fill(id)).map(id => ITEM_BY_ID[id]).filter(Boolean)
   const sel = freeEls.find(e => e.id === selEl)
+  // Un élément sélectionné amène ses réglages tout seul : plus besoin de chercher.
+  const ongletEffectif: OngletDroite = sel ? (ongletDroite === "selection" ? "selection" : ongletDroite) : (ongletDroite === "selection" ? "contenu" : ongletDroite)
+  // Le rail : créer et empiler à gauche, régler à droite. Deux gestes, deux côtés.
+  const RAIL_OUTILS = [
+    { id: "modeles", court: "Modèles", titre: "Partir d'un modèle", icone: LayoutGrid, action: null as null | (() => void) },
+    { id: "texte", court: "Texte", titre: "Ajouter un texte", icone: Type, action: () => addFreeText() },
+    { id: "element", court: "Élément", titre: "Ajouter une icône, une forme, une composition", icone: Plus, action: () => { setAddSearch(""); setAddOpen(true) } },
+    { id: "calques", court: "Calques", titre: "Les éléments posés sur le support", icone: Layers, action: null },
+    { id: "deplacer", court: contentFree ? "Ranger" : "Libérer", titre: contentFree ? "Revenir à la mise en page automatique" : "Rendre le titre, le QR et le bouton déplaçables", icone: Move, action: () => (contentFree ? undoAllMovable() : makeAllMovable()) },
+    { id: "ranger", court: "Aligner", titre: "Remettre le titre, le QR et le bouton dans une mise en page propre", icone: Wand2, action: () => reorganize() },
+  ]
   const tmpls = filterTemplates(item)   // templates pertinents au support courant (pertinents d'abord)
   // UN SEUL aperçu sur desktop = l'éditeur où l'on déplace les éléments (plus de « guidé » non-déplaçable en parallèle).
   // Mobile garde l'aperçu guidé simple (le drag fin y est inadapté).
@@ -960,16 +994,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   function focusPanel(panel: string) {
     setLibre(false); setSelEl(null)
     // Clics d'aperçu → 5 catégories consolidées : titre/bouton → Contenu, QR → Contenu, fond → Style.
-    const MAP: Record<string, string> = { texte: "contenu", qr: "contenu", details: "style", allure: "style" }
-    const target = MAP[panel] ?? panel
-    setOpen(target); setFlashPanel(target)
-    requestAnimationFrame(() => document.querySelector(`[data-panel="${target}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }))
-    window.setTimeout(() => setFlashPanel(p => (p === target ? null : p)), 1000)
+    const MAP: Record<string, OngletDroite> = { texte: "contenu", qr: "contenu", details: "style", allure: "style", page: "page" }
+    const cible = MAP[panel] ?? "contenu"
+    setOngletDroite(cible)
   }
   // #34 : bascule Simple/Studio (persistée). Passer en Simple ferme l'édition libre et rabat vers un volet essentiel.
   function applyMode(m: "simple" | "studio") {
     setMode(m); try { localStorage.setItem("qrowg-print-mode", m) } catch {}
-    if (m === "simple") { setLibre(false); setSelEl(null); setOpen(o => (o === "styles" || o === "details" || o === "calques" ? "contenu" : o)) }
+    if (m === "simple") { setLibre(false); setSelEl(null); setOngletDroite("contenu") }
     else setLibre(true)   // Studio = édition libre d'office
   }
   // #17 : bottom sheet mobile à positions ancrées. Ouvrir un onglet ouvre la sheet à « half ».
@@ -1027,7 +1059,61 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
         {/* Canvas héros (#2) + shell ZÉRO-SCROLL (§11) : sur desktop le root est une colonne 100dvh (header figé,
             grille flex:1 à overflow interne, barre d'action en pied statique) → aucun scroll de page, seuls les
             panneaux/canvas scrollent en interne. Mobile inchangé (scroll doux + sheet). */}
-        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:minmax(0,1fr) 372px!important;align-items:start}.ps-aside{position:sticky;top:14px;align-self:start}}.ps-chip{transition:border-color var(--mo-fast) var(--mo-ease-standard),background var(--mo-fast) var(--mo-ease-standard),color var(--mo-fast) var(--mo-ease-standard)}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color var(--mo-fast) var(--mo-ease-standard)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash var(--mo-slow) var(--mo-ease-emphasized)}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}@media(prefers-reduced-motion:reduce){.ps-flash{animation:none}.ps-foc{transition:none}}`}</style>
+        <style>{`@media(min-width:1025px){.ps-grid{grid-template-columns:64px minmax(0,1fr) 356px!important;align-items:start;position:relative}.ps-aside{position:sticky;top:14px;align-self:start}.ps-rail{position:sticky;top:14px;align-self:start}.ps-panels{position:sticky;top:14px;align-self:start;max-height:calc(100dvh - 190px)}}.ps-chip{transition:border-color var(--mo-fast) var(--mo-ease-standard),background var(--mo-fast) var(--mo-ease-standard),color var(--mo-fast) var(--mo-ease-standard)}.ps-chip:hover{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.ps-foc{outline:2px solid transparent;outline-offset:3px;border-radius:4px;transition:outline-color var(--mo-fast) var(--mo-ease-standard)}.ps-foc:hover{outline-color:color-mix(in srgb,var(--accent) 60%,transparent)}.ps-flash{animation:psflash var(--mo-slow) var(--mo-ease-emphasized)}@keyframes psflash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}30%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 0 transparent}}@media(prefers-reduced-motion:reduce){.ps-flash{animation:none}.ps-foc{transition:none}}`}</style>
+
+        {/* ── RAIL D'OUTILS (gauche) ────────────────────────────────────────
+            Les modèles et les calques ne sont plus des accordéons empilés dans la
+            colonne de droite : ce sont des volets qui s'ouvrent à la demande, à
+            côté de l'aperçu, et se referment. On ne déroule plus une colonne pour
+            trouver un réglage. */}
+        {!isMobile && (
+        <nav className="ps-rail" aria-label="Outils" style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center", paddingTop: 2 }}>
+          {RAIL_OUTILS.map(o => {
+            const Ico = o.icone
+            const actif = volet === o.id
+            return (
+              <button key={o.id} onClick={() => o.action ? o.action() : setVolet(v => (v === o.id ? null : (o.id as "modeles" | "calques")))}
+                title={o.titre} aria-label={o.titre} aria-pressed={actif}
+                style={{ width: 48, height: 48, borderRadius: 13, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
+                  background: actif ? "color-mix(in srgb, var(--accent) 16%, transparent)" : "transparent",
+                  border: `1px solid ${actif ? C.goldA55 : "transparent"}`, color: actif ? C.gold : C.fgMuted }}>
+                <Ico size={17} />
+                <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: ".02em" }}>{o.court}</span>
+              </button>
+            )
+          })}
+        </nav>
+        )}
+
+        {/* Volet latéral : un seul à la fois, largeur fixe, défilement interne. */}
+        {!isMobile && volet && (
+          <aside className="ps-volet" style={{ position: "absolute", left: 76, top: 0, width: 340, maxHeight: "calc(100dvh - 210px)", overflowY: "auto", zIndex: 20,
+            background: C.surface, border: `1px solid ${C.goldA33}`, borderRadius: R.card, padding: 14, boxShadow: "0 24px 60px rgba(0,0,0,.55)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600, color: C.fg }}>{volet === "modeles" ? "Modèles" : "Calques"}</span>
+              <button onClick={() => setVolet(null)} aria-label="Fermer le volet" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
+            </div>
+            {volet === "modeles" && (
+            <TemplateLibrary item={item} onApply={applyTemplate} onApplyVariant={(t, v) => applyTemplate(t, v)} />
+            )}
+            {volet === "calques" && (freeEls.length === 0
+              ? <p style={{ color: C.fgMuted, fontSize: 12, margin: 0 }}>Aucun élément ajouté. Utilisez « Texte » ou « Élément » dans le rail.</p>
+              : <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[...freeEls].reverse().map(el => {
+                  const on = selEl === el.id
+                  return (
+                    <div key={el.id} style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", borderRadius: 9, background: on ? C.goldSoft : C.surfaceUp, border: `1px solid ${on ? C.goldA55 : C.hairline}` }}>
+                      <button onClick={() => setSelEl(el.id)} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", color: el.hidden ? C.fgFaint : (on ? C.gold : C.fg), cursor: "pointer", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: 0 }}>{layerLabel(el)}</button>
+                      <button onClick={() => toggleHide(el.id)} title={el.hidden ? "Afficher" : "Masquer"} aria-label={el.hidden ? "Afficher" : "Masquer"} style={{ ...layBtn, color: el.hidden ? C.gold : C.fgMuted }}>{el.hidden ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+                      <button onClick={() => toggleLock(el.id)} title={el.locked ? "Déverrouiller" : "Verrouiller"} aria-label={el.locked ? "Déverrouiller" : "Verrouiller"} style={{ ...layBtn, color: el.locked ? C.gold : C.fgMuted }}>{el.locked ? <Lock size={14} /> : <Unlock size={14} />}</button>
+                      <button onClick={() => moveLayer(el.id, "up")} title="Avancer" aria-label="Avancer" style={layBtn}><ChevronUp size={14} /></button>
+                      <button onClick={() => moveLayer(el.id, "down")} title="Reculer" aria-label="Reculer" style={layBtn}><ChevronDown size={14} /></button>
+                    </div>
+                  )
+                })}
+                </div>)}
+          </aside>
+        )}
 
         {/* Aperçu packshot */}
         <div className="ps-aside">
@@ -1062,24 +1148,39 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           {!showFlat && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>}
           {!showFlat && !isMobile && <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "4px 0 0" }}>Cliquez le titre, le QR ou le fond de l'aperçu pour le régler directement.</p>}
           {showFlat && <>
-            <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Glissez pour placer · double-clic pour écrire · coin doré pour redimensionner.</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
-              <button onClick={addFreeText} style={chipStyle(false)}>＋ Texte</button>
-              <button onClick={() => { setAddSearch(""); setAddOpen(true) }} style={chipStyle(true)}><Plus size={14} style={{ marginRight: 4, verticalAlign: "-2px" }} />Ajouter</button>
-              <button onClick={contentFree ? undoAllMovable : makeAllMovable} title={contentFree ? "Revenir à la mise en page automatique" : "Rendre le titre, le QR et le bouton déplaçables"} style={chipStyle(contentFree)}>{contentFree ? "↩ Remettre en page" : "⤢ Tout déplacer"}</button>
-              <button onClick={reorganize} title="Remettre le titre, le QR et le bouton dans une mise en page propre" style={chipStyle(false)}>✨ Réorganiser</button>
-            </div>
+            <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Cliquez un objet pour le régler · glissez pour le placer · double-clic pour écrire.</p>
             {sel && (isMobile
               ? <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}><button onClick={() => setSheetOpen(true)} style={chipStyle(true)}>Modifier l'élément</button></div>
-              : <p style={{ textAlign: "center", color: C.gold, fontSize: 11, margin: "10px 0 0" }}>Élément sélectionné — réglages dans le panneau à droite.</p>)}
+              : <p style={{ textAlign: "center", color: C.gold, fontSize: 11, margin: "10px 0 0" }}>Élément sélectionné — onglet « Sélection », à droite.</p>)}
           </>}
         </div>
 
         {/* Volets — DESKTOP uniquement : colonne accordéon complète. (Mobile = sheet SIMPLIFIÉE, définie plus bas.) */}
+        {/* ── RÉGLAGES (droite) — trois onglets, jamais d'accordéon ──────────
+            Cinq volets se dépliaient et se repliaient dans une colonne qui
+            défilait : pour changer une couleur puis une marge, il fallait fermer
+            l'un, ouvrir l'autre, et retrouver sa place. Les onglets sont toujours
+            visibles, et sélectionner un élément amène directement ses réglages. */}
         {!isMobile && (
-        <div className="ps-panels" style={{ display: "flex", flexDirection: "column", gap: 10, paddingRight: 2 }}>
-          {/* Inspecteur CONTEXTUEL : un élément libre sélectionné → ses propriétés (essentiel d'abord, avancé au besoin). */}
-          {sel && (
+        <div className="ps-panels" style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
+          <div role="tablist" aria-label="Réglages" style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 4, marginBottom: 12, flex: "none" }}>
+            {ONGLETS_DROITE.map(o => {
+              const actif = ongletEffectif === (o.id as OngletDroite)
+              return (
+                <button key={o.id} role="tab" aria-selected={actif} onClick={() => { setOngletDroite(o.id); setSelEl(null) }}
+                  style={{ flex: 1, minHeight: 38, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12, fontWeight: actif ? 800 : 600,
+                    background: actif ? C.gold : "transparent", color: actif ? "#080808" : C.fgMuted }}>{o.label}</button>
+              )
+            })}
+            {sel && (
+              <button role="tab" aria-selected={ongletEffectif === "selection"} onClick={() => setOngletDroite("selection")}
+                style={{ flex: 1, minHeight: 38, borderRadius: 9, border: "none", cursor: "pointer", fontSize: 12, fontWeight: ongletEffectif === "selection" ? 800 : 600,
+                  background: ongletEffectif === "selection" ? C.gold : "transparent", color: ongletEffectif === "selection" ? "#080808" : C.gold }}>Sélection</button>
+            )}
+          </div>
+
+          <div className="ps-onglet" style={{ overflowY: "auto", minHeight: 0, display: "flex", flexDirection: "column", gap: 14, paddingRight: 4 }}>
+            {ongletEffectif === "selection" && sel && (
             <div style={{ background: C.surface, border: `1px solid ${C.goldA55}`, borderRadius: R.card, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600, color: C.fg }}>{sel.kind === "text" ? "Texte" : sel.kind === "icon" ? "Icône" : "Forme"}</span>
@@ -1121,38 +1222,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <button onClick={() => deleteEl(sel.id)} style={{ background: "none", border: "none", color: C.bad, cursor: "pointer", fontSize: 12, padding: 0, whiteSpace: "nowrap" }}>Supprimer</button>
               </div>
             </div>
-          )}
 
-          {/* Modèles (§7) — point de départ complet (look + textes + composition), recoercé au support. Primaire. */}
-          <Panel id="modeles" title="Modèles" resume={`${tmpls.length} prêts à l'emploi · contenu inclus`} open={open} setOpen={setOpen}>
-            <TemplateLibrary item={item} onApply={applyTemplate} onApplyVariant={(t, v) => applyTemplate(t, v)} />
-          </Panel>
-
-          {/* Calques (mode Studio libre) — liste réordonnable des éléments : sélectionner, masquer, verrouiller, avant/arrière. */}
-          {!isMobile && freeEls.length > 0 && (
-            <Panel id="calques" title="Calques" resume={`${freeEls.length} élément${freeEls.length > 1 ? "s" : ""}`} open={open} setOpen={setOpen}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {[...freeEls].reverse().map(el => {
-                  const on = selEl === el.id
-                  return (
-                    <div key={el.id} style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", borderRadius: 9, background: on ? C.goldSoft : C.surfaceUp, border: `1px solid ${on ? C.goldA55 : C.hairline}` }}>
-                      <button onClick={() => setSelEl(el.id)} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", color: el.hidden ? C.fgFaint : (on ? C.gold : C.fg), cursor: "pointer", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: 0 }}>{layerLabel(el)}</button>
-                      <button onClick={() => toggleHide(el.id)} title={el.hidden ? "Afficher" : "Masquer"} aria-label={el.hidden ? "Afficher" : "Masquer"} style={{ ...layBtn, color: el.hidden ? C.gold : C.fgMuted }}>{el.hidden ? <EyeOff size={14} /> : <Eye size={14} />}</button>
-                      <button onClick={() => toggleLock(el.id)} title={el.locked ? "Déverrouiller" : "Verrouiller"} aria-label={el.locked ? "Déverrouiller" : "Verrouiller"} style={{ ...layBtn, color: el.locked ? C.gold : C.fgMuted }}>{el.locked ? <Lock size={14} /> : <Unlock size={14} />}</button>
-                      <button onClick={() => moveLayer(el.id, "up")} title="Avancer" aria-label="Avancer" style={layBtn}><ChevronUp size={14} /></button>
-                      <button onClick={() => moveLayer(el.id, "down")} title="Reculer" aria-label="Reculer" style={layBtn}><ChevronDown size={14} /></button>
-                    </div>
-                  )
-                })}
-              </div>
-            </Panel>
-          )}
-
-          {/* Styles rapides (Studio) — volet accordéon : modèles prêts, modèles perso, charte. */}
-          {/* « Styles rapides » fusionné dans « Style » ci-dessous — fin de la redondance Modèles/Styles/Style. */}
-
-          {/* ── CONTENU : le QR réutilisé + les textes (audit « Contenu » = ce que vous posez sur le support) ── */}
-          <Panel id="contenu" title="Contenu" resume={`${brand} · « ${title} »`} open={open} setOpen={setOpen} flash={flashPanel === "contenu"}>
+            )}
+            {ongletEffectif === "contenu" && (<>
             <p style={secLabel}>Le QR</p>
             <Seg value={qrSource} options={["mine", "png"]} labels={["Mes QR", "Importer un PNG"]} onPick={v => setQrSource(v as "mine" | "png")} />
             {qrSource === "mine" ? (
@@ -1232,10 +1304,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               <Field label="Typographie"><RailInline value={eTypo} options={TYPOS.map(t => ({ id: t.id, label: t.label }))} onPick={setETypo} /></Field>
               <Field label="Alignement"><Seg value={eAlign} options={["left", "center", "right"]} onPick={(v) => setEAlign(v as any)} labels={["Gauche", "Centre", "Droite"]} /></Field>
             </>}
-          </Panel>
-
-          {/* ── STYLE : ambiance + accent ── */}
-          <Panel id="style" title="Style" resume={`${style.label} · ${ACCENTS.find(a => a.id === accent)?.label ?? "Auto"}`} open={open} setOpen={setOpen} flash={flashPanel === "style"}>
+            </>)}
+            {ongletEffectif === "style" && (<>
             {mode === "studio" && <>
             <div>
               <p style={secLabel}>Modèles prêts</p>
@@ -1299,10 +1369,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 ))}
               </div>
             </Field>
-          </Panel>
-
-          {/* ── MISE EN PAGE : disposition (Simple + Studio) + réglages fins du fond (Studio) ── */}
-          <Panel id="page" title="Mise en page" resume={`${layout.label}${mode === "studio" ? ` · ${FINISH_LABEL[bgFinish] ?? "Uni"}` : ""}`} open={open} setOpen={setOpen} flash={flashPanel === "page"}>
+            </>)}
+            {ongletEffectif === "page" && (<>
             <Field label="Disposition"><RailInline value={layoutId} options={LAYOUTS.filter(l => layoutOk(l.id, item)).map(l => ({ id: l.id, label: l.label }))} onPick={setLayoutId} /></Field>
             {mode === "studio" && <>
             <Field label="Fond"><RailInline value={bgFinish} options={FINISH_OPTS} onPick={setBgFinish} /></Field>
@@ -1355,7 +1423,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </>}
             <button onClick={resetDesign} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 12, padding: 0, textDecoration: "underline" }}>Réinitialiser le design</button>
             </>}
-          </Panel>
+            </>)}
+          </div>
         </div>
         )}
       </div>
@@ -1718,7 +1787,7 @@ function ActiveChip({ label, onClear }: { label: string; onClear: () => void }) 
 
 function RailInline({ value, options, onPick }: { value: string; options: { id: string; label: string; note?: string }[]; onPick: (v: string) => void }) {
   return (
-    <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
       {options.map(o => (
         <button key={o.id} className="ps-chip" onClick={() => onPick(o.id)} style={{ ...chipStyle(value === o.id), flexDirection: "column", alignItems: "flex-start", minWidth: o.note ? 108 : undefined }}>
           <span>{o.label}</span>{o.note && <span style={{ fontSize: 9.5, color: value === o.id ? "#0A0A0A" : C.fgFaint }}>{o.note}</span>}
@@ -1734,21 +1803,6 @@ function chipStyle(on: boolean): React.CSSProperties {
   return { flexShrink: 0, minHeight: 44, padding: "10px 14px", borderRadius: R.chip, cursor: "pointer", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : C.surfaceUp, color: on ? C.gold : C.fg, display: "inline-flex", alignItems: "center", justifyContent: "center" }
 }
 
-function Panel({ id, title, resume, open, setOpen, children, flash }: { id: string; title: string; resume: string; open: string | null; setOpen: (v: string | null) => void; children: React.ReactNode; flash?: boolean }) {
-  const isOpen = open === id
-  return (
-    <div data-panel={id} className={flash ? "ps-flash" : undefined} style={{ background: C.surface, border: `1px solid ${flash ? C.goldA55 : C.hairline}`, borderRadius: R.card, overflow: "hidden", scrollMarginTop: 14 }}>
-      <button onClick={() => setOpen(isOpen ? null : id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", background: "none", border: "none", cursor: "pointer", color: C.fg, textAlign: "left" }}>
-        <span style={{ flex: 1 }}>
-          <span style={{ display: "block", fontFamily: "Fraunces, Georgia, serif", fontSize: 15.5, fontWeight: 600 }}>{title}</span>
-          {!isOpen && <span style={{ display: "block", fontSize: 11.5, color: C.fgMuted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{resume}</span>}
-        </span>
-        <ChevronDown size={18} color={C.fgMuted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
-      </button>
-      {isOpen && <div className="mo-fade-up" style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: 14 }}>{children}</div>}
-    </div>
-  )
-}
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><p style={{ margin: "0 0 7px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }}>{label}</p>{children}</div>
 }
@@ -1833,6 +1887,32 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const effWeight = TITLE_WEIGHT[titleWeight] || Number(pal.titleWeight) || 500
   const shownTitle = titleCase === "upper" ? title.toUpperCase() : title
 
+  // ── Le contenu doit TENIR dans le support (voir ajustement.ts) ─────────────
+  // Les tailles ci-dessus sont des fractions du support, jamais confrontées à la
+  // place réelle. Sur un sticker rond de 50 mm, un modèle demandait 0,94 fois le
+  // diamètre pour 0,70 disponible : le bloc étant centré et le conteneur coupant
+  // ce qui dépasse, le titre était tranché par le haut et le bouton par le bas.
+  // On mesure, on réduit, et on ne coupe plus.
+  const pileVerticale = layout.content === "stack" || layout.content === "center" || layout.content === "qrbig"
+  const padBadge0 = qrBadge === "aucune" ? 0 : unit * (qrBadge === "cercle" ? 0.05 : 0.028)
+  const ecartBloc = layout.content === "qrbig" ? unit * (isRound ? 0.028 : 0.04) : unit * (isRound ? 0.032 : 0.045)
+  const titre0 = titleSize * (layout.content === "qrbig" ? 0.72 : 1)
+  const besoin = {
+    marque: (isRound || layout.content === "qrbig") ? 0 : sizeRef * 0.045 * 1.2,
+    ligneTitre: titre0 * 1.02,
+    lignesTitre: lignesDeTitre(shownTitle, titre0, Math.max(1, w - pad * 2)),
+    sousTitre: subtitle.trim() ? sizeRef * 0.05 * 1.25 : 0,
+    qr: qrPx + padBadge0 * 2,
+    bouton: eAccent === "aucun" ? 0 : sizeRef * 0.05 * 1.2 + unit * 0.07,
+    ecart: ecartBloc,
+  }
+  const fit = pileVerticale ? ajusterAuSupport(besoin, Math.max(1, h - pad * 2)) : { k: 1, qr: besoin.qr, deborde: false }
+  const k = fit.k
+  const rQr = besoin.qr > 0 ? fit.qr / besoin.qr : 1
+  const qrPxFit = Math.max(24, qrPx * rQr)
+  const padBadge = padBadge0 * rQr
+  const gap = ecartBloc * k
+
   // Couleurs par élément : "" = auto (couleur du thème/accent). Le bouton peut avoir sa propre couleur.
   const titleCol = titleColor || pal.fg
   const subCol = subColor || pal.fg
@@ -1846,24 +1926,24 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   const fcur: React.CSSProperties = onFocus ? { cursor: "pointer" } : {}
   const fcls = onFocus ? "ps-foc" : undefined
   const fclick = (panel: string) => onFocus ? (e: React.MouseEvent) => { e.stopPropagation(); onFocus(panel) } : undefined
-  const kickerEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.045, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: traitInk(bandColor, pal.flat, pal.fg), ...clampTxt, ...fcur }}>{brand}</div>
-  const titleEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol, ...clampTxt, ...fcur }}>{shownTitle}</div>
-  const subtitleEl = subtitle.trim() ? <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt, ...fcur }}>{subtitle}</div> : null
+  const kickerEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.045 * k, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: traitInk(bandColor, pal.flat, pal.fg), ...clampTxt, ...fcur }}>{brand}</div>
+  const titleEl = <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize * k, fontWeight: effWeight as any, letterSpacing: pal.titleLs, lineHeight: 1.02, color: titleCol, ...clampTxt, ...fcur }}>{shownTitle}</div>
+  const subtitleEl = subtitle.trim() ? <div className={fcls} onClick={fclick("texte")} style={{ fontFamily: bodyFont, fontSize: sizeRef * 0.05 * k, fontWeight: 500, lineHeight: 1.25, color: subCol, opacity: subColor ? 1 : 0.82, ...clampTxt, ...fcur }}>{subtitle}</div> : null
   // Le QR est FOURNI (code existant réencodé, ou PNG importé) — jamais recréé/redesigné ici.
   const qrInner = qrImg
-    ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPx), height: Math.round(qrPx), objectFit: "contain" }} />
+    ? <img src={qrImg} alt="" style={{ display: "block", width: Math.round(qrPxFit), height: Math.round(qrPxFit), objectFit: "contain" }} />
     : qrStatic
-    ? <FauxQR size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} />
+    ? <FauxQR size={Math.round(qrPxFit)} fg={pal.ink} bg={pal.qrBg} />
     : qrVector
-    ? <QRVector value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} />
-    : <QRCanvas value={qrValue} size={Math.round(qrPx)} fg={pal.ink} bg={pal.qrBg} ecc="M" />
+    ? <QRVector value={qrValue} size={Math.round(qrPxFit)} fg={pal.ink} bg={pal.qrBg} />
+    : <QRCanvas value={qrValue} size={Math.round(qrPxFit)} fg={pal.ink} bg={pal.qrBg} ecc="M" />
   const qrBadgeEl = qrBadge === "aucune"
     ? <div className={fcls} onClick={fclick("qr")} style={{ lineHeight: 0, ...fcur }}>{qrInner}</div>
-    : <div className={fcls} onClick={fclick("qr")} style={{ background: pal.qrBg, padding: unit * (qrBadge === "cercle" ? 0.05 : 0.028), borderRadius: qrBadge === "cercle" ? "50%" : (eCorner === "rond" ? 16 : eCorner === "vif" ? 2 : 8), lineHeight: 0, display: "inline-block", ...fcur }}>{qrInner}</div>
+    : <div className={fcls} onClick={fclick("qr")} style={{ background: pal.qrBg, padding: padBadge, borderRadius: qrBadge === "cercle" ? "50%" : (eCorner === "rond" ? 16 : eCorner === "vif" ? 2 : 8), lineHeight: 0, display: "inline-block", ...fcur }}>{qrInner}</div>
   // QR libre : retiré du flux de la mise en page (rendu en absolu à qrFx/qrFy plus bas). Sinon, décalage fin X/Y.
   const qrEl = qrFree ? null : ((qrDx || qrDy) ? <div style={{ transform: `translate(${qrDx * 18}%, ${qrDy * 18}%)`, display: "inline-block" }}>{qrBadgeEl}</div> : qrBadgeEl)
   const ctaEl = eAccent === "aucun" ? null : (
-    <div className={fcls} onClick={fclick("texte")} style={{ ...fcur, fontFamily: bodyFont, fontSize: sizeRef * 0.05, fontWeight: 800, padding: `${unit * 0.035}px ${unit * 0.09}px`, borderRadius: radiusEl, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxSizing: "border-box",
+    <div className={fcls} onClick={fclick("texte")} style={{ ...fcur, fontFamily: bodyFont, fontSize: sizeRef * 0.05 * k, fontWeight: 800, padding: `${unit * 0.035 * k}px ${unit * 0.09 * k}px`, borderRadius: radiusEl, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", boxSizing: "border-box",
       ...(eAccent === "trait" ? { border: `2px solid ${btnStroke}`, color: btnStroke }
         : eAccent === "degrade" ? { background: `linear-gradient(135deg, ${shade(btnBg, 0.12)}, ${shade(btnBg, -0.28)})`, color: btnFg }
         : { background: btnBg, color: btnFg }) }}>{cta}</div>
@@ -1886,7 +1966,12 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
     : frame === "double"
     ? <><div style={{ position: "absolute", inset: pad * 0.42, border: `1.5px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} /><div style={{ position: "absolute", inset: pad * 0.64, border: `1px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 5, opacity: 0.6, pointerEvents: "none" }} /></>
     : frame === "coins"
-    ? <><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>
+    // Sur un rond, les équerres sont posées aux sommets du carré inscrit : à
+    // 0,495 du centre pour un rayon de 0,5, elles frôlent le bord et se font
+    // rogner — un carré dessiné sur un disque. Le filet, lui, épouse la forme.
+    ? (isRound
+      ? <div style={{ position: "absolute", inset: pad * 0.5, border: `1.5px solid ${pal.rule}`, borderRadius: "50%", pointerEvents: "none" }} />
+      : <><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>)
     : null
 
   let body: React.ReactNode
@@ -1900,7 +1985,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
   } else if (layout.content === "qrbig") {
     // « QR géant » = layout centré sur le QR. La taille du QR reste PHYSIQUE (réglée par la taille/le curseur) :
     // pas de scale CSS ici (ça gonflait le QR au-delà de qrMm et débordait). On rapproche juste les textes.
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: unit * (isRound ? 0.028 : 0.04), minHeight: 0, overflow: "hidden" }}><div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize * 0.72, fontWeight: effWeight as any, color: titleCol, textAlign: "center", ...clampTxt, ...fcur }}>{shownTitle}</div>{subtitleEl}{qrEl}{ctaEl}</div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap, minHeight: 0, overflow: "hidden" }}><div className={fcls} onClick={fclick("texte")} style={{ fontFamily: titleFont, fontSize: titleSize * 0.72 * k, fontWeight: effWeight as any, color: titleCol, textAlign: "center", ...clampTxt, ...fcur }}>{shownTitle}</div>{subtitleEl}{qrEl}{ctaEl}</div>
   } else if (layout.content === "split") {
     body = <div style={{ flex: 1, display: "flex", alignItems: "center", gap: pad, minWidth: 0 }}><div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: unit * 0.035 }}>{kickerEl}{titleEl}{subtitleEl}{ctaEl}</div>{qrEl}</div>
   } else if (layout.content === "poster") {
@@ -1915,7 +2000,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
       : qrPos === "bas"
       ? <>{kick}{titleEl}{subtitleEl}{ctaEl}{qrEl}</>
       : <>{kick}{titleEl}{subtitleEl}{qrEl}{ctaEl}</>
-    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "center", gap: unit * (isRound ? 0.032 : 0.045), textAlign: eAlign, minHeight: 0, overflow: "hidden" }}>{stackInner}</div>
+    body = <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems, justifyContent: "center", gap, textAlign: eAlign, minHeight: 0, overflow: "hidden" }}>{stackInner}</div>
   }
 
   // Placement vertical (curseur) : on décale le bloc de contenu — sauf le bandeau (absolu, plein cadre).
@@ -1932,7 +2017,7 @@ function SupportVisual({ item, pal, layout, brand, subtitle, title, cta, size, q
       {layout.deco === "frame" && <div style={{ position: "absolute", inset: pad * 0.5, border: `2px solid ${pal.rule}`, borderRadius: isRound ? "50%" : 6, pointerEvents: "none" }} />}
       {layout.deco === "footer" && <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: unit * 0.04, background: pal.band }} />}
       {layout.deco === "diagonal" && <div style={{ position: "absolute", top: -h * 0.3, right: -w * 0.2, width: w * 0.9, height: h * 0.5, background: pal.band, opacity: 0.16, transform: "rotate(-24deg)", pointerEvents: "none" }} />}
-      {layout.deco === "ornate" && <><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>}
+      {layout.deco === "ornate" && frame !== "coins" && !isRound && <><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, left: cornerInset }} /><Corner p={pal.rule} s={unit * 0.085} pos={{ top: cornerInset, right: cornerInset }} r /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, left: cornerInset }} b /><Corner p={pal.rule} s={unit * 0.085} pos={{ bottom: cornerInset, right: cornerInset }} b r /></>}
       {/* QR en position LIBRE (taille physique conservée -> reste scannable ; seule la position est libre). */}
       {qrFree && <div style={{ position: "absolute", left: `${(qrFx ?? 0.32) * 100}%`, top: `${(qrFy ?? 0.55) * 100}%`, zIndex: 3 }}>{qrBadgeEl}</div>}
       {/* Éléments libres (mode Studio libre) — posés en fraction du support, rendus statiques ici (masqués ignorés). */}
@@ -2081,7 +2166,7 @@ function PresetThumb({ preset, item, on, onClick }: { preset: Preset; item: Item
 
 /* Vignette de TEMPLATE : aperçu représentatif léger (palette + titre réel + casse/alignement + accent + faux QR).
    Reflète le contenu du modèle, pas juste un look — l'utilisateur reconnaît le point de départ. */
-function TemplateThumb({ t, onClick }: { t: PrintTemplate; onClick: () => void }) {
+function TemplateThumb({ t, onClick, item }: { t: PrintTemplate; onClick: () => void; item?: Item }) {
   const L = t.look
   const s = STYLE_BY_ID[L.style] || STYLE_BY_ID.premiumdark
   const pal = paletteFromStyle(s)
@@ -2089,12 +2174,21 @@ function TemplateThumb({ t, onClick }: { t: PrintTemplate; onClick: () => void }
   const align = L.eAlign === "left" ? "flex-start" : L.eAlign === "right" ? "flex-end" : "center"
   const raw = t.content.title || "Titre"
   const titleTxt = L.titleCase === "upper" ? raw.toUpperCase() : raw
+  // La vignette prend la FORME et le RATIO du support choisi : un modèle vu dans
+  // un rectangle puis appliqué sur un sticker rond ne ressemblait à rien de ce
+  // qui avait été montré. On voit maintenant ce qu'on choisit.
+  const rond = item?.shape === "round"
+  const ratio = item ? Math.max(0.5, Math.min(2.2, item.ratio)) : 1
+  const haut = 78
+  const larg = rond ? haut : Math.round(Math.max(46, Math.min(104, haut * ratio)))
   return (
     <button onClick={onClick} title={t.name} className="ps-tpl" style={{ borderRadius: 12, overflow: "hidden", border: "2px solid transparent", background: "none", padding: 0, cursor: "pointer" }}>
-      <div style={{ height: 78, background: pal.bg, display: "flex", flexDirection: "column", alignItems: align, justifyContent: "center", gap: 5, padding: 8 }}>
+      <div style={{ height: haut, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: larg, height: haut, borderRadius: rond ? "50%" : 6, overflow: "hidden", background: pal.bg, display: "flex", flexDirection: "column", alignItems: align, justifyContent: "center", gap: 5, padding: rond ? 12 : 8 }}>
         <span style={{ fontFamily: pal.titleFont, fontSize: 10.5, fontWeight: 700, color: pal.fg, lineHeight: 1.05, letterSpacing: pal.titleLs, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titleTxt}</span>
         <FauxQR size={22} fg={pal.ink} bg={pal.qrBg} />
         <span style={{ width: 24, height: 6, borderRadius: L.eCorner === "rond" ? 999 : 2, background: accHex }} />
+      </div>
       </div>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: C.fgMuted, padding: "4px 6px", background: C.surface, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>{t.name}</div>
     </button>
@@ -2163,7 +2257,7 @@ function TemplateLibrary({ item, onApply, onApplyVariant }: { item: Item; onAppl
   }
   const card = (t: PrintTemplate) => (
     <div key={t.id} style={{ display: "flex", flexDirection: "column", gap: 5 }} onMouseEnter={e => onHover(t, e)} onMouseMove={e => onHover(t, e)} onMouseLeave={() => setHoverT(h => (h?.t.id === t.id ? null : h))}>
-      <TemplateThumb t={t} onClick={() => onApply(t)} />
+      <TemplateThumb t={t} item={item} onClick={() => onApply(t)} />
       {t.variants && t.variants.length > 0 && <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{t.variants.map(v => <button key={v.id} onClick={() => onApplyVariant(t, v)} title={`${t.name} — ${v.label}`} aria-label={`${t.name} — ${v.label}`} style={{ width: 16, height: 16, borderRadius: "50%", border: `1px solid ${C.hairline}`, background: v.hex, cursor: "pointer", padding: 0, flexShrink: 0 }} />)}</div>}
     </div>
   )
@@ -2172,7 +2266,7 @@ function TemplateLibrary({ item, onApply, onApplyVariant }: { item: Item; onAppl
       <style>{`.ps-tpl{transition:transform var(--mo-fast) var(--mo-ease-standard)}.ps-tpl:hover{transform:scale(1.04)}@media(prefers-reduced-motion:reduce){.ps-tpl:hover{transform:none}}`}</style>
       {hoverT && <div className="mo-pop-in" style={{ position: "fixed", left: hoverT.x, top: hoverT.y, zIndex: 200, pointerEvents: "none" }}><TemplateHoverCard t={hoverT.t} /></div>}
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un modèle…" style={{ ...inputStyle, height: 42 }} />
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {TPL_CATS.map(c => <button key={c.id} onClick={() => { setCat(c.id); setQ("") }} style={{ ...chipStyle(!ql && cat === c.id), minHeight: 40, fontSize: 12 }}>{c.label}</button>)}
       </div>
       {showReco && reco.length > 0 && <>

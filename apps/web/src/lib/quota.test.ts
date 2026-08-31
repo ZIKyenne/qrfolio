@@ -76,12 +76,12 @@ describe("initialQrStatus — actif si sous le quota, brouillon sinon", () => {
   it("plan illimité (business) -> toujours actif, sans requête", async () => {
     expect(await initialQrStatus(fakeSupabase(999).supa, "u", "business")).toBe("active")
   })
-  it("plan free (limite 3) : 2 -> actif, 3 -> brouillon, 4 -> brouillon", async () => {
-    expect(await initialQrStatus(fakeSupabase(2).supa, "u", "free")).toBe("active")
-    expect(await initialQrStatus(fakeSupabase(3).supa, "u", "free")).toBe("draft")
+  it("plan free (un seul support) : 0 -> actif, 1 -> brouillon", async () => {
+    expect(await initialQrStatus(fakeSupabase(0).supa, "u", "free")).toBe("active")
+    expect(await initialQrStatus(fakeSupabase(1).supa, "u", "free")).toBe("draft")
     expect(await initialQrStatus(fakeSupabase(4).supa, "u", "free")).toBe("draft")
   })
-  it("plan inconnu -> retombe sur free (limite 3)", async () => {
+  it("plan inconnu -> retombe sur free", async () => {
     expect(await initialQrStatus(fakeSupabase(3).supa, "u", undefined)).toBe("draft")
   })
 })

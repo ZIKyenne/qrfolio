@@ -38,7 +38,7 @@ async function sendSubscriptionEmail(userId: string, plan: string, billing?: str
     // qui ne pose trial_period_days que pour lui). Annoncer « votre essai gratuit
     // de 7 jours » à tous revenait à écrire à un client Pro qui vient de payer
     // qu'il ne paie pas encore.
-    const { subject, html, planConnu } = buildSubscriptionEmail({ name: prof.full_name, plan, billing, trialDays: plan === "starter" ? 7 : 0 })
+    const { subject, html, planConnu } = buildSubscriptionEmail({ name: prof.full_name, plan, billing, trialDays: 0 })
     // Un plan que le code ne connaît pas : l'email reste sobre (voir subscriptionEmail),
     // mais il faut le savoir — c'est le signe d'un tarif renommé chez Stripe.
     if (!planConnu) console.error("[stripe] plan inconnu dans l'email d'abonnement :", plan)

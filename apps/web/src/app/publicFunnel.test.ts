@@ -20,7 +20,7 @@ const read = (p: string) => readFileSync(join(SRC, p), "utf8")
 
 /** Les seuls endroits où mener au formulaire d'inscription se justifie. */
 const EXCEPTIONS: Record<string, { n: number; raison: string }> = {
-  "app/HomeClient.tsx": { n: 3, raison: "les trois offres PAYANTES : choisir un plan suppose un compte" },
+  "app/HomeClient.tsx": { n: 2, raison: "les deux offres PAYANTES : choisir un plan suppose un compte" },
   "app/creer/entry.ts": { n: 1, raison: "un commentaire qui explique justement pourquoi on n'y mène plus" },
   "app/dashboard/DashboardShell.tsx": { n: 1, raison: "la carte « Créer mon compte » du visiteur : elle promet un compte, elle en donne un" },
   "app/dashboard/builder/BuilderV4.tsx": { n: 1, raison: "le mur de la publication : publier exige une page en base, donc un compte" },
@@ -73,7 +73,7 @@ describe("les portes d'entrée mènent à l'essai", () => {
     const ligne = h.split("\n").find(l => l.includes("free:") && l.includes("cta:")) || ""
     expect(ligne).toContain('href: "/creer"')
     // Les offres payantes, elles, gardent l'inscription.
-    for (const plan of ["starter", "pro", "business"]) {
+    for (const plan of ["pro", "business"]) {
       const l = h.split("\n").find(x => x.includes(`${plan}:`) && x.includes("cta:")) || ""
       expect(l, `l'offre ${plan}`).toContain("/auth/signup")
     }

@@ -699,7 +699,7 @@ function BrandProSection() {
 // Pricing landing : derive de la source unique (lib/plans) -> 4 plans, Pro en avant
 const PLAN_LANDING_UI = {
   free:     { cta: "Commencer gratuitement",     href: "/creer",                       badge: null,                note: "Sans compte pour composer · le compte n'est demandé qu'à la publication" },
-  starter:  { cta: "Démarrer l'essai gratuit",    href: "/auth/signup?plan=starter",  badge: "Meilleur rapport Q/P", note: "7 jours d'essai · Sans carte bancaire · Annulable en 1 clic" },
+
   pro:      { cta: "Choisir Pro",                 href: "/auth/signup?plan=pro",      badge: "Le plus populaire",   note: "Sans engagement · Annulable en 1 clic" },
   business: { cta: "Choisir Business",            href: "/auth/signup?plan=business", badge: null,                note: "Sans engagement · Annulable en 1 clic" },
 } as Record<string, { cta: string; href: string; badge: string | null; note: string | null }>
@@ -711,31 +711,23 @@ const LANDING_BENEFITS: Record<string, { text: string; ok: boolean }[]> = {
   free: [
     { text: "Votre page en ligne en 5 minutes", ok: true },
     { text: "3 QR codes, dont 1 modifiable après impression", ok: true },
+    { text: "Vues illimitées — votre QR ne s'arrête jamais", ok: true },
     { text: "Suivez vos premières visites", ok: true },
-    { text: "3 pages · 200 vues / mois", ok: true },
     { text: "Sans la mention QRowg", ok: false },
     { text: "Votre nom de domaine", ok: false },
   ],
-  starter: [
-    { text: "Votre marque, sans mention QRowg", ok: true },
-    { text: "Votre propre nom de domaine (dès Pro)", ok: false },
-    { text: "Des QR codes personnalisés à votre image", ok: true },
-    { text: "5 pages · 850 vues / mois", ok: true },
-    { text: "Téléchargement PNG prêt à imprimer", ok: true },
-    { text: "Génération assistée par IA", ok: false },
-  ],
   pro: [
-    { text: "Créez des QR codes uniques et professionnels", ok: true },
-    { text: "Concevez vos supports imprimés (affiches, flyers, cartes)", ok: true },
-    { text: "Recevez des recommandations automatiques pour progresser", ok: true },
-    { text: "Lancez votre page avec tous les modèles premium", ok: true },
-    { text: "Téléchargement PNG · JPG · PDF haute définition", ok: true },
-    { text: "25 pages · 15 000 vues / mois", ok: true },
+    { text: "Changez la destination d'un QR déjà imprimé", ok: true },
+    { text: "Concevez vos supports : stickers, chevalets, affiches", ok: true },
+    { text: "Voyez qui scanne, quand et avec quoi", ok: true },
+    { text: "Votre marque, sans mention QRowg", ok: true },
+    { text: "Votre propre nom de domaine", ok: true },
+    { text: "10 pages · 30 QR dont 20 modifiables", ok: true },
   ],
   business: [
-    { text: "Pages et vues illimitées", ok: true },
-    { text: "Tout le plan Pro inclus", ok: true },
-    { text: "Support prioritaire 24/7", ok: true },
+    { text: "Plusieurs établissements, une seule facture", ok: true },
+    { text: "Tout le plan Établissement inclus", ok: true },
+    { text: "Création en masse par import CSV", ok: true },
     { text: "Travaillez à plusieurs · 5 membres", ok: true },
     { text: "Marque blanche", ok: true },
     { text: "Accès API · 10 000 appels / mois", ok: true },
@@ -774,7 +766,7 @@ function PricingSection() {
         borderBottom: "1px solid rgba(201,168,76,0.13)",
       }}>
       <style>{`
-        .plans-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; align-items:center; }
+        .plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; align-items:stretch; }
         .plan-card  { border-radius:20px; padding:28px 22px; position:relative; overflow:hidden;
                       transition:transform 0.3s var(--mo-ease-spring), box-shadow 0.3s, border-color 0.25s; }
         .plan-card:hover { transform:translateY(-6px); }
@@ -1044,7 +1036,6 @@ function PricingSection() {
                           {INFO[row.feature] && <span title={INFO[row.feature]} style={{ marginLeft: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: "50%", background: "rgba(201,168,76,0.15)", color: "#C9A84C", fontSize: 9, fontWeight: 800, cursor: "help" }}>?</span>}
                         </td>
                         {cell(row.free, false)}
-                        {cell(row.starter, false)}
                         {cell(row.pro, true)}
                         {cell(row.business, false)}
                       </tr>

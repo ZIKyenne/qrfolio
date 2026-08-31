@@ -12,10 +12,22 @@
 // changes un prix, change-le AUSSI dans Stripe (env NEXT_PUBLIC_STRIPE_*_PRICE_ID).
 // =============================================================================
 
-export type PlanId = "free" | "starter" | "pro" | "business"
+// Trois paliers, pas quatre. « Starter » à 4,90 € est retiré : trois paliers
+// payants pour zéro client, c'est trois fois plus de support, une décision de
+// plus à prendre pour l'acheteur — et un prix qui disait « ce n'est pas sérieux »
+// à un commerçant qui paie sa caisse 60 € par mois.
+export type PlanId = "free" | "pro" | "business"
 
 export type PlanLimits = {
   pages: number | null // null = illimité
+  /**
+   * Vues mensuelles. TOUJOURS `null` désormais.
+   *
+   * Un QR est IMPRIMÉ : il est collé sur une table, une vitrine, un flyer. Écrire
+   * « 200 vues / mois » sur la grille tarifaire, c'est promettre au commerçant que
+   * son sticker cessera de fonctionner s'il marche trop bien — le contraire de ce
+   * qu'on lui vend. Le champ reste pour ne pas casser les écrans qui le lisent.
+   */
   views: number | null
   qr: number | null    // QR autonomes enregistrés (hors QR de page) : statiques ET modifiables
   dyn: number | null   // ...dont MODIFIABLES après impression (sous-ensemble de `qr`)
@@ -62,124 +74,94 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "free",
     label: "Gratuit",
     color: "#8A8478",
-    description: "Pour découvrir QRowg",
+    description: "Un support, pour de vrai",
     priceMonthly: 0,
     priceAnnual: 0,
     badge: null,
-    limits: { pages: 3, views: 200, qr: 3, dyn: 1, team: null },
+    limits: { pages: 1, views: null, qr: 3, dyn: 1, team: null },
     caps: { printStudio: false, qrStudioAdvanced: false, ai: false, removeBranding: false, pageIntro: false, exportFormats: ["png"],
             dynStatsDetaillees: false, dynDomaineMarque: false, dynSecuriteLien: false, dynEnMasse: false },
-    features: ["3 pages", "200 vues/mois", "3 QR autonomes, dont 1 modifiable", "Branding QRowg visible", "Analytics de base", "27 modèles gratuits"],
+    features: ["1 page", "Vues illimitées", "3 QR autonomes, dont 1 modifiable", "Branding QRowg visible", "Analytics de base"],
     perks: [
-      { text: "3 pages", included: true },
-      { text: "200 vues / mois", included: true },
+      { text: "1 page publiée", included: true },
+      { text: "Vues illimitées — un QR imprimé ne s'arrête jamais", included: true },
       { text: "3 QR autonomes", included: true },
       { text: "1 QR modifiable après impression", included: true },
       { text: "Hébergement inclus", included: true },
       { text: "Analytics de base", included: true },
-      { text: "27 modèles gratuits", included: true },
       { text: "Branding QRowg visible", included: true },
-      { text: "QR Studio", included: false },
       { text: "QR Print Studio", included: false },
-      { text: "Génération IA", included: false },
-    ],
-  },
-  starter: {
-    id: "starter",
-    label: "Starter",
-    color: "#38BDF8",
-    description: "Pour indépendants, artisans et créateurs",
-    priceMonthly: 4.90,
-    priceAnnual: 3.90,
-    badge: "MEILLEUR RAPPORT Q/P",
-    limits: { pages: 5, views: 850, qr: 7, dyn: 5, team: null },
-    caps: { printStudio: true, qrStudioAdvanced: true, ai: false, removeBranding: true, pageIntro: false, exportFormats: ["png"],
-            dynStatsDetaillees: false, dynDomaineMarque: false, dynSecuriteLien: false, dynEnMasse: false },
-    features: ["5 pages", "850 vues/mois", "7 QR autonomes, dont 5 modifiables", "Sans branding", "10 templates premium", "QR Studio (limité)", "QR Print Studio (limité)"],
-    perks: [
-      { text: "5 pages", included: true },
-      { text: "850 vues / mois", included: true },
-      { text: "7 QR autonomes, dont 5 modifiables après impression", included: true },
-      { text: "Branding QRowg retiré", included: true },
       { text: "Domaine personnalisé", included: false },
-      { text: "Analytics standards", included: true },
-      { text: "10 templates premium", included: true },
-      { text: "QR Studio (version limitée)", included: true },
-      { text: "QR Print Studio (version limitée)", included: true },
-      { text: "Export PNG", included: true },
-      { text: "Support standard", included: true },
       { text: "Génération IA", included: false },
     ],
   },
   pro: {
     id: "pro",
-    label: "Pro",
+    label: "Établissement",
     color: "#C9A84C",
-    description: "Le plan principal de QRowg",
-    priceMonthly: 12.90,
-    priceAnnual: 9.90,
-    badge: "POPULAIRE",
-    limits: { pages: 25, views: 15000, qr: 35, dyn: 25, team: null },
+    description: "Un commerce, tout ce qu'il lui faut",
+    priceMonthly: 19,
+    priceAnnual: 12.42,   // 149 € l'année — un commerçant préfère une facture à un prélèvement de plus
+    badge: "LE PLUS CHOISI",
+    limits: { pages: 10, views: null, qr: 30, dyn: 20, team: null },
     caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"],
             dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: false },
-    features: ["25 pages", "15 000 vues/mois", "35 QR autonomes, dont 25 modifiables", "Tous les templates", "QR Studio complet", "QR Print Studio complet", "Génération IA", "Export PNG / JPG / PDF HD"],
+    features: ["10 pages", "Vues illimitées", "30 QR, dont 20 modifiables après impression", "Sans branding", "QR Print Studio complet", "Domaine personnalisé", "Statistiques détaillées"],
     perks: [
-      { text: "25 pages", included: true },
-      { text: "15 000 vues / mois", included: true },
-      { text: "35 QR autonomes, dont 25 modifiables après impression", included: true },
-      { text: "Statistiques détaillées, domaine de marque, sécurité du lien", included: true },
+      { text: "10 pages — de quoi couvrir un commerce entier", included: true },
+      { text: "Vues illimitées", included: true },
+      { text: "30 QR autonomes, dont 20 modifiables après impression", included: true },
+      { text: "Changer la destination sans réimprimer", included: true },
+      { text: "Statistiques détaillées : jour, appareil, pays", included: true },
+      { text: "Mot de passe et expiration sur un lien", included: true },
+      { text: "Branding QRowg retiré", included: true },
       { text: "Domaine personnalisé", included: true },
-      { text: "Branding retiré", included: true },
-      { text: "Analytics avancés + export", included: true },
-      { text: "Tous les templates", included: true },
       { text: "QR Studio complet", included: true },
       { text: "QR Print Studio complet", included: true },
-      { text: "Génération IA + rapports IA", included: true },
-      { text: "Export PNG / JPG / PDF HD", included: true },
-      { text: "Bibliothèque premium", included: true },
-      { text: "Styles avancés + aperçus premium", included: true },
+      { text: "Tous les modèles", included: true },
+      { text: "Génération IA + rapports", included: true },
+      { text: "Export PNG / JPG / PDF HD / SVG", included: true },
       { text: "Accès API · 1 000 appels / mois", included: true },
       { text: "Support prioritaire", included: true },
     ],
   },
   business: {
     id: "business",
-    label: "Business",
+    label: "Multi-sites",
     color: "#39FF8F",
-    description: "Agences, franchises et entreprises",
-    priceMonthly: 29.90,
-    priceAnnual: 24.90,
+    description: "Plusieurs établissements, une agence, une franchise",
+    priceMonthly: 49,
+    priceAnnual: 40.83,   // 490 € l'année
     badge: null,
     limits: { pages: null, views: null, qr: null, dyn: null, team: 5 },
     caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"],
             dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: true },
-    features: ["Pages illimitées", "Vues illimitées", "QR codes illimités", "Génération IA illimitée", "Équipe · 5 membres", "Marque blanche", "Accès API"],
+    features: ["Jusqu'à 5 établissements", "Pages et QR illimités", "Import CSV en masse", "Équipe · 5 membres", "Marque blanche", "API"],
     perks: [
       { text: "Pages illimitées", included: true },
-      { text: "Vues illimitées", included: true },
-      { text: "QR autonomes illimités", included: true },
-      { text: "QR modifiables illimités + création en masse (CSV)", included: true },
-      { text: "Domaine personnalisé", included: true },
-      { text: "Branding retiré", included: true },
-      { text: "Analytics avancés + export", included: true },
-      { text: "Tous les templates", included: true },
-      { text: "QR Studio complet", included: true },
-      { text: "QR Print Studio complet", included: true },
-      { text: "Génération IA illimitée + rapports", included: true },
+      { text: "QR autonomes et modifiables illimités", included: true },
+      { text: "Création en masse par import CSV", included: true },
       { text: "5 membres d'équipe", included: true },
       { text: "Marque blanche", included: true },
+      { text: "Domaine personnalisé", included: true },
+      { text: "Statistiques détaillées + export", included: true },
+      { text: "QR Studio et Print Studio complets", included: true },
+      { text: "Génération IA illimitée + rapports", included: true },
       { text: "Accès API · 10 000 appels / mois", included: true },
-      { text: "Support 24/7 prioritaire", included: true },
+      { text: "Support prioritaire", included: true },
     ],
   },
 }
 
-export const PLAN_ORDER: PlanId[] = ["free", "starter", "pro", "business"]
+export const PLAN_ORDER: PlanId[] = ["free", "pro", "business"]
 export const PLAN_LIST: Plan[] = PLAN_ORDER.map(id => PLANS[id])
-export const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, business: 3 }
+// `starter` reste connu du classement : un compte hérité de l'ancienne grille ne
+// doit pas se retrouver rétrogradé au gratuit. Il est traité comme un Établissement.
+export const PLAN_RANK: Record<string, number> = { free: 0, pro: 1, business: 2, starter: 1 }
 
 // Renvoie le plan (free par défaut si inconnu)
-export const getPlan = (id?: string | null): Plan => PLANS[(id as PlanId)] ?? PLANS.free
+export const getPlan = (id?: string | null): Plan =>
+  id === "starter" ? PLANS.pro : (PLANS[(id as PlanId)] ?? PLANS.free)
 
 // Limite de pages d'un plan (null = illimité) — utilisée par l'enforcement
 export const pageLimit = (id?: string | null): number | null => getPlan(id).limits.pages
@@ -227,21 +209,24 @@ export const fmtPrice = (n: number): string =>
   n === 0 ? "0" : n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 // Tableau comparatif (page /upgrade + comparaisons)
-export const PLAN_COMPARISON: { feature: string; free: string; starter: string; pro: string; business: string }[] = [
-  { feature: "Pages", free: "3", starter: "5", pro: "25", business: "Illimitées" },
-  { feature: "Vues / mois", free: "200", starter: "850", pro: "15 000", business: "Illimitées" },
-  { feature: "QR autonomes", free: "3", starter: "7", pro: "35", business: "Illimités" },
-  { feature: "…dont modifiables après impression", free: "1", starter: "5", pro: "25", business: "Illimités" },
-  { feature: "QR Studio", free: "—", starter: "Version limitée", pro: "Complet", business: "Complet" },
-  { feature: "QR Print Studio", free: "—", starter: "Version limitée", pro: "Complet", business: "Complet" },
-  { feature: "IA", free: "—", starter: "—", pro: "✓", business: "✓ illimité" },
-  { feature: "Export HD", free: "—", starter: "PNG", pro: "PNG + JPG + PDF HD", business: "PNG + JPG + PDF HD" },
-  { feature: "Templates", free: "6", starter: "10", pro: "Tous", business: "Tous" },
-  { feature: "Branding QRowg", free: "Oui", starter: "Non", pro: "Non", business: "Non" },
-  { feature: "Domaine perso", free: "—", starter: "—", pro: "✓", business: "✓" },
-  { feature: "Analytics", free: "De base", starter: "Standard", pro: "Avancés + export", business: "Avancés + export" },
-  { feature: "Équipe", free: "—", starter: "—", pro: "—", business: "5 membres" },
-  { feature: "Marque blanche", free: "—", starter: "—", pro: "—", business: "✓" },
-  { feature: "API", free: "—", starter: "—", pro: "1 000 / mois", business: "10 000 / mois" },
-  { feature: "Support", free: "Communauté", starter: "Standard", pro: "Prioritaire", business: "24/7 VIP" },
+export const PLAN_COMPARISON: { feature: string; free: string; pro: string; business: string }[] = [
+  { feature: "Pages", free: "1", pro: "10", business: "Illimitées" },
+  { feature: "Vues / mois", free: "Illimitées", pro: "Illimitées", business: "Illimitées" },
+  { feature: "QR autonomes", free: "3", pro: "30", business: "Illimités" },
+  { feature: "…dont modifiables après impression", free: "1", pro: "20", business: "Illimités" },
+  { feature: "Changer la destination sans réimprimer", free: "1 QR", pro: "20 QR", business: "Illimité" },
+  { feature: "QR Studio", free: "—", pro: "Complet", business: "Complet" },
+  { feature: "QR Print Studio", free: "—", pro: "Complet", business: "Complet" },
+  { feature: "Statistiques", free: "De base", pro: "Détaillées + export", business: "Détaillées + export" },
+  { feature: "Mot de passe · expiration d'un lien", free: "—", pro: "✓", business: "✓" },
+  { feature: "Import CSV en masse", free: "—", pro: "—", business: "✓" },
+  { feature: "IA", free: "—", pro: "✓", business: "✓ illimité" },
+  { feature: "Export HD", free: "PNG", pro: "PNG + JPG + PDF HD + SVG", business: "PNG + JPG + PDF HD + SVG" },
+  { feature: "Modèles", free: "27 gratuits", pro: "Tous", business: "Tous" },
+  { feature: "Branding QRowg", free: "Oui", pro: "Non", business: "Non" },
+  { feature: "Domaine perso", free: "—", pro: "✓", business: "✓" },
+  { feature: "Équipe", free: "—", pro: "—", business: "5 membres" },
+  { feature: "Marque blanche", free: "—", pro: "—", business: "✓" },
+  { feature: "API", free: "—", pro: "1 000 / mois", business: "10 000 / mois" },
+  { feature: "Support", free: "Communauté", pro: "Prioritaire", business: "Prioritaire" },
 ]

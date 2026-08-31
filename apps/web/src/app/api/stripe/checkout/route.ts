@@ -4,13 +4,11 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { serverError } from "@/lib/apiError"
 
 const PRICE_IDS: Record<string, string> = {
-  starter: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || "",
   pro: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || "",
   business: process.env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID || "",
 }
 // Prix annuels (optionnels) — à créer dans Stripe pour que le toggle "Annuel" facture vraiment l'annuel
 const ANNUAL_PRICE_IDS: Record<string, string> = {
-  starter: process.env.NEXT_PUBLIC_STRIPE_STARTER_ANNUAL_PRICE_ID || "",
   pro: process.env.NEXT_PUBLIC_STRIPE_PRO_ANNUAL_PRICE_ID || "",
   business: process.env.NEXT_PUBLIC_STRIPE_BUSINESS_ANNUAL_PRICE_ID || "",
 }
@@ -54,11 +52,9 @@ export async function POST(req: NextRequest) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${appUrl}/dashboard?upgraded=true`,
       cancel_url: `${appUrl}/upgrade?canceled=true`,
-      ...(plan === "starter" ? { payment_method_collection: "if_required" as const } : {}),
       metadata: { userId, plan, priceId, billing },
       subscription_data: {
         metadata: { userId, plan, priceId, billing },
-        ...(plan === "starter" ? { trial_period_days: 7, trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } } : {}),
       },
       allow_promotion_codes: true,
     })

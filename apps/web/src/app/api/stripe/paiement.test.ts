@@ -65,11 +65,11 @@ describe("l'essai et la facturation annoncés correspondent à ce qui est factur
     expect(checkout).toContain('const billing = (annual && ANNUAL_PRICE_IDS[plan]) ? "annual" : "monthly"')
   })
 
-  it("seul le plan Starter ouvre un essai de 7 jours", () => {
-    // Annoncer « votre essai gratuit » à un client Pro qui vient d'être débité
-    // est la promesse la plus coûteuse à démentir.
-    expect(checkout).toMatch(/plan === "starter" \? \{ trial_period_days: 7/)
-    expect((checkout.match(/trial_period_days/g) || []).length).toBe(1)
+  it("aucun plan n'ouvre d'essai de 7 jours", () => {
+    // Annoncer « votre essai gratuit » à un client qui vient d'être débité est la
+    // promesse la plus coûteuse à démentir. L'essai vivait sur le palier
+    // « Starter », retiré : c'est le plan gratuit qui tient ce rôle, sans durée.
+    expect((checkout.match(/trial_period_days/g) || []).length).toBe(0)
   })
 
   it("il n'y a plus qu'un seul tunnel de paiement", () => {

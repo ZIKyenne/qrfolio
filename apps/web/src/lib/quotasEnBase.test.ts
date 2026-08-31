@@ -110,7 +110,11 @@ describe("chaque plan vendu est une valeur que la base accepte", () => {
   })
 
   it("et l'énumération n'invente pas de plan que le code ignore", () => {
+    // `starter` fait exception : le palier a été retiré de la grille, mais la
+    // valeur peut subsister en base sur un projet où elle a déjà été ajoutée.
+    // getPlan la traite comme un Établissement, elle ne vend donc rien de faux.
     for (const v of valeursEnum()) {
+      if (v === "starter") continue
       expect(Object.keys(PLANS).includes(v), `la base accepte « ${v} », inconnu de plans.ts`).toBe(true)
     }
   })

@@ -21,13 +21,12 @@ describe("getPlan", () => {
 
 describe("pageLimit", () => {
   it("reflete les limites de chaque plan", () => {
-    expect(pageLimit("free")).toBe(3)
-    expect(pageLimit("starter")).toBe(5)
-    expect(pageLimit("pro")).toBe(25)
+    expect(pageLimit("free")).toBe(1)
+    expect(pageLimit("pro")).toBe(10)
     expect(pageLimit("business")).toBeNull() // illimite
   })
   it("plan inconnu -> limite free", () => {
-    expect(pageLimit("???")).toBe(3)
+    expect(pageLimit("???")).toBe(1)
   })
 })
 
@@ -41,14 +40,15 @@ describe("gating des capacites", () => {
   })
   it("le branding est retire des le plan Starter", () => {
     expect(canRemoveBranding("free")).toBe(false)
-    expect(canRemoveBranding("starter")).toBe(true)
     expect(canRemoveBranding("pro")).toBe(true)
     expect(canRemoveBranding("business")).toBe(true)
   })
-  it("starter debloque Print/QR avance mais pas l'IA", () => {
+  it("un compte hérité de l'ancien palier « Starter » est traité en Établissement", () => {
+    // Le palier à 4,90 € a été retiré ; personne n'y était abonné, mais une ligne
+    // héritée ne doit surtout pas retomber au gratuit.
     expect(canPrintStudio("starter")).toBe(true)
     expect(canQrAdvanced("starter")).toBe(true)
-    expect(canAI("starter")).toBe(false)
+    expect(canAI("starter")).toBe(true)
   })
   it("pro et business ont tout, IA comprise", () => {
     for (const id of ["pro", "business"] as PlanId[]) {
@@ -69,9 +69,9 @@ describe("canExport", () => {
     expect(canExport("free", "pdf")).toBe(false)
     expect(canExport("free", "svg")).toBe(false)
   })
-  it("starter n'exporte que le PNG", () => {
-    expect(canExport("starter", "png")).toBe(true)
-    expect(canExport("starter", "jpg")).toBe(false)
+  it("le gratuit n'exporte que le PNG", () => {
+    expect(canExport("free", "png")).toBe(true)
+    expect(canExport("free", "jpg")).toBe(false)
   })
   it("pro et business exportent tous les formats", () => {
     for (const id of ["pro", "business"] as PlanId[]) {
@@ -84,8 +84,8 @@ describe("canExport", () => {
 
 describe("minPlanFor / minPlanForFormat", () => {
   it("plan minimum par capacite", () => {
-    expect(minPlanFor("printStudio")).toBe("starter")
-    expect(minPlanFor("qrStudioAdvanced")).toBe("starter")
+    expect(minPlanFor("printStudio")).toBe("pro")
+    expect(minPlanFor("qrStudioAdvanced")).toBe("pro")
     expect(minPlanFor("ai")).toBe("pro")
   })
   it("plan minimum par format d'export", () => {
@@ -109,7 +109,7 @@ describe("fmtPrice", () => {
 // silencieusement l'echelle des plans (regressions de paywall).
 describe("coherence de l'echelle des plans", () => {
   it("PLAN_ORDER, PLAN_LIST et PLAN_RANK sont alignes", () => {
-    expect(PLAN_ORDER).toEqual(["free", "starter", "pro", "business"])
+    expect(PLAN_ORDER).toEqual(["free", "pro", "business"])
     expect(PLAN_LIST.map(p => p.id)).toEqual(PLAN_ORDER)
     PLAN_ORDER.forEach((id, i) => expect(PLAN_RANK[id]).toBe(i))
   })
@@ -158,12 +158,11 @@ describe("coherence de l'echelle des plans", () => {
 
   it("seul business propose une equipe", () => {
     expect(PLANS.free.limits.team).toBeNull()
-    expect(PLANS.starter.limits.team).toBeNull()
     expect(PLANS.pro.limits.team).toBeNull()
     expect(PLANS.business.limits.team).toBe(5)
   })
 
-  it("le tableau comparatif couvre les 4 plans sur chaque ligne", () => {
+  it("le tableau comparatif couvre les trois plans sur chaque ligne", () => {
     expect(PLAN_COMPARISON.length).toBeGreaterThan(0)
     for (const row of PLAN_COMPARISON) {
       for (const id of PLAN_ORDER) {

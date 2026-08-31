@@ -10,13 +10,13 @@ import { buildSubscriptionEmail } from "./subscriptionEmail"
 describe("l'email d'abonnement dit vrai", () => {
   it("annonce le bon plan et le bon prix", () => {
     const pro = buildSubscriptionEmail({ name: "Émilien", plan: "pro", billing: "monthly" })
-    expect(pro.subject).toBe("Votre abonnement QRowg Pro est actif")
+    expect(pro.subject).toBe("Votre abonnement QRowg Établissement est actif")
     expect(pro.planConnu).toBe(true)
-    expect(pro.html).toContain("Bienvenue dans QRowg Pro")
+    expect(pro.html).toContain("Bienvenue dans QRowg Établissement")
   })
 
   it("distingue un essai d'un abonnement en cours", () => {
-    const essai = buildSubscriptionEmail({ name: "Émilien", plan: "starter", billing: "monthly", trialDays: 7 })
+    const essai = buildSubscriptionEmail({ name: "Émilien", plan: "pro", billing: "monthly", trialDays: 7 })
     expect(essai.subject).toContain("essai")
     expect(essai.html).toContain("7&nbsp;jours")
     expect(essai.html).toContain("sauf annulation")

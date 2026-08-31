@@ -34,16 +34,16 @@ describe("un compte gratuit", () => {
 
 describe("le refus dit quoi faire", () => {
   it("nomme le plan, le nombre, et la sortie", () => {
-    const e = etatQuota("starter", stat(7))
-    expect(e.raison).toContain("7 QR")
-    expect(e.raison).toContain("Starter")
+    const e = etatQuota("pro", stat(30))
+    expect(e.raison).toContain("30 QR")
+    expect(e.raison).toContain("Établissement")
     expect(e.raison).toContain("Supprimez-en un")
   })
 
   it("ne parle jamais d'essai ni d'expiration", () => {
     // Un QR collé sur une table ne meurt plus au bout de 30 jours : plus aucun
     // message ne doit le laisser croire.
-    for (const p of ["free", "starter", "pro", "business"]) {
+    for (const p of ["free", "pro", "business"]) {
       const e = etatQuota(p, [...stat(40), ...modif(40)])
       for (const t of [e.raison, e.raisonModifiable]) {
         if (!t) continue
@@ -75,10 +75,10 @@ describe("le plan Business", () => {
 })
 
 describe("les paliers intermédiaires", () => {
-  it("Pro donne 35 QR dont 25 modifiables", () => {
+  it("Établissement donne 30 QR dont 20 modifiables", () => {
     const e = etatQuota("pro", [])
-    expect(e.restants).toBe(35)
-    expect(e.restantsModifiables).toBe(25)
+    expect(e.restants).toBe(30)
+    expect(e.restantsModifiables).toBe(20)
   })
 
   it("un plan inconnu retombe sur le gratuit, jamais sur l'illimité", () => {

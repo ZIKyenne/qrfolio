@@ -44,22 +44,22 @@ as $$
   select case p_quoi
     -- QR autonomes enregistrés (instant_qrs)
     when 'qr' then case coalesce(p_plan, 'free')
-      when 'starter'  then 7
-      when 'pro'      then 35
+      when 'starter'  then 30   -- palier retiré ; une ligne héritée vaut Établissement
+      when 'pro'      then 30
       when 'business' then null
       else 3 end
     -- …dont modifiables après impression, et actifs
     when 'dyn' then case coalesce(p_plan, 'free')
-      when 'starter'  then 5
-      when 'pro'      then 25
+      when 'starter'  then 20
+      when 'pro'      then 20
       when 'business' then null
       else 1 end
     -- QR de page ACTIFS (= pages visitables au scan)
     when 'pages' then case coalesce(p_plan, 'free')
-      when 'starter'  then 5
-      when 'pro'      then 25
+      when 'starter'  then 10
+      when 'pro'      then 10
       when 'business' then null
-      else 3 end
+      else 1 end
   end
 $$;
 
@@ -72,7 +72,7 @@ language sql
 immutable
 set search_path = ''
 as $$
-  select coalesce(p_plan, 'free') in ('pro', 'business')
+  select coalesce(p_plan, 'free') in ('pro', 'business', 'starter')
 $$;
 
 

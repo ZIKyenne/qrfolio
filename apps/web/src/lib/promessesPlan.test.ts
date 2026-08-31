@@ -18,8 +18,10 @@ describe("le plan gratuit annonce partout ce que la source de vérité contient"
 
   it("la source de vérité dit bien 3 QR", () => {
     expect(free.limits.qr).toBe(3)
-    expect(free.limits.pages).toBe(3)
-    expect(free.limits.views).toBe(200)
+    expect(free.limits.pages).toBe(1)
+    // Une limite de vues sur un QR IMPRIMÉ, c'est promettre au commerçant que son
+    // sticker s'arrêtera s'il marche trop bien. Aucun plan n'en a plus.
+    for (const p of Object.values(PLANS)) expect(p.limits.views, p.label).toBeNull()
   })
 
   it("la FAQ ne dit plus « 1 QR statique »", () => {
@@ -50,7 +52,10 @@ describe("le plan gratuit annonce partout ce que la source de vérité contient"
     // aucune promesse de plan ne doit continuer à en parler.
     for (const p of Object.values(PLANS)) {
       const texte = JSON.stringify(p.features) + JSON.stringify(p.perks)
-      expect(texte, `${p.label} parle encore d'essai ou d'expiration`).not.toMatch(/essai|expir|30 j|dyn\./i)
+      // « expiration d'un lien » est une FONCTION vendue (on la programme soi-même),
+      // pas une promesse d'essai qui s'éteint. On ne traque que les essais.
+      expect(texte, `${p.label} promet encore un essai`).not.toMatch(/essai|30 j|dyn\./i)
+      expect(texte, `${p.label} annonce une limite mensuelle de vues`).not.toMatch(/vues ?\/ ?mois|vues par mois/i)
     }
   })
 
@@ -64,7 +69,9 @@ describe("le plan gratuit annonce partout ce que la source de vérité contient"
     // 7 modèles curés gratuits + 20 modèles partagés, tous gratuits.
     const texte = JSON.stringify(free.features) + JSON.stringify(free.perks)
     expect(texte, "l'ancien « 6 templates gratuits » sous-estimait de plus de quatre fois").not.toMatch(/6 templates/)
-    expect(texte).toMatch(/27 modèles gratuits/)
+    // Le décompte vit maintenant dans le tableau comparatif, pas dans la carte.
+    const ligne = PLAN_COMPARISON.find(l => l.feature === "Modèles")
+    expect(ligne?.free).toMatch(/27 gratuits/)
   })
 })
 
@@ -72,22 +79,37 @@ describe("l'essai de 7 jours n'est annoncé qu'à qui en a un", () => {
   const webhook = readFileSync(join(__dirname, "../app/api/webhooks/stripe/route.ts"), "utf8")
   const checkout = readFileSync(join(__dirname, "../app/api/stripe/checkout/route.ts"), "utf8")
 
-  it("seul le plan Starter ouvre un essai à la commande", () => {
-    expect(checkout).toMatch(/plan === "starter" \? \{ trial_period_days: 7/)
+  it("aucun plan n'ouvre d'essai à la commande", () => {
+    // L'essai de 7 jours appartenait au palier « Starter », retiré. Il n'est pas
+    // remplacé : le plan GRATUIT est l'essai — un support réel, sans durée, sans
+    // carte. Deux chemins gratuits en parallèle n'auraient servi qu'à embrouiller.
+    expect(checkout, "un essai subsiste dans le tunnel de paiement").not.toMatch(/trial_period_days/)
   })
 
   it("l'email d'abonnement suit la même règle", () => {
     // Sinon un client Pro qui paie immédiatement reçoit « votre essai gratuit
     // de 7 jours vient de commencer ».
     expect(webhook, "trialDays: 7 posé pour tous les plans").not.toMatch(/trialDays: 7\b/)
-    expect(webhook).toMatch(/trialDays: plan === "starter" \? 7 : 0/)
+    expect(webhook).toMatch(/trialDays: 0/)
   })
 })
 
 describe("les plans restent cohérents entre eux", () => {
   it("chaque plan comparé existe vraiment", () => {
-    for (const p of ["free", "starter", "pro", "business"] as const) {
+    for (const p of ["free", "pro", "business"] as const) {
       expect(PLANS[p], `plan ${p} absent`).toBeTruthy()
+    }
+  })
+})
+
+
+describe("plus aucune page ne promet un essai de 7 jours", () => {
+  // Il appartenait au palier « Starter », retiré. Le laisser écrit, c'est faire
+  // payer quelqu'un qui croyait essayer.
+  it("ni la page des plans, ni l'accueil", () => {
+    for (const f of ["app/upgrade/page.tsx", "app/HomeClient.tsx"]) {
+      const src = readFileSync(join(__dirname, "..", f), "utf8")
+      expect(src, `${f} promet encore un essai`).not.toMatch(/essai gratuit/i)
     }
   })
 })

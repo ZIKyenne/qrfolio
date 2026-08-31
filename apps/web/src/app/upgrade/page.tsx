@@ -13,9 +13,8 @@ import CheckoutErrorBanner from "@/components/CheckoutErrorBanner"
 // UI par plan (icône, CTA, mise en avant) ; les DONNÉES viennent de lib/plans
 const PLAN_UI = {
   free:     { icon: <Star size={20} />,     cta: "Plan gratuit",                ctaDisabled: true,  highlight: false, priceId: undefined },
-  starter:  { icon: <Zap size={20} />,      cta: "Commencer l'essai gratuit",   ctaDisabled: false, highlight: false, priceId: "starter"  },
-  pro:      { icon: <Sparkles size={20} />, cta: "Passer à Pro",                ctaDisabled: false, highlight: true,  priceId: "pro"      },
-  business: { icon: <Crown size={20} />,    cta: "Passer à Business",           ctaDisabled: false, highlight: false, priceId: "business" },
+  pro:      { icon: <Sparkles size={20} />, cta: "Choisir Établissement",       ctaDisabled: false, highlight: true,  priceId: "pro"      },
+  business: { icon: <Crown size={20} />,    cta: "Choisir Multi-sites",         ctaDisabled: false, highlight: false, priceId: "business" },
 } as Record<string, any>
 
 const PLANS = PLAN_LIST.map(p => ({
@@ -120,7 +119,7 @@ export default function UpgradePage() {
             Créez vos pages, personnalisez vos QR codes et suivez vos performances. Sans engagement, annulez à tout moment.
           </p>
           <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap", marginBottom: 26 }}>
-            {["Essai gratuit 7 jours", "Sans carte pour le plan Gratuit", "Annulation en 1 clic"].map((r, i) => (
+            {["Plan gratuit sans carte, sans durée", "Vues illimitées sur tous les plans", "Annulation en 1 clic"].map((r, i) => (
               <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUTED, fontSize: 12.5 }}>
                 <Check size={13} color="var(--success)" /> {r}
               </span>
@@ -191,7 +190,7 @@ export default function UpgradePage() {
                 </div>
 
                 {!isCurrentPlan && !plan.ctaDisabled ? (
-                  // Plans Stripe actionnables (starter / pro / business) : CTA animé « scan QR »
+                  // Plans Stripe actionnables (Établissement / Multi-sites) : CTA animé « scan QR »
                   // qui récupère l'URL de paiement et redirige en fin d'animation. L'accent =
                   // la couleur de CHAQUE carte (pas l'or global) pour rester cohérent.
                   <SubscribeButton
@@ -253,20 +252,20 @@ export default function UpgradePage() {
 
         {showComparison && (
           <div className="cmp-table" style={{ background: "#111009", border: "1px solid rgba(201,168,76,0.12)", borderRadius: 16, overflow: "hidden", marginBottom: 40 }}>
-            <div className="cmp-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="cmp-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               <div style={{ padding: "14px 20px" }}><span style={{ color: MUTED, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Fonctionnalite</span></div>
-              {["Gratuit", "Starter", "Pro", "Business"].map((h, i) => (
+              {["Gratuit", "Établissement", "Multi-sites"].map((h, i) => (
                 <div key={i} style={{ padding: "14px 12px", textAlign: "center" }}>
-                  <span style={{ color: ["#8A8478","var(--action)","#C9A84C","var(--success)"][i], fontSize: 12, fontWeight: 700 }}>{h}</span>
+                  <span style={{ color: ["#8A8478","#C9A84C","var(--success)"][i], fontSize: 12, fontWeight: 700 }}>{h}</span>
                 </div>
               ))}
             </div>
             {COMPARISON.map((row, i) => (
-              <div key={i} className="cmp-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", borderBottom: i < COMPARISON.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none", background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
+              <div key={i} className="cmp-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", borderBottom: i < COMPARISON.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none", background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
                 <div style={{ padding: "11px 20px" }}><span style={{ color: "#F5F0E8", fontSize: 13 }}>{row.feature}</span></div>
-                {[row.free, row.starter, row.pro, row.business].map((val, j) => (
+                {[row.free, row.pro, row.business].map((val, j) => (
                   <div key={j} style={{ padding: "11px 12px", textAlign: "center" }}>
-                    <span style={{ color: val === "—" ? "rgba(255,255,255,0.15)" : val === "✓" ? ["#8A8478","var(--action)","#C9A84C","var(--success)"][j] : "#F5F0E8", fontSize: 12 }}>{val}</span>
+                    <span style={{ color: val === "—" ? "rgba(255,255,255,0.15)" : val === "✓" ? ["#8A8478","#C9A84C","var(--success)"][j] : "#F5F0E8", fontSize: 12 }}>{val}</span>
                   </div>
                 ))}
               </div>

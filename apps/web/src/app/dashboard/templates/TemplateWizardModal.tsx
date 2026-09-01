@@ -164,7 +164,9 @@ export default function TemplateWizardModal({
         <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 20 }}>{templateEmoji}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ color: INK, fontSize: 14, fontWeight: 700, margin: 0 }}>Personnaliser « {templateName} »</p>
+            {/* Le titre se coupe plutôt que de passer sur deux lignes : la ligne
+                d'en-tête doit garder une hauteur stable d'une question à l'autre. */}
+            <p style={{ color: INK, fontSize: 14, fontWeight: 700, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Personnaliser « {templateName} »</p>
             <p style={{ color: MUTED, fontSize: 11, margin: "2px 0 0" }}>
               {phase === "questions" ? `Question ${idx + 1} sur ${steps.length} · ${answeredCount} remplie${answeredCount > 1 ? "s" : ""}`
                 : phase === "review" ? `${kept} bloc${kept > 1 ? "s" : ""} gardé${kept > 1 ? "s" : ""} · ${hidden} masqué${hidden > 1 ? "s" : ""} · ${removed} retiré${removed > 1 ? "s" : ""}`
@@ -172,7 +174,9 @@ export default function TemplateWizardModal({
             </p>
           </div>
           <button type="button" onClick={onClose} aria-label="Fermer"
-            style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 9, width: 30, height: 30, color: MUTED, cursor: "pointer", display: "grid", placeItems: "center" }}>
+            // 30 x 30 : la seule sortie de l'assistant, et il faut viser juste.
+            // Le carré visible garde sa taille, la zone tapable passe à 44.
+            style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 9, width: 44, height: 44, color: MUTED, cursor: "pointer", display: "grid", placeItems: "center", flexShrink: 0 }}>
             <X size={15} />
           </button>
         </div>
@@ -207,7 +211,12 @@ export default function TemplateWizardModal({
 
           <div style={{
             flex: 1, overflowY: "auto", padding: isMobile ? "18px 16px" : "26px 30px", minHeight: 0,
-            display: "flex", flexDirection: "column", justifyContent: phase === "questions" ? "center" : "flex-start",
+            display: "flex", flexDirection: "column",
+            // Centrer verticalement une question courte dans un panneau haut est
+            // agréable sur ordinateur. Sur téléphone, le panneau fait tout l'écran :
+            // mesuré en capture, la question flottait sous 450 px de vide, et elle
+            // sautait à l'ouverture du clavier. On lit un téléphone de haut en bas.
+            justifyContent: phase === "questions" && !isMobile ? "center" : "flex-start",
           }}>
             {phase === "questions" && step && (
               <QuestionCard
@@ -239,7 +248,7 @@ export default function TemplateWizardModal({
                 <ArrowLeft size={13} /> {idx > 0 ? "Précédent" : "Annuler"}
               </button>
               <button type="button" onClick={startReview}
-                style={{ background: "transparent", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>
+                style={{ background: "transparent", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", textDecoration: "underline", minHeight: 44, padding: "0 6px", display: "inline-flex", alignItems: "center" }}>
                 Passer toutes les questions
               </button>
               <div style={{ flex: 1 }} />

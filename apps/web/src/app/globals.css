@@ -443,6 +443,12 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .da-btn-neutral:hover { border-color:rgba(255,255,255,.22); color:#efe9df; background:rgba(255,255,255,.05); }
 .da-btn-neutral:active { transform:scale(.97); }
 .da-btn-neutral--sm { padding:9px 16px; font-size:13px; border-radius:10px; }
+/* Mesure au navigateur : 35 px de haut. Sur un ecran tactile, le minimum tenable
+   est 44 ; la variante « petite » garde sa finesse visuelle (police, rayon) mais
+   pas sa hauteur. */
+@media (max-width: 1024px) {
+  .da-btn-neutral--sm { min-height: 44px; }
+}
 .da-btn-neutral:hover .da-ic-x { transform:rotate(90deg); }
 /* 06 — Destructif (Supprimer mon compte, déconnecter tous les appareils) — rouge qui s'intensifie */
 .da-btn-danger { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:9px; padding:12px 20px; border:1px solid rgba(224,107,95,.3); border-radius:11px; background:rgba(224,107,95,.08); color:#e06b5f; font-family:inherit; font-size:14px; font-weight:600; white-space:nowrap; transition:background .22s ease, border-color .22s ease, color .2s ease, transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }

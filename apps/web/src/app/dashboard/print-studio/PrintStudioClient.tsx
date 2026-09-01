@@ -25,6 +25,7 @@ import { filterTemplates, type PrintTemplate, type TemplateVariant } from "./tem
 import { printPreflight, hexContrastRatio } from "../qr-codes/printPreflight"
 import { color as C, radius as R } from "./tokens"
 import { ajusterAuSupport, lignesDeTitre, partQrMax, type Pastille } from "./ajustement"
+import { bandeApercuMobile, dimensionsApercuMobile, legendeVisible, vhFeuilleMax } from "./apercuMobile"
 
 // item.layout est parfois une clé de contenu ('stack'), parfois un id de layout ('orne').
 // On résout toujours vers un id de LAYOUTS valide (pour le volet Mise en page).
@@ -212,12 +213,37 @@ function useKeyboard(enabled: boolean) {
   }, [enabled])
   return { kb, typing }
 }
+// Hauteur RÉELLEMENT visible : `visualViewport` quand il existe (il retire la
+// barre d'URL du navigateur mobile, que `innerHeight` compte encore). L'aperçu
+// se dimensionne dessus — sinon il déborde sous la feuille de réglages.
+function useHauteurEcran(actif: boolean) {
+  const [h, setH] = useState(844)
+  const [l, setL] = useState(390)
+  useEffect(() => {
+    if (!actif) return
+    const vv = window.visualViewport
+    // Quantifié à 8 px : la barre d'URL qui glisse ne doit pas redessiner l'aperçu à chaque pixel.
+    const lire = () => {
+      const brute = vv?.height ?? window.innerHeight
+      setH(prev => { const q = Math.round(brute / 8) * 8; return q === prev ? prev : q })
+      setL(prev => { const q = vv?.width ?? window.innerWidth; return q === prev ? prev : q })
+    }
+    lire()
+    vv?.addEventListener("resize", lire)
+    window.addEventListener("resize", lire)
+    window.addEventListener("orientationchange", lire)
+    return () => { vv?.removeEventListener("resize", lire); window.removeEventListener("resize", lire); window.removeEventListener("orientationchange", lire) }
+  }, [actif])
+  return { hauteurEcran: h, largeurEcran: l }
+}
+
 // Attributs anti-artefacts pour les champs texte du studio (claviers mobiles prédictifs).
 const textInputProps = { autoCorrect: "off", autoCapitalize: "sentences", spellCheck: false, enterKeyHint: "done" as const }
 
 export default function PrintStudioClient({ canAccess }: { canAccess: boolean }) {
   const isMobile = useIsMobile()
   const { kb, typing } = useKeyboard(isMobile)   // clavier virtuel : hauteur + saisie en cours (§11)
+  const { hauteurEcran, largeurEcran } = useHauteurEcran(isMobile)
   const [sheetOpen, setSheetOpen] = useState(false)   // bottom sheet des réglages (mobile)
   const [sheetPos, setSheetPos] = useState<SheetPos>("half")   // #17 : position ancrée de la sheet (peek/half/full)
   const [sheetDragging, setSheetDragging] = useState(false)    // drag du handle en cours (désactive la transition)
@@ -1006,6 +1032,16 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   }
   // #17 : bottom sheet mobile à positions ancrées. Ouvrir un onglet ouvre la sheet à « half ».
   function openSheet(tab: "theme" | "couleurs" | "texte" | "qr") { setMobileTab(tab); setSheetPos("half"); setSheetOpen(true) }
+  // Bande laissée libre par la feuille de réglages : l'aperçu s'y loge en entier.
+  // Avant, il gardait 320 × 400 quoi qu'il arrive, et « Taille du QR » se réglait
+  // sur un QR caché derrière la feuille.
+  // La feuille ne monte jamais au point de cacher le support : son plafond dépend
+  // de la forme de l'objet qu'on est en train de régler. Une même valeur sert à
+  // la feuille ET à l'aperçu -> ils ne peuvent pas se contredire.
+  const vhFeuille = isMobile
+    ? Math.min(SHEET_VH[sheetPos], vhFeuilleMax(hauteurEcran, largeurEcran, item.shape === "round" ? 1 : item.ratio))
+    : 0
+  const bandeApercu = isMobile ? bandeApercuMobile(hauteurEcran, sheetOpen, vhFeuille) : 0
   // Déplace la sheet d'un cran (dir +1 = plus grande, -1 = plus petite ; sous « peek » = fermer).
   function stepSheet(dir: 1 | -1) {
     const i = SHEET_ORDER.indexOf(sheetPos) + dir
@@ -1051,11 +1087,13 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             </div>
           )}
           {designCode && <button onClick={saveDesign} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: designSaved ? C.goldSoft : "transparent", border: `1px solid ${designSaved ? C.gold : C.hairline}`, color: designSaved ? C.gold : C.fg, cursor: "pointer", fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "10px 16px" }}>{designSaved ? <Check size={14} /> : <ShieldCheck size={14} />} {designSaved ? "Enregistré" : "Enregistrer"}</button>}
-          {!isMobile && <span style={{ fontSize: 12.5, fontWeight: 700, color: C.fgMuted }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>}
+          {/* Le nom du support manquait sur mobile : l'entête disait « Bibliothèque »
+              et rien d'autre — impossible de savoir ce qu'on était en train de régler. */}
+          <span style={{ fontSize: isMobile ? 11.5 : 12.5, fontWeight: 700, color: C.fgMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
         </div>
       </header>
 
-      <div className="ps-grid" style={{ maxWidth: 1320, margin: "0 auto", padding: isMobile ? "0 12px 172px" : "0 16px 108px", display: "grid", gap: 24, gridTemplateColumns: "1fr" }}>
+      <div className="ps-grid" style={{ maxWidth: 1320, margin: "0 auto", padding: isMobile ? "0 12px 0" : "0 16px 108px", display: "grid", gap: 24, gridTemplateColumns: "1fr" }}>
         {/* Canvas héros (#2) + shell ZÉRO-SCROLL (§11) : sur desktop le root est une colonne 100dvh (header figé,
             grille flex:1 à overflow interne, barre d'action en pied statique) → aucun scroll de page, seuls les
             panneaux/canvas scrollent en interne. Mobile inchangé (scroll doux + sheet). */}
@@ -1158,24 +1196,39 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 {(() => {
                   // Aperçu PLAT au VRAI ratio du support (portrait = haut, paysage = large, rond = cercle),
                   // grand et lisible, avec son propre fond. Le rendu « en situation » 3D reste dans le plein écran (⛶).
-                  const boxW = isMobile ? 320 : 500, boxH = isMobile ? 400 : 500
                   const r = item.shape === "round" ? 1 : item.ratio
-                  let w = r >= 1 ? boxW : boxH * r, h = r >= 1 ? boxW / r : boxH
-                  if (h > boxH) { h = boxH; w = h * r }
-                  if (w > boxW) { w = boxW; h = w / r }
-                  w = Math.round(w); h = Math.round(h)
+                  let w: number, h: number
+                  if (isMobile) {
+                    // Le calcul vit dans apercuMobile.ts (testé) : il tient compte de la
+                    // bande laissée par la feuille ET du plancher de lisibilité — un
+                    // support très portrait devenait si étroit que le moteur de QR
+                    // refusait de dessiner (« The canvas is too small »).
+                    const d = dimensionsApercuMobile(bandeApercu, largeurEcran, r)
+                    w = d.w; h = d.h
+                  } else {
+                    const boxW = 500, boxH = 500
+                    w = r >= 1 ? boxW : boxH * r; h = r >= 1 ? boxW / r : boxH
+                    if (h > boxH) { h = boxH; w = h * r }
+                    if (w > boxW) { w = boxW; h = w / r }
+                    w = Math.round(w); h = Math.round(h)
+                  }
                   return (
-                    <div onClick={() => { if (isMobile && sheetOpen && sheetPos !== "peek") setSheetPos("peek"); else setFsOpen(true) }} style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: boxH + 20, cursor: "zoom-in" }}>
+                    <div onClick={() => { if (isMobile && sheetOpen && sheetPos !== "peek") setSheetPos("peek"); else setFsOpen(true) }} style={{ display: "flex", alignItems: "center", justifyContent: "center", ...(isMobile ? { height: Math.max(110, bandeApercu - (legendeVisible(bandeApercu) ? 30 : 0)), overflow: "hidden" } : { minHeight: 520 }), cursor: "zoom-in" }}>
                       <div style={{ width: w, height: h, flex: "none", borderRadius: item.shape === "round" ? "50%" : 14, overflow: "hidden", boxShadow: "0 28px 66px rgba(0,0,0,.55)" }}>
                         <SupportVisual item={item} {...designProps} physW={trimWidthMm(item)} w={w} h={h} onFocus={isMobile ? undefined : focusPanel} />
                       </div>
                     </div>
                   )
                 })()}
-                <button onClick={e => { e.stopPropagation(); setFsOpen(true) }} aria-label="Voir en situation (plein écran)" title="Voir en situation" style={{ position: "absolute", top: isMobile ? 12 : 16, right: isMobile ? 12 : 16, width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", fontSize: 17, lineHeight: 1, zIndex: 2 }}>⛶</button>
+                {!isMobile && <button onClick={e => { e.stopPropagation(); setFsOpen(true) }} aria-label="Voir en situation (plein écran)" title="Voir en situation" style={{ position: "absolute", top: 16, right: 16, width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", fontSize: 17, lineHeight: 1, zIndex: 2 }}>⛶</button>}
               </div>}
           {/* Bascule « Aperçu / Édition libre » retirée : en Studio, l'édition libre est active d'office. */}
-          {!showFlat && <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>}
+          {!showFlat && (!isMobile || legendeVisible(bandeApercu)) && (isMobile
+            ? <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "6px 0 0" }}>
+                <span style={{ color: C.fgMuted, fontSize: 11.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</span>
+                <button onClick={() => setFsOpen(true)} aria-label="Voir en situation (plein écran)" style={{ flexShrink: 0, background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 15, lineHeight: 1, padding: "4px 2px" }}>⛶</button>
+              </div>
+            : <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>)}
           {!showFlat && !isMobile && <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "4px 0 0" }}>Cliquez le titre, le QR ou le fond de l'aperçu pour le régler directement.</p>}
           {showFlat && <>
             <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "8px 0 0" }}>Cliquez un objet pour le régler · glissez pour le placer · double-clic pour écrire.</p>
@@ -1441,7 +1494,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           {/* Backdrop seulement en « full » (tap = revenir à half) ; en peek/half le canvas reste VISIBLE et interactif. */}
           {sheetOpen && sheetPos === "full" && <div onClick={() => setSheetPos("half")} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.35)" }} />}
           {/* Padding bas généreux : la barre d'onglets (zIndex 71) reste AU-DESSUS de la sheet → onglets toujours cliquables. */}
-          <div style={{ position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, height: kb ? `calc(74vh - ${kb}px)` : `${SHEET_VH[sheetPos]}vh`, maxHeight: "92vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `0 16px ${kb ? "66px" : "calc(128px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? `translateY(${sheetDragPx}px)` : "translateY(112%)", transition: sheetDragging ? "none" : "transform var(--mo-sheet) var(--mo-ease-standard), height var(--mo-sheet) var(--mo-ease-standard)", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, height: kb ? `calc(74vh - ${kb}px)` : `${vhFeuille}vh`, maxHeight: "92vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `0 16px ${kb ? "66px" : "calc(128px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? `translateY(${sheetDragPx}px)` : "translateY(112%)", transition: sheetDragging ? "none" : "transform var(--mo-sheet) var(--mo-ease-standard), height var(--mo-sheet) var(--mo-ease-standard)", display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ position: "sticky", top: 0, zIndex: 3, background: C.bg, paddingTop: 8 }}>
               {/* Handle : glisser pour changer de hauteur (snap au cran voisin) · tap pour passer au cran suivant. */}
               <div onPointerDown={onSheetDown} onPointerMove={onSheetMove} onPointerUp={onSheetUp} onPointerCancel={onSheetUp} role="slider" aria-label="Hauteur du panneau" aria-valuetext={sheetPos} tabIndex={0} style={{ touchAction: "none", cursor: "grab", padding: "2px 0 6px" }}>

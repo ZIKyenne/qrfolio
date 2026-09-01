@@ -93,3 +93,40 @@ describe("le support rond est traité comme un rond", () => {
     expect(bloc).toContain('borderRadius: rond ? "50%"')
   })
 })
+
+// « Print Studio mobile » — l'aperçu passait DERRIÈRE la feuille de réglages :
+// on réglait « Taille du QR » et « Pastille » sans jamais voir le QR. Capturé au
+// téléphone (390 × 844) avant/après.
+describe("mobile : la feuille ne cache jamais le support", () => {
+  it("l'aperçu se dimensionne sur la bande, plus de 320 × 400 en dur", () => {
+    expect(SRC, "taille d'aperçu figée encore présente").not.toMatch(/isMobile \? 320 : 500/)
+    expect(SRC).toContain("dimensionsApercuMobile(")
+    expect(SRC).toContain("bandeApercuMobile(")
+  })
+
+  it("la feuille ET l'aperçu partagent la MÊME hauteur calculée", () => {
+    // Deux valeurs indépendantes finissent toujours par diverger : c'est comme ça
+    // que le plafond du panneau (72 %) et celui du rendu (44 %) s'étaient
+    // contredits sur le curseur de taille du QR.
+    expect(SRC).toMatch(/const vhFeuille = isMobile/)
+    expect(SRC).toMatch(/height: kb \? `calc\(74vh - \$\{kb\}px\)` : `\$\{vhFeuille\}vh`/)
+    expect(SRC).toMatch(/bandeApercuMobile\(hauteurEcran, sheetOpen, vhFeuille\)/)
+    // La hauteur brute de la position ne doit plus servir directement à la feuille.
+    expect(SRC).not.toMatch(/`\$\{SHEET_VH\[sheetPos\]\}vh`/)
+  })
+
+  it("le nom du support est visible sur mobile aussi", () => {
+    // L'entête ne disait que « Bibliothèque » : impossible de savoir ce qu'on réglait.
+    expect(SRC).not.toMatch(/\{!isMobile && <span[^>]*>\{item\.name\}/)
+  })
+
+  it("le bouton plein écran ne se pose plus SUR le support", () => {
+    // Ancré en haut à droite du conteneur, il recouvrait le coin des supports
+    // larges (carte de visite, chevalet). Sur mobile il rejoint la légende.
+    expect(SRC).toMatch(/\{!isMobile && <button onClick=\{e => \{ e\.stopPropagation\(\); setFsOpen\(true\) \}\}/)
+  })
+
+  it("plus de réserve de 172 px sous un aperçu déjà dimensionné", () => {
+    expect(SRC).not.toContain('isMobile ? "0 12px 172px"')
+  })
+})

@@ -38,7 +38,7 @@ describe("metaUser", () => {
 describe("resolveStripeEvent — checkout.session.completed", () => {
   it("active le plan quand userId + plan présents", () => {
     const o = resolveStripeEvent(checkout({ userId: "u1", plan: "pro", priceId: "price_pro", billing: "monthly" }))
-    expect(o).toEqual({ type: "checkout_completed", userId: "u1", plan: "pro", customerId: "cus_1", subscriptionId: "sub_1", priceId: "price_pro", billing: "monthly", status: "active" })
+    expect(o).toEqual({ type: "checkout_completed", userId: "u1", plan: "pro", customerId: "cus_1", subscriptionId: "sub_1", priceId: "price_pro", billing: "monthly" })
   })
   it("résout l'utilisateur via supabase_user_id", () => {
     const o = resolveStripeEvent(checkout({ supabase_user_id: "u2", plan: "starter" }))
@@ -110,26 +110,25 @@ describe("le second abonnement a disparu", () => {
   })
 })
 
-describe("un client qui paie n'est pas « en essai »", () => {
-  // Le statut etait ecrit « trialing » en dur. Il n'y a plus d'essai gratuit depuis
-  // le retrait du palier Starter : un commercant qui venait de payer 19 EUR etait
-  // enregistre comme non payant.
-  it("carte debitee -> statut actif", () => {
-    const o = resolveStripeEvent(checkout({ userId: "u1", plan: "pro", priceId: "price_pro" }, "cus_1", "sub_1", "paid"), asPro)
-    if (o.type === "checkout_completed") expect(o.status).toBe("active")
-    else throw new Error("issue inattendue")
+describe("le checkout ne decide pas du statut", () => {
+  // Le statut etait ecrit « trialing » en dur : un commercant qui venait de payer
+  // 19 EUR etait enregistre comme non payant. Le deduire de `payment_status` ne
+  // suffisait pas non plus — un essai gratuit et une remise de 100 % valent tous
+  // deux « no_payment_required ». Seuls les evenements d'abonnement savent.
+  it("l'issue du checkout ne porte aucun statut", () => {
+    for (const ps of ["paid", "no_payment_required", undefined]) {
+      const o = resolveStripeEvent(checkout({ userId: "u1", plan: "pro", priceId: "price_pro" }, "cus_1", "sub_1", ps as any), asPro)
+      expect(o.type).toBe("checkout_completed")
+      expect(Object.prototype.hasOwnProperty.call(o, "status")).toBe(false)
+    }
   })
 
-  it("aucun paiement du a la souscription (essai) -> statut essai", () => {
-    const o = resolveStripeEvent(checkout({ userId: "u1", plan: "pro", priceId: "price_pro" }, "cus_1", "sub_1", "no_payment_required"), asPro)
-    if (o.type === "checkout_completed") expect(o.status).toBe("trialing")
-    else throw new Error("issue inattendue")
-  })
-
-  it("jamais « trialing » par defaut quand Stripe ne dit rien", () => {
-    const o = resolveStripeEvent(checkout({ userId: "u1", plan: "pro", priceId: "price_pro" }, "cus_1", "sub_1", undefined as any), asPro)
-    if (o.type === "checkout_completed") expect(o.status).toBe("active")
-    else throw new Error("issue inattendue")
+  it("le statut vient de l'abonnement, tel que Stripe le donne", () => {
+    for (const etat of ["active", "trialing", "past_due", "unpaid"]) {
+      const o = resolveStripeEvent(subCreated({ userId: "u1" }, "price_pro", etat), asPro)
+      if (o.type === "subscription_updated") expect(o.status).toBe(etat)
+      else throw new Error("issue inattendue")
+    }
   })
 })
 

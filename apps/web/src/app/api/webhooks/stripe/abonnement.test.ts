@@ -50,6 +50,14 @@ describe("l'abonnement s'enregistre vraiment", () => {
     expect(/status:\s*"trialing"/.test(route)).toBe(false)
   })
 
+  it("la branche checkout n'ecrit aucun statut", () => {
+    // Stripe ne garantit pas l'ordre des evenements : si `subscription.created`
+    // arrive en premier, un statut ecrit par le checkout ecraserait la verite.
+    const branche = route.slice(route.indexOf('case "checkout_completed"'), route.indexOf('case "subscription_updated"'))
+    expect(branche.length).toBeGreaterThan(100)
+    expect(/status:/.test(branche)).toBe(false)
+  })
+
   it("chaque ecriture du webhook est verifiee", () => {
     // supabase-js ne leve pas d'exception : une ecriture refusee revient dans un
     // objet { error }. Non lu, le webhook repondait « received: true » a Stripe

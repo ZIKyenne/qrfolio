@@ -91,12 +91,18 @@ export async function POST(req: NextRequest) {
           plan: outcome.plan,
           stripe_customer_id: outcome.customerId,
         }).eq("id", outcome.userId))
+        // `status` est volontairement ABSENT de cette charge utile. Un upsert ne
+        // met a jour que les colonnes qu'on lui donne : a la creation la colonne
+        // prend son defaut (`active`, et le client vient bien de payer), et si la
+        // ligne existe deja son statut n'est PAS ecrase. Le vrai statut vient des
+        // evenements `customer.subscription.*`, qui peuvent arriver AVANT celui-ci
+        // — Stripe ne garantit pas l'ordre. Ecrire un statut ici, c'est risquer
+        // d'ecraser la verite par une supposition.
         await ecrire("subscriptions.upsert", supabase.from("subscriptions").upsert({
           user_id: outcome.userId,
           stripe_subscription_id: outcome.subscriptionId,
           stripe_price_id: outcome.priceId,
           plan: outcome.plan,
-          status: outcome.status,
         }, { onConflict: "user_id" }))
         // Le plan porte aussi le quota de QR modifiables : le faire suivre.
         await reconcileDynamicLinks(outcome.userId, outcome.plan)

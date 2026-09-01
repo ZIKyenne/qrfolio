@@ -11,7 +11,7 @@ export function metaUser(m?: Stripe.Metadata | null): string | undefined {
 }
 
 export type WebhookOutcome =
-  | { type: "checkout_completed"; userId: string; plan: string; customerId: string; subscriptionId: string; priceId?: string; billing?: string; status: "active" | "trialing" }
+  | { type: "checkout_completed"; userId: string; plan: string; customerId: string; subscriptionId: string; priceId?: string; billing?: string }
   | { type: "subscription_updated"; userId: string; plan: string | null; status: string; periodStart: number; periodEnd: number; cancelAtEnd: boolean; subId: string; priceId?: string }
   | { type: "subscription_deleted"; userId: string; subId: string }
   | { type: "payment_failed"; subId: string }
@@ -39,13 +39,11 @@ export function resolveStripeEvent(
       const plan = resolvePlan(priceId) ?? s.metadata?.plan
       // Il faut userId ET plan pour activer -> sinon on ne touche à rien.
       if (!userId || !plan) return { type: "noop" }
-      // Le statut ne peut PAS etre « trialing » en dur : il n'y a plus d'essai
-      // gratuit depuis le retrait du palier Starter. Un client qui vient de payer
-      // 19 EUR etait enregistre en essai, et son abonnement s'affichait comme non
-      // paye. Stripe dit lui-meme ce qui s'est passe : `payment_status` vaut
-      // « paid » quand la carte a ete debitee, « no_payment_required » quand la
-      // periode d'essai couvre la premiere echeance.
-      const status = s.payment_status === "no_payment_required" ? "trialing" : "active"
+      // Le statut ne sort PAS d'ici. `payment_status` ne distingue pas un essai
+      // gratuit d'une remise de 100 % : les deux valent « no_payment_required »,
+      // et un client venu avec un code promo aurait ete etiquete « en essai ».
+      // Seuls les evenements `customer.subscription.*` connaissent le vrai statut ;
+      // ce sont eux, et eux seuls, qui l'ecrivent (voir la route).
       return {
         type: "checkout_completed",
         userId,
@@ -54,7 +52,6 @@ export function resolveStripeEvent(
         subscriptionId: s.subscription as string,
         priceId,
         billing: s.metadata?.billing ?? undefined,
-        status,
       }
     }
     // `created` arrive a la souscription, `updated` aux changements ensuite.

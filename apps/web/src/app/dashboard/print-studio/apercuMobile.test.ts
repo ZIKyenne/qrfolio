@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest"
 import {
   bandeApercuMobile, boiteApercuMobile, dimensionsApercuMobile, legendeVisible,
-  HAUT_BARRE_MOBILE, HAUT_ENTETE_MOBILE, BANDE_MINIMALE, LARGEUR_MINIMALE_SUPPORT, vhFeuilleMax,
+  HAUT_BARRE_MOBILE, HAUT_ENTETE_MOBILE, BANDE_MINIMALE, LARGEUR_MINIMALE_SUPPORT, vhFeuilleMax, MARGE_SECURITE,
+  estPaysage, largeurTiroirPaysage, largeurApercuMobile, HAUT_BARRE_PAYSAGE,
   VH_FEUILLE_MINIMALE, VH_FEUILLE_MAXIMALE,
 } from "./apercuMobile"
 
@@ -11,8 +12,21 @@ const LARGEUR = 390
 const VH = { peek: 40, half: 66, full: 90 }
 
 describe("bandeApercuMobile", () => {
-  it("feuille fermée : tout l'écran moins l'entête et la barre d'action", () => {
-    expect(bandeApercuMobile(ECRAN, false, VH.half)).toBe(ECRAN - HAUT_BARRE_MOBILE - HAUT_ENTETE_MOBILE)
+  it("feuille fermée : tout l'écran moins l'entête, la barre d'action et la respiration", () => {
+    expect(bandeApercuMobile(ECRAN, false, VH.half)).toBe(ECRAN - HAUT_BARRE_MOBILE - HAUT_ENTETE_MOBILE - MARGE_SECURITE)
+  })
+
+  it("les hauteurs MESURÉES priment sur les valeurs de repli", () => {
+    // Les constantes posées « à peu près » mentaient : 52 px annoncés pour un
+    // entête qui en fait 72, et la légende passait sous la barre d'action.
+    const mesure = bandeApercuMobile(ECRAN, false, VH.half, false, { entete: 100, barre: 200 })
+    expect(mesure).toBe(ECRAN - 200 - 100 - MARGE_SECURITE)
+  })
+
+  it("une mesure absurde retombe sur le repli, jamais sur une bande négative", () => {
+    for (const m of [{ entete: 0, barre: 0 }, { entete: -10, barre: -10 }, {}]) {
+      expect(bandeApercuMobile(ECRAN, false, VH.half, false, m)).toBe(bandeApercuMobile(ECRAN, false, VH.half))
+    }
   })
 
   it("la bande RÉTRÉCIT quand la feuille monte", () => {
@@ -203,5 +217,41 @@ describe("vhFeuilleMax — la feuille ne mange pas le support", () => {
       expect(v).toBeGreaterThanOrEqual(VH_FEUILLE_MINIMALE)
       expect(v).toBeLessThanOrEqual(VH_FEUILLE_MAXIMALE)
     }
+  })
+})
+
+describe("paysage : les réglages passent sur le côté", () => {
+  it("un téléphone couché est détecté", () => {
+    expect(estPaysage(844, 390)).toBe(true)
+    expect(estPaysage(390, 844)).toBe(false)
+    expect(estPaysage(NaN, 390)).toBe(false)
+  })
+
+  it("couché, la feuille ne retire AUCUNE hauteur à l'aperçu", () => {
+    // Ancrée en bas sur 390 px de haut, elle ne pouvait monter qu'à ~148 px dont
+    // la barre d'action en masquait 117 : aucun réglage n'était atteignable.
+    const ouverte = bandeApercuMobile(390, true, 66, true)
+    const fermee = bandeApercuMobile(390, false, 66, true)
+    expect(ouverte).toBe(fermee)
+    expect(ouverte).toBe(390 - HAUT_BARRE_PAYSAGE - HAUT_ENTETE_MOBILE - MARGE_SECURITE)
+  })
+
+  it("le tiroir rogne la LARGEUR, et seulement quand il est ouvert", () => {
+    expect(largeurApercuMobile(844, true, false)).toBe(844)
+    expect(largeurApercuMobile(844, true, true)).toBe(844 - largeurTiroirPaysage(844))
+    expect(largeurApercuMobile(844, false, true)).toBe(844)
+  })
+
+  it("le tiroir laisse toujours de la place à l'aperçu", () => {
+    for (const l of [640, 844, 1024, 300]) {
+      expect(largeurApercuMobile(l, true, true)).toBeGreaterThanOrEqual(200)
+      expect(largeurTiroirPaysage(l)).toBeLessThan(l)
+    }
+  })
+
+  it("couché, un support rond tient encore en entier à côté du tiroir", () => {
+    const bande = bandeApercuMobile(844, true, 66, true)
+    const { deborde } = dimensionsApercuMobile(bande, largeurApercuMobile(844, true, true), 1)
+    expect(deborde).toBe(false)
   })
 })

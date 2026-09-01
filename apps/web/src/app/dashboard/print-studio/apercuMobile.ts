@@ -14,10 +14,17 @@
 // feuille, et quelle boîte tient dedans. Fonctions pures → testables sans DOM.
 // =============================================================================
 
+// Ces trois hauteurs sont des VALEURS DE REPLI. Le composant mesure les vraies
+// (ResizeObserver sur l'entête et la barre) et les passe en paramètre : une
+// constante posée « à peu près » finit toujours par mentir. La première version
+// donnait 52 px à l'entête qui en fait 72 — la légende passait sous la barre
+// d'action sur les trois formats testés.
 /** Ligne « ← Bibliothèque · nom du support » au-dessus de l'aperçu. */
-export const HAUT_ENTETE_MOBILE = 52
+export const HAUT_ENTETE_MOBILE = 72
 /** Barre d'action ancrée : rangée d'onglets + rangée statut/export + marges. */
-export const HAUT_BARRE_MOBILE = 122
+export const HAUT_BARRE_MOBILE = 118
+/** Respiration entre le bas de l'aperçu et la barre : sans elle, ça se touche. */
+export const MARGE_SECURITE = 8
 /** Sous cette hauteur, l'aperçu ne dit plus rien : on ne descend pas plus bas. */
 export const BANDE_MINIMALE = 120
 /** Légende sous l'aperçu (« À poser sur la table — taille réelle… »). */
@@ -26,21 +33,59 @@ export const HAUT_LEGENDE = 30
 export const MARGE_LATERALE = 12
 
 /**
+ * Téléphone couché. Une feuille ancrée en bas y est absurde : sur un écran de
+ * 390 px de haut, elle ne peut monter qu'à ~148 px, dont la barre d'action en
+ * mange 122 — les réglages étaient LITTÉRALEMENT inatteignables (constaté en
+ * capture, 844 × 390). À l'horizontale, la place est sur le CÔTÉ.
+ */
+export function estPaysage(largeurEcran: number, hauteurEcran: number): boolean {
+  if (!Number.isFinite(largeurEcran) || !Number.isFinite(hauteurEcran)) return false
+  return largeurEcran > hauteurEcran
+}
+
+/** Barre d'action couchée : onglets et bouton tiennent sur UNE rangée. */
+export const HAUT_BARRE_PAYSAGE = 68
+
+/** Largeur du tiroir latéral en paysage : assez pour lire, pas au point de tuer l'aperçu. */
+export function largeurTiroirPaysage(largeurEcran: number): number {
+  if (!Number.isFinite(largeurEcran) || largeurEcran <= 0) return 320
+  return Math.round(Math.min(380, Math.max(260, largeurEcran * 0.46)))
+}
+
+/**
  * Hauteur utile pour l'aperçu, en pixels.
  *
  * @param hauteurEcran hauteur visible (visualViewport de préférence)
  * @param feuilleOuverte la feuille de réglages est-elle déployée
  * @param feuilleVh sa hauteur, en % de l'écran (40 / 66 / 90)
+ * @param paysage écran couché : les réglages sont sur le côté, pas en dessous —
+ *        ils ne retirent donc AUCUNE hauteur à l'aperçu.
  */
-export function bandeApercuMobile(hauteurEcran: number, feuilleOuverte: boolean, feuilleVh: number): number {
+export type MesuresChrome = { entete?: number; barre?: number }
+
+export function bandeApercuMobile(
+  hauteurEcran: number, feuilleOuverte: boolean, feuilleVh: number, paysage = false,
+  mesures: MesuresChrome = {},
+): number {
   if (!Number.isFinite(hauteurEcran) || hauteurEcran <= 0) return BANDE_MINIMALE
+  const entete = mesures.entete && mesures.entete > 0 ? mesures.entete : HAUT_ENTETE_MOBILE
+  const barre = mesures.barre && mesures.barre > 0
+    ? mesures.barre
+    : (paysage ? HAUT_BARRE_PAYSAGE : HAUT_BARRE_MOBILE)
   // Feuille ouverte : elle est ancrée en bas et masque `feuilleVh` % de l'écran ;
   // la barre d'action flotte AU-DESSUS d'elle, elle ne retire donc rien de plus.
-  // Feuille fermée : seule la barre d'action mange le bas.
-  const dispo = feuilleOuverte
-    ? hauteurEcran * (1 - Math.min(100, Math.max(0, feuilleVh)) / 100)
-    : hauteurEcran - HAUT_BARRE_MOBILE
-  return Math.max(BANDE_MINIMALE, Math.round(dispo - HAUT_ENTETE_MOBILE))
+  // Feuille fermée (et paysage, où les réglages sont sur le côté) : seule la
+  // barre d'action mange le bas.
+  const dispo = paysage || !feuilleOuverte
+    ? hauteurEcran - barre
+    : hauteurEcran * (1 - Math.min(100, Math.max(0, feuilleVh)) / 100)
+  return Math.max(BANDE_MINIMALE, Math.round(dispo - entete - MARGE_SECURITE))
+}
+
+/** Largeur restante pour l'aperçu : en paysage, le tiroir la rogne sur le côté. */
+export function largeurApercuMobile(largeurEcran: number, paysage: boolean, tiroirOuvert: boolean): number {
+  const l = Number.isFinite(largeurEcran) && largeurEcran > 0 ? largeurEcran : 390
+  return paysage && tiroirOuvert ? Math.max(200, l - largeurTiroirPaysage(l)) : l
 }
 
 /**
@@ -112,7 +157,7 @@ export function legendeVisible(bande: number): boolean {
 export const VH_FEUILLE_MINIMALE = 38
 export const VH_FEUILLE_MAXIMALE = 90
 
-export function vhFeuilleMax(hauteurEcran: number, largeurEcran: number, ratio: number): number {
+export function vhFeuilleMax(hauteurEcran: number, largeurEcran: number, ratio: number, hauteurEntete = HAUT_ENTETE_MOBILE): number {
   const r = Number.isFinite(ratio) && ratio > 0 ? ratio : 1
   if (!Number.isFinite(hauteurEcran) || hauteurEcran <= 0) return VH_FEUILLE_MAXIMALE
   const largeur = Math.min(Math.max(160, largeurEcran - MARGE_LATERALE * 2), LARGEUR_MINIMALE_SUPPORT)
@@ -120,7 +165,8 @@ export function vhFeuilleMax(hauteurEcran: number, largeurEcran: number, ratio: 
   // On réserve TOUJOURS la place de la légende dans le calcul du plafond : si
   // elle finit masquée (bande courte), la bande est simplement plus généreuse
   // que nécessaire — jamais l'inverse.
-  const bandeNecessaire = hauteurSupport + HAUT_LEGENDE + HAUT_ENTETE_MOBILE
+  const bandeNecessaire = hauteurSupport + HAUT_LEGENDE + MARGE_SECURITE
+    + (hauteurEntete > 0 ? hauteurEntete : HAUT_ENTETE_MOBILE)
   const vh = (1 - bandeNecessaire / hauteurEcran) * 100
   return Math.min(VH_FEUILLE_MAXIMALE, Math.max(VH_FEUILLE_MINIMALE, Math.floor(vh)))
 }

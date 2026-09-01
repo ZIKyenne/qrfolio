@@ -25,7 +25,7 @@ import { filterTemplates, type PrintTemplate, type TemplateVariant } from "./tem
 import { printPreflight, hexContrastRatio } from "../qr-codes/printPreflight"
 import { color as C, radius as R } from "./tokens"
 import { ajusterAuSupport, lignesDeTitre, partQrMax, type Pastille } from "./ajustement"
-import { bandeApercuMobile, dimensionsApercuMobile, legendeVisible, vhFeuilleMax } from "./apercuMobile"
+import { bandeApercuMobile, dimensionsApercuMobile, legendeVisible, vhFeuilleMax, estPaysage, largeurTiroirPaysage, largeurApercuMobile, HAUT_BARRE_PAYSAGE } from "./apercuMobile"
 
 // item.layout est parfois une clé de contenu ('stack'), parfois un id de layout ('orne').
 // On résout toujours vers un id de LAYOUTS valide (pour le volet Mise en page).
@@ -237,6 +237,27 @@ function useHauteurEcran(actif: boolean) {
   return { hauteurEcran: h, largeurEcran: l }
 }
 
+// Hauteur RÉELLE d'un élément (entête, barre d'action). On ne la devine pas :
+// la première version annonçait 52 px pour un entête qui en fait 72, et la
+// légende de l'aperçu passait sous la barre sur les trois formats testés.
+function useHauteurMesuree(actif: boolean) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  const [h, setH] = useState(0)
+  useEffect(() => {
+    if (!actif) { setH(0); return }
+    const el = ref.current
+    if (!el || typeof ResizeObserver === "undefined") return
+    // Quantifié à 2 px : un sous-pixel de plus ne doit pas relancer un rendu.
+    const ro = new ResizeObserver(() => {
+      const v = Math.round(el.getBoundingClientRect().height / 2) * 2
+      setH(prev => (prev === v ? prev : v))
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [actif])
+  return { ref, hauteur: h }
+}
+
 // Attributs anti-artefacts pour les champs texte du studio (claviers mobiles prédictifs).
 const textInputProps = { autoCorrect: "off", autoCapitalize: "sentences", spellCheck: false, enterKeyHint: "done" as const }
 
@@ -244,6 +265,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const isMobile = useIsMobile()
   const { kb, typing } = useKeyboard(isMobile)   // clavier virtuel : hauteur + saisie en cours (§11)
   const { hauteurEcran, largeurEcran } = useHauteurEcran(isMobile)
+  const mesureEntete = useHauteurMesuree(isMobile)
+  const mesureBarre = useHauteurMesuree(isMobile)
   const [sheetOpen, setSheetOpen] = useState(false)   // bottom sheet des réglages (mobile)
   const [sheetPos, setSheetPos] = useState<SheetPos>("half")   // #17 : position ancrée de la sheet (peek/half/full)
   const [sheetDragging, setSheetDragging] = useState(false)    // drag du handle en cours (désactive la transition)
@@ -1038,10 +1061,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   // La feuille ne monte jamais au point de cacher le support : son plafond dépend
   // de la forme de l'objet qu'on est en train de régler. Une même valeur sert à
   // la feuille ET à l'aperçu -> ils ne peuvent pas se contredire.
-  const vhFeuille = isMobile
-    ? Math.min(SHEET_VH[sheetPos], vhFeuilleMax(hauteurEcran, largeurEcran, item.shape === "round" ? 1 : item.ratio))
+  // Téléphone couché : les réglages passent sur le CÔTÉ. Ancrés en bas, ils ne
+  // pouvaient monter qu'à ~148 px dont la barre d'action en masquait 122 : le
+  // panneau existait mais aucun réglage n'était atteignable.
+  const paysage = isMobile && estPaysage(largeurEcran, hauteurEcran)
+  const tiroirW = paysage ? largeurTiroirPaysage(largeurEcran) : 0
+  const chrome = { entete: mesureEntete.hauteur, barre: mesureBarre.hauteur }
+  const vhFeuille = isMobile && !paysage
+    ? Math.min(SHEET_VH[sheetPos], vhFeuilleMax(hauteurEcran, largeurEcran, item.shape === "round" ? 1 : item.ratio, chrome.entete))
     : 0
-  const bandeApercu = isMobile ? bandeApercuMobile(hauteurEcran, sheetOpen, vhFeuille) : 0
+  const bandeApercu = isMobile ? bandeApercuMobile(hauteurEcran, sheetOpen, vhFeuille, paysage, chrome) : 0
+  const largeurApercu = largeurApercuMobile(largeurEcran, paysage, sheetOpen)
   // Déplace la sheet d'un cran (dir +1 = plus grande, -1 = plus petite ; sous « peek » = fermer).
   function stepSheet(dir: 1 | -1) {
     const i = SHEET_ORDER.indexOf(sheetPos) + dir
@@ -1060,8 +1090,8 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   return (
     <div className="ps-root" style={{ position: "relative", minHeight: "100dvh", color: C.fg, fontFamily: "Inter, system-ui, sans-serif" }}>
       <Particles behind />
-      <header className="ps-hdr" style={{ maxWidth: 1320, margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-        <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13, flexShrink: 0 }}><ArrowLeft size={16} /> Bibliothèque</button>
+      <header ref={mesureEntete.ref as any} className="ps-hdr" style={{ maxWidth: 1320, margin: "0 auto", padding: paysage && sheetOpen ? `14px ${tiroirW + 16}px 14px 16px` : "14px 16px", transition: "padding var(--mo-sheet) var(--mo-ease-standard)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+        <button onClick={() => setPhase("library")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 13, flexShrink: 0, minHeight: 44, padding: "0 6px 0 0", marginLeft: -2 }}><ArrowLeft size={16} /> Bibliothèque</button>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {/* Bascule Simple/Studio retirée : un seul mode d'édition (canvas libre borné, sûr par conception). */}
           {/* Mobile = simplifié : on masque annuler/rétablir · Décliner · Planche (fonctions avancées desktop). */}
@@ -1090,10 +1120,14 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           {/* Le nom du support manquait sur mobile : l'entête disait « Bibliothèque »
               et rien d'autre — impossible de savoir ce qu'on était en train de régler. */}
           <span style={{ fontSize: isMobile ? 11.5 : 12.5, fontWeight: 700, color: C.fgMuted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name} · <span style={{ fontFamily: "ui-monospace, monospace" }}>{item.size}</span></span>
+          {/* Dans la légende, il disparaissait dès que le panneau de réglages
+              s'ouvrait : la vue « en situation » devenait inatteignable sans tout
+              refermer. Dans l'entête, elle est toujours à un tap. */}
+          {isMobile && <button onClick={() => setFsOpen(true)} aria-label="Voir en situation (plein écran)" style={{ flexShrink: 0, background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 16, lineHeight: 1, minWidth: 44, minHeight: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", marginRight: -10 }}>⛶</button>}
         </div>
       </header>
 
-      <div className="ps-grid" style={{ maxWidth: 1320, margin: "0 auto", padding: isMobile ? "0 12px 0" : "0 16px 108px", display: "grid", gap: 24, gridTemplateColumns: "1fr" }}>
+      <div className="ps-grid" style={{ maxWidth: 1320, margin: "0 auto", padding: isMobile ? `0 ${paysage && sheetOpen ? tiroirW + 12 : 12}px 0 12px` : "0 16px 108px", transition: "padding var(--mo-sheet) var(--mo-ease-standard)", display: "grid", gap: 24, gridTemplateColumns: "1fr" }}>
         {/* Canvas héros (#2) + shell ZÉRO-SCROLL (§11) : sur desktop le root est une colonne 100dvh (header figé,
             grille flex:1 à overflow interne, barre d'action en pied statique) → aucun scroll de page, seuls les
             panneaux/canvas scrollent en interne. Mobile inchangé (scroll doux + sheet). */}
@@ -1203,7 +1237,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                     // bande laissée par la feuille ET du plancher de lisibilité — un
                     // support très portrait devenait si étroit que le moteur de QR
                     // refusait de dessiner (« The canvas is too small »).
-                    const d = dimensionsApercuMobile(bandeApercu, largeurEcran, r)
+                    const d = dimensionsApercuMobile(bandeApercu, largeurApercu, r)
                     w = d.w; h = d.h
                   } else {
                     const boxW = 500, boxH = 500
@@ -1226,7 +1260,6 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
           {!showFlat && (!isMobile || legendeVisible(bandeApercu)) && (isMobile
             ? <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "6px 0 0" }}>
                 <span style={{ color: C.fgMuted, fontSize: 11.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</span>
-                <button onClick={() => setFsOpen(true)} aria-label="Voir en situation (plein écran)" style={{ flexShrink: 0, background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 15, lineHeight: 1, padding: "4px 2px" }}>⛶</button>
               </div>
             : <p style={{ textAlign: "center", color: C.fgMuted, fontSize: 11.5, margin: "8px 0 0" }}>{supportHint(item)} · {qrReady ? "votre QR est en place" : "ajoutez votre QR"}</p>)}
           {!showFlat && !isMobile && <p style={{ textAlign: "center", color: C.fgFaint, fontSize: 11, margin: "4px 0 0" }}>Cliquez le titre, le QR ou le fond de l'aperçu pour le régler directement.</p>}
@@ -1492,17 +1525,19 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       {isMobile && (
         <>
           {/* Backdrop seulement en « full » (tap = revenir à half) ; en peek/half le canvas reste VISIBLE et interactif. */}
-          {sheetOpen && sheetPos === "full" && <div onClick={() => setSheetPos("half")} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.35)" }} />}
+          {!paysage && sheetOpen && sheetPos === "full" && <div onClick={() => setSheetPos("half")} aria-hidden style={{ position: "fixed", inset: 0, zIndex: 69, background: "rgba(0,0,0,0.35)" }} />}
           {/* Padding bas généreux : la barre d'onglets (zIndex 71) reste AU-DESSUS de la sheet → onglets toujours cliquables. */}
-          <div style={{ position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, height: kb ? `calc(74vh - ${kb}px)` : `${vhFeuille}vh`, maxHeight: "92vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `0 16px ${kb ? "66px" : "calc(128px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? `translateY(${sheetDragPx}px)` : "translateY(112%)", transition: sheetDragging ? "none" : "transform var(--mo-sheet) var(--mo-ease-standard), height var(--mo-sheet) var(--mo-ease-standard)", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={paysage
+            ? { position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 70, width: tiroirW, maxWidth: "58vw", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, borderLeft: `1px solid ${C.hairline}`, boxShadow: "-16px 0 44px rgba(0,0,0,0.5)", padding: `0 16px calc(${HAUT_BARRE_PAYSAGE + 12}px + env(safe-area-inset-bottom))`, transform: sheetOpen ? "translateX(0)" : "translateX(112%)", transition: "transform var(--mo-sheet) var(--mo-ease-standard)", display: "flex", flexDirection: "column", gap: 12 }
+            : { position: "fixed", left: 0, right: 0, bottom: kb, zIndex: 70, height: kb ? `calc(74vh - ${kb}px)` : `${vhFeuille}vh`, maxHeight: "92vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: C.bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: `1px solid ${C.hairline}`, boxShadow: "0 -16px 44px rgba(0,0,0,0.5)", padding: `0 16px ${kb ? "66px" : "calc(128px + env(safe-area-inset-bottom))"}`, transform: sheetOpen ? `translateY(${sheetDragPx}px)` : "translateY(112%)", transition: sheetDragging ? "none" : "transform var(--mo-sheet) var(--mo-ease-standard), height var(--mo-sheet) var(--mo-ease-standard)", display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ position: "sticky", top: 0, zIndex: 3, background: C.bg, paddingTop: 8 }}>
               {/* Handle : glisser pour changer de hauteur (snap au cran voisin) · tap pour passer au cran suivant. */}
-              <div onPointerDown={onSheetDown} onPointerMove={onSheetMove} onPointerUp={onSheetUp} onPointerCancel={onSheetUp} role="slider" aria-label="Hauteur du panneau" aria-valuetext={sheetPos} tabIndex={0} style={{ touchAction: "none", cursor: "grab", padding: "2px 0 6px" }}>
+              {!paysage && <div onPointerDown={onSheetDown} onPointerMove={onSheetMove} onPointerUp={onSheetUp} onPointerCancel={onSheetUp} role="slider" aria-label="Hauteur du panneau" aria-valuetext={sheetPos} tabIndex={0} style={{ touchAction: "none", cursor: "grab", padding: "2px 0 6px" }}>
                 <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.22)", margin: "0 auto 8px" }} />
-              </div>
+              </div>}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 6 }}>
                 <span style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 16, fontWeight: 600 }}>{mobileTab === "theme" ? "Thème" : mobileTab === "couleurs" ? "Couleurs" : mobileTab === "texte" ? "Texte" : "QR code"}</span>
-                <button onClick={() => setSheetOpen(false)} aria-label="Fermer" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "0 4px" }}>×</button>
+                <button onClick={() => setSheetOpen(false)} aria-label="Fermer" style={{ background: "none", border: "none", color: C.fgMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, minWidth: 44, minHeight: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "-8px -10px -8px 0" }}>×</button>
               </div>
             </div>
 
@@ -1589,16 +1624,19 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
 
       {/* Barre d'action ancrée — mobile : onglets (ouvrent la sheet) + action ; desktop : statut + action.
           zIndex 71 > sheet (70) : les onglets restent tappables même sheet ouverte (peek/half = non modal). */}
-      <div className="ps-actionbar" style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))", zIndex: isMobile ? 71 : 30 }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
+      <div ref={mesureBarre.ref} className="ps-actionbar" style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "color-mix(in srgb, var(--surface) 92%, transparent)", borderTop: `1px solid ${C.hairline}`, backdropFilter: "blur(8px)", padding: "10px 16px calc(10px + env(safe-area-inset-bottom))", zIndex: isMobile ? 71 : 30 }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", display: "flex", flexDirection: paysage ? "row" : "column", alignItems: paysage ? "center" : undefined, gap: 8, minWidth: 0 }}>
+          {/* `flex: 1` UNIQUEMENT couché : en portrait la barre est une COLONNE,
+              et un flex-grow y étire la rangée d'onglets en hauteur — la pastille
+              de statut venait alors recouvrir les onglets et volait leurs taps. */}
           {isMobile && (
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 6, ...(paysage ? { flex: 1, minWidth: 0 } : null) }}>
               {([["theme", "Thème"], ["couleurs", "Couleurs"], ["texte", "Texte"], ["qr", "QR"]] as const).map(([id, lbl]) => (
                 <button key={id} onClick={() => { if (sheetOpen && mobileTab === id) setSheetOpen(false); else openSheet(id) }} style={{ ...chipStyle(sheetOpen && mobileTab === id), minHeight: 42, fontSize: 12.5, flex: 1 }}>{lbl}</button>
               ))}
             </div>
           )}
-          <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end", flexShrink: 0, minWidth: 0 }}>
             {(() => {
               // Statut d'export à 3 états (audit Écran 2 « à conserver ») : Prêt / À vérifier / Bloquant.
               const fails = preflight.checks.filter(c => c.status === "fail").length
@@ -1608,7 +1646,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
               const bg = st === "ready" ? "var(--success-bg)" : st === "warn" ? C.goldSoft : "var(--danger-bg)"
               const bd = st === "ready" ? "color-mix(in srgb,var(--success) 30%,transparent)" : st === "warn" ? C.gold : "var(--danger-border)"
               const label = st === "ready" ? "Prêt à imprimer" : st === "warn" ? `À vérifier · ${warns}` : `${fails} à corriger`
-              return <button onClick={() => setControl(true)} title="Voir la vérification" style={{ marginRight: "auto", fontSize: 12, fontWeight: 600, cursor: "pointer", color: col, background: bg, border: `1px solid ${bd}`, borderRadius: 999, padding: "8px 12px", display: "inline-flex", alignItems: "center", gap: 6 }}>{st === "ready" ? <ShieldCheck size={14} /> : <AlertTriangle size={14} />} {label}</button>
+              return <button onClick={() => setControl(true)} title="Voir la vérification" style={{ ...(paysage ? null : { marginRight: "auto" }), flexShrink: 0, whiteSpace: "nowrap", fontSize: 12, fontWeight: 600, cursor: "pointer", color: col, background: bg, border: `1px solid ${bd}`, borderRadius: 999, padding: "0 14px", minHeight: 44, display: "inline-flex", alignItems: "center", gap: 6 }}>{st === "ready" ? <ShieldCheck size={14} /> : <AlertTriangle size={14} />} {label}</button>
             })()}
             <Button variant="primary" onClick={() => setControl(true)}>Vérifier & exporter</Button>
           </div>
@@ -1626,10 +1664,17 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       <Modal open={control} onClose={() => setControl(false)} title="Votre création" maxWidth={520}>
         {/* Score mis en scène (§8/§27) : gros chiffre + étoiles + titre + bénéfice de lecture. */}
         <div className="mo-pop-in" style={{ textAlign: "center", padding: "4px 0 16px" }}>
-          <div style={{ fontSize: 42, fontWeight: 800, lineHeight: 1, color: hasFail ? C.bad : preflight.score >= 90 ? C.ok : C.gold }}>{preflight.score}<span style={{ fontSize: 17, fontWeight: 700, color: C.fgMuted }}> / 100</span></div>
-          <div style={{ fontSize: 16, letterSpacing: 2, margin: "6px 0 4px", color: C.gold }}>{"★".repeat(preflight.stars)}<span style={{ color: C.fgFaint }}>{"☆".repeat(5 - preflight.stars)}</span></div>
-          <div style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600, color: C.fg }}>{hasFail ? "Un réglage à corriger" : "Votre création est prête"}</div>
-          {preflight.scanDistanceM && !hasFail && <p style={{ margin: "8px auto 0", maxWidth: 340, fontSize: 12.5, color: C.fgMuted, lineHeight: 1.4 }}>Votre QR devrait être facilement scannable jusqu'à ~{preflight.scanDistanceM} m.</p>}
+          {/* « 100 / 100 — Votre création est prête » s'affichait alors qu'AUCUN QR
+              n'avait été choisi et que le téléchargement était bloqué. Les contrôles
+              portent sur un QR d'exemple : tant qu'il n'y en a pas de vrai, le score
+              ne promet rien, et il faut le dire. */}
+          <div style={{ fontSize: 42, fontWeight: 800, lineHeight: 1, color: hasFail ? C.bad : !qrReady ? C.gold : preflight.score >= 90 ? C.ok : C.gold }}>{preflight.score}<span style={{ fontSize: 17, fontWeight: 700, color: C.fgMuted }}> / 100</span></div>
+          {/* Étoiles ternes tant que le QR manque : cinq étoiles pleines sous
+              « Il manque votre QR », c'était se contredire dans la même phrase. */}
+          <div style={{ fontSize: 16, letterSpacing: 2, margin: "6px 0 4px", color: qrReady ? C.gold : C.fgFaint, opacity: qrReady ? 1 : 0.55 }}>{"★".repeat(preflight.stars)}<span style={{ color: C.fgFaint }}>{"☆".repeat(5 - preflight.stars)}</span></div>
+          <div style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: 17, fontWeight: 600, color: C.fg }}>{hasFail ? "Un réglage à corriger" : !qrReady ? "Il manque votre QR" : "Votre création est prête"}</div>
+          {!qrReady && <p style={{ margin: "8px auto 0", maxWidth: 340, fontSize: 12.5, color: C.fgMuted, lineHeight: 1.4 }}>Score calculé sur un QR d'exemple — il sera confirmé une fois le vôtre en place.</p>}
+          {preflight.scanDistanceM && !hasFail && qrReady && <p style={{ margin: "8px auto 0", maxWidth: 340, fontSize: 12.5, color: C.fgMuted, lineHeight: 1.4 }}>Votre QR devrait être facilement scannable jusqu'à ~{preflight.scanDistanceM} m.</p>}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {preflight.checks.filter(c => c.status !== "na").map(c => {
@@ -1648,9 +1693,9 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             )
           })}
         </div>
-        {!qrReady && <p style={{ margin: "12px 0 0", fontSize: 12, color: C.gold, display: "inline-flex", alignItems: "center", gap: 6 }}><AlertTriangle size={13} /> Ajoutez d'abord votre QR (volet « Le QR »).</p>}
+        {!qrReady && <p style={{ margin: "12px 0 0", fontSize: 12, color: C.gold, display: "inline-flex", alignItems: "center", gap: 6 }}><AlertTriangle size={13} /> Ajoutez d'abord votre QR — onglet « {isMobile ? "QR" : "Contenu"} ».</p>}
         <div style={{ marginTop: 16 }}>
-          <Button variant="primary" fullWidth disabled={!ok || !qrReady} leftIcon={<Download size={18} />} onClick={() => { setControl(false); setPrinting(true) }}>{ok ? "Télécharger le PDF prêt à imprimer" : "Corrigez les points rouges"}</Button>
+          <Button variant="primary" fullWidth disabled={!ok || !qrReady} leftIcon={<Download size={18} />} onClick={() => { setControl(false); setPrinting(true) }}>{!ok ? "Corrigez les points rouges" : !qrReady ? "Ajoutez votre QR pour exporter" : "Télécharger le PDF prêt à imprimer"}</Button>
         </div>
         <p style={{ color: C.fgFaint, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>À la taille réelle ({pageDims(item).pageWmm} × {pageDims(item).pageHmm} mm, {item.shape === "round" ? "fond perdu inclus" : "fond perdu + traits de coupe"}, texte + QR vectoriels) — via « Enregistrer en PDF » de l'impression.</p>
         {qrSource === "mine" && (
@@ -1873,7 +1918,8 @@ function SuggRow({ items, active, onPick }: { items: string[]; active: string; o
     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
       {items.map(m => {
         const on = active === m
-        return <button key={m} className="ps-chip" onClick={() => onPick(m)} style={{ padding: "5px 10px", borderRadius: 8, cursor: "pointer", fontSize: 11.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fgMuted, whiteSpace: "nowrap" }}>{m}</button>
+        // 24 px de haut : impossible à viser au doigt. Le minimum tenable est 36.
+        return <button key={m} className="ps-chip" onClick={() => onPick(m)} style={{ padding: "0 12px", minHeight: 36, display: "inline-flex", alignItems: "center", borderRadius: 8, cursor: "pointer", fontSize: 11.5, fontWeight: 600, border: `1px solid ${on ? C.gold : C.hairline}`, background: on ? C.goldSoft : "transparent", color: on ? C.gold : C.fgMuted, whiteSpace: "nowrap" }}>{m}</button>
       })}
     </div>
   )

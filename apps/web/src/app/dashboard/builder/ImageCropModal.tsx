@@ -5,10 +5,34 @@
 // (JPEG), donc plus léger que l'original. Aucune dépendance externe.
 import { useEffect, useMemo, useRef, useState } from "react"
 import { X, ZoomIn, Check } from "lucide-react"
-import { coverBaseScale, clampOffset, computeCropRect, displaySize, outputSize, CROP_ASPECTS, type Offset } from "./imageCrop"
+import { coverBaseScale, clampOffset, computeCropRect, displaySize, outputSize, CROP_ASPECTS, cadreMax, largeurModale, type Offset } from "./imageCrop"
 
 const G = "#C9A84C", MUTED = "#A8A190"
-const FRAME_MAX = 280 // plus grand côté du cadre à l'écran
+
+// Le cadre suit l'écran (voir cadreMax dans imageCrop.ts). Il était figé à
+// 280 px : sur un téléphone, une zone de recadrage de 280 × 135 au milieu du
+// noir — et le cadrage raté finissait en grand sur la page publiée.
+function useEcran() {
+  const [e, setE] = useState({ l: 390, h: 844 })
+  useEffect(() => {
+    const lire = () => {
+      const vv = window.visualViewport
+      const l = Math.round(vv?.width ?? window.innerWidth)
+      const h = Math.round((vv?.height ?? window.innerHeight) / 8) * 8
+      setE(p => (p.l === l && p.h === h ? p : { l, h }))
+    }
+    lire()
+    window.visualViewport?.addEventListener("resize", lire)
+    window.addEventListener("resize", lire)
+    window.addEventListener("orientationchange", lire)
+    return () => {
+      window.visualViewport?.removeEventListener("resize", lire)
+      window.removeEventListener("resize", lire)
+      window.removeEventListener("orientationchange", lire)
+    }
+  }, [])
+  return e
+}
 
 export default function ImageCropModal({ file, onCancel, onConfirm, initialAspect }: {
   file: File
@@ -23,6 +47,8 @@ export default function ImageCropModal({ file, onCancel, onConfirm, initialAspec
   const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 })
   const [busy, setBusy] = useState(false)
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null)
+  const ecran = useEcran()
+  const FRAME_MAX = cadreMax(ecran.l, ecran.h)
 
   useEffect(() => {
     const u = URL.createObjectURL(file)
@@ -37,7 +63,7 @@ export default function ImageCropModal({ file, onCancel, onConfirm, initialAspec
   const frame = useMemo(() => {
     const a = CROP_ASPECTS.find(x => x.key === aspectKey)?.ratio ?? (natural.w && natural.h ? natural.w / natural.h : 1)
     return a >= 1 ? { w: FRAME_MAX, h: Math.round(FRAME_MAX / a) } : { w: Math.round(FRAME_MAX * a), h: FRAME_MAX }
-  }, [aspectKey, natural])
+  }, [aspectKey, natural, FRAME_MAX])
 
   // Recentre quand ratio/zoom/image changent (offset borné → cadre couvert).
   const disp = useMemo(() => (natural.w ? displaySize(natural, frame, zoom) : { w: 0, h: 0 }), [natural, frame, zoom])
@@ -82,10 +108,10 @@ export default function ImageCropModal({ file, onCancel, onConfirm, initialAspec
 
   return (
     <div onClick={onCancel} style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 18, padding: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: largeurModale(ecran.l), background: "#141210", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 18, padding: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           <p style={{ flex: 1, color: "#F5F0E8", fontSize: 14.5, fontWeight: 700, margin: 0 }}>Recadrer l'image</p>
-          <button onClick={onCancel} aria-label="Annuler" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 28, height: 28 }}><X size={14} /></button>
+          <button onClick={onCancel} aria-label="Annuler" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 44, height: 44, display: "grid", placeItems: "center", flexShrink: 0 }}><X size={16} /></button>
         </div>
 
         {/* Cadre */}
@@ -113,7 +139,9 @@ export default function ImageCropModal({ file, onCancel, onConfirm, initialAspec
             const active = a.key === aspectKey
             return (
               <button key={a.key} type="button" data-testid={"aspect-" + a.key} onClick={() => setAspectKey(a.key)}
-                style={{ padding: "5px 10px", borderRadius: 8, border: active ? `1px solid ${G}` : "1px solid rgba(255,255,255,0.12)", background: active ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", color: active ? "#F5F0E8" : MUTED, fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}>
+                // 24 px de haut : on choisit ici le cadrage d'une photo qui
+                // s'affichera en grand sur la page publiée. Ça se vise au doigt.
+                style={{ padding: "0 12px", minHeight: 40, display: "inline-flex", alignItems: "center", borderRadius: 8, border: active ? `1px solid ${G}` : "1px solid rgba(255,255,255,0.12)", background: active ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", color: active ? "#F5F0E8" : MUTED, fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}>
                 {a.label}
               </button>
             )

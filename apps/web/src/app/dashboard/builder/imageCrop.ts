@@ -67,3 +67,42 @@ export const CROP_ASPECTS: { key: string; label: string; ratio: number | null }[
   { key: "portrait", label: "Portrait 4:5", ratio: 4 / 5 },
   { key: "wide", label: "Bannière 3:1", ratio: 3 },
 ]
+
+// =============================================================================
+// Taille du cadre à l'écran
+// -----------------------------------------------------------------------------
+// Le cadre était figé à 280 px de côté. Sur un téléphone de 390 px, mesuré en
+// capture, cela donnait une zone de recadrage de 280 × 135 perdue au milieu de
+// l'écran, avec du noir au-dessus et en dessous : on cadrait la photo de son
+// commerce à travers un timbre-poste. Le mauvais cadrage se retrouve ensuite sur
+// la page publiée, en grand.
+//
+// Ici, le cadre prend la place disponible. Fonction pure -> testable sans DOM.
+// =============================================================================
+
+/** Marges de la fenêtre modale (bordures de page + padding intérieur). */
+export const MARGE_MODALE = 60
+/** Titre, curseur de zoom, pastilles de ratio, boutons : ce qui entoure le cadre. */
+export const CHROME_MODALE = 300
+export const CADRE_MIN = 200
+export const CADRE_MAX = 520
+
+/**
+ * Plus grand côté du cadre de recadrage, en pixels.
+ *
+ * @param largeurEcran largeur visible
+ * @param hauteurEcran hauteur visible
+ */
+export function cadreMax(largeurEcran: number, hauteurEcran: number): number {
+  const l = Number.isFinite(largeurEcran) && largeurEcran > 0 ? largeurEcran : 390
+  const h = Number.isFinite(hauteurEcran) && hauteurEcran > 0 ? hauteurEcran : 844
+  const parLaLargeur = l - MARGE_MODALE
+  const parLaHauteur = h - CHROME_MODALE
+  return Math.round(Math.min(CADRE_MAX, Math.max(CADRE_MIN, Math.min(parLaLargeur, parLaHauteur))))
+}
+
+/** Largeur de la fenêtre : pleine largeur utile sur téléphone, sobre au-delà. */
+export function largeurModale(largeurEcran: number): number {
+  const l = Number.isFinite(largeurEcran) && largeurEcran > 0 ? largeurEcran : 390
+  return Math.round(Math.min(Math.max(300, l - 24), 560))
+}

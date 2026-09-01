@@ -10,9 +10,44 @@ export function metaUser(m?: Stripe.Metadata | null): string | undefined {
   return (m?.userId || m?.supabase_user_id) || undefined
 }
 
+// Un horodatage Stripe utilisable, ou `undefined`. Sans ce filtre, un champ absent
+// devenait `NaN`, puis `new Date(NaN).toISOString()` levait « Invalid time value »
+// et le webhook repondait 500 — constate en production le 01/09/2026.
+function secondes(v: unknown): number | undefined {
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : undefined
+}
+
+// Depuis l'API Stripe 2025-03-31 (« Basil »), `current_period_start` et
+// `current_period_end` ne sont PLUS sur l'abonnement : ils vivent sur chaque
+// LIGNE d'abonnement. La version epinglee dans lib/stripe.ts ne protege pas de
+// ca : c'est le point de terminaison configure dans Stripe qui decide de la
+// version du corps recu, pas le SDK. On lit donc les deux emplacements.
+export function periodeAbonnement(sub: any): { debut?: number; fin?: number } {
+  const ligne = sub?.items?.data?.[0]
+  return {
+    debut: secondes(ligne?.current_period_start) ?? secondes(sub?.current_period_start),
+    fin: secondes(ligne?.current_period_end) ?? secondes(sub?.current_period_end),
+  }
+}
+
+// Meme rupture pour la facture : `invoice.subscription` a disparu au profit de
+// `invoice.parent.subscription_details.subscription`. Les trois emplacements
+// connus sont essayes, du plus recent au plus ancien.
+export function abonnementDeFacture(inv: any): string | undefined {
+  const direct = inv?.subscription
+  if (typeof direct === "string" && direct) return direct
+  if (direct?.id) return direct.id
+  const parent = inv?.parent?.subscription_details?.subscription
+  if (typeof parent === "string" && parent) return parent
+  if (parent?.id) return parent.id
+  const ligne = inv?.lines?.data?.[0]?.parent?.subscription_item_details?.subscription
+  if (typeof ligne === "string" && ligne) return ligne
+  return undefined
+}
+
 export type WebhookOutcome =
   | { type: "checkout_completed"; userId: string; plan: string; customerId: string; subscriptionId: string; priceId?: string; billing?: string }
-  | { type: "subscription_updated"; userId: string; plan: string | null; status: string; periodStart: number; periodEnd: number; cancelAtEnd: boolean; subId: string; priceId?: string }
+  | { type: "subscription_updated"; userId: string; plan: string | null; status: string; periodStart?: number; periodEnd?: number; cancelAtEnd: boolean; subId: string; priceId?: string }
   | { type: "subscription_deleted"; userId: string; subId: string }
   | { type: "payment_failed"; subId: string }
   | { type: "noop" }
@@ -66,13 +101,14 @@ export function resolveStripeEvent(
       // Prix inconnu (absent de la config) -> plan = null : on NE rétrograde PAS
       // l'abonné (une vraie annulation passe par subscription.deleted).
       const plan = resolvePlan(priceId)
+      const periode = periodeAbonnement(sub)
       return {
         type: "subscription_updated",
         userId,
         plan,
         status: sub.status,
-        periodStart: (sub as any).current_period_start,
-        periodEnd: (sub as any).current_period_end,
+        periodStart: periode.debut,
+        periodEnd: periode.fin,
         cancelAtEnd: sub.cancel_at_period_end,
         subId: sub.id,
         priceId: priceId ?? undefined,
@@ -86,7 +122,11 @@ export function resolveStripeEvent(
     }
     case "invoice.payment_failed": {
       const inv = event.data.object as Stripe.Invoice
-      return { type: "payment_failed", subId: (inv as any).subscription as string }
+      const subId = abonnementDeFacture(inv)
+      // Sans abonnement identifiable, il n'y a rien a marquer en impaye : mieux
+      // vaut ne rien faire que de lancer un UPDATE sur `undefined`.
+      if (!subId) return { type: "noop" }
+      return { type: "payment_failed", subId }
     }
     default:
       return { type: "noop" }

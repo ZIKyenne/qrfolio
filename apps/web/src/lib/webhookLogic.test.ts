@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { resolveStripeEvent, metaUser } from "./webhookLogic"
+import { resolveStripeEvent, metaUser, periodeAbonnement, abonnementDeFacture } from "./webhookLogic"
 import type Stripe from "stripe"
 
 // Fabriques d'événements minimaux (cast : on ne teste que les champs lus).
@@ -9,13 +9,13 @@ const checkout = (metadata: any, customer = "cus_1", subscription = "sub_1", pay
 const subUpdated = (metadata: any, priceId: string | undefined, status = "active", cancelAtEnd = false) =>
   ({
     type: "customer.subscription.updated",
-    data: { object: { id: "sub_9", metadata, status, cancel_at_period_end: cancelAtEnd, current_period_start: 1000, current_period_end: 2000, items: { data: priceId ? [{ price: { id: priceId } }] : [] } } },
+    data: { object: { id: "sub_9", metadata, status, cancel_at_period_end: cancelAtEnd, items: { data: priceId ? [{ price: { id: priceId } }] : [] } } },
   }) as unknown as Stripe.Event
 
 const subCreated = (metadata: any, priceId: string | undefined, status = "active") =>
   ({
     type: "customer.subscription.created",
-    data: { object: { id: "sub_9", metadata, status, cancel_at_period_end: false, current_period_start: 1000, current_period_end: 2000, items: { data: priceId ? [{ price: { id: priceId } }] : [] } } },
+    data: { object: { id: "sub_9", metadata, status, cancel_at_period_end: false, items: { data: priceId ? [{ price: { id: priceId }, current_period_start: 1000, current_period_end: 2000 }] : [] } } },
   }) as unknown as Stripe.Event
 
 const subDeleted = (metadata: any) =>
@@ -65,10 +65,15 @@ describe("resolveStripeEvent — customer.subscription.updated", () => {
     if (o.type === "subscription_updated") expect(o.plan).toBeNull()
   })
   it("propage période et cancel_at_period_end", () => {
-    const o = resolveStripeEvent(subUpdated({ userId: "u1" }, "price_pro", "past_due", true), asPro)
+    const evt = ({
+      type: "customer.subscription.updated",
+      data: { object: { id: "sub_9", metadata: { userId: "u1" }, status: "past_due", cancel_at_period_end: true,
+        items: { data: [{ price: { id: "price_pro" }, current_period_start: 1000, current_period_end: 2000 }] } } },
+    }) as unknown as Stripe.Event
+    const o = resolveStripeEvent(evt, asPro)
     if (o.type === "subscription_updated") {
       expect(o.periodStart).toBe(1000); expect(o.periodEnd).toBe(2000); expect(o.cancelAtEnd).toBe(true); expect(o.status).toBe("past_due")
-    }
+    } else throw new Error("issue inattendue")
   })
   it("noop si userId manquant", () => {
     expect(resolveStripeEvent(subUpdated({}, "price_pro"), asPro).type).toBe("noop")
@@ -151,6 +156,64 @@ describe("customer.subscription.created", () => {
   it("le priceId remonte aussi sur updated (pour reparer une ligne manquante)", () => {
     const o = resolveStripeEvent(subUpdated({ userId: "u1" }, "price_pro"), asPro)
     if (o.type === "subscription_updated") expect(o.priceId).toBe("price_pro")
+  })
+})
+
+describe("les champs que Stripe a deplaces en 2025", () => {
+  // Constate en production le 01/09/2026 : trois webhooks en 500, « Invalid time
+  // value ». Depuis l'API 2025-03-31 (« Basil »), les dates de periode ne sont
+  // plus sur l'abonnement mais sur ses LIGNES. Epingler une version dans le SDK
+  // ne protege pas : c'est le point de terminaison configure chez Stripe qui
+  // decide de la version du corps recu.
+  const subBasil = (metadata: any) =>
+    ({
+      type: "customer.subscription.updated",
+      data: { object: { id: "sub_b", metadata, status: "active", cancel_at_period_end: true,
+        items: { data: [{ price: { id: "price_pro" }, current_period_start: 1500, current_period_end: 2500 }] } } },
+    }) as unknown as Stripe.Event
+
+  it("lit les dates sur la ligne d'abonnement (API recente)", () => {
+    expect(periodeAbonnement({ items: { data: [{ current_period_start: 111, current_period_end: 222 }] } }))
+      .toEqual({ debut: 111, fin: 222 })
+  })
+
+  it("lit encore les dates sur l'abonnement lui-meme (API ancienne)", () => {
+    expect(periodeAbonnement({ current_period_start: 111, current_period_end: 222, items: { data: [{}] } }))
+      .toEqual({ debut: 111, fin: 222 })
+  })
+
+  it("aucune date trouvee -> undefined, jamais NaN", () => {
+    for (const cas of [{}, { items: { data: [] } }, { current_period_start: null, current_period_end: undefined }]) {
+      const r = periodeAbonnement(cas)
+      expect(r.debut).toBeUndefined(); expect(r.fin).toBeUndefined()
+      // NaN passerait ce test si on ne le disait pas explicitement.
+      expect(Number.isNaN(r.debut as any)).toBe(false)
+    }
+  })
+
+  it("un evenement au format recent produit bien les dates", () => {
+    const o = resolveStripeEvent(subBasil({ userId: "u1" }), asPro)
+    if (o.type === "subscription_updated") {
+      expect(o.periodStart).toBe(1500); expect(o.periodEnd).toBe(2500); expect(o.cancelAtEnd).toBe(true)
+    } else throw new Error("issue inattendue")
+  })
+
+  it("un evenement SANS date ne fait pas echouer la resolution", () => {
+    const o = resolveStripeEvent(subUpdated({ userId: "u1" }, "price_pro"), asPro)
+    expect(o.type).toBe("subscription_updated")
+  })
+
+  it("la facture : les trois emplacements connus de l'abonnement", () => {
+    expect(abonnementDeFacture({ subscription: "sub_1" })).toBe("sub_1")
+    expect(abonnementDeFacture({ subscription: { id: "sub_2" } })).toBe("sub_2")
+    expect(abonnementDeFacture({ parent: { subscription_details: { subscription: "sub_3" } } })).toBe("sub_3")
+    expect(abonnementDeFacture({ lines: { data: [{ parent: { subscription_item_details: { subscription: "sub_4" } } }] } })).toBe("sub_4")
+    expect(abonnementDeFacture({})).toBeUndefined()
+  })
+
+  it("une facture sans abonnement identifiable -> noop, pas d'UPDATE sur undefined", () => {
+    const inv = ({ type: "invoice.payment_failed", data: { object: {} } }) as unknown as Stripe.Event
+    expect(resolveStripeEvent(inv).type).toBe("noop")
   })
 })
 

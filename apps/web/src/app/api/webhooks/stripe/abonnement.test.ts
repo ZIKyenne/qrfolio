@@ -71,6 +71,21 @@ describe("l'abonnement s'enregistre vraiment", () => {
     expect(nonVerifiees).toEqual([])
   })
 
+  it("aucune conversion de date sans garde dans la route", () => {
+    // `new Date(undefined * 1000).toISOString()` leve « Invalid time value » et
+    // fait repondre 500. Constate en production le 01/09/2026 : trois webhooks
+    // perdus, l'annulation jamais enregistree.
+    const conversions = [...route.matchAll(/^.*new Date\([^)]*\* 1000\).*$/gm)].map(m => m[0])
+    expect(conversions.length).toBeGreaterThan(0)
+    for (const l of conversions) expect(/\?|\.\.\.\(/.test(l)).toBe(true)
+  })
+
+  it("les dates de periode sont lues sur la ligne d'abonnement", () => {
+    // Depuis l'API Stripe 2025-03-31, elles ne sont plus sur l'abonnement.
+    expect(logique).toContain("items?.data?.[0]")
+    expect(logique).toContain("current_period_start")
+  })
+
   it("un echec d'ecriture fait repondre 500, pour que Stripe rejoue", () => {
     expect(/echecs\.length/.test(route)).toBe(true)
     expect(/status:\s*500/.test(route)).toBe(true)

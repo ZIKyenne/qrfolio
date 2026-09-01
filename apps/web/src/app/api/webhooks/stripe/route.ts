@@ -122,8 +122,11 @@ export async function POST(req: NextRequest) {
           ...(outcome.priceId ? { stripe_price_id: outcome.priceId } : {}),
           ...(outcome.plan ? { plan: outcome.plan } : {}),
           status: outcome.status,
-          current_period_start: new Date(outcome.periodStart * 1000).toISOString(),
-          current_period_end: new Date(outcome.periodEnd * 1000).toISOString(),
+          // Dates ecrites SEULEMENT si Stripe les a fournies. Les convertir a
+          // l'aveugle levait « Invalid time value » et faisait repondre 500 :
+          // l'annulation n'etait jamais enregistree.
+          ...(outcome.periodStart ? { current_period_start: new Date(outcome.periodStart * 1000).toISOString() } : {}),
+          ...(outcome.periodEnd ? { current_period_end: new Date(outcome.periodEnd * 1000).toISOString() } : {}),
           cancel_at_period_end: outcome.cancelAtEnd,
         }, { onConflict: "user_id" }))
         if (outcome.plan) await reconcileDynamicLinks(outcome.userId, outcome.plan)

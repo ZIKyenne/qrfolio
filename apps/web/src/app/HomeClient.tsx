@@ -506,8 +506,13 @@ function FeaturesSection() {
               }} />
 
               {/* Bouton info -> fenêtre explicative */}
+              {/* La pastille fait 22 px — joli, mais intapable au doigt. Le bouton
+                  qui la porte fait 40 px et reste transparent : même dessin,
+                  cible tactile conforme. */}
               <button type="button" onClick={() => setInfo(i)} aria-label={"En savoir plus : " + f.title}
-                style={{ position: "absolute", top: 16, right: 16, width: 22, height: 22, borderRadius: "50%", background: isHovered ? `${f.accent}22` : "rgba(255,255,255,0.05)", border: `1px solid ${isHovered ? f.accent + "55" : "rgba(255,255,255,0.12)"}`, color: isHovered ? f.accent : "rgba(188,182,166,0.8)", fontSize: 11, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", zIndex: 2 }}>?</button>
+                style={{ position: "absolute", top: 7, right: 7, width: 40, height: 40, borderRadius: "50%", background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
+                <span aria-hidden style={{ width: 22, height: 22, borderRadius: "50%", background: isHovered ? `${f.accent}22` : "rgba(255,255,255,0.05)", border: `1px solid ${isHovered ? f.accent + "55" : "rgba(255,255,255,0.12)"}`, color: isHovered ? f.accent : "rgba(188,182,166,0.8)", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }}>?</span>
+              </button>
 
               {big ? (
                 <>
@@ -998,7 +1003,7 @@ function PricingSection() {
               "IA": "Génération de design et recommandations automatiques.",
               "Export HD": "Formats de téléchargement haute définition pour l'impression.",
               "Templates": "Bibliothèque de modèles prêts à l'emploi.",
-              "Branding QRowg": "Mention QRowg en bas de page (retirée dès le plan Starter).",
+              "Branding QRowg": "Mention QRowg en bas de page (retirée dès le plan Établissement).",
               "Domaine perso": "Utiliser votre propre nom de domaine.",
               "Analytics": "Niveau de détail des statistiques.",
               "Equipe": "Nombre de membres pouvant collaborer sur le compte.",
@@ -1355,6 +1360,9 @@ function TemplateCard({ tpl, i, visible }: { tpl: typeof TEMPLATE_DATA[number]; 
           display: "inline-flex", alignItems: "center", gap: 5,
           color: hovered ? tpl.accent : "#C9A84C",
           textDecoration: "none", fontSize: 12, fontWeight: 600,
+          // 16 px de haut pour le lien qui mène à la création : on l'épaissit
+          // sans décaler la carte (marge négative compensatoire).
+          minHeight: 40, padding: "0 4px", margin: "-12px -4px",
           transition: "color 0.2s",
         }}>
           Utiliser <span style={{ fontSize: 13 }}>→</span>
@@ -2965,7 +2973,7 @@ const FAQ_ITEMS = [
   { q:"Puis-je utiliser QRowg gratuitement ?",                          a:"Oui. Le plan gratuit donne accès à 3 pages, 200 vues par mois et 3 QR codes — dont 1 modifiable après impression, sans expiration. Aucune carte bancaire n'est demandée pour commencer." },
   { q:"Puis-je connecter mon propre nom de domaine ?",                    a:"Oui, à partir du plan Pro. Vous pouvez utiliser un sous-domaine personnalisé (ex. : carte.votresite.fr) pour une image vraiment professionnelle." },
   { q:"Est-ce que je vois les statistiques de scans ?",                   a:"Oui. Vues, scans, appareils, sources de trafic et pages les plus consultées. Statistiques de base sur le plan gratuit, statistiques avancées sur Pro." },
-  { q:"Puis-je retirer la mention QRowg de ma page ?",                  a:"Oui, dès le plan Starter : votre page affiche uniquement votre marque. Sur le plan gratuit, une mention discrète apparaît en bas de page." },
+  { q:"Puis-je retirer la mention QRowg de ma page ?",                  a:"Oui, dès le plan Établissement : votre page affiche uniquement votre marque. Sur le plan gratuit, une mention discrète apparaît en bas de page." },
   { q:"Est-ce adapté aux restaurants et commerces locaux ?",             a:"Tout à fait. Des modèles prêts à l'emploi existent pour le menu numérique, les horaires, la réservation, les avis Google et les promotions — utilisables en 5 minutes." },
   { q:"Puis-je télécharger mon QR code pour l'imprimer ?",               a:"Oui. Le téléchargement est disponible en PNG haute résolution, SVG et PDF — prêts à imprimer sur cartes de visite, flyers, menus ou affiches." },
   { q:"Puis-je annuler mon abonnement à tout moment ?",                  a:"Oui, à tout moment depuis votre espace compte. Aucun engagement, aucun frais d'annulation : votre accès reste actif jusqu'à la fin de la période déjà payée." },

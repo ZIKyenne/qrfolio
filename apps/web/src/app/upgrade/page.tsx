@@ -102,7 +102,9 @@ export default function UpgradePage() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Back */}
         <div style={{ paddingTop: 32, marginBottom: 40 }}>
-          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: MUTED, textDecoration: "none", fontSize: 14 }}>
+          {/* 17 px de haut mesurés : le seul chemin de retour de la page, et il
+              fallait viser juste. Épaissi sans décaler la mise en page. */}
+          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: MUTED, textDecoration: "none", fontSize: 14, minHeight: 44, padding: "0 6px", marginLeft: -6 }}>
             <ArrowLeft size={16} /> Retour au dashboard
           </Link>
         </div>

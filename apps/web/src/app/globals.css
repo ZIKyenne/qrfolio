@@ -773,3 +773,75 @@ img, video, canvas { max-width: 100%; }
   20%  { opacity: 0.5; }
   100% { transform: scale(1.5); opacity: 0; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SAISIE SUR TÉLÉPHONE — le champ ne doit pas faire zoomer l'écran
+   -----------------------------------------------------------------------------
+   Safari iOS zoome AUTOMATIQUEMENT sur un champ dont le texte fait moins de
+   16 px, et ne dézoome pas ensuite : la page reste décalée, l'en-tête sort de
+   l'écran, et l'utilisateur doit pincer pour revenir. Mesuré au navigateur, huit
+   champs étaient concernés — le formulaire de contact au complet, la recherche
+   de modèles, la recherche de supports du Print Studio et les quatre champs de
+   l'éditeur de carte. La page /generateur-qr-code, elle, était déjà à 16 px :
+   la règle existait, elle n'était juste appliquée nulle part ailleurs.
+
+   `!important` est nécessaire et assumé : les tailles viennent de styles en
+   ligne (le projet n'utilise pas de classes utilitaires), qu'aucune règle
+   ordinaire ne peut supplanter.
+
+   Bornée aux écrans tactiles étroits : sur desktop, les champs gardent leur
+   taille d'origine.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: max(16px, 1rem) !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   NAVIGATION AU DOIGT — hauteur minimale des liens d'en-tête
+   -----------------------------------------------------------------------------
+   Mesuré au navigateur sur onze pages : le logo faisait 24 à 26 px de haut, et
+   les liens « Tarifs », « Connexion », « Guides » entre 15 et 16 px. Ce sont les
+   commandes de navigation principales, et l'en-tête est reproduit dans six
+   fichiers distincts (pas de composant partagé) : une règle globale corrige les
+   six d'un coup, là où six retouches en ligne auraient divergé à la prochaine
+   modification.
+
+   Seuls la HAUTEUR et le centrage sont imposés — jamais le `display`, pour ne
+   pas transformer un lien posé au fil du texte en bloc.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  header a, header button,
+  nav a, nav button {
+    min-height: 40px;
+  }
+  /* Ceux qui sont déjà des boîtes flex : on centre le libellé dans la hauteur
+     gagnée, sinon le texte reste collé en haut. */
+  header a:not([style*="display: inline"]), nav a:not([style*="display: inline"]) {
+    align-items: center;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EN-TÊTE DES PAGES SECONDAIRES sur téléphone
+   -----------------------------------------------------------------------------
+   `padding: 0 48px` : sur un écran de 390 px, c'est 96 px de marges pour loger
+   un logo, deux liens et un bouton. Résultat mesuré en capture : « QRowg » collé
+   à « Tarifs », sans le moindre espace, et « Composer ma page » cassé sur deux
+   lignes — sur les pages mêmes qui vendent le produit (Fonctionnalités,
+   Exemples, Contact).
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .nav-page {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    gap: 12px;
+  }
+  /* Le groupe de droite (liens + bouton) se resserre au lieu de déborder. */
+  .nav-page > div { gap: 14px !important; }
+  /* Un bouton d'appel à l'action ne se coupe pas en deux lignes. */
+  .nav-page a[href*="creer"] { white-space: nowrap; padding-left: 14px !important; padding-right: 14px !important; }
+}

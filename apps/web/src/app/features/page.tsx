@@ -258,7 +258,7 @@ export default function FeaturesPage() {
       `}</style>
 
       {/* NAV */}
-      <nav style={{
+      <nav className="nav-page" style={{
         position:"fixed",top:0,left:0,right:0,zIndex:100,height:64,
         background:"rgba(8,8,8,0.92)",backdropFilter:"blur(24px)",
         borderBottom:"1px solid rgba(201,168,76,0.12)",

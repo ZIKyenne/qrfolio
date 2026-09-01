@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { LegalLayout } from "@/components/legal-layout"
+import { PLANS } from "@/lib/plans"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 
@@ -35,11 +36,23 @@ export default function TermsPage() {
       <div className="ls">
         <h2>3. Abonnements et facturation</h2>
         <h3>Plans disponibles</h3>
-        <p>Free (0€), Starter (4,90€/mois), Pro (12,90€/mois), Business (29,90€/mois). Prix en euros TTC. Un tarif annuel réduit est proposé (facturation à l'année).</p>
+        {/* Prix LUS depuis lib/plans.ts, jamais recopiés : les conditions
+            annonçaient encore « Starter 4,90 € / Pro 12,90 € / Business 29,90 € »
+            — quatre montants faux et un palier supprimé, dans le document qui
+            fait foi. Ici, changer la grille change les conditions. */}
+        <p>
+          {PLANS.free.label} (0 €), {PLANS.pro.label} ({PLANS.pro.priceMonthly} €/mois),{" "}
+          {PLANS.business.label} ({PLANS.business.priceMonthly} €/mois). Prix en euros TTC.
+          Un tarif annuel réduit est proposé (facturation à l’année).
+        </p>
         <h3>Paiement</h3>
         <p>Les paiements sont traités par Stripe. En souscrivant, vous autorisez le débit automatique à chaque période de facturation.</p>
-        <h3>Essai gratuit</h3>
-        <p>Les nouveaux abonnements payants bénéficient de 7 jours d’essai gratuit. Aucun paiement n’est prélevé pendant cette période ; l’abonnement se poursuit automatiquement à l’issue de l’essai, sauf annulation.</p>
+        {/* La section « Essai gratuit » promettait 7 jours que le produit
+            n’accorde pas : aucun `trial_period_days` n’est posé au paiement.
+            Promettre par écrit ce que le service ne fait pas est le pire des
+            deux mondes — la promesse est retirée. */}
+        <h3>Sans engagement</h3>
+        <p>L’abonnement est mensuel ou annuel, sans durée minimale. Vous pouvez résilier à tout moment ; la résiliation prend effet à la fin de la période déjà payée.</p>
       </div>
       <div className="ls">
         <h2>4. Résiliation</h2>

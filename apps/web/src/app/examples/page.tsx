@@ -341,7 +341,7 @@ export default function ExamplesPage() {
       `}</style>
 
       {/* NAV */}
-      <nav style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,height:64,background:"rgba(8,8,8,0.93)",backdropFilter:"blur(24px)",borderBottom:"1px solid rgba(201,168,76,0.12)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 48px" }}>
+      <nav className="nav-page" style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,height:64,background:"rgba(8,8,8,0.93)",backdropFilter:"blur(24px)",borderBottom:"1px solid rgba(201,168,76,0.12)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 48px" }}>
         <Link href="/" style={{ textDecoration:"none" }}>
           <span style={{ fontFamily:"Fraunces,serif",fontSize:20,color:G,fontWeight:700 }}>QRowg</span>
         </Link>

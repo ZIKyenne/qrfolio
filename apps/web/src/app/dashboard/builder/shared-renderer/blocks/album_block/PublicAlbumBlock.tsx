@@ -2,6 +2,7 @@
 import { albumBlockViewModel } from "../../models/albumBlock"
 import { PublicSharedImage } from "../../primitives/PublicImage"
 import type { PublicAdapterProps } from "../../renderTypes"
+import { avecCibleTactile } from "../../primitives/BlockCtaLink"
 
 export function PublicAlbumBlock({ content, ctx }: PublicAdapterProps) {
   const { visible, cover, title, artist, year, tracks, description, platforms, cta } = albumBlockViewModel(content)
@@ -18,7 +19,7 @@ export function PublicAlbumBlock({ content, ctx }: PublicAdapterProps) {
           {artist && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 3px" }}>{artist}</p>}
           <div style={{ display: "flex", gap: 10, marginBottom: description ? 11 : 13 }}>{year && <span style={{ color: "#1DB954", fontSize: 12, fontWeight: 600 }}>{year}</span>}{tracks && <span style={{ color: MUTED, fontSize: 12 }}>· {tracks}</span>}</div>
           {description && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 13px", lineHeight: 1.6 }}>{description}</p>}
-          {platforms.length > 0 && <div style={{ display: "flex", gap: 8 }}>{platforms.map((p, i) => <a key={i} href={p.href} target="_blank" rel="noopener noreferrer" onClick={() => { try { trackClick(p.trackTarget) } catch {} }} style={{ flex: 1, background: `${p.color}18`, border: `1px solid ${p.color}33`, borderRadius: 9, padding: "9px", textAlign: "center", fontSize: 12, fontWeight: 700, color: p.color, textDecoration: "none" }}>{p.label}</a>)}</div>}
+          {platforms.length > 0 && <div style={{ display: "flex", gap: 8 }}>{platforms.map((p, i) => <a key={i} href={p.href} target="_blank" rel="noopener noreferrer" onClick={() => { try { trackClick(p.trackTarget) } catch {} }} style={avecCibleTactile({ flex: 1, background: `${p.color}18`, border: `1px solid ${p.color}33`, borderRadius: 9, padding: "9px", textAlign: "center", fontSize: 12, fontWeight: 700, color: p.color, textDecoration: "none" })}>{p.label}</a>)}</div>}
           {cta.visible && <div style={{ background: "#1DB954", borderRadius: 9, padding: "11px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#000" }}>{cta.label}</div>}
         </div>
       </div>

@@ -3,6 +3,7 @@
 // sinon cartes + CTA <a> sécurisé (extHref via le modèle) et tracké. Aucun symbole éditeur.
 import { pricingViewModel } from "../../models/pricing"
 import type { PublicAdapterProps } from "../../renderTypes"
+import { avecCibleTactile } from "../../primitives/BlockCtaLink"
 
 export function PublicPricing({ content, ctx }: PublicAdapterProps) {
   const vm = pricingViewModel(content)
@@ -22,7 +23,7 @@ export function PublicPricing({ content, ctx }: PublicAdapterProps) {
             <p style={{ color: G, fontSize: 26, fontWeight: 700, margin: "0 0 4px", fontFamily: FONT_D }}>{pl.price}</p>
             {pl.oldPrice && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 4px", textDecoration: "line-through", fontFamily: FONT_B }}>{pl.oldPrice}</p>}
             <p style={{ color: MUTED, fontSize: 11, margin: 0, fontFamily: FONT_B }}>{pl.desc}</p>
-            {cta.visible && <a href={cta.href || "#"} onClick={() => trackClick(content.cta_url || "pricing")} style={{ display: "block", background: `${G}12`, border: `1px solid ${G}25`, color: G, textDecoration: "none", borderRadius: 7, padding: "7px", marginTop: 8, fontSize: 11, fontWeight: 700, fontFamily: FONT_B }}>{cta.label}</a>}
+            {cta.visible && <a href={cta.href || "#"} onClick={() => trackClick(content.cta_url || "pricing")} style={avecCibleTactile({ display: "block", background: `${G}12`, border: `1px solid ${G}25`, color: G, textDecoration: "none", borderRadius: 7, padding: "7px", marginTop: 8, fontSize: 11, fontWeight: 700, fontFamily: FONT_B })}>{cta.label}</a>}
           </div>
         ))}
       </div>

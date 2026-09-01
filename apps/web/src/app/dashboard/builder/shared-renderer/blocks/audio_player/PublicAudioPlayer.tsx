@@ -2,6 +2,7 @@
 import SmartImage from "@/components/SmartImage"
 import { audioPlayerViewModel } from "../../models/audioPlayer"
 import type { PublicAdapterProps } from "../../renderTypes"
+import { avecCibleTactile } from "../../primitives/BlockCtaLink"
 
 // Public : <audio> natif (controls, preload=none) ; téléchargement optionnel tracké.
 export function PublicAudioPlayer({ content, ctx }: PublicAdapterProps) {
@@ -21,7 +22,7 @@ export function PublicAudioPlayer({ content, ctx }: PublicAdapterProps) {
           </div>
         </div>
         <audio src={src!} controls preload="none" style={{ width: "100%", display: "block" }} />
-        {showDownload && <a href={src!} download onClick={() => { try { trackClick("audio-download") } catch {} }} style={{ display: "inline-block", marginTop: 9, color: MUTED, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>↓ Télécharger</a>}
+        {showDownload && <a href={src!} download onClick={() => { try { trackClick("audio-download") } catch {} }} style={avecCibleTactile({ display: "inline-block", marginTop: 9, color: MUTED, fontSize: 12, fontWeight: 600, textDecoration: "none" })}>↓ Télécharger</a>}
       </div>
     </div>
   )

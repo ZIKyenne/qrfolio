@@ -1,6 +1,7 @@
 "use client"
 import { timelineViewModel } from "../../models/timeline"
 import type { PublicAdapterProps } from "../../renderTypes"
+import { avecCibleTactile } from "../../primitives/BlockCtaLink"
 
 export function PublicTimeline({ content, ctx }: PublicAdapterProps) {
   const { title, horizontal, items } = timelineViewModel(content)
@@ -13,7 +14,7 @@ export function PublicTimeline({ content, ctx }: PublicAdapterProps) {
   }
   const EventLink = ({ link }: { link: NonNullable<typeof items[number]["link"]> }) => (
     <a href={link.href} target="_blank" rel="noopener noreferrer"
-      onClick={() => trackClick(link.trackTarget)} style={linkStyle}>
+      onClick={() => trackClick(link.trackTarget)} style={avecCibleTactile(linkStyle)}>
       {link.label} <span aria-hidden>↗</span>
     </a>
   )

@@ -6,6 +6,7 @@
 // - SmartCta : bouton/lien qui se neutralise dans l'éditeur (aucun href, aria-disabled)
 //   et devient un vrai <a> tracké en public. Un seul composant → aucune divergence possible.
 import type { CSSProperties, ReactNode } from "react"
+import { avecCibleTactile } from "./BlockCtaLink"
 import { surfaceStyle, padCss, radiusOf, edgeCss } from "../models/layoutStyle"
 import type { UnifiedCtx } from "../renderTypes"
 
@@ -36,14 +37,17 @@ export function SmartCta({ u, href, label, style, external = true }: {
   style: CSSProperties
   external?: boolean
 }) {
-  if (u.mode === "editor" || !href) return <div aria-disabled="true" style={style}>{label}</div>
+  // Cible tactile plancher (voir avecCibleTactile) : ces boutons sont ceux qui
+  // font réserver, commander, acheter — et on n'y touche qu'au téléphone.
+  const st = avecCibleTactile(style)
+  if (u.mode === "editor" || !href) return <div aria-disabled="true" style={st}>{label}</div>
   return (
     <a
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
       onClick={() => { try { u.trackClick(href) } catch {} }}
-      style={style}
+      style={st}
     >{label}</a>
   )
 }

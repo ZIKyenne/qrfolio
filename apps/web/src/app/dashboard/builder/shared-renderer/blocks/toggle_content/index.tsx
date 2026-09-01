@@ -6,6 +6,7 @@ import { useState } from "react"
 import { alignOf, safeColor, clampInt } from "../../models/layoutStyle"
 import { LayoutSurface, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import { avecCibleTactile } from "../../primitives/BlockCtaLink"
 
 function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }) {
   const [open, setOpen] = useState(u.mode === "editor" || String(c.default_open || "Non") === "Oui")
@@ -24,11 +25,13 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
         ...(clamp ? { display: "-webkit-box", WebkitLineClamp: teaseLines, WebkitBoxOrient: "vertical" as any, overflow: "hidden" } : {}),
       }}>{c.text}</p>
       {u.mode === "public" && (
-        <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} style={{
+        <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} style={avecCibleTactile({
           marginTop: Math.round(9 * u.scale), background: "transparent", border: "none", cursor: "pointer", padding: 0,
           color: accent, fontSize: Math.round(12.5 * u.scale), fontWeight: 700, fontFamily: u.FONT_B,
-          display: "block", marginLeft: align === "center" ? "auto" : undefined, marginRight: align === "center" ? "auto" : undefined,
-        }}>{open ? `${closeLabel} ↑` : `${openLabel} ↓`}</button>
+          // « display: block » ferait un bouton pleine largeur : ici on veut juste
+          // qu'il soit assez haut pour le pouce, aligné comme le texte du bloc.
+          marginLeft: align === "center" ? "auto" : undefined, marginRight: align === "center" ? "auto" : undefined,
+        })}>{open ? `${closeLabel} ↑` : `${openLabel} ↓`}</button>
       )}
     </LayoutSurface>
   )

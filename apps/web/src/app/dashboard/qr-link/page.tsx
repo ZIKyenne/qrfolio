@@ -419,7 +419,8 @@ export default function QrLinkPage() {
     <div className="rpad" style={{ position: "relative", minHeight: "100dvh", maxWidth: 1000, margin: "0 auto", padding: "18px 18px calc(40px + env(safe-area-inset-bottom))" }}>
       <PostCheckoutBanner param="upgraded" message="Paiement confirmé — votre nouveau plan est actif. 🎉" />
       <Particles behind />
-      <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUTED, textDecoration: "none", fontSize: 13, marginBottom: 16 }}>
+      {/* 16 px de haut mesurés : c'est le chemin de retour de la page. */}
+      <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUTED, textDecoration: "none", fontSize: 13, marginBottom: 16, minHeight: 44, padding: "0 6px", marginLeft: -6 }}>
         <ArrowLeft size={16} /> Retour
       </Link>
 

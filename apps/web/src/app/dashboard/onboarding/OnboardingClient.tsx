@@ -76,7 +76,7 @@ export default function OnboardingClient() {
       <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto" }}>
         <div style={{ paddingTop: 26, marginBottom: 6 }}>
           {chosen ? (
-            <button type="button" onClick={() => { if (!busy) setChosen(null) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUT, background: "none", border: "none", cursor: "pointer", fontSize: 13, padding: 0 }}>
+            <button type="button" onClick={() => { if (!busy) setChosen(null) }} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: MUT, background: "none", border: "none", cursor: "pointer", fontSize: 13, minHeight: 44, padding: "0 6px", marginLeft: -6 }}>
               <ArrowLeft size={16} /> Changer d'objectif
             </button>
           ) : (
@@ -139,9 +139,14 @@ export default function OnboardingClient() {
           </>
         )}
 
+        {/* Le raccourci « page vierge » vivait ici en 14 px de haut. Il a été
+            retiré du menu « Créer » — partir d'une page blanche est le pire
+            départ pour qui n'a jamais fait de site — il n'a pas plus sa place
+            ici. Reste la galerie, avec une vraie cible tactile. */}
         {!chosen && (
           <p style={{ textAlign: "center", color: "#6E685E", fontSize: 12.5, marginTop: 26 }}>
-            Vous préférez partir d'un modèle ? <Link href="/dashboard/templates" style={{ color: G, textDecoration: "none", fontWeight: 700 }}>Voir la galerie</Link> · ou <Link href="/dashboard/builder/new" style={{ color: MUT, textDecoration: "none" }}>page vierge</Link>
+            Vous préférez partir d'un modèle ?{" "}
+            <Link href="/dashboard/templates" style={{ color: G, textDecoration: "none", fontWeight: 700, display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 6px" }}>Voir la galerie</Link>
           </p>
         )}
       </div>

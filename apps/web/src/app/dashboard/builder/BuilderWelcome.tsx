@@ -18,38 +18,38 @@ type Step = { zone: Zone; icon: string; title: string; body: string; hintD: stri
 const STEPS: Step[] = [
   {
     zone: "canvas", icon: "👋",
-    title: "Voici ta page",
-    body: "On a déjà posé 3 blocs pour toi (profil, bio, bouton) : pas de page blanche, tu n'as plus qu'à personnaliser. Ce guide ne s'affiche qu'une seule fois.",
+    title: "Voici votre page",
+    body: "Trois blocs sont déjà en place (profil, bio, bouton) : pas de page blanche, il ne reste qu'à les personnaliser. Ce guide ne s'affiche qu'une seule fois.",
     hintD: "au centre", hintM: "onglet Page",
   },
   {
     zone: "library", icon: "🧩",
-    title: "Ajoute des blocs",
-    body: "Pioche un bloc et il s'ajoute à ta page. On t'ouvre sur les blocs les plus utiles ; tu peux aussi chercher un bloc précis ou parcourir les catégories pour tout voir.",
+    title: "Ajoutez des blocs",
+    body: "Choisissez un bloc, il s'ajoute à votre page. Les plus utiles sont proposés en premier ; vous pouvez aussi chercher un bloc précis ou parcourir les catégories.",
     hintD: "← à gauche", hintM: "onglet Blocs",
   },
   {
     zone: "panel", icon: "✏️",
-    title: "Modifie un bloc",
-    body: "Clique un bloc de ta page : ses réglages s'ouvrent à droite. Change le texte, l'image ou le lien. Les options avancées (style, animations) sont sous le mode « Avancé ».",
+    title: "Modifiez un bloc",
+    body: "Touchez un bloc de votre page : ses réglages s'ouvrent. Changez le texte, l'image ou le lien. Le style et les animations sont sous le mode « Avancé ».",
     hintD: "réglages, à droite", hintM: "onglet Réglages",
   },
   {
     zone: "topbar", icon: "↩️",
-    title: "Réordonne, annule, prévisualise",
-    body: "Glisse un bloc pour le déplacer. Tout est sauvegardé automatiquement, et Ctrl+Z annule si tu te trompes. « Aperçu » te montre ta page comme la verront tes visiteurs.",
+    title: "Déplacez, annulez, prévisualisez",
+    body: "Glissez un bloc pour le déplacer. Tout est enregistré au fur et à mesure, et une erreur s'annule. « Aperçu » montre la page telle que la verront vos visiteurs.",
     hintD: "↑ en haut", hintM: "barre du haut",
   },
   {
     zone: "theme", icon: "🎨",
-    title: "Change ton thème",
-    body: "Couleurs, polices, ambiance : choisis un thème et toute ta page s'adapte instantanément. Tu peux ajuster la couleur d'accent en un clic.",
+    title: "Changez de thème",
+    body: "Couleurs, polices, ambiance : choisissez un thème et toute la page s'adapte d'un coup. La couleur principale se règle ensuite en un geste.",
     hintD: "réglages, à droite", hintM: "onglet Réglages",
   },
   {
     zone: "publish", icon: "🚀",
-    title: "Publie quand tu veux",
-    body: "Clique « Publier » et ta page est en ligne. Ton QR code ne change jamais : tu peux modifier et republier autant de fois que tu veux, sans jamais réimprimer.",
+    title: "Publiez quand vous voulez",
+    body: "« Publier », et la page est en ligne. Votre QR code, lui, ne change jamais : vous pouvez modifier et republier autant de fois que vous voulez, sans réimprimer.",
     hintD: "↑ en haut à droite", hintM: "bouton Publier",
   },
 ]
@@ -84,7 +84,7 @@ export default function BuilderWelcome({ mobile = false }: { mobile?: boolean })
   const last = i === STEPS.length - 1
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Bienvenue dans ton éditeur"
+    <div role="dialog" aria-modal="true" aria-label="Bienvenue dans votre éditeur"
       style={{
         position: "fixed", inset: 0, zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center",
         padding: 16, background: "rgba(4,4,3,0.72)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
@@ -100,9 +100,9 @@ export default function BuilderWelcome({ mobile = false }: { mobile?: boolean })
       }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: G }}>Bienvenue dans ton éditeur</span>
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: G }}>Bienvenue dans votre éditeur</span>
           <button onClick={finish} aria-label="Passer le guide"
-            style={{ background: "transparent", border: "none", color: MUT, fontSize: 13, cursor: "pointer", padding: "4px 6px" }}>
+            style={{ background: "transparent", border: "none", color: MUT, fontSize: 13, cursor: "pointer", minHeight: 44, padding: "0 8px", margin: "-10px -8px -10px 0", display: "inline-flex", alignItems: "center" }}>
             Passer
           </button>
         </div>
@@ -129,8 +129,12 @@ export default function BuilderWelcome({ mobile = false }: { mobile?: boolean })
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ display: "flex", gap: 6 }}>
               {STEPS.map((_, k) => (
+                // Le point mesure 8 px — joli, intapable. Le BOUTON qui le porte
+                // fait 40 px de haut et reste transparent : même dessin, cible réelle.
                 <button key={k} onClick={() => setI(k)} aria-label={`Étape ${k + 1}`}
-                  style={{ width: k === i ? 20 : 8, height: 8, borderRadius: 999, border: "none", padding: 0, cursor: "pointer", background: k === i ? G : "rgba(255,255,255,0.18)", transition: "width .2s ease, background .2s ease" }} />
+                  style={{ background: "none", border: "none", padding: "16px 3px", margin: "-16px -3px", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                  <span aria-hidden style={{ display: "block", width: k === i ? 20 : 8, height: 8, borderRadius: 999, background: k === i ? G : "rgba(255,255,255,0.18)", transition: "width .2s ease, background .2s ease" }} />
+                </button>
               ))}
             </div>
             <span style={{ color: "rgba(168,161,144,0.6)", fontSize: 11.5, fontVariantNumeric: "tabular-nums" }}>{i + 1}/{STEPS.length}</span>
@@ -138,12 +142,12 @@ export default function BuilderWelcome({ mobile = false }: { mobile?: boolean })
           <div style={{ display: "flex", gap: 10, marginLeft: "auto" }}>
             {i > 0 && (
               <button onClick={() => setI(i - 1)}
-                style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.14)", color: INK, borderRadius: 10, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.14)", color: INK, borderRadius: 10, minHeight: 44, padding: "0 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                 Précédent
               </button>
             )}
             <button onClick={() => (last ? finish() : setI(i + 1))}
-              style={{ background: `linear-gradient(90deg,${G},#b8953f)`, color: "#0a0a0a", border: "none", borderRadius: 10, padding: "9px 20px", fontSize: 13.5, fontWeight: 800, cursor: "pointer", boxShadow: "0 6px 20px rgba(201,168,76,0.3)" }}>
+              style={{ background: `linear-gradient(90deg,${G},#b8953f)`, color: "#0a0a0a", border: "none", borderRadius: 10, minHeight: 44, padding: "0 22px", fontSize: 13.5, fontWeight: 800, cursor: "pointer", boxShadow: "0 6px 20px rgba(201,168,76,0.3)" }}>
               {last ? "C'est parti !" : "Suivant"}
             </button>
           </div>

@@ -52,8 +52,17 @@ describe("barre du haut de l'éditeur sur téléphone", () => {
     expect(BUILDER).toContain('aria-label="Retour au tableau de bord"')
   })
 
-  it("le nom de la page s'ellipse au lieu d'être coupé net", () => {
-    expect(BUILDER).toContain('textOverflow: "ellipsis", ...(isMobile ? { flex: "1 1 0" }')
+  it("le nom de la page s'ellipse au lieu d'être coupé net, et se vise au doigt", () => {
+    // Ce test collait à la chaîne EXACTE du style : ajouter une hauteur minimale
+    // le cassait alors que l'ellipse était toujours là. On vérifie les deux
+    // propriétés qui comptent, pas la façon dont elles sont écrites.
+    const i = BUILDER.indexOf('aria-label="Nom de la page"')
+    expect(i, "le champ du nom est introuvable").toBeGreaterThan(0)
+    const champ = BUILDER.slice(i, i + 600)
+    expect(champ, "le nom serait coupé net").toContain('textOverflow: "ellipsis"')
+    expect(champ, "sur téléphone il doit prendre la place restante").toContain('flex: "1 1 0"')
+    // 18 px de haut mesurés au navigateur : intapable sur un écran tactile.
+    expect(champ).toMatch(/minHeight: (4[0-9]|[5-9][0-9])/)
   })
 
   it("l'indicateur de brouillon n'apparaît pas deux fois", () => {

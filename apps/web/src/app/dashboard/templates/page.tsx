@@ -404,7 +404,7 @@ export default function TemplatesPage() {
         <label className="dat-search" style={{ marginBottom: 24 }}>
           <Search size={15} className="dat-searchicon" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un template, un secteur…" />
-          {search && <button type="button" onClick={() => setSearch("")} aria-label="Effacer la recherche" className="dam-clear" style={{ width: 24, height: 24 }}><X size={14} /></button>}
+          {search && <button type="button" onClick={() => setSearch("")} aria-label="Effacer la recherche" className="dam-clear" style={{ width: 40, height: 40, display: "grid", placeItems: "center", flexShrink: 0 }}><X size={14} /></button>}
         </label>
 
         {!isMobile ? (

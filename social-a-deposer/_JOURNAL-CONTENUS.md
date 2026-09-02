@@ -14,34 +14,38 @@
 ## Angles DÉJÀ FAITS (ne pas refaire)
 | Secteur | Angle | Dates |
 |---|---|---|
-| Restaurant | Menu / carte du jour modifiable sans réimprimer | 24/08, 26/08, 01/09, 02/09 |
-| Restaurant | Carte de rentrée qui change (carrousel) | 28/08, 01/09, 02/09 |
-| Restaurant | Avis Google sur la table / l'addition / le ticket | 24/08, 26/08, 01/09, 02/09 |
+| Restaurant | Menu / carte du jour modifiable sans réimprimer | 24/08, 26/08, 01/09 |
+| Restaurant | Carte de rentrée qui change (carrousel) | 28/08, 01/09 |
+| Restaurant | Avis Google sur la table / l'addition / le ticket | 24/08, 26/08, 01/09 |
 | Restaurant | Allergènes et carte des vins | 24/08, 31/08 |
 | Restaurant | Réservation table du dimanche | 30/08 |
 | Restaurant | Chevalet de table à imprimer | 24/08, 01/09 |
 | Restaurant | Menu brunch de rentrée | 30/08 |
 | Café / salon de thé | WiFi + carte des boissons (carrousel) | 31/08 |
 | Boulangerie / artisan | Avis clients | 26/08, 30/08 |
-| Boulangerie / artisan | Commande de pain / fournées en vitrine (carrousel) | 30/08, 02/09 |
-| Food truck | Emplacement / menu du jour | 24/08, 26/08, 30/08, 01/09, 02/09 |
+| Boulangerie / artisan | Commande de pain / fournées en vitrine (carrousel) | 30/08 |
+| Food truck | Emplacement / menu du jour | 24/08, 26/08, 30/08, 01/09 |
 | Hôtel / chambre d'hôtes | Livret d'accueil, petit-déjeuner, bonnes adresses | 24/08, 26/08, 30/08, 01/09 |
-| Commerce local | Vitrine : horaires, rentrée, sticker, affichette | 24/08, 26/08, 30/08, 01/09, 02/09 |
+| Commerce local | Vitrine : horaires, rentrée, sticker, affichette | 24/08, 26/08, 30/08, 01/09 |
 | Épicerie / primeur | Arrivages de la semaine, fiche produit cave à vin | 30/08, 31/08 |
 | Traiteur | Click and collect | 31/08 |
 | Glacier / crêperie | Parfums du jour | 31/08 |
 | Salon / coiffeur | Prise de rendez-vous sur flyer | 26/08 |
-| Générique | Supports / modèles prêts à imprimer | 30/08, 02/09 |
+| Générique | Supports / modèles prêts à imprimer | 30/08 |
+| Bar | Programme des soirées sur le sous-bock (carrousel + reel) | 02/09 |
+| Bar / salon | Pourboire dématérialisé sans espèces | 02/09 |
+| Commerce | Recrutement « on recrute » en vitrine | 02/09 |
+| Boulangerie / café | Carte de fidélité dématérialisée | 02/09 |
+| Marché / producteur | Fiche producteur et traçabilité sur l'étal | 02/09 |
 
 ## Angles NEUFS disponibles (piocher ici en priorité)
-- Restaurant : carte des desserts qu'on ne montre jamais · pourboire dématérialisé ·
-  recrutement en salle (QR sur la vitrine « on recrute ») · carte enfants ·
+- Restaurant : carte des desserts qu'on ne montre jamais · carte enfants ·
   vins au verre qui tournent · plat à emporter du soir · anniversaire / privatisation ·
   fiche « d'où vient ce plat » (producteurs) · liste d'attente le samedi soir.
-- Bar : carte des cocktails saisonnière · programme des concerts · quiz / jeu de table ·
+- Bar : carte des cocktails saisonnière · quiz / jeu de table ·
   happy hour qui change selon l'heure.
 - Boulangerie : commande de galette / bûche selon la saison · liste d'allergènes ·
-  « le pain d'aujourd'hui » · carte de fidélité dématérialisée.
+  « le pain d'aujourd'hui ».
 - Food truck : planning de la semaine par ville · pré-commande pour éviter la file.
 - Marché / producteur : panier de la semaine · fiche producteur sur l'étal.
 - Commerce : étiquette produit qui raconte l'histoire · retours & garantie ·
@@ -59,7 +63,9 @@
 | 30/08 | boulangerie | boulangerie-artisan-commande-rentree (carrousel), avis-google-patisserie-artisan, boulangerie-commande-pain-vitrine, chambre-hotes-petit-dejeuner, food-truck-marche-emplacement-semaine, menu-brunch-restaurant-rentree, primeur-epicerie-arrivages, reservation-restaurant-table-du-dimanche, affichette-a-imprimer-commerce-local | Pinterest, IG |
 | 31/08 | café | cafe-salon-de-the-carte-wifi (carrousel), allergenes-carte-restaurant, cafe-wifi-carte-boissons, cave-a-vin-epicerie-fiche-produit, click-and-collect-traiteur, glacier-creperie-parfums-du-jour | Pinterest, IG |
 | 01/09 | restaurant | menu-restaurant-carte-de-rentree (carrousel), avis-google-restaurant-addition, chevalet-de-table-a-imprimer, food-truck-emplacement-du-jour, menu-restaurant-carte-du-jour, vitrine-boutique-rentree-commerce | Pinterest, IG |
-| 02/09 | restaurant ⚠ DOUBLON | menu-restaurant-rentree (carrousel), menu-restaurant-carte-du-jour, avis-google-restaurant-sticker, food-truck-menu-du-jour, boulangerie-artisan-vitrine, boutique-commerce-local-vitrine | Pinterest, IG |
+| 02/09 | bar (100 % inédit) | sous-bock-bar-programme-soirees (carrousel IG + TikTok + reel 32,8 s), sous-bock-bar-concerts-agenda, pourboire-sans-especes-salon-serveur, on-recrute-vitrine-commerce, carte-fidelite-dematerialisee-boulangerie, fiche-producteur-etal-marche | Pinterest, IG, TikTok |
+
+> Note 02/09 : un premier lot « restaurant / carte de rentrée » a été produit puis SUPPRIMÉ de la file car il doublonnait 28/08 et 01/09. Ne pas le reproduire.
 
 ## Accroches déjà utilisées
 - « Ta carte de rentrée change. Ton QR ne bouge pas. »
@@ -68,3 +74,9 @@
 - « Food truck : affiche ton menu du jour en un scan. »
 - « Boulangerie : ta vitrine peut vendre même fermée. »
 - « Commerce local : transforme ta vitrine en canal de vente. »
+- « Ton mardi soir est vide. Ton sous-bock peut le remplir. »
+- « Le sous-bock qui remplit tes soirées creuses. »
+- « Plus personne n'a de monnaie. Ton pourboire, si. »
+- « Ta vitrine peut te trouver ton prochain serveur. »
+- « La carte de fidélité qu'il ne peut plus perdre. »
+- « Sur l'étal, un QR qui raconte d'où vient ta tomate. »

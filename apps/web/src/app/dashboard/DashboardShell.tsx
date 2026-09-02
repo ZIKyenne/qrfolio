@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  FileText, QrCode, User,
+  QrCode, User,
   Activity, ChevronRight, LogOut, Menu, X, Eye,
-  Plus, Printer, Upload, Sparkles, Link2
+  Plus, Printer, Sparkles, Link2, LayoutTemplate, Image as ImageIcon
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { ToastProvider } from "@/components/Toast"
@@ -136,7 +136,7 @@ const NAV_GROUPS = [
   { label: "QR & impression", items: [
     { href: "/dashboard/qr-codes", glyph: "qr", label: "QR de mes pages" },
     { href: "/dashboard/print-studio", glyph: "print", label: "Print Studio" },
-    { href: "/dashboard/qr-link", glyph: "dynamic", label: "Créer un QR" },
+    { href: "/dashboard/qr-link", glyph: "dynamic", label: "QR vers un lien" },
   ] },
   { label: "Mesure", items: [
     { href: "/dashboard/analytics", glyph: "analytics", label: "Analytics" },
@@ -160,33 +160,43 @@ const GUEST_NAV: { label: string; items: { href: string; glyph: string; label: s
   { label: "", items: [
     { href: "/dashboard/templates", glyph: "templates", label: "Modèles" },
     { href: "/dashboard/builder", glyph: "dashboard", label: "Ma page" },
-    { href: "/dashboard/qr-link", glyph: "dynamic", label: "Créer un QR" },
+    { href: "/dashboard/qr-link", glyph: "dynamic", label: "QR vers un lien" },
   ] },
 ]
 
-// Actions du bouton central "Créer".
+// Actions du bouton central « Créer ».
+//
+// Réécrit en partant de la question que se pose vraiment un commerçant qui ouvre
+// ce menu : « je veux faire quoi ? ». Les libellés d'avant répondaient à une
+// autre question — comment le logiciel range ses fonctions.
+//
+//  · « Créer par objectif » : personne ne se dit « je vais créer par objectif ».
+//  · « QR de mes pages » et « Créer un QR » : deux entrées qui disent « QR »
+//    sans qu'on puisse les distinguer. La vraie différence n'est pas le mot QR,
+//    c'est OÙ il mène : « QR de mes pages » / « QR vers un lien ». Ces noms sont
+//    aussi ceux de la barre latérale — une destination, un seul nom dans toute
+//    l'application (invariant tenu par nomsEtQuotas.test.ts).
+//  · « Support imprimable » : du vocabulaire d'imprimeur. C'est le sticker qu'on
+//    colle sur la table.
+//  · « Créer une page » (page vierge) est RETIRÉE : partir d'une page blanche est
+//    le pire départ possible pour quelqu'un qui n'a jamais fait de site. Les deux
+//    entrées du haut mènent au même éditeur, avec du contenu déjà en place.
+//
+// L'ordre suit le trajet réel : je fais ma page → j'obtiens son QR → je l'imprime.
 const CREATE_ACTIONS = [
-  { href: "/dashboard/onboarding", icon: Sparkles, label: "Créer par objectif", sub: "Guidé — on génère tout pour vous" },
-  // /new et non /builder : sans identifiant, l'éditeur d'une personne CONNECTÉE
-  // démarre en mode démo et n'enregistre rien (la garde du bootstrap sort, ready
-  // reste false, buildSnapshot rend null). On composait une page entière et on la
-  // perdait, avec pour seul avertissement un « Mode démo » en 9 px masqué sur
-  // téléphone. Les deux liens du menu invité, eux, restent tels quels : sans
-  // compte, le brouillon est sauvegardé en local et rien n'est perdu.
-  { href: "/dashboard/builder/new", icon: FileText, label: "Créer une page", sub: "Une page pro éditable" },
-  { href: "/dashboard/qr-codes", icon: QrCode, label: "QR de mes pages", sub: "Le QR d'une page QRowg" },
-  { href: "/dashboard/qr-link", icon: Link2, label: "Créer un QR", sub: "Lien, WiFi, contact, numéro" },
-  { href: "/dashboard/print-studio", icon: Printer, label: "Créer un support imprimable", sub: "Sticker, chevalet, affiche…" },
-  { href: "/dashboard/templates", icon: Sparkles, label: "Utiliser un modèle", sub: "Partir d'un design" },
-  { href: "/dashboard/assets", icon: Upload, label: "Importer un média", sub: "Photos, logos…" },
+  { href: "/dashboard/onboarding", icon: Sparkles, label: "Créer ma page", sub: "Guidé en quelques questions — le plus simple" },
+  { href: "/dashboard/templates", icon: LayoutTemplate, label: "Partir d'un modèle", sub: "48 designs par métier, à personnaliser" },
+  { href: "/dashboard/qr-codes", icon: QrCode, label: "QR de mes pages", sub: "Celui qui mène à une page QRowg" },
+  { href: "/dashboard/qr-link", icon: Link2, label: "QR vers un lien", sub: "Site web, WiFi, téléphone, fiche contact" },
+  { href: "/dashboard/print-studio", icon: Printer, label: "Un support à imprimer", sub: "Sticker de table, chevalet, affiche" },
+  { href: "/dashboard/assets", icon: ImageIcon, label: "Mes photos et logos", sub: "À importer une fois, réutilisables partout" },
 ]
 
-// Sans compte, quatre de ces sept actions mènent à la page de connexion. On ne
-// propose que celles qui aboutissent vraiment.
+// Sans compte, plusieurs de ces actions mènent à la page de connexion. On ne
+// propose que celles qui aboutissent vraiment — et pas davantage la page vierge.
 const GUEST_CREATE_ACTIONS = [
-  { href: "/dashboard/templates", icon: Sparkles, label: "Partir d'un modèle", sub: "Le plus rapide — 48 modèles par métier" },
-  { href: "/dashboard/builder", icon: FileText, label: "Page vierge", sub: "Composer à partir de rien" },
-  { href: "/dashboard/qr-link", icon: Link2, label: "Créer un QR", sub: "Lien, WiFi, contact — sans compte" },
+  { href: "/dashboard/templates", icon: LayoutTemplate, label: "Partir d'un modèle", sub: "Le plus rapide — 48 modèles par métier" },
+  { href: "/dashboard/qr-link", icon: Link2, label: "QR vers un lien", sub: "Site web, WiFi, téléphone — sans compte" },
 ]
 
 export default function DashboardShell({ children, initialSignedIn }: { children: React.ReactNode; initialSignedIn: boolean }) {
@@ -592,9 +602,11 @@ export default function DashboardShell({ children, initialSignedIn }: { children
               <Link key={i} href={href} onClick={() => setCreateOpen(false)}
                 style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 10px", textDecoration: "none", borderTop: i ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
                 <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 12, background: `color-mix(in srgb, ${G} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${G} 28%, transparent)`, display: "flex", alignItems: "center", justifyContent: "center", color: G }}><Icon size={20} /></span>
-                <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {/* `minWidth: 0` : sans lui, un libellé long pousse le chevron
+                    hors de l'écran au lieu de se replier. */}
+                <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
                   <span style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700 }}>{label}</span>
-                  <span style={{ color: MUTED, fontSize: 12.5 }}>{sub}</span>
+                  <span style={{ color: MUTED, fontSize: 12.5, lineHeight: 1.35 }}>{sub}</span>
                 </span>
                 <ChevronRight size={18} color={MUTED} style={{ marginLeft: "auto", flexShrink: 0 }} />
               </Link>

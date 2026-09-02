@@ -53,10 +53,17 @@ describe("aucun bouton n'ouvre un éditeur qui n'enregistre rien", () => {
   const shell = readFileSync(join(racine, "dashboard/DashboardShell.tsx"), "utf8")
   const accueil = readFileSync(join(racine, "HomeClient.tsx"), "utf8")
 
-  it("les actions de création d'un compte connecté visent /new", () => {
+  it("aucune action de création n'ouvre l'éditeur sans identifiant", () => {
+    // Ce test visait la PRÉSENCE de « /dashboard/builder/new ». Depuis, l'entrée
+    // « page vierge » a été retirée du menu (partir d'une page blanche est le
+    // pire départ pour qui n'a jamais fait de site) : l'invariant est donc tenu
+    // encore plus fort — il n'y a plus aucun lien vers l'éditeur nu. C'est
+    // l'invariant qu'on vérifie, pas la façon dont il est tenu.
     const bloc = shell.slice(shell.indexOf("const CREATE_ACTIONS"), shell.indexOf("GUEST_CREATE_ACTIONS"))
-    expect(bloc).toContain('"/dashboard/builder/new"')
     expect(bloc, "un éditeur sans identifiant subsiste").not.toMatch(/href: "\/dashboard\/builder"/)
+    // Si l'entrée revient un jour, elle DOIT viser /new.
+    const versEditeur = [...bloc.matchAll(/href: "(\/dashboard\/builder[^"]*)"/g)].map(m => m[1])
+    for (const h of versEditeur) expect(h).toBe("/dashboard/builder/new")
   })
 
   it("l'accueil ne renvoie plus vers l'éditeur sans identifiant", () => {

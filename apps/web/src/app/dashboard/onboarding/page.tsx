@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import OnboardingClient from "./OnboardingClient"
 
-export const metadata = { title: "Créer par objectif — QRowg" }
+export const metadata = { title: "Créer ma page — QRowg" }
 
 export default async function OnboardingPage() {
   const supabase = await createServerSupabaseClient()

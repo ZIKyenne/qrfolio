@@ -13,7 +13,7 @@ import { X, ArrowRight, ArrowLeft, Check, Eye, EyeOff, Trash2, SkipForward, Spar
 import { type Block, type PageTheme } from "../builder/types"
 import { BLOCK_DEFS } from "../builder/blockDefs"
 import {
-  buildWizard, applyAnswers, reviewBlocks, finalizeBlocks,
+  buildWizard, applyAnswers, reviewBlocks, finalizeBlocks, blocsDeLEtape,
   type WizardStep, type BlockDecision, type BlockReview,
 } from "../builder/templateWizard"
 import { BlockPreview, computeBgStyle } from "./TemplatePreviewModal"
@@ -86,10 +86,20 @@ export default function TemplateWizardModal({
   )
 
   // Blocs affichés dans l'aperçu : on retire en direct ceux qu'on a décidé d'enlever.
-  const previewBlocks: Block[] = useMemo(() => applied.map((b, i) => ({
+  // `srcIndex` = position dans la liste D'ORIGINE. Indispensable : la liste
+  // d'aperçu retire les blocs « à enlever », donc ses positions ne correspondent
+  // plus à `blockIndexes` — c'est ce décalage qui faisait surligner le mauvais
+  // bloc dès qu'un bloc avait été retiré.
+  const previewBlocks: (Block & { srcIndex: number })[] = useMemo(() => applied.map((b, i) => ({
     id: "wz_" + i, type: b.type, content: b.content as any,
-    visible: (decisions[i] || "keep") !== "hide",
-  })).filter((_, i) => (decisions[i] || "keep") !== "remove"), [applied, decisions])
+    visible: (decisions[i] || "keep") !== "hide", srcIndex: i,
+  })).filter(b => (decisions[b.srcIndex] || "keep") !== "remove"), [applied, decisions])
+
+  // Ce que la question en cours va changer — c'est ce qu'on montre au téléphone.
+  const blocsQuestion = useMemo(
+    () => blocsDeLEtape(previewBlocks, step?.blockIndexes), [previewBlocks, step],
+  )
+  const [pageEntiere, setPageEntiere] = useState(false)
 
   useEffect(() => { document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = "" } }, [])
   useEffect(() => {
@@ -190,14 +200,14 @@ export default function TemplateWizardModal({
             <div style={{ width: 340, borderRight: "1px solid rgba(255,255,255,0.07)", background: "#070707", padding: 16, display: "flex", flexDirection: "column", minHeight: 0 }}>
               <p style={{ color: MUTED, fontSize: 10, textTransform: "uppercase", letterSpacing: 1.5, margin: "0 0 10px", textAlign: "center" }}>Aperçu en direct</p>
               <div ref={previewRef} style={{ flex: 1, overflowY: "auto", borderRadius: 16, border: "1px solid rgba(255,255,255,0.1)", ...bg }}>
-                {previewBlocks.map((b, i) => (
-                  <div key={b.id} data-wz-block={i}
+                {previewBlocks.map(b => (
+                  <div key={b.id} data-wz-block={b.srcIndex}
                     style={{
                       opacity: b.visible ? 1 : 0.32,
                       position: "relative", borderRadius: 8, transition: "box-shadow .25s, background .25s",
                       // Liseré vers l'INTÉRIEUR : un bloc collé au bord verrait son halo
                       // extérieur coupé par le défilement du conteneur.
-                      ...(step?.blockIndexes.includes(i) && phase === "questions"
+                      ...(step?.blockIndexes.includes(b.srcIndex) && phase === "questions"
                         ? { outline: "2px solid var(--accent)", outlineOffset: "-3px", background: "color-mix(in srgb, var(--accent) 8%, transparent)" }
                         : {}),
                     }}>
@@ -205,6 +215,38 @@ export default function TemplateWizardModal({
                   </div>
                 ))}
                 {previewBlocks.length === 0 && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", padding: 30 }}>Tous les blocs ont été retirés.</p>}
+              </div>
+            </div>
+          )}
+
+          {/* TÉLÉPHONE — aperçu de CE QUE LA QUESTION MODIFIE.
+              Il n'y avait aucun aperçu ici : seize questions à l'aveugle. Montrer
+              la page entière dans une vignette de téléphone n'aiderait pas ; voir
+              le bloc qu'on est en train de remplir, si. */}
+          {isMobile && phase === "questions" && (
+            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "#070707", padding: "10px 16px 12px", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
+                <p style={{ color: MUTED, fontSize: 10, textTransform: "uppercase", letterSpacing: 1.4, margin: 0 }}>
+                  {pageEntiere ? "Votre page" : blocsQuestion.length ? "Ce que cette question modifie" : "Votre page"}
+                </p>
+                <button type="button" onClick={() => setPageEntiere(v => !v)}
+                  style={{ background: "transparent", border: "none", color: "var(--accent)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", minHeight: 40, padding: "0 4px", display: "inline-flex", alignItems: "center", flexShrink: 0 }}>
+                  {pageEntiere ? "Voir seulement ce bloc" : "Voir toute la page"}
+                </button>
+              </div>
+              <div ref={previewRef} style={{ maxHeight: pageEntiere ? "38vh" : "26vh", overflowY: "auto", WebkitOverflowScrolling: "touch", borderRadius: 14, border: "1px solid rgba(255,255,255,0.1)", ...bg }}>
+                {(pageEntiere || blocsQuestion.length === 0 ? previewBlocks : blocsQuestion).map(b => (
+                  <div key={b.id} data-wz-block={b.srcIndex}
+                    style={{
+                      opacity: b.visible ? 1 : 0.32, position: "relative", borderRadius: 8,
+                      ...(pageEntiere && step?.blockIndexes.includes(b.srcIndex)
+                        ? { outline: "2px solid var(--accent)", outlineOffset: "-3px", background: "color-mix(in srgb, var(--accent) 8%, transparent)" }
+                        : {}),
+                    }}>
+                    <BlockPreview block={b} theme={theme} dayMode={false} />
+                  </div>
+                ))}
+                {previewBlocks.length === 0 && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", padding: 24 }}>Tous les blocs ont été retirés.</p>}
               </div>
             </div>
           )}

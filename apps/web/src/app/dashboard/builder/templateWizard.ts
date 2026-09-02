@@ -541,3 +541,27 @@ export function finalizeBlocks(
   })
   return out
 }
+
+// =============================================================================
+// Aperçu ciblé — « qu'est-ce que cette question va changer ? »
+// -----------------------------------------------------------------------------
+// Sur ordinateur, l'assistant montre la page entière à côté des questions. Sur
+// téléphone, il n'y avait AUCUN aperçu : on répondait à seize questions à
+// l'aveugle, sans jamais voir ce qu'on modifiait.
+//
+// Montrer la page entière dans une vignette de téléphone n'aiderait pas. Ce qui
+// aide, c'est de voir LE bloc que la question en cours modifie.
+//
+// Attention aux index : la liste d'aperçu retire les blocs décidés « à enlever »,
+// donc ses positions ne correspondent plus à `blockIndexes`, qui compte sur la
+// liste d'ORIGINE. D'où `srcIndex`, porté par chaque bloc d'aperçu.
+// =============================================================================
+
+/** Blocs d'aperçu que l'étape en cours modifie, dans l'ordre de la page. */
+export function blocsDeLEtape<T extends { srcIndex: number }>(
+  blocsApercu: T[], indexes: number[] | undefined,
+): T[] {
+  if (!indexes || indexes.length === 0) return []
+  const vises = new Set(indexes)
+  return blocsApercu.filter(b => vises.has(b.srcIndex))
+}

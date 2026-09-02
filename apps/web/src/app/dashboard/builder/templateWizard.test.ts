@@ -133,3 +133,51 @@ describe("décisions finales", () => {
     expect(out.some(b => b.type === "divider")).toBe(false)
   })
 })
+
+import { blocsDeLEtape } from "./templateWizard"
+
+describe("blocsDeLEtape — l'aperçu ciblé du téléphone", () => {
+  const liste = [{ srcIndex: 0, t: "a" }, { srcIndex: 2, t: "c" }, { srcIndex: 3, t: "d" }]
+
+  it("ne garde que les blocs que l'étape modifie", () => {
+    expect(blocsDeLEtape(liste, [2]).map(b => b.t)).toEqual(["c"])
+    expect(blocsDeLEtape(liste, [0, 3]).map(b => b.t)).toEqual(["a", "d"])
+  })
+
+  it("suit l'index D'ORIGINE, pas la position dans la liste d'aperçu", () => {
+    // Le bloc 1 a été retiré : la liste d'aperçu est [0, 2, 3]. Chercher « 2 »
+    // par position renverrait « d ». C'est exactement le décalage qui faisait
+    // surligner le mauvais bloc côté ordinateur.
+    expect(blocsDeLEtape(liste, [2]).map(b => b.t)).toEqual(["c"])
+    expect(blocsDeLEtape(liste, [1])).toEqual([])   // bloc retiré : plus rien à montrer
+  })
+
+  it("garde l'ordre de la page, quel que soit l'ordre des index", () => {
+    expect(blocsDeLEtape(liste, [3, 0]).map(b => b.t)).toEqual(["a", "d"])
+  })
+
+  it("aucune étape, aucun index : liste vide, jamais d'erreur", () => {
+    expect(blocsDeLEtape(liste, undefined)).toEqual([])
+    expect(blocsDeLEtape(liste, [])).toEqual([])
+    expect(blocsDeLEtape([], [1])).toEqual([])
+  })
+})
+
+describe("l'assistant montre quelque chose sur téléphone", () => {
+  it("un aperçu ciblé existe, et le surlignage suit l'index d'origine", async () => {
+    const { readFileSync } = await import("node:fs")
+    const { join, dirname } = await import("node:path")
+    const { fileURLToPath } = await import("node:url")
+    const src = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "../templates/TemplateWizardModal.tsx"), "utf-8")
+    // Avant : `{!isMobile && (` autour du seul aperçu — zéro aperçu au téléphone,
+    // seize questions à l'aveugle.
+    expect(src).toContain('isMobile && phase === "questions"')
+    expect(src).toContain("blocsDeLEtape(previewBlocks, step?.blockIndexes)")
+    expect(src).toContain("Ce que cette question modifie")
+    expect(src).toContain("Voir toute la page")
+    // Le décalage d'index : plus jamais de `includes(i)` sur la position filtrée.
+    expect(src).toContain("step?.blockIndexes.includes(b.srcIndex)")
+    expect(src).not.toMatch(/blockIndexes\.includes\(i\)/)
+  })
+})

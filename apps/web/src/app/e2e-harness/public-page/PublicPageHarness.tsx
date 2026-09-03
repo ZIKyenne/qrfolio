@@ -13,8 +13,9 @@ import { PAGE_TEMPLATES } from "@/app/dashboard/builder/page-templates"
 import { PRESET_THEMES } from "@/app/dashboard/builder/themes"
 import { STUDIO_THEMES } from "@/app/dashboard/builder/templatesStudio"
 import { normalizePageTheme } from "@/app/dashboard/builder/types"
+import { contenuEprouve, sansImages, EPREUVES, type Epreuve } from "./contenuReel"
 
-export function PublicPageHarness({ modele, theme }: { modele?: string; theme?: string }) {
+export function PublicPageHarness({ modele, theme, epreuve }: { modele?: string; theme?: string; epreuve?: string }) {
   const t = PAGE_TEMPLATES.find(x => x.key === modele) ?? PAGE_TEMPLATES[0]
   // `?theme=` remplace le thème natif du modèle : c'est ainsi qu'on regarde un
   // contenu de restaurant sur un thème clair, croisement qu'un utilisateur fait
@@ -30,17 +31,20 @@ export function PublicPageHarness({ modele, theme }: { modele?: string; theme?: 
     profiles: { full_name: t.label, plan: "pro" },
   }
 
+  // `?epreuve=` rejoue la meme page avec du contenu de vrai commercant.
+  const ep = (EPREUVES as string[]).includes(epreuve ?? "") ? (epreuve as Epreuve) : null
+
   const blocks = t.blocks.map((b, i) => ({
     id: `e2e-${i}`,
     page_id: "e2e-harness",
     type: b.type,
-    content: b.content,
+    content: ep === null ? b.content : ep === "vide" ? sansImages(contenuEprouve(b.content, ep)) : contenuEprouve(b.content, ep),
     position: i,
     is_visible: true,
   }))
 
   return (
-    <div data-harness-modele={t.key} data-harness-theme={theme && themeChoisi ? theme : "natif"} data-harness-blocs={String(blocks.length)}>
+    <div data-harness-modele={t.key} data-harness-theme={theme && themeChoisi ? theme : "natif"} data-harness-blocs={String(blocks.length)} data-harness-epreuve={ep ?? "aucune"}>
       <PublicPageClient page={page as any} blocks={blocks as any} showBranding introEligible={false} />
     </div>
   )

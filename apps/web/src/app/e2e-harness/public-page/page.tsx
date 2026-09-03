@@ -7,8 +7,8 @@ import { PublicPageHarness } from "./PublicPageHarness"
 
 export const dynamic = "force-dynamic"
 
-export default async function E2EPublicPage({ searchParams }: { searchParams: Promise<{ t?: string; theme?: string }> }) {
+export default async function E2EPublicPage({ searchParams }: { searchParams: Promise<{ t?: string; theme?: string; epreuve?: string }> }) {
   if (!harnessAutorise()) notFound()
-  const { t, theme } = await searchParams
-  return <PublicPageHarness modele={t} theme={theme} />
+  const { t, theme, epreuve } = await searchParams
+  return <PublicPageHarness modele={t} theme={theme} epreuve={epreuve} />
 }

@@ -206,3 +206,47 @@ pour bloquer un lot dans un enchaînement.
 **Installation.** `INSTALLER-CORRECTIFS.ps1` pose les sept fichiers corrigés dans la
 skill `qrowg-marketing` en sauvegardant les originaux. À lancer **hors session Cowork** :
 le dossier de la skill est en lecture seule pendant une session.
+
+---
+
+## 11. Troisième passe — ce qui a encore été corrigé
+
+**Supermetrics retiré du run quotidien.** L'essai a expiré le 30/08 : l'étape
+« apprentissage » échouait en silence depuis quatre jours et le run continuait comme si
+elle avait tourné. Le prompt de la tâche planifiée l'interdit désormais explicitement et
+la remplace par les statistiques Buffer (`execute_query` sur les posts `sent` avec
+`metrics { name value }`), en précisant ce que Buffer **ne** donne pas — les clics
+sortants par épingle — pour qu'on ne prétende pas les mesurer.
+
+**Slides de corps enfin variées.** L'alternance était documentée mais pas implémentée,
+et un premier essai s'est trompé de critère : les slides `body` tombent sur les index 02
+et 04, tous deux pairs, donc la parité de l'index les envoyait toutes deux sur le même
+squelette. L'alternance se fait maintenant sur le **rang de la slide de corps**. Deux
+squelettes : kicker + filet bas, ou filet vertical d'accent avec titre décalé.
+
+**Rouge métier restreint.** Le food truck avait été rangé avec le restaurant et le bar ;
+la charte réserve `#A5122A` à la restauration assise et aux bars. Corrigé.
+
+**Kicker inventé supprimé.** La variante 1 des slides de corps affichait « LE PROBLÈME »
+par défaut quand le champ était absent — même faute que le `+31%` du bloc `metric` :
+un contenu que personne n'a écrit qui part en production.
+
+**Contrôleur de QR fiabilisé.** Il criait au loup : un détecteur qui reçoit une affiche
+2000 × 3000 décroche sur un motif occupant 8 % du cadre, alors qu'un téléphone, qui cadre
+de près, le lit sans peine. La détection rejoue désormais par tuiles. Et côté générateur,
+le QR est fabriqué à la résolution finale exacte — une URL avec UTM complets donne un QR
+version 9 dont les modules se brouillaient à la réduction.
+
+**`preparer-env.sh`.** L'installation de l'environnement de rendu était réécrite à la main
+à chaque run, avec les mêmes occasions de se tromper. Un script fait tout : dépendances,
+extraction de chromium, copie du générateur depuis la skill en lecture seule, application
+de la version corrigée, vérification de syntaxe. Testé de bout en bout.
+Piège rencontré en l'écrivant, corrigé dans le script : `find / | head -1` fait recevoir
+un SIGPIPE à `find`, ce qui tue tout le script sous `set -o pipefail`.
+
+**Prompt de la tâche quotidienne réécrit.** Il porte maintenant l'ordre réel des
+opérations : stock d'abord, anti-doublon, apprentissage sans Supermetrics, production
+avec le générateur v2, **contrôle qualité bloquant**, dépôt dans le dossier `outputs`
+(c'est celui que scanne `QRowg-Depot.cmd` — se tromper de dossier a coûté un aller-retour
+inutile), mise en file, surplus au stock. Et une consigne d'honnêteté : si la
+distribution reste nulle, le dire au lieu de produire comme si de rien n'était.

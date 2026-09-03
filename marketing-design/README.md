@@ -1,6 +1,7 @@
 # marketing-design — chaîne de design QRowg corrigée
 
 1. `AUDIT-DESIGN-2026-09-03.md` — le rapport complet, à lire en premier.
+0. `DIAGNOSTIC-PINTEREST.md` — pourquoi le compte ne distribue rien, et le test en cours.
 2. `INSTALLER-CORRECTIFS.ps1` — pose tous les correctifs dans la skill `qrowg-marketing`
    (sauvegarde les originaux). **À lancer hors session Cowork.**
 
@@ -11,6 +12,7 @@
 | `motion-corrige/` | Motion System avec la palette de marque et le seuil de durée paramétrable. |
 | `theme-qc/` | `theme_contraste.py` — contrôle des ratios de contraste d'un thème QRfolio. |
 | `apercu-gabarit-A..D.png` | Les 4 compositions d'épingle, QR vérifiés au décodeur. |
+| `apercu-slide-corps-1/2.png` | Les 2 squelettes alternés des slides de corps du carrousel. |
 
 Deux skills accompagnent ce dossier : **qrowg-design-qc** (direction artistique et
 contrôle) et **qrowg-stock** (réserve et réinjection).
@@ -18,6 +20,7 @@ contrôle) et **qrowg-stock** (réserve et réinjection).
 ## Contrôles rapides
 
 ```
+bash generateur-v2/preparer-env.sh <ce dossier>          # environnement de rendu, en 1 commande
 python3 generateur-v2/qrowg_qc.py out/ attendus.json     # visuels : 0 alerte exigée
 python3 theme-qc/theme_contraste.py theme.json --strict  # thème : code 1 si échec
 node motion-corrige/render.mjs clips/x.json --validate   # vidéo : plus besoin de --no-validate

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Qrowg render harness</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet" />
+<style>
+  html,body{margin:0;background:#080A08;height:100%;overflow:hidden}
+  canvas{position:fixed;inset:0;margin:auto;max-width:100%;max-height:100%}
+</style>
+<script src="./qrowg-motion.js"></script>
+<script src="./qrowg-social.js"></script>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<script>
+/* Page pilotée par render.mjs — aucune UI. Toutes les fonctions renvoient du JSON ou du base64. */
+(function () {
+  let mounted = null, clip = null, step = 1 / 30;
+
+  function ready() { return !!(window.QrowgSocial && window.QrowgMotion); }
+  window.__ready = ready;
+
+  window.__fonts = async function () {
+    if (!document.fonts) return true;
+    await Promise.all([
+      document.fonts.load('700 96px "Inter"', 'Aq'),
+      document.fonts.load('400 40px "Inter"', 'Aq'),
+      document.fonts.load('500 26px "JetBrains Mono"', 'Aq')
+    ]);
+    await document.fonts.ready;
+    return document.fonts.check('700 96px "Inter"');
+  };
+
+  window.__validate = function (def) { return QrowgSocial.validate(def); };
+
+  window.__init = function (def) {
+    if (mounted) mounted.destroy();
+    clip = QrowgSocial.createClip(Object.assign({}, def, { safeZones: false }));
+    step = 1 / clip.fps;
+    mounted = QrowgSocial.mount(clip, document.getElementById('stage'));
+    return { duration: clip.duration, fps: clip.fps, w: clip.fmt.w, h: clip.fmt.h, total: Math.round(clip.duration * clip.fps) };
+  };
+
+  /* Avance d'une frame et renvoie le PNG en base64 (déterministe, pas de temps réel). */
+  window.__next = function (i) {
+    mounted.step(i * step, step);
+    return document.getElementById('stage').toDataURL('image/png').slice(22);
+  };
+
+  window.__sheet = async function (def, opts) {
+    const c = QrowgSocial.createClip(def);
+    const cv = await QrowgSocial.contactSheet(c, opts || {});
+    return cv.toDataURL('image/png').slice(22);
+  };
+
+  window.__still = async function (def, t) {
+    const c = QrowgSocial.createClip(Object.assign({}, def, { safeZones: false }));
+    const cv = await QrowgSocial.frame(c, t);
+    return cv.toDataURL('image/png').slice(22);
+  };
+})();
+</script>
+</body>
+</html>

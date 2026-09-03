@@ -37,22 +37,28 @@
 | Commerce | Recrutement « on recrute » en vitrine | 02/09 |
 | Boulangerie / café | Carte de fidélité dématérialisée | 02/09 |
 | Marché / producteur | Fiche producteur et traçabilité sur l'étal | 02/09 |
+| Food truck | Pré-commande pour éviter la file d'attente (carrousel) | 03/09 |
+| Food truck | Planning de la semaine par ville | 03/09 |
+| Restaurant | Carte des desserts rouverte au moment du café | 03/09 |
+| Boulangerie | « Le pain d'aujourd'hui » en vitrine | 03/09 |
+| Transverse | Ce que coûte vraiment une réimpression (QR dynamique) | 03/09 |
+| Commerce / épicerie | Étiquette produit qui raconte l'histoire | 03/09 |
 
 ## Angles NEUFS disponibles (piocher ici en priorité)
-- Restaurant : carte des desserts qu'on ne montre jamais · carte enfants ·
-  vins au verre qui tournent · plat à emporter du soir · anniversaire / privatisation ·
-  fiche « d'où vient ce plat » (producteurs) · liste d'attente le samedi soir.
+- Restaurant : carte enfants · vins au verre qui tournent · plat à emporter du soir ·
+  anniversaire / privatisation · fiche « d'où vient ce plat » (producteurs) ·
+  liste d'attente le samedi soir · le menu en 4 langues pour les touristes.
 - Bar : carte des cocktails saisonnière · quiz / jeu de table ·
-  happy hour qui change selon l'heure.
+  happy hour qui change selon l'heure · la carte des bières pression du moment.
 - Boulangerie : commande de galette / bûche selon la saison · liste d'allergènes ·
-  « le pain d'aujourd'hui ».
-- Food truck : planning de la semaine par ville · pré-commande pour éviter la file.
-- Marché / producteur : panier de la semaine · fiche producteur sur l'étal.
-- Commerce : étiquette produit qui raconte l'histoire · retours & garantie ·
-  inscription newsletter en caisse · parrainage.
+  les invendus du soir à prix réduit.
+- Food truck : le camion privatisé pour un événement · la carte de la semaine par thème.
+- Marché / producteur : panier de la semaine · la recette du produit de saison.
+- Commerce : retours & garantie · inscription newsletter en caisse · parrainage ·
+  la notice du produit sans papier · le stock disponible en magasin.
 - Transverse : « ton QR imprimé en 2024 marche encore » (QR dynamique) ·
-  ce que coûte vraiment une réimpression · le plafond souple (la page ne se coupe pas) ·
-  QR statique vs dynamique expliqué en 20 s.
+  le plafond souple (la page ne se coupe pas) · QR statique vs dynamique en 20 s ·
+  ce que ton support papier ne te dit pas (mesure) · un support, une page, un chiffre.
 
 ## Journal par date
 | Date | Secteur | Slugs produits | Canaux |
@@ -64,6 +70,10 @@
 | 31/08 | café | cafe-salon-de-the-carte-wifi (carrousel), allergenes-carte-restaurant, cafe-wifi-carte-boissons, cave-a-vin-epicerie-fiche-produit, click-and-collect-traiteur, glacier-creperie-parfums-du-jour | Pinterest, IG |
 | 01/09 | restaurant | menu-restaurant-carte-de-rentree (carrousel), avis-google-restaurant-addition, chevalet-de-table-a-imprimer, food-truck-emplacement-du-jour, menu-restaurant-carte-du-jour, vitrine-boutique-rentree-commerce | Pinterest, IG |
 | 02/09 | bar (100 % inédit) | sous-bock-bar-programme-soirees (carrousel IG + TikTok + reel 32,8 s), sous-bock-bar-concerts-agenda, pourboire-sans-especes-salon-serveur, on-recrute-vitrine-commerce, carte-fidelite-dematerialisee-boulangerie, fiche-producteur-etal-marche | Pinterest, IG, TikTok |
+
+| 03/09 | food truck (100 % inédit) | qr-code-precommande-food-truck-file-attente (carrousel IG + TikTok), qr-code-planning-semaine-food-truck-villes, qr-code-carte-desserts-restaurant-table, qr-code-pain-du-jour-boulangerie-vitrine, qr-code-reimpression-flyer-cout-reel, qr-code-etiquette-produit-histoire-boutique | Pinterest, IG, TikTok |
+
+> Note 03/09 : pas de vidéo (jeudi). Dépôt automatique bloqué par le proxy → dépôt manuel via QRowg-Depot.cmd, puis **7 posts mis en file** (IG carrousel, TikTok carrousel photo, 5 épingles Pinterest sur 4 tableaux). File à 13 posts programmés.
 
 > Note 02/09 : un premier lot « restaurant / carte de rentrée » a été produit puis SUPPRIMÉ de la file car il doublonnait 28/08 et 01/09. Ne pas le reproduire.
 
@@ -80,3 +90,10 @@
 - « Ta vitrine peut te trouver ton prochain serveur. »
 - « La carte de fidélité qu'il ne peut plus perdre. »
 - « Sur l'étal, un QR qui raconte d'où vient ta tomate. »
+- « Ils repartent avant d'avoir commandé. »
+- « 12 minutes d'attente = 3 clients perdus. »
+- « Où est le camion jeudi ? »
+- « Personne ne commande le dessert. Parce que personne ne l'a jamais vu. »
+- « Le pain d'aujourd'hui, affiché ce matin. »
+- « Ce que coûte vraiment une réimpression. »
+- « L'étiquette qui raconte le produit. »

@@ -1,0 +1,4 @@
+{"name":"Bar — Amber Lounge","category":"bar","primary":"#D4AF45","accent":"#B8922F",
+ "bg":"#0B0B0C","surface":"#17171A","text":"#F4F1E8","muted":"#8A857B",
+ "fontDisplay":"Anton","fontBody":"Manrope","bgMode":"solid",
+ "effects":{"glass":true,"shadow":true,"glow":true},"animations":{"entrance":"fade"}}

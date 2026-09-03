@@ -1,0 +1,125 @@
+{
+  "total": 17,
+  "avec_alerte": 0,
+  "details": [
+    {
+      "fichier": "qr-code-carte-desserts-restaurant-table.png",
+      "fond_sombre_pct": 88.9,
+      "or_pct": 5.4,
+      "qr": "https://qrowg.com/qr-code/menu?utm_source=pinterest&utm_medium=pin&utm_campaign=20260903-food-truck",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-etiquette-produit-histoire-boutique.png",
+      "fond_sombre_pct": 89.8,
+      "or_pct": 4.8,
+      "qr": "https://qrowg.com/qr-code/boutique?utm_source=pinterest&utm_medium=pin&utm_campaign=20260903-food-truck",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-pain-du-jour-boulangerie-vitrine.png",
+      "fond_sombre_pct": 90.3,
+      "or_pct": 5.1,
+      "qr": "https://qrowg.com/qr-code/artisan?utm_source=pinterest&utm_medium=pin&utm_campaign=20260903-food-truck",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-planning-semaine-food-truck-villes.png",
+      "fond_sombre_pct": 91.4,
+      "or_pct": 4.3,
+      "qr": "https://qrowg.com/qr-code/food-truck?utm_source=pinterest&utm_medium=pin&utm_campaign=20260903-food-truck",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-precommande-food-truck-file-attente-01.png",
+      "fond_sombre_pct": 92.2,
+      "or_pct": 2.1,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-precommande-food-truck-file-attente-02.png",
+      "fond_sombre_pct": 93.7,
+      "or_pct": 1.2,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-precommande-food-truck-file-attente-03.png",
+      "fond_sombre_pct": 85.4,
+      "or_pct": 9.7,
+      "qr": "https://qrowg.com/qr-code/food-truck?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260903-food-truck",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-precommande-food-truck-file-attente-04.png",
+      "fond_sombre_pct": 93.4,
+      "or_pct": 1.5,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-precommande-food-truck-file-attente-05.png",
+      "fond_sombre_pct": 94.1,
+      "or_pct": 0.8,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-precommande-food-truck-file-attente-06.png",
+      "fond_sombre_pct": 84.0,
+      "or_pct": 6.4,
+      "qr": "https://qrowg.com/qr-code/food-truck?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260903-food-truck",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-reimpression-flyer-cout-reel.png",
+      "fond_sombre_pct": 90.1,
+      "or_pct": 4.5,
+      "qr": "https://qrowg.com/generateur-qr-code?utm_source=pinterest&utm_medium=pin&utm_campaign=20260903-food-truck",
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-precommande-food-truck-file-attente-01.png",
+      "fond_sombre_pct": 92.3,
+      "or_pct": 2.1,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-precommande-food-truck-file-attente-02.png",
+      "fond_sombre_pct": 93.7,
+      "or_pct": 1.2,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-precommande-food-truck-file-attente-03.png",
+      "fond_sombre_pct": 85.5,
+      "or_pct": 9.7,
+      "qr": "https://qrowg.com/qr-code/food-truck?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260903-food-truck",
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-precommande-food-truck-file-attente-04.png",
+      "fond_sombre_pct": 93.4,
+      "or_pct": 1.5,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-precommande-food-truck-file-attente-05.png",
+      "fond_sombre_pct": 94.2,
+      "or_pct": 0.8,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-precommande-food-truck-file-attente-06.png",
+      "fond_sombre_pct": 84.0,
+      "or_pct": 6.4,
+      "qr": "https://qrowg.com/qr-code/food-truck?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260903-food-truck",
+      "alertes": []
+    }
+  ]
+}

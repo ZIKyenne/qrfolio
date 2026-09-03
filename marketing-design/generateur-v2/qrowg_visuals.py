@@ -67,18 +67,28 @@ html,body{width:100%;height:100%}
 # ============ AJOUTS v2 : QR réel tracké, autosize, accent secteur, variantes ============
 import base64 as _b64mod, hashlib as _hl
 _QRCACHE={}
-def make_qr_b64(url):
+def make_qr_b64(url, target_px=600):
     """VRAI QR **scannable** : modules SOMBRES sur plaque OR.
-    ATTENTION — un QR aux modules or sur fond noir (polarite inversee + contraste
-    insuffisant) n'est PAS decode par les lecteurs. La seule combinaison a la fois
-    conforme a la charte et lisible est : modules #080A08 sur plaque #D4AF45."""
-    key=url or '__default__'
+
+    Deux pieges evites ici :
+    1) Un QR aux modules or sur fond noir (polarite inversee + contraste
+       insuffisant) n'est PAS decode par les lecteurs. Seule combinaison a la fois
+       conforme a la charte et lisible : modules #080A08 sur plaque #D4AF45.
+    2) Une URL longue (lien profond + UTM) produit un QR de version elevee, dont
+       les modules deviennent flous s'il faut le RETRECIR a l'affichage. On genere
+       donc l'image a la resolution finale exacte (target_px, en pixels ecran),
+       en calant box_size sur le nombre de modules : plus aucune reduction.
+    """
+    key = (url or '__default__', int(target_px))
     if key in _QRCACHE: return _QRCACHE[key]
     target = url or 'https://qrowg.com'
     try:
         import qrcode
-        q=qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=16, border=3)
+        q=qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H, border=3)
         q.add_data(target); q.make(fit=True)
+        modules = len(q.get_matrix())          # inclut deja la marge
+        box = max(4, int(round(target_px / float(modules))))
+        q.box_size = box
         img=q.make_image(fill_color='#080A08', back_color='#D4AF45').convert('RGB')
         buf=io.BytesIO(); img.save(buf,'PNG')
         out=_b64mod.b64encode(buf.getvalue()).decode()
@@ -98,7 +108,7 @@ def fit(text, base, ideal_chars, floor=0.58):
     r=max(floor, ideal_chars/float(n))**0.72
     return int(base*r), r
 
-SECTORS_RED={'restaurant','resto','bar','brasserie','pub','bistrot','pizzeria','food truck','food-truck'}
+SECTORS_RED={'restaurant','resto','bar','brasserie','pub','bistrot','pizzeria'}  # charte : resto/bar UNIQUEMENT
 def sector_accent(sector):
     """Accent contextuel rouge métier #A5122A prévu par la charte (resto/bar UNIQUEMENT)."""
     return (str(sector or '').strip().lower() in SECTORS_RED)
@@ -120,7 +130,7 @@ def badge(size,x,y):
     img=f'<img src="data:image/png;base64,{LOGO}" width="{size}" height="{size}">' if LOGO else ''
     return f'<div class="badge" style="top:{y}px;left:{x}px;">{img}<span class="wm" style="font-size:{int(size*0.42)}px;">QROWG</span></div>'
 def qr_hero(px, glow=1.6, url=None):
-    data = make_qr_b64(url)
+    data = make_qr_b64(url, target_px=px*2)
     if not data: return ''
     g=int(px*glow); off=-16
     brackets=''.join([
@@ -131,7 +141,7 @@ def qr_hero(px, glow=1.6, url=None):
     return (f'<div class="qrwrap" style="width:{px}px;height:{px}px;">'
             f'<div class="g" style="width:{g}px;height:{g}px;"></div>'
             f'<img src="data:image/png;base64,{data}" width="{px}" height="{px}" '
-            f'style="border-radius:{max(10,int(px*0.045))}px;">{brackets}</div>')
+            f'style="border-radius:{max(10,int(px*0.045))}px;image-rendering:pixelated;">{brackets}</div>')
 
 # ---------- CARROUSEL 1080x1350 ----------
 def carousel_slide_html(s):
@@ -188,14 +198,31 @@ def carousel_slide_html(s):
             <div class="cta" style="margin-top:54px;font-size:44px;padding:26px 52px;background:linear-gradient(120deg,{_acc},var(--gold2));">{esc(s.get('cta','qrowg.com'))} <span>→</span></div>{qblock}
           </div>{idxh}</div>"""
         return page(inner)
-    # body (problème / fonctionnement)
-    kick=f'<div class="ey" style="font-size:30px;margin-bottom:32px;"><span class="bar"></span>{esc(s.get("kicker",""))}</div>' if s.get('kicker') else ''
+    # body (problème / fonctionnement) — 2 squelettes alternés.
+    # Deux slides `body` dans un même carrousel (typiquement 02 et 04) ne doivent pas
+    # etre typographiquement identiques : on alterne sur la parite de l'index.
     body=s.get('body','')
-    inner=f"""<div class="stage">{tex}<div class="vig"></div>{b}
-      <div class="center" style="padding:0 74px;">{kick}
-        <div class="head" style="font-size:{fit(s['title'],86,38)[0]}px;">{accentize(s['title'])}</div>
-        <div class="sub" style="margin-top:30px;font-size:44px;line-height:1.38;">{accentize(body)}</div>
-      </div><div class="rule" style="left:74px;bottom:70px;width:120px;"></div>{idxh}</div>"""
+    ts=fit(s['title'],86,38)[0]
+    pair = ((int(idx or 2) // 2) % 2 == 1)
+    if pair:
+        # variante 1 : kicker + titre a gauche + filet en bas
+        kick=(f'<div class="ey" style="font-size:30px;margin-bottom:32px;color:{_acc};"><span class="bar" style="background:linear-gradient(90deg,{_acc},transparent);"></span>{esc(s.get("kicker",""))}</div>') if s.get('kicker') else ''
+        inner=f"""<div class="stage">{tex}<div class="vig"></div>{b}
+          <div class="center" style="padding:0 74px;">{kick}
+            <div class="head" style="font-size:{ts}px;">{accentize(s['title'])}</div>
+            <div class="sub" style="margin-top:30px;font-size:44px;line-height:1.38;">{accentize(body)}</div>
+          </div><div class="rule" style="left:74px;bottom:70px;width:120px;background:linear-gradient(90deg,{_acc},transparent);"></div>{idxh}</div>"""
+        return page(inner)
+    # variante 2 : filet vertical d'accent, titre decale, pas de kicker, lueur basse
+    kick=f'<div class="ey" style="font-size:28px;margin-bottom:26px;color:{_acc};">{esc(s.get("kicker",""))}</div>' if s.get('kicker') else ''
+    inner=f"""<div class="stage">{tex}
+      <div class="glow" style="width:560px;height:560px;left:-140px;bottom:-160px;background:radial-gradient(circle,rgba(212,175,69,.14),transparent 60%);"></div>
+      <div class="vig"></div>{b}
+      <div style="position:absolute;left:74px;top:330px;bottom:300px;width:5px;background:linear-gradient(180deg,{_acc},transparent);"></div>
+      <div class="center" style="padding:0 74px 0 116px;">{kick}
+        <div class="head" style="font-size:{ts}px;">{accentize(s['title'])}</div>
+        <div class="sub" style="margin-top:30px;font-size:43px;line-height:1.38;">{accentize(body)}</div>
+      </div>{idxh}</div>"""
     return page(inner)
 
 # ---------- PINTEREST 1000x1500 — 4 COMPOSITIONS (anti-monotonie) ----------
@@ -236,7 +263,7 @@ def pin_html(p):
 
     if v==2:  # C — bandeau chiffre / mot-clé encadré, texte à gauche, QR petit en coin
         sub=f'<div class="sub" style="margin-top:26px;font-size:37px;line-height:1.42;max-width:800px;">{accentize(subtxt)}</div>' if subtxt else ''
-        qr=f'<div style="position:absolute;right:56px;top:110px;">{qr_hero(260,1.5,url)}</div>' if p.get('qr') else ''
+        qr=f'<div style="position:absolute;right:56px;top:120px;">{qr_hero(300,1.5,url)}</div>' if p.get('qr') else ''
         band=(f'<div style="position:absolute;left:0;right:0;top:0;height:14px;'
               f'background:linear-gradient(90deg,{acc},transparent 70%);"></div>')
         inner=f"""<div class="stage">{tex}{band}

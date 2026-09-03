@@ -10,16 +10,22 @@
 
 import PublicPageClient from "@/app/[slug]/PublicPageClient"
 import { PAGE_TEMPLATES } from "@/app/dashboard/builder/page-templates"
+import { PRESET_THEMES } from "@/app/dashboard/builder/themes"
+import { STUDIO_THEMES } from "@/app/dashboard/builder/templatesStudio"
 import { normalizePageTheme } from "@/app/dashboard/builder/types"
 
-export function PublicPageHarness({ modele }: { modele?: string }) {
+export function PublicPageHarness({ modele, theme }: { modele?: string; theme?: string }) {
   const t = PAGE_TEMPLATES.find(x => x.key === modele) ?? PAGE_TEMPLATES[0]
+  // `?theme=` remplace le thème natif du modèle : c'est ainsi qu'on regarde un
+  // contenu de restaurant sur un thème clair, croisement qu'un utilisateur fait
+  // en deux clics dans l'éditeur et qu'aucun modèle de la galerie ne montre.
+  const themeChoisi = theme ? ((PRESET_THEMES as any)[theme] ?? (STUDIO_THEMES as any)[theme]) : null
 
   const page = {
     id: "e2e-harness",
     title: `${t.group} — ${t.label}`,
     slug: "e2e-harness",
-    theme: normalizePageTheme(t.theme),
+    theme: normalizePageTheme((themeChoisi ?? t.theme) as any),
     total_views: 0,
     profiles: { full_name: t.label, plan: "pro" },
   }
@@ -34,7 +40,7 @@ export function PublicPageHarness({ modele }: { modele?: string }) {
   }))
 
   return (
-    <div data-harness-modele={t.key} data-harness-blocs={String(blocks.length)}>
+    <div data-harness-modele={t.key} data-harness-theme={theme && themeChoisi ? theme : "natif"} data-harness-blocs={String(blocks.length)}>
       <PublicPageClient page={page as any} blocks={blocks as any} showBranding introEligible={false} />
     </div>
   )

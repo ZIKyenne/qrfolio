@@ -45,7 +45,7 @@ export const STUDIO_THEMES: Record<string, PageTheme> = {
     bgMode: "gradient", bgGradient: "linear-gradient(170deg,#0F1113,#191D21)",
   },
   indigo: {
-    name: "Indigo Sport", bg: "#070A16", surface: "#111938", primary: "#6366F1", accent: "#22D3EE",
+    name: "Indigo Sport", bg: "#070A16", surface: "#111938", primary: "#7476F2", accent: "#22D3EE",
     text: "#EEF2FF", muted: "#8891C0", fontDisplay: "Bebas Neue", fontBody: "Plus Jakarta Sans",
     bgMode: "mesh", mesh_c1: "#6366F1", mesh_c2: "#22D3EE", mesh_c3: "#111938", mesh_blur: 130,
   },
@@ -57,38 +57,38 @@ export const STUDIO_THEMES: Record<string, PageTheme> = {
   },
   // Clairs
   creme: {
-    name: "Crème", bg: "#FDF8F0", surface: "#FFFFFF", primary: "#B07D3A", accent: "#7A5230",
-    text: "#2A2118", muted: "#7A6B58", fontDisplay: "Fraunces", fontBody: "DM Sans",
+    name: "Crème", bg: "#FDF8F0", surface: "#FFFFFF", primary: "#88612D", accent: "#7A5230",
+    text: "#2A2118", muted: "#766755", fontDisplay: "Fraunces", fontBody: "DM Sans",
     bgMode: "gradient", bgGradient: "linear-gradient(170deg,#FFFCF6,#F6EADA)",
   },
   poudre: {
-    name: "Rose Poudre", bg: "#FDF4F7", surface: "#FFFFFF", primary: "#C2557E", accent: "#8A5C6E",
-    text: "#2E1D25", muted: "#8A7078", fontDisplay: "Playfair Display", fontBody: "DM Sans",
+    name: "Rose Poudre", bg: "#FDF4F7", surface: "#FFFFFF", primary: "#B13F6A", accent: "#8A5C6E",
+    text: "#2E1D25", muted: "#7A626A", fontDisplay: "Playfair Display", fontBody: "DM Sans",
     bgMode: "gradient", bgGradient: "linear-gradient(170deg,#FFF8FB,#F7E6EE)",
   },
   sauge: {
-    name: "Sauge", bg: "#F4F8F2", surface: "#FFFFFF", primary: "#4F7B4A", accent: "#8A6D3B",
-    text: "#1F2A1D", muted: "#6A7A66", fontDisplay: "Lora", fontBody: "DM Sans",
+    name: "Sauge", bg: "#F4F8F2", surface: "#FFFFFF", primary: "#4B7546", accent: "#8A6D3B",
+    text: "#1F2A1D", muted: "#606E5C", fontDisplay: "Lora", fontBody: "DM Sans",
     bgMode: "gradient", bgGradient: "linear-gradient(170deg,#F9FCF7,#EAF2E5)",
   },
   lin: {
-    name: "Lin", bg: "#FAF7F2", surface: "#FFFFFF", primary: "#8A7355", accent: "#B08D5F",
-    text: "#2B2620", muted: "#7C7263", fontDisplay: "EB Garamond", fontBody: "Work Sans",
+    name: "Lin", bg: "#FAF7F2", surface: "#FFFFFF", primary: "#7A654B", accent: "#B08D5F",
+    text: "#2B2620", muted: "#71675A", fontDisplay: "EB Garamond", fontBody: "Work Sans",
     bgMode: "gradient", bgGradient: "linear-gradient(170deg,#FDFBF7,#F1EADF)",
   },
   ardoise_claire: {
     name: "Ardoise Claire", bg: "#F4F6F8", surface: "#FFFFFF", primary: "#1F4E79", accent: "#D98324",
-    text: "#1B2229", muted: "#66707C", fontDisplay: "Manrope", fontBody: "Work Sans",
+    text: "#1B2229", muted: "#616B76", fontDisplay: "Manrope", fontBody: "Work Sans",
     bgMode: "gradient", bgGradient: "linear-gradient(170deg,#FAFBFC,#E9EEF3)",
   },
   menthe: {
     name: "Menthe", bg: "#F2FAF8", surface: "#FFFFFF", primary: "#12756A", accent: "#2E8B7A",
-    text: "#12221F", muted: "#5F7A75", fontDisplay: "Outfit", fontBody: "DM Sans",
+    text: "#12221F", muted: "#58706C", fontDisplay: "Outfit", fontBody: "DM Sans",
     bgMode: "gradient", bgGradient: "linear-gradient(170deg,#F8FDFC,#E6F4F0)",
   },
   mocha: {
     name: "Mocha", bg: "#FFFAF4", surface: "#FFFFFF", primary: "#7B4B2A", accent: "#B5793F",
-    text: "#2A1C12", muted: "#7E6A58", fontDisplay: "Space Grotesk", fontBody: "DM Sans",
+    text: "#2A1C12", muted: "#796655", fontDisplay: "Space Grotesk", fontBody: "DM Sans",
     bgMode: "gradient", bgGradient: "linear-gradient(170deg,#FFFDFA,#F6EADC)",
   },
 }

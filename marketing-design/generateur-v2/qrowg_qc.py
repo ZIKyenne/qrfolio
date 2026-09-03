@@ -33,7 +33,31 @@ def analyse(path, expected_url=None):
     try:
         import cv2, numpy as np
         img = cv2.imread(path)
-        data, _, _ = cv2.QRCodeDetector().detectAndDecode(img)
+        det = cv2.QRCodeDetector()
+
+        def essai(a):
+            try:
+                d, _, _ = det.detectAndDecode(a)
+                return d or ''
+            except Exception:
+                return ''
+
+        # Un telephone cadre le QR de pres : le detecteur, lui, recoit toute
+        # l'affiche 2000x3000 et decroche sur un motif qui n'occupe que 8 % du
+        # cadre. On rejoue donc la detection sur des tuiles, sinon on signale
+        # comme illisible un QR parfaitement scannable en conditions reelles.
+        data = essai(img)
+        if not data:
+            h, w = img.shape[:2]
+            tuiles = []
+            for fy in (0.0, 0.25, 0.5):
+                for fx in (0.0, 0.25, 0.5):
+                    tuiles.append(img[int(h*fy):int(h*(fy+0.5)), int(w*fx):int(w*(fx+0.5))])
+            tuiles.append(cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA))
+            for t in tuiles:
+                data = essai(t)
+                if data:
+                    break
         if data:
             res['qr'] = data
             if expected_url and data.split('?')[0] != expected_url.split('?')[0]:

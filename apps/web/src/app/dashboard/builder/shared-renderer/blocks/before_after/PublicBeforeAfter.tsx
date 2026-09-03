@@ -20,7 +20,7 @@ export function PublicBeforeAfter({ content, ctx }: PublicAdapterProps) {
           <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "var(--success)", fontSize: 12, fontWeight: 700, margin: 0 }}>{afterLabel}</p></div>
         </div>
       </div>
-      {description && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", margin: "9px 0 0" }}>{description}</p>}
+      {description && <p style={{ color: MUTED, fontSize: 13.5, textAlign: "center", margin: "9px 0 0" }}>{description}</p>}
     </div>
   )
 }

@@ -30,7 +30,7 @@ export function PublicTimeline({ content, ctx }: PublicAdapterProps) {
                 <p style={{ color: G, fontSize: 12, fontWeight: 700, margin: 0 }}>{e.date}</p>
               </div>
               <p style={{ color: TEXT, fontSize: 13.5, fontWeight: 600, margin: "0 0 3px", fontFamily: FONT_B }}>{e.title}</p>
-              {e.desc && <p style={{ color: MUTED, fontSize: 11.5, margin: 0, lineHeight: 1.5 }}>{e.desc}</p>}
+              {e.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0, lineHeight: 1.5 }}>{e.desc}</p>}
               {e.link && <EventLink link={e.link} />}
             </div>
           ))}
@@ -43,7 +43,7 @@ export function PublicTimeline({ content, ctx }: PublicAdapterProps) {
               <div style={{ position: "absolute", left: -19, top: 4, width: 11, height: 11, borderRadius: "50%", background: i === items.length - 1 ? "var(--success)" : G, border: `2px solid ${i === items.length - 1 ? "var(--success)40" : `${G}40`}` }} />
               <p style={{ color: G, fontSize: 12, fontWeight: 700, margin: "0 0 2px" }}>{e.date}</p>
               <p style={{ color: TEXT, fontSize: 14, fontWeight: 600, margin: "0 0 2px", fontFamily: FONT_B, display: "flex", alignItems: "center", gap: 6 }}>{e.icon && <span aria-hidden style={{ fontSize: 15 }}>{e.icon}</span>}{e.title}</p>
-              {e.desc && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{e.desc}</p>}
+              {e.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{e.desc}</p>}
               {e.link && <EventLink link={e.link} />}
             </div>
           ))}

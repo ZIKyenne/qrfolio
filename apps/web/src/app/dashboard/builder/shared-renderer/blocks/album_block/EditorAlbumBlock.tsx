@@ -24,7 +24,7 @@ export function EditorAlbumBlock({ content, ctx }: EditorAdapterProps) {
           <p style={{ color: text, fontSize: 18, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }}>{title}</p>
           {artist && <p style={{ color: muted, fontSize: 12, margin: "0 0 3px" }}>{artist}</p>}
           <div style={{ display: "flex", gap: 10, marginBottom: description ? 10 : 12 }}>{year && <span style={{ color: "#1DB954", fontSize: 11, fontWeight: 600 }}>{year}</span>}{tracks && <span style={{ color: muted, fontSize: 11 }}>· {tracks}</span>}</div>
-          {description && <p style={{ color: muted, fontSize: 12, margin: "0 0 12px", lineHeight: 1.6 }}>{description}</p>}
+          {description && <p style={{ color: muted, fontSize: 12.5, margin: "0 0 12px", lineHeight: 1.6 }}>{description}</p>}
           {platforms.length > 0 && <div style={{ display: "flex", gap: 7, marginBottom: 12 }}>{platforms.map((p, i) => <div key={i} style={ED_BADGE[p.key]}>{p.label}</div>)}</div>}
           {cta.visible && <div style={{ background: "#1DB954", borderRadius: 9, padding: "11px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#000" }}>{cta.label}</div>}
         </div>

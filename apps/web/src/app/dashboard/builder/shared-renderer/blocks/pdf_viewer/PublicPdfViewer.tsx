@@ -17,7 +17,7 @@ export function PublicPdfViewer({ content, ctx }: PublicAdapterProps) {
           {!cover && <div style={{ width: 46, height: 54, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>📄</div>}
           <div style={{ flex: 1 }}>
             <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{title}</p>
-            {description && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 2px" }}>{description}</p>}
+            {description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 2px" }}>{description}</p>}
             {hasMeta && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>📄 PDF{pages ? ` · ${pages} pages` : ""}{fileSize ? ` · ${fileSize}` : ""}</p>}
           </div>
         </div>

@@ -1,4 +1,7 @@
 "use client"
+// La description d'un plat se lit a table, au telephone, souvent en lumiere
+// basse : elle etait rendue a 11,5 et 12 px. Mesure au navigateur sur les
+// modeles Bistrot et Fast-food, a 360 et 390 px. Portee a 13 / 13,5 px.
 // Liste de produits d'un menu, en 1 ou 2 colonnes. Présentationnel pur (public ET aperçu éditeur),
 // paramétré par les couleurs/typo, la densité (rowPad) et l'échelle de police (fs). Réutilisé par
 // menu_section et menu_tabs pour éviter la duplication.
@@ -24,7 +27,7 @@ export function MenuItemList({ items, columns = 1, rowPad = 11, fs = (n: number)
               <span style={{ color: text, fontSize: fs(13.5), fontWeight: 600, fontFamily: fontB, minWidth: 0, overflowWrap: "anywhere" }}>{it.name}</span>
               {it.price && <span style={{ color: primary, fontSize: fs(13.5), fontWeight: 700, flexShrink: 0, fontFamily: fontD }}>{it.price}</span>}
             </div>
-            {it.desc && <p style={{ color: muted, fontSize: fs(11.5), margin: "1px 0 0", fontFamily: fontB, lineHeight: 1.4, overflowWrap: "anywhere" }}>{it.desc}</p>}
+            {it.desc && <p style={{ color: muted, fontSize: fs(13), margin: "1px 0 0", fontFamily: fontB, lineHeight: 1.4, overflowWrap: "anywhere" }}>{it.desc}</p>}
           </div>
         ))}
       </div>
@@ -39,7 +42,7 @@ export function MenuItemList({ items, columns = 1, rowPad = 11, fs = (n: number)
           <div key={i} style={row}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ color: text, fontSize: fs(14), fontWeight: 600, margin: "0 0 2px", fontFamily: fontB, overflowWrap: "anywhere" }}>{it.name}</p>
-              {it.desc && <p style={{ color: muted, fontSize: fs(12), margin: 0, fontFamily: fontB, lineHeight: 1.45, overflowWrap: "anywhere" }}>{it.desc}</p>}
+              {it.desc && <p style={{ color: muted, fontSize: fs(13.5), margin: 0, fontFamily: fontB, lineHeight: 1.45, overflowWrap: "anywhere" }}>{it.desc}</p>}
             </div>
             {it.price && <span style={{ color: primary, fontSize: fs(14), fontWeight: 700, flexShrink: 0, fontFamily: fontD }}>{it.price}</span>}
           </div>

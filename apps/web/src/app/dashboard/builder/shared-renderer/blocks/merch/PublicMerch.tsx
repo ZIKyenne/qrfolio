@@ -10,7 +10,7 @@ export function PublicMerch({ content, ctx }: PublicAdapterProps) {
   return (
     <div style={{ padding: "10px 24px 14px" }}>
       {title && <p style={{ color: MUTED, fontSize: 11, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px", fontFamily: FONT_B }}>{title}</p>}
-      {description && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 12px" }}>{description}</p>}
+      {description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 12px" }}>{description}</p>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 9, marginBottom: ctaLabel ? 13 : 0 }}>
         {items.map((p, i) => (
           <div key={i} style={{ background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.15)", borderRadius: 11, overflow: "hidden" }}>

@@ -16,7 +16,7 @@ export function PublicServicesList({ content, ctx }: PublicAdapterProps) {
           <span style={{ fontSize: 24, flexShrink: 0 }}>{it.icon}</span>
           <div>
             <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: 0, fontFamily: FONT_B }}>{it.name}</p>
-            {it.desc && <p style={{ color: MUTED, fontSize: 12, margin: 0, lineHeight: 1.5, fontFamily: FONT_B }}>{it.desc}</p>}
+            {it.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0, lineHeight: 1.5, fontFamily: FONT_B }}>{it.desc}</p>}
           </div>
         </div>
       ))}

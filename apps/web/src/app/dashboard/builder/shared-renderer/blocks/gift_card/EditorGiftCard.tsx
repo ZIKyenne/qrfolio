@@ -13,7 +13,7 @@ export function EditorGiftCard({ content, ctx }: EditorAdapterProps) {
         <div style={{ textAlign: "center", marginBottom: 12 }}>
           <span style={{ fontSize: 32 }}>🎁</span>
           <p style={{ color: text, fontSize: 15, fontWeight: 700, margin: "6px 0 3px" }}>{title || "Offrez une expérience"}</p>
-          {description && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{description}</p>}
+          {description && <p style={{ color: muted, fontSize: 12.5, margin: 0 }}>{description}</p>}
         </div>
         <div style={{ display: "flex", gap: 7, justifyContent: "center", marginBottom: 12 }}>
           {amounts.map((amount, i) => (

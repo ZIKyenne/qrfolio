@@ -16,7 +16,7 @@ export function PublicProcessSteps({ content, ctx }: PublicAdapterProps) {
             <div style={{ width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, color: "#080808", display: "flex", alignItems: "center", justifyContent: "center", fontSize: st.icon ? 17 : 14, fontWeight: 700, flexShrink: 0 }}>{st.icon || i + 1}</div>
             <div style={{ flex: 1 }}>
               <p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "5px 0 2px", fontFamily: FONT_B }}>{st.title}</p>
-              {st.desc && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{st.desc}</p>}
+              {st.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{st.desc}</p>}
             </div>
           </div>
         ))}

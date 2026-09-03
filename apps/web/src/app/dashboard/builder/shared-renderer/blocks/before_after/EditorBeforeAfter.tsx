@@ -18,7 +18,7 @@ export function EditorBeforeAfter({ content, ctx }: EditorAdapterProps) {
           <div style={{ background: "rgba(57,255,143,0.15)", padding: "5px", textAlign: "center" }}><p style={{ color: "var(--success)", fontSize: 11, fontWeight: 700, margin: 0 }}>{afterLabel}</p></div>
         </div>
       </div>
-      {description && <p style={{ color: muted, fontSize: 11, textAlign: "center", margin: "8px 0 0" }}>{description}</p>}
+      {description && <p style={{ color: muted, fontSize: 12.5, textAlign: "center", margin: "8px 0 0" }}>{description}</p>}
     </div>
   )
 }

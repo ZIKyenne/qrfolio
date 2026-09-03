@@ -19,7 +19,7 @@ export function EditorProductCatalog({ content, ctx }: EditorAdapterProps) {
                 : <div style={{ width: 70, height: 70, background: "rgba(249,115,22,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>🛍️</div>}
               <div style={{ flex: 1, padding: "8px 10px 8px 0" }}>
                 <p style={{ color: text, fontSize: 12, fontWeight: 700, margin: "0 0 2px" }}>{p.name}</p>
-                {p.desc && <p style={{ color: muted, fontSize: 10, margin: "0 0 4px" }}>{p.desc}</p>}
+                {p.desc && <p style={{ color: muted, fontSize: 12.5, margin: "0 0 4px" }}>{p.desc}</p>}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ color: primary, fontSize: 14, fontWeight: 700 }}>{p.price}</span>
                   {ctaLabel && <span style={{ background: primary, color: "#080808", borderRadius: 6, padding: "3px 9px", fontSize: 10, fontWeight: 700 }}>{ctaLabel}</span>}

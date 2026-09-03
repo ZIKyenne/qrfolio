@@ -268,7 +268,7 @@ function HoursPublic({ c, theme }: { c: any; theme: any }) {
               </div>
             )
           })}
-          {c.note && <div style={{ padding: "9px 16px", background: `${G}05` }}><p style={{ color: MUTED, fontSize: 11, margin: 0, fontStyle: "italic", fontFamily: FONT_B }}>{c.note}</p></div>}
+          {c.note && <div style={{ padding: "9px 16px", background: `${G}05` }}><p style={{ color: MUTED, fontSize: 13.5, margin: 0, fontStyle: "italic", fontFamily: FONT_B }}>{c.note}</p></div>}
         </div>
       )}
     </div>
@@ -293,31 +293,42 @@ function CountdownPublic({ c, TEXT, MUTED, FONT_D, FONT_B, pageId, blockId }: { 
   const accent = c.accent || "#EF4444"
   const rawTarget = c.target || c.date  // rétrocompat : ancien bloc event utilisait `date`
   const targetMs = rawTarget ? new Date(rawTarget).getTime() : NaN
-  const [now, setNow] = useState<number>(() => Date.now())
+  // L'heure ne se lit qu'APRES le montage. Le serveur rend la page, puis la met
+  // en cache 60 s (ISR) : ses chiffres sont donc vieux de 0 a 60 secondes quand
+  // le navigateur hydrate. Avec un `Date.now()` a l'initialisation, le texte du
+  // serveur et celui du client differaient a coup sur — React #418, releve au
+  // navigateur sur le modele « Soiree » — et React jetait le HTML du serveur
+  // pour tout refaire cote client. Ses trois voisins (Ouvert/Ferme, Horaires,
+  // Annonce) appliquaient deja ce motif ; le compte a rebours l'avait manque.
+  const [now, setNow] = useState<number | null>(null)
   useEffect(() => {
     if (!isFinite(targetMs)) return
+    setNow(Date.now())
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
   }, [targetMs])
   if (!isFinite(targetMs)) return null
-  const p = countdownParts(targetMs, now)
-  const units: [string, number][] = [["Jours", p.days], ["Heures", p.hours], ["Min", p.mins], ["Sec", p.secs]]
+  // Avant le montage : la boite, ses libelles, et des tirets a la place des
+  // chiffres. Serveur et premier rendu client sont identiques, donc aucun
+  // mismatch — et jamais « Offre terminee » affiche a tort sur un cache.
+  const p = now === null ? null : countdownParts(targetMs, now)
+  const units: [string, number | null][] = [["Jours", p && p.days], ["Heures", p && p.hours], ["Min", p && p.mins], ["Sec", p && p.secs]]
   return (
     <div style={{ padding: "14px 16px" }}>
       <div style={{ background: `linear-gradient(135deg,${accent}22,${accent}0d)`, border: `1px solid ${accent}55`, borderRadius: 14, padding: "18px 16px", textAlign: "center" }}>
         {c.title && <p style={{ color: TEXT, fontSize: 18, fontWeight: 800, margin: "0 0 4px", fontFamily: FONT_D }}>{c.title}</p>}
         {c.subtitle && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 14px", fontFamily: FONT_B }}>{c.subtitle}</p>}
-        {p.expired
+        {p?.expired
           ? <p style={{ color: accent, fontSize: 17, fontWeight: 800, margin: "8px 0 0", fontFamily: FONT_D }}>{c.expired_text || "Offre terminée"}</p>
           : <div style={{ display: "flex", justifyContent: "center", gap: 10 }} role="timer" aria-label="Compte à rebours">
               {units.map(([lbl, val]) => (
                 <div key={lbl} style={{ minWidth: 62, background: "rgba(0,0,0,0.28)", border: `1px solid ${accent}33`, borderRadius: 11, padding: "10px 6px" }}>
-                  <div style={{ color: accent, fontSize: 26, fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1, fontFamily: FONT_D }}>{String(val).padStart(2, "0")}</div>
+                  <div style={{ color: accent, fontSize: 26, fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1, fontFamily: FONT_D }}>{val === null ? "––" : String(val).padStart(2, "0")}</div>
                   <div style={{ color: MUTED, fontSize: 10, marginTop: 4, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: FONT_B }}>{lbl}</div>
                 </div>
               ))}
             </div>}
-        {!p.expired && c.cta_label && <a href={extHref(c.cta_url) || "#"} onClick={() => trackLinkClick(pageId, blockId, c.cta_url || "countdown")} style={{ display: "inline-block", marginTop: 16, background: accent, color: "#fff", padding: "11px 24px", borderRadius: 9, textDecoration: "none", fontSize: 14, fontWeight: 700, fontFamily: FONT_B }}>{c.cta_label}</a>}
+        {!p?.expired && c.cta_label && <a href={extHref(c.cta_url) || "#"} onClick={() => trackLinkClick(pageId, blockId, c.cta_url || "countdown")} style={{ display: "inline-block", marginTop: 16, background: accent, color: "#fff", padding: "11px 24px", borderRadius: 9, textDecoration: "none", fontSize: 14, fontWeight: 700, fontFamily: FONT_B }}>{c.cta_label}</a>}
       </div>
     </div>
   )
@@ -467,7 +478,7 @@ function RsvpPublic({ block, pageId, TEXT, MUTED }: { block: Block; pageId: stri
   return (
     <div style={{ padding: "10px 24px 14px" }}>
       <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 4px" }}>{c.title || "Serez-vous présent ?"}</p>
-      {c.description && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 14px" }}>{c.description}</p>}
+      {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 14px" }}>{c.description}</p>}
       {choice ? (
         <div style={{ background: "rgba(57,255,143,0.08)", border: "1.5px solid rgba(57,255,143,0.3)", borderRadius: 11, padding: "14px", textAlign: "center", color: "var(--success)", fontSize: 13, fontWeight: 700 }}>✅ Merci, votre réponse est enregistrée !</div>
       ) : (
@@ -575,7 +586,7 @@ function LeadFormPublic({ block, pageId, ownerEmail, leadType, title, descriptio
   return (
     <div style={{ padding: "10px 24px 14px" }}>
       <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 4px" }}>{title}</p>
-      {description && <p style={{ color: descColor || MUTED, fontSize: 12, margin: "0 0 13px" }}>{description}</p>}
+      {description && <p style={{ color: descColor || MUTED, fontSize: 13.5, margin: "0 0 13px" }}>{description}</p>}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {/* Honeypot : hors ecran, ignore par les humains, rempli par les bots */}
         <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true"
@@ -918,7 +929,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                 <p style={{ color: MUTED, fontSize: 10, margin: "0 0 5px", textTransform: "uppercase", letterSpacing: 1, fontFamily: FONT_B }}>{t}</p>
                 <p style={{ color: G, fontSize: 26, fontWeight: 700, margin: "0 0 4px", fontFamily: FONT_D }}>{p}</p>
                 {op && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 4px", textDecoration: "line-through", fontFamily: FONT_B }}>{op}</p>}
-                <p style={{ color: MUTED, fontSize: 11, margin: 0, fontFamily: FONT_B }}>{d}</p>
+                <p style={{ color: MUTED, fontSize: 13.5, margin: 0, fontFamily: FONT_B }}>{d}</p>
                 {cta.visible && <a href={cta.href||"#"} onClick={() => trackLinkClick(pageId, block.id, c.cta_url||block.type)} style={{ display: "block", background: `${G}12`, border: `1px solid ${G}25`, color: G, textDecoration: "none", borderRadius: 7, padding: "7px", marginTop: 8, fontSize: 11, fontWeight: 700, fontFamily: FONT_B }}>{cta.label}</a>}
               </div>
             ) })}
@@ -971,7 +982,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, padding: "11px 0", borderBottom: i<arr.length-1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
               <div style={{ flex: 1 }}>
                 <p style={{ color: TEXT, fontSize: 14, fontWeight: 600, margin: "0 0 2px", fontFamily: FONT_B }}>{n}</p>
-                {d && <p style={{ color: MUTED, fontSize: 12, margin: 0, fontFamily: FONT_B }}>{d}</p>}
+                {d && <p style={{ color: MUTED, fontSize: 13.5, margin: 0, fontFamily: FONT_B }}>{d}</p>}
               </div>
               <span style={{ color: G, fontSize: 14, fontWeight: 700, flexShrink: 0, fontFamily: FONT_D }}>{p}</span>
             </div>
@@ -992,7 +1003,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               <span style={{ fontSize: 24, flexShrink: 0 }}>{icon}</span>
               <div>
                 <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: 0, fontFamily: FONT_B }}>{name}</p>
-                {desc && <p style={{ color: MUTED, fontSize: 12, margin: 0, lineHeight: 1.5, fontFamily: FONT_B }}>{desc}</p>}
+                {desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0, lineHeight: 1.5, fontFamily: FONT_B }}>{desc}</p>}
               </div>
             </div>
           ))}
@@ -1082,7 +1093,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             <div style={{ width: 42, height: 42, background: `${G}12`, border: `1px solid ${G}25`, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>📅</div>
             <div>
               <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: 0, fontFamily: FONT_B }}>{c.label || "Reserver"}</p>
-              {c.description && <p style={{ color: MUTED, fontSize: 12, margin: 0, fontFamily: FONT_B }}>{c.description}</p>}
+              {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: 0, fontFamily: FONT_B }}>{c.description}</p>}
             </div>
           </div>
           <a href={extHref(c.url)||"#"} onClick={() => trackLinkClick(pageId, block.id, c.url||"calendly")} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: `linear-gradient(90deg,${G},${G}cc)`, color: "#080808", textAlign: "center", padding: "13px", borderRadius: 9, textDecoration: "none", fontSize: 14, fontWeight: 700, fontFamily: FONT_B }}>{c.label || "Réserver un creneau"}</a>
@@ -1352,7 +1363,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                 {img ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={String(img)} alt="" width={84} height={84} style={{ width: 84, height: 84, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 84, height: 84, background: "rgba(249,115,22,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>🛍️</div>}
                 <div style={{ flex: 1, minWidth: 0, padding: "10px 12px 10px 0" }}>
                   <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{name}</p>
-                  {desc && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 5px" }}>{desc}</p>}
+                  {desc && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 5px" }}>{desc}</p>}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                     <span style={{ color: G, fontSize: 16, fontWeight: 700 }}>{price}</span>
                     {c.cta_label && <span style={{ background: G, color: "#080808", borderRadius: 7, padding: "4px 11px", fontSize: 11, fontWeight: 700 }}>{c.cta_label}</span>}
@@ -1526,7 +1537,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                 {img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(img)} alt="" style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} /> : <div style={{ height: 100, background: `${G}08`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>📂</div>}
                 <div style={{ padding: "9px 10px" }}>
                   <p style={{ color: TEXT, fontSize: 12, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{title}</p>
-                  {desc && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{desc}</p>}
+                  {desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{desc}</p>}
                 </div>
               </div>
             ))}
@@ -1567,7 +1578,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                 <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 4, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 13, padding: "15px 12px" }}>
                   {avatar(m, 60)}
                   <p style={{ color: TEXT, fontSize: 13.5, fontWeight: 700, margin: "6px 0 0", fontFamily: FONT_B }}>{m.name}</p>
-                  {m.role && <p style={{ color: G, fontSize: 11.5, margin: 0 }}>{m.role}</p>}
+                  {m.role && <p style={{ color: G, fontSize: 13, margin: 0 }}>{m.role}</p>}
                   {m.bio && <p style={{ color: MUTED, fontSize: 11, margin: "2px 0 0", lineHeight: 1.4 }}>{m.bio}</p>}
                   {contacts(m, true)}
                 </div>
@@ -1580,7 +1591,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                   {avatar(m, 48)}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{m.name}</p>
-                    {m.role && <p style={{ color: G, fontSize: 12, margin: "0 0 1px" }}>{m.role}</p>}
+                    {m.role && <p style={{ color: G, fontSize: 13, margin: "0 0 1px" }}>{m.role}</p>}
                     {m.bio && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{m.bio}</p>}
                     {contacts(m)}
                   </div>
@@ -1633,7 +1644,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                 <div style={{ width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, color: "#080808", display: "flex", alignItems: "center", justifyContent: "center", fontSize: icon ? 17 : 14, fontWeight: 700, flexShrink: 0 }}>{icon || i + 1}</div>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "5px 0 2px", fontFamily: FONT_B }}>{title}</p>
-                  {desc && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{desc}</p>}
+                  {desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{desc}</p>}
                 </div>
               </div>
             ))}
@@ -1690,7 +1701,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                     <p style={{ color: G, fontSize: 12, fontWeight: 700, margin: 0 }}>{e.date}</p>
                   </div>
                   <p style={{ color: TEXT, fontSize: 13.5, fontWeight: 600, margin: "0 0 3px", fontFamily: FONT_B }}>{e.title}</p>
-                  {e.desc && <p style={{ color: MUTED, fontSize: 11.5, margin: 0, lineHeight: 1.5 }}>{e.desc}</p>}
+                  {e.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0, lineHeight: 1.5 }}>{e.desc}</p>}
                 </div>
               ))}
             </div>
@@ -1702,7 +1713,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                   <div style={{ position: "absolute", left: -19, top: 4, width: 11, height: 11, borderRadius: "50%", background: i === events.length - 1 ? "var(--success)" : G, border: `2px solid ${i === events.length - 1 ? "var(--success)40" : `${G}40`}` }} />
                   <p style={{ color: G, fontSize: 12, fontWeight: 700, margin: "0 0 2px" }}>{e.date}</p>
                   <p style={{ color: TEXT, fontSize: 14, fontWeight: 600, margin: "0 0 2px", fontFamily: FONT_B, display: "flex", alignItems: "center", gap: 6 }}>{e.icon && <span aria-hidden style={{ fontSize: 15 }}>{e.icon}</span>}{e.title}</p>
-                  {e.desc && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{e.desc}</p>}
+                  {e.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{e.desc}</p>}
                 </div>
               ))}
             </div>
@@ -1767,7 +1778,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               <div key={i} style={{ background: `${G}08`, border: `1px solid ${G}15`, borderRadius: 13, padding: "14px 11px", textAlign: "center" }}>
                 {icon && <span style={{ fontSize: 26, display: "block", marginBottom: 7 }}>{icon}</span>}
                 <p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: desc ? "0 0 3px" : "0", fontFamily: FONT_B }}>{label}</p>
-                {desc && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{desc}</p>}
+                {desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{desc}</p>}
               </div>
             ))}
           </div>
@@ -1799,7 +1810,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             <div style={{ flex: 1 }}>
               <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_B }}>{c.server_name || "Mon Serveur"}</p>
               {c.members && <p style={{ color: MUTED, fontSize: 11, margin: "0 0 1px" }}>👥 {c.members}</p>}
-              {c.description && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{c.description}</p>}
+              {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{c.description}</p>}
             </div>
           </div>
           <a href={extHref(c.cta_url) || "#"} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.cta_url || "discord")} style={{ display: "block", background: "#5865F2", color: "#fff", textAlign: "center", padding: "12px", borderRadius: 9, fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: FONT_B }}>{c.cta_label || "Rejoindre le Discord"}</a>
@@ -1814,7 +1825,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             <div style={{ flex: 1 }}>
               <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_B }}>{c.channel_name || "Mon Canal"}</p>
               {c.members && <p style={{ color: MUTED, fontSize: 11, margin: "0 0 1px" }}>👥 {c.members}</p>}
-              {c.description && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{c.description}</p>}
+              {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{c.description}</p>}
             </div>
           </div>
           <a href={extHref(c.cta_url) || "#"} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.cta_url || "telegram")} style={{ display: "block", background: "#26A5E4", color: "#fff", textAlign: "center", padding: "12px", borderRadius: 9, fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: FONT_B }}>{c.cta_label || "Rejoindre le canal"}</a>
@@ -1874,7 +1885,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               : <div style={{ width: 54, height: 54, borderRadius: 11, background: "rgba(177,80,226,0.15)", border: "1px solid rgba(177,80,226,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 27, flexShrink: 0 }}>🎙️</div>}
             <div>
               <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.podcast_name || "Mon Podcast"}</p>
-              {c.description && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{c.description}</p>}
+              {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{c.description}</p>}
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -1925,7 +1936,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "var(--success)", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.after_label || "Après"}</p></div>
           </div>
         </div>}
-        {c.description && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", margin: "9px 0 0" }}>{c.description}</p>}
+        {c.description && <p style={{ color: MUTED, fontSize: 13.5, textAlign: "center", margin: "9px 0 0" }}>{c.description}</p>}
       </div>
     ) : null
     case "video_local": {
@@ -1969,7 +1980,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             {!c.cover && <div style={{ width: 46, height: 54, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>📄</div>}
             <div style={{ flex: 1 }}>
               <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.title || "Mon document PDF"}</p>
-              {c.description && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 2px" }}>{c.description}</p>}
+              {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 2px" }}>{c.description}</p>}
               {(c.pages || c.file_size) && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>📄 PDF{c.pages ? ` · ${c.pages} pages` : ""}{c.file_size ? ` · ${c.file_size}` : ""}</p>}
             </div>
           </div>
@@ -2069,7 +2080,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                 </div>
                 <div style={{ flex: 1, paddingTop: 7 }}>
                   <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{title}</p>
-                  {desc && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{desc}</p>}
+                  {desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{desc}</p>}
                 </div>
               </div>
             ))}
@@ -2105,8 +2116,8 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                   ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={String(photo)} alt="" width={58} height={58} style={{ width: 58, height: 58, borderRadius: "50%", objectFit: "cover", margin: "0 auto 9px", display: "block", border: "2px solid rgba(236,72,153,0.4)" }} />
                   : <div style={{ width: 58, height: 58, borderRadius: "50%", background: "linear-gradient(135deg,#EC4899,#F472B6)", margin: "0 auto 9px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, color: "#fff" }}>{String(name)[0]}</div>}
                 <p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{name}</p>
-                {role && <span style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)", borderRadius: 20, padding: "2px 9px", color: "#EC4899", fontSize: 10, fontWeight: 700 }}>{role}</span>}
-                {desc && <p style={{ color: MUTED, fontSize: 11, margin: "5px 0 0" }}>{desc}</p>}
+                {role && <span style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)", borderRadius: 20, padding: "2px 9px", color: "#EC4899", fontSize: 13, fontWeight: 700 }}>{role}</span>}
+                {desc && <p style={{ color: MUTED, fontSize: 13.5, margin: "5px 0 0" }}>{desc}</p>}
               </div>
             ))}
           </div>
@@ -2315,7 +2326,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 13, padding: "13px 15px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: (phone || email) ? 11 : 0 }}>
                   {photo ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={String(photo)} alt="" width={44} height={44} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} /> : <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 700, color: "#080808", flexShrink: 0 }}>{String(name)[0]}</div>}
-                  <div><p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{name}</p>{role && <p style={{ color: G, fontSize: 11, margin: 0 }}>{role}</p>}</div>
+                  <div><p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{name}</p>{role && <p style={{ color: G, fontSize: 13, margin: 0 }}>{role}</p>}</div>
                 </div>
                 {(phone || email) && (
                   <div style={{ display: "flex", gap: 8 }}>
@@ -2341,7 +2352,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             </div>
           )}
           {cities.length > 0 && <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{cities.map((city: string, i: number) => <span key={i} style={{ background: "rgba(66,133,244,0.08)", border: "1px solid rgba(66,133,244,0.2)", borderRadius: 20, padding: "6px 13px", color: TEXT, fontSize: 13 }}>📍 {city}</span>)}</div>}
-          {c.note && <p style={{ color: MUTED, fontSize: 12, margin: "11px 0 0", fontStyle: "italic" }}>{c.note}</p>}
+          {c.note && <p style={{ color: MUTED, fontSize: 13.5, margin: "11px 0 0", fontStyle: "italic" }}>{c.note}</p>}
         </div>
       ) : null
     }
@@ -2428,7 +2439,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "var(--success)", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.after_label || "Après"}</p></div>
           </div>
         </div>
-        {c.description && <p style={{ color: MUTED, fontSize: 12, textAlign: "center", margin: "9px 0 0" }}>{c.description}</p>}
+        {c.description && <p style={{ color: MUTED, fontSize: 13.5, textAlign: "center", margin: "9px 0 0" }}>{c.description}</p>}
       </div>
     ) : null
     case "brands": {
@@ -2453,7 +2464,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ textAlign: "center", marginBottom: 13 }}>
             <span style={{ fontSize: 34 }}>🎁</span>
             <p style={{ color: TEXT, fontSize: 16, fontWeight: 700, margin: "6px 0 3px", fontFamily: FONT_B }}>{c.title || "Offrez une expérience"}</p>
-            {c.description && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{c.description}</p>}
+            {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{c.description}</p>}
           </div>
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: c.cta_label ? 13 : 0 }}>
             {[c.amount1, c.amount2, c.amount3].filter(Boolean).map((amount, i) => (
@@ -2474,7 +2485,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div>
             {svcs.map(([name, price, duration, desc]: any[], i: number) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, padding: "11px 0", borderBottom: i < svcs.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                <div style={{ flex: 1 }}><p style={{ color: TEXT, fontSize: 14, fontWeight: 600, margin: "0 0 1px", fontFamily: FONT_B }}>{name}</p>{desc && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{desc}</p>}</div>
+                <div style={{ flex: 1 }}><p style={{ color: TEXT, fontSize: 14, fontWeight: 600, margin: "0 0 1px", fontFamily: FONT_B }}>{name}</p>{desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{desc}</p>}</div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}><p style={{ color: G, fontSize: 15, fontWeight: 700, margin: 0 }}>{price}</p>{duration && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{duration}</p>}</div>
               </div>
             ))}
@@ -2512,7 +2523,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "rgba(57,255,143,0.05)", border: "1px solid rgba(57,255,143,0.12)", borderRadius: 12, padding: "13px 9px", textAlign: "center" }}>
                 <span style={{ fontSize: 26 }}>{icon || "✅"}</span>
                 <p style={{ color: TEXT, fontSize: 12, fontWeight: 700, margin: 0, fontFamily: FONT_B }}>{label}</p>
-                {desc && <p style={{ color: MUTED, fontSize: 10, margin: 0 }}>{desc}</p>}
+                {desc && <p style={{ color: MUTED, fontSize: 13, margin: 0 }}>{desc}</p>}
               </div>
             ))}
           </div>
@@ -2605,8 +2616,8 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                 <div style={{ width: 42, height: 42, borderRadius: 10, background: `${dm.color}14`, border: `1px solid ${dm.color}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{dm.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ color: TEXT, fontSize: 13.5, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_B }}>{d.title}</p>
-                  {d.desc && <p style={{ color: MUTED, fontSize: 11.5, margin: 0, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.desc}</p>}
-                  {d.meta && <p style={{ color: MUTED, fontSize: 10.5, margin: "3px 0 0", opacity: 0.8 }}>{d.type ? `${d.type} · ` : ""}{d.meta}</p>}
+                  {d.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.desc}</p>}
+                  {d.meta && <p style={{ color: MUTED, fontSize: 12.5, margin: "3px 0 0", opacity: 0.8 }}>{d.type ? `${d.type} · ` : ""}{d.meta}</p>}
                 </div>
                 {d.url && <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, color: G, fontSize: 12, fontWeight: 700 }}>{docActionLabel(d.type)} <span aria-hidden>↓</span></span>}
               </>
@@ -2626,7 +2637,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ background: `${G}06`, border: `1px solid ${G}15`, borderRadius: 15, padding: "17px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 13 }}>
               {c.photo ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.photo} alt="" width={52} height={52} style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} /> : <div style={{ width: 52, height: 52, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>👤</div>}
-              <div>{c.name && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_D }}>{c.name}</p>}{c.role && <p style={{ color: G, fontSize: 12, margin: 0 }}>{c.role}</p>}</div>
+              <div>{c.name && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_D }}>{c.name}</p>}{c.role && <p style={{ color: G, fontSize: 13, margin: 0 }}>{c.role}</p>}</div>
             </div>
             <p style={{ color: MUTED, fontSize: 13, lineHeight: 1.7, margin: c.signature ? "0 0 11px" : "0", fontStyle: "italic" }}>&quot;{c.message}&quot;</p>
             {c.signature && <p style={{ color: G, fontSize: 15, fontFamily: "Georgia, serif", margin: 0, fontStyle: "italic" }}>{c.signature}</p>}
@@ -2710,7 +2721,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ display: "flex", gap: 13, alignItems: "center", marginBottom: 13 }}>
             {c.cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={62} height={62} style={{ width: 62, height: 62, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 62, height: 62, borderRadius: 11, background: "rgba(29,185,84,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 29, flexShrink: 0 }}>📋</div>}
-            <div style={{ flex: 1 }}><p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.title || "Ma Playlist"}</p>{c.description && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 3px" }}>{c.description}</p>}{c.tracks_count && <p style={{ color: "#1DB954", fontSize: 12, margin: 0, fontWeight: 600 }}>🎵 {c.tracks_count}</p>}</div>
+            <div style={{ flex: 1 }}><p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.title || "Ma Playlist"}</p>{c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 3px" }}>{c.description}</p>}{c.tracks_count && <p style={{ color: "#1DB954", fontSize: 12, margin: 0, fontWeight: 600 }}>🎵 {c.tracks_count}</p>}</div>
           </div>
           {platforms.length > 0 && <div style={{ display: "flex", gap: 8 }}>{platforms.map(([url, label, color]: any[], i: number) => <a key={i} href={extHref(String(url))} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, String(url))} style={{ flex: 1, background: `${color}18`, border: `1px solid ${color}33`, borderRadius: 9, padding: "10px", textAlign: "center", fontSize: 12, fontWeight: 700, color, textDecoration: "none" }}>{label}</a>)}</div>}
         </div>
@@ -2762,7 +2773,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       return products.length > 0 ? (
         <div style={{ padding: "10px 24px 14px" }}>
           {c.title && <p style={{ color: MUTED, fontSize: 11, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px", fontFamily: FONT_B }}>{c.title}</p>}
-          {c.description && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 12px" }}>{c.description}</p>}
+          {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 12px" }}>{c.description}</p>}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 9, marginBottom: c.cta_label ? 13 : 0 }}>
             {products.map(([img, name, price]: any[], i: number) => (
               <div key={i} style={{ background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.15)", borderRadius: 11, overflow: "hidden" }}>

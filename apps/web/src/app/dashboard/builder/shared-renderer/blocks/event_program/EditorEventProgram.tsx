@@ -18,7 +18,7 @@ export function EditorEventProgram({ content, ctx }: EditorAdapterProps) {
             </div>
             <div style={{ flex: 1, paddingTop: 6 }}>
               <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{st.title}</p>
-              {st.desc && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{st.desc}</p>}
+              {st.desc && <p style={{ color: muted, fontSize: 12.5, margin: 0 }}>{st.desc}</p>}
             </div>
           </div>
         ))}

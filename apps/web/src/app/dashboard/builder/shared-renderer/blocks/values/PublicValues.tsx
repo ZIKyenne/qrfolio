@@ -16,7 +16,7 @@ export function PublicValues({ content, ctx }: PublicAdapterProps) {
           <div key={i} style={{ background: `${G}08`, border: `1px solid ${G}15`, borderRadius: 13, padding: "14px 11px", textAlign: "center" }}>
             {v.icon && <span style={{ fontSize: 26, display: "block", marginBottom: 7 }}>{v.icon}</span>}
             <p style={{ color: TEXT, fontSize: 13, fontWeight: 700, margin: v.desc ? "0 0 3px" : "0", fontFamily: FONT_B }}>{v.label}</p>
-            {v.desc && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{v.desc}</p>}
+            {v.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{v.desc}</p>}
           </div>
         ))}
       </div>

@@ -18,7 +18,7 @@ export function PublicEventProgram({ content, ctx }: PublicAdapterProps) {
             </div>
             <div style={{ flex: 1, paddingTop: 7 }}>
               <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{st.title}</p>
-              {st.desc && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{st.desc}</p>}
+              {st.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{st.desc}</p>}
             </div>
           </div>
         ))}

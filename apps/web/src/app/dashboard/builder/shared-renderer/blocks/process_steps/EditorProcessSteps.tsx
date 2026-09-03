@@ -18,7 +18,7 @@ export function EditorProcessSteps({ content, ctx }: EditorAdapterProps) {
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg,${primary},${accent})`, color: "#080808", display: "flex", alignItems: "center", justifyContent: "center", fontSize: st.icon ? 16 : 13, fontWeight: 700, flexShrink: 0 }}>{st.icon || pos + 1}</div>
               <div style={{ flex: 1 }}>
                 <InlineEditable as="p" editable={canEdit} value={st.title} onCommit={edit(`s${st.i}_title`)} style={{ color: text, fontSize: 12, fontWeight: 700, margin: "4px 0 2px" }} />
-                {st.desc && <InlineEditable as="p" editable={canEdit} value={st.desc} multiline onCommit={edit(`s${st.i}_desc`)} style={{ color: muted, fontSize: 11, margin: 0 }} />}
+                {st.desc && <InlineEditable as="p" editable={canEdit} value={st.desc} multiline onCommit={edit(`s${st.i}_desc`)} style={{ color: muted, fontSize: 12.5, margin: 0 }} />}
               </div>
               {pos < items.length - 1 && <div style={{ position: "absolute", left: 31, marginTop: 32, width: 2, height: 16, background: primary + "30" }} />}
             </div>

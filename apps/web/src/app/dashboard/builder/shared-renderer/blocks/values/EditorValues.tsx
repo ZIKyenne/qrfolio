@@ -18,7 +18,7 @@ export function EditorValues({ content, ctx }: EditorAdapterProps) {
             <div key={pos} style={{ background: primary + "08", border: `1px solid ${primary}15`, borderRadius: 12, padding: "12px 10px", textAlign: "center" }}>
               <span style={{ fontSize: 24, display: "block", marginBottom: 6 }}>{v.icon}</span>
               <InlineEditable as="p" editable={canEdit} value={v.label} onCommit={edit(`v${v.i}_label`)} style={{ color: text, fontSize: 12, fontWeight: 700, margin: v.desc ? "0 0 3px" : "0" }} />
-              {v.desc && <InlineEditable as="p" editable={canEdit} value={v.desc} multiline onCommit={edit(`v${v.i}_desc`)} style={{ color: muted, fontSize: 10, margin: 0 }} />}
+              {v.desc && <InlineEditable as="p" editable={canEdit} value={v.desc} multiline onCommit={edit(`v${v.i}_desc`)} style={{ color: muted, fontSize: 12.5, margin: 0 }} />}
             </div>
           ))}
         </div>

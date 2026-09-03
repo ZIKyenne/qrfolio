@@ -13,7 +13,7 @@ export function PublicReassurance({ content, ctx }: PublicAdapterProps) {
           <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "rgba(57,255,143,0.05)", border: "1px solid rgba(57,255,143,0.12)", borderRadius: 12, padding: "13px 9px", textAlign: "center" }}>
             <span style={{ fontSize: 26 }}>{g.icon || "✅"}</span>
             <p style={{ color: TEXT, fontSize: 12, fontWeight: 700, margin: 0, fontFamily: FONT_B }}>{g.label}</p>
-            {g.desc && <p style={{ color: MUTED, fontSize: 10, margin: 0 }}>{g.desc}</p>}
+            {g.desc && <p style={{ color: MUTED, fontSize: 13, margin: 0 }}>{g.desc}</p>}
           </div>
         ))}
       </div>

@@ -10,7 +10,7 @@ export function EditorMerch({ content, ctx }: EditorAdapterProps) {
   return (
     <div style={{ padding: "10px 16px", ...surfaceStyle }}>
       {title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 12px" }}>{title}</p>}
-      {description && <p style={{ color: muted, fontSize: 11, margin: "0 0 12px" }}>{description}</p>}
+      {description && <p style={{ color: muted, fontSize: 12.5, margin: "0 0 12px" }}>{description}</p>}
       {!visible ? <BlockEmptyState icon="🛍️" label="Ajoutez un produit" sub={HIDDEN_WHEN_EMPTY_NOTE} muted={muted} /> : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12 }}>
           {items.map((p, i) => (

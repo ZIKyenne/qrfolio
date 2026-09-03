@@ -18,7 +18,7 @@ export function PublicPortfolioWork({ content, ctx }: PublicAdapterProps) {
               : <div style={{ height: 100, background: `${G}08`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>📂</div>}
             <div style={{ padding: "9px 10px" }}>
               <p style={{ color: TEXT, fontSize: 12, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{w.title}</p>
-              {w.desc && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{w.desc}</p>}
+              {w.desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{w.desc}</p>}
             </div>
           </div>
         ))}

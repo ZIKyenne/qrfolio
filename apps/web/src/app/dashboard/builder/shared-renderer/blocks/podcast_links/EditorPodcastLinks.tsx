@@ -15,7 +15,7 @@ export function EditorPodcastLinks({ content, ctx }: EditorAdapterProps) {
           : <div style={{ width: 52, height: 52, borderRadius: 10, background: "rgba(177,80,226,0.15)", border: "1px solid rgba(177,80,226,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>🎙️</div>}
         <div>
           <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 2px" }}>{name}</p>
-          {description && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{description}</p>}
+          {description && <p style={{ color: muted, fontSize: 12.5, margin: 0 }}>{description}</p>}
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

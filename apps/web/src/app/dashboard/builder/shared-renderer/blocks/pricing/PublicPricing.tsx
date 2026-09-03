@@ -22,7 +22,7 @@ export function PublicPricing({ content, ctx }: PublicAdapterProps) {
             <p style={{ color: MUTED, fontSize: 10, margin: "0 0 5px", textTransform: "uppercase", letterSpacing: 1, fontFamily: FONT_B }}>{pl.title}</p>
             <p style={{ color: G, fontSize: 26, fontWeight: 700, margin: "0 0 4px", fontFamily: FONT_D }}>{pl.price}</p>
             {pl.oldPrice && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 4px", textDecoration: "line-through", fontFamily: FONT_B }}>{pl.oldPrice}</p>}
-            <p style={{ color: MUTED, fontSize: 11, margin: 0, fontFamily: FONT_B }}>{pl.desc}</p>
+            <p style={{ color: MUTED, fontSize: 13.5, margin: 0, fontFamily: FONT_B }}>{pl.desc}</p>
             {cta.visible && <a href={cta.href || "#"} onClick={() => trackClick(content.cta_url || "pricing")} style={avecCibleTactile({ display: "block", background: `${G}12`, border: `1px solid ${G}25`, color: G, textDecoration: "none", borderRadius: 7, padding: "7px", marginTop: 8, fontSize: 11, fontWeight: 700, fontFamily: FONT_B })}>{cta.label}</a>}
           </div>
         ))}

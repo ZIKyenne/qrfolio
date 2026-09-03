@@ -16,7 +16,7 @@ export function EditorPdfViewer({ content, ctx }: EditorAdapterProps) {
           {!cover && <div style={{ width: 44, height: 52, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>📄</div>}
           <div style={{ flex: 1 }}>
             <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{title}</p>
-            {description && <p style={{ color: muted, fontSize: 11, margin: "0 0 2px" }}>{description}</p>}
+            {description && <p style={{ color: muted, fontSize: 12.5, margin: "0 0 2px" }}>{description}</p>}
             {hasMeta && <p style={{ color: muted, fontSize: 10, margin: 0 }}>📄 PDF{pages ? ` · ${pages} pages` : ""}{fileSize ? ` · ${fileSize}` : ""}</p>}
           </div>
         </div>

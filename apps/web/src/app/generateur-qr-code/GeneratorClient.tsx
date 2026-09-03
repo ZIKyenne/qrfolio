@@ -165,7 +165,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
 
   const swatch = (c: string, on: boolean, onClick: () => void, aria: string) => (
     <button key={c} onClick={onClick} aria-label={aria} type="button"
-      style={{ width: 36, height: 36, borderRadius: 10, background: c, border: on ? `2.5px solid ${G}` : "2px solid rgba(255,255,255,0.14)", boxShadow: on ? `0 0 0 3px ${G}22` : "none", cursor: "pointer", flexShrink: 0 }} />
+      style={{ width: 44, height: 44, borderRadius: 12, background: c, border: on ? `2.5px solid ${G}` : "2px solid rgba(255,255,255,0.14)", boxShadow: on ? `0 0 0 3px ${G}22` : "none", cursor: "pointer", flexShrink: 0 }} />
   )
 
   return (
@@ -198,7 +198,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
             {wifiEnc !== "nopass" && <input value={wifiPass} onChange={e => setWifiPass(e.target.value)} placeholder="Mot de passe" aria-label="Mot de passe WiFi" style={{ ...field, marginBottom: 10 }} />}
             <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3 }}>
               {([["WPA", "WPA/WPA2"], ["WEP", "WEP"], ["nopass", "Ouvert"]] as [WifiEnc, string][]).map(([k, l]) => (
-                <button key={k} type="button" onClick={() => setWifiEnc(k)} style={{ flex: 1, minHeight: 40, borderRadius: 8, border: "none", cursor: "pointer", background: wifiEnc === k ? G : "transparent", color: wifiEnc === k ? "#080808" : MUT, fontSize: 12, fontWeight: wifiEnc === k ? 800 : 600 }}>{l}</button>
+                <button key={k} type="button" onClick={() => setWifiEnc(k)} style={{ flex: 1, minHeight: 44, borderRadius: 8, border: "none", cursor: "pointer", background: wifiEnc === k ? G : "transparent", color: wifiEnc === k ? "#080808" : MUT, fontSize: 12, fontWeight: wifiEnc === k ? 800 : 600 }}>{l}</button>
               ))}
             </div>
           </>)}
@@ -232,27 +232,27 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Style</p>
           <div style={{ display: "flex", gap: 7, marginBottom: 16 }}>
             {STYLES_QR.map(p => { const on = styleKey === p.k; return (
-              <button key={p.k} type="button" onClick={() => setStyleKey(p.k)} style={{ flex: 1, minHeight: 40, borderRadius: 10, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : BOR}`, color: on ? G : MUT, fontSize: 11.5, fontWeight: on ? 800 : 600 }}>{p.label}</button>
+              <button key={p.k} type="button" onClick={() => setStyleKey(p.k)} style={{ flex: 1, minHeight: 44, borderRadius: 10, cursor: "pointer", background: on ? "rgba(201,168,76,0.14)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? G + "66" : BOR}`, color: on ? G : MUT, fontSize: 11.5, fontWeight: on ? 800 : 600 }}>{p.label}</button>
             ) })}
           </div>
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Couleur du QR</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {ENCRES_QR.map(c => swatch(c, fg === c, () => setFg(c), `QR en ${nommerCouleur(c)}`))}
-            <label style={{ width: 36, height: 36, borderRadius: 10, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
+            <label style={{ width: 44, height: 44, borderRadius: 12, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
               <input type="color" value={fg} onChange={e => setFg(e.target.value)} aria-label="Couleur personnalisée du QR" style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
             </label>
           </div>
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Fond</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {FONDS_QR.map(c => swatch(c, bg === c, () => setBg(c), `Fond ${nommerCouleur(c)}`))}
-            <label style={{ width: 36, height: 36, borderRadius: 10, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
+            <label style={{ width: 44, height: 44, borderRadius: 12, border: "2px solid rgba(255,255,255,0.14)", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0, background: "conic-gradient(from 0deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" }}>
               <input type="color" value={bg} onChange={e => setBg(e.target.value)} aria-label="Couleur personnalisée du fond" style={{ position: "absolute", inset: -4, opacity: 0, cursor: "pointer" }} />
             </label>
           </div>
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Correction d'erreur</p>
           <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3, marginBottom: 16 }}>
             {NIVEAUX_ECC.map(o => (
-              <button key={o.k} type="button" onClick={() => setEcc(o.k)} style={{ flex: 1, minHeight: 40, borderRadius: 8, border: "none", cursor: "pointer", background: ecc === o.k ? G : "transparent", color: ecc === o.k ? "#080808" : MUT, fontSize: 12, fontWeight: ecc === o.k ? 800 : 600 }}>{o.label}</button>
+              <button key={o.k} type="button" onClick={() => setEcc(o.k)} style={{ flex: 1, minHeight: 44, borderRadius: 8, border: "none", cursor: "pointer", background: ecc === o.k ? G : "transparent", color: ecc === o.k ? "#080808" : MUT, fontSize: 12, fontWeight: ecc === o.k ? 800 : 600 }}>{o.label}</button>
             ))}
           </div>
           <p style={{ color: MUT, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 10px" }}>Logo au centre <span style={{ textTransform: "none", letterSpacing: 0, color: "#6E685E", fontWeight: 500 }}>· optionnel</span></p>

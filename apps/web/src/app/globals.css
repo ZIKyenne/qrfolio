@@ -387,6 +387,12 @@ button.da-pill:hover { border-color:rgba(232,200,119,.34); color:#c9a24d; }
 .da-btn-primary:active { transform:translateY(0) scale(.975); }
 .da-btn-primary:disabled, .da-btn-primary[aria-disabled="true"] { opacity:.55; cursor:default; transform:none; }
 .da-btn-primary--sm { padding:11px 18px; font-size:13.5px; gap:8px; }
+/* Mesure au navigateur : 38 px de haut. « Publier » est le bouton le plus
+   important de l'editeur et il se tape au pouce — 44 px minimum sur telephone,
+   sans toucher a la finesse visuelle (police, rayon, couleur). */
+@media (max-width: 1024px) {
+  .da-btn-primary--sm { min-height: 44px; }
+}
 /* micro-motion des icônes (classe posée sur le svg) */
 .da-ic { transition:transform .26s cubic-bezier(.2,.8,.2,1); }
 .da-btn-primary:hover .da-ic-plus, .da-btn-ghost:hover .da-ic-plus { transform:rotate(90deg) scale(1.1); }

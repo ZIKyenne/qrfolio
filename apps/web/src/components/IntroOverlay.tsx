@@ -17,6 +17,8 @@ export default function IntroOverlay() {
 
   useEffect(() => {
     if (ONCE_PER_SESSION && sessionStorage.getItem("qw-intro-seen")) { setVisible(false); return }
+    // Systeme regle sur « moins d'animations » : on n'impose pas 3,9 s de film.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setVisible(false); return }
     if (ONCE_PER_SESSION) sessionStorage.setItem("qw-intro-seen", "1")
 
     const html = document.documentElement
@@ -34,20 +36,37 @@ export default function IntroOverlay() {
     }
     raf = requestAnimationFrame(tick)
 
-    const t = setTimeout(() => { html.style.overflow = prevOverflow; setVisible(false) }, DURATION_MS)
-    return () => { cancelAnimationFrame(raf); clearTimeout(t); html.style.overflow = prevOverflow }
+    // ── Sortie ────────────────────────────────────────────────────────────
+    // Mesure au navigateur (Chromium tactile, 390 px) : pendant ces 3,9 s,
+    // `elementFromPoint` au centre du logo, du menu et de « Composer ma page »
+    // renvoyait .qw-grain — un voile fixe en z-index 99999. Autrement dit : un
+    // visiteur qui arrive d'une pub ou d'un scan tape sur le bouton principal
+    // et il ne se passe RIEN pendant quatre secondes. L'animation reste, mais
+    // le premier geste — doigt, molette, clavier — la termine sur-le-champ.
+    const fermer = () => { html.style.overflow = prevOverflow; setVisible(false) }
+    const t = setTimeout(fermer, DURATION_MS)
+    const gestes = ["pointerdown", "keydown", "wheel", "touchstart"] as const
+    for (const g of gestes) window.addEventListener(g, fermer, { once: true, passive: true })
+    return () => {
+      cancelAnimationFrame(raf); clearTimeout(t)
+      for (const g of gestes) window.removeEventListener(g, fermer)
+      html.style.overflow = prevOverflow
+    }
   }, [])
 
   if (!visible) return null
 
   return (
-    <div id="qw-intro" role="presentation" aria-hidden="true">
+    // aria-hidden ne peut pas couvrir tout l'overlay : le bouton « Passer » est
+    // focusable, et un element focusable dans un sous-arbre aria-hidden est une
+    // faute d'accessibilite. Seul le decor est masque aux lecteurs d'ecran.
+    <div id="qw-intro" role="presentation">
       <style>{QW_CSS}</style>
-      <div className="qw-halo" />
-      <div className="qw-vig" />
-      <div className="qw-grain" />
+      <div className="qw-halo" aria-hidden="true" />
+      <div className="qw-vig" aria-hidden="true" />
+      <div className="qw-grain" aria-hidden="true" />
 
-      <div className="qw-stack">
+      <div className="qw-stack" aria-hidden="true">
         <div className="qw-mark">
           <div className="qw-mark-glow" />
           <div className="qw-tile">
@@ -92,7 +111,13 @@ export default function IntroOverlay() {
         </div>
       </div>
 
-      <div className="qw-domain">qrowg.com</div>
+      <div className="qw-domain" aria-hidden="true">qrowg.com</div>
+
+      {/* Une sortie visible, pas seulement devinable. 44 px de cible. */}
+      <button type="button" className="qw-skip" aria-label="Passer l'animation"
+        onClick={() => { document.documentElement.style.overflow = ""; setVisible(false) }}>
+        Passer
+      </button>
     </div>
   )
 }
@@ -107,7 +132,9 @@ const QW_CSS = `
 #qw-intro{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;font-family:'Space Grotesk',Helvetica,Arial,sans-serif;animation:qw-exit .85s cubic-bezier(.6,0,.75,0) 3.05s forwards}
 #qw-intro .qw-halo{position:absolute;inset:0;background:radial-gradient(56% 44% at 50% 44%,rgba(212,169,74,.15),transparent 72%);animation:qw-halo 4s ease-in-out infinite}
 #qw-intro .qw-vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 50%,transparent 40%,rgba(0,0,0,.85) 100%)}
-#qw-intro .qw-grain{position:absolute;inset:0;opacity:.05;mix-blend-mode:screen;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+#qw-intro .qw-skip{position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:5;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:22px;border:1px solid rgba(245,240,232,.22);background:rgba(0,0,0,.35);color:rgba(245,240,232,.8);font:600 13px/1 'Space Grotesk',system-ui,sans-serif;letter-spacing:.04em;cursor:pointer}
+#qw-intro .qw-skip:hover{border-color:rgba(201,168,76,.6);color:#f0d590}
+#qw-intro .qw-grain{position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:screen;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 #qw-intro .qw-stack{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(30px,5vh,46px)}
 #qw-intro .qw-mark{position:relative;animation:qw-float 5s ease-in-out 1.6s infinite}
 #qw-intro .qw-mark-glow{position:absolute;inset:-38px;border-radius:60px;background:radial-gradient(circle,rgba(212,169,74,.3),transparent 68%);filter:blur(22px);animation:qw-fade .9s ease-out both}

@@ -3659,10 +3659,15 @@ export default function HomeClient() {
                 { t: "QR dynamique", href: undefined as string | undefined },
                 { t: "Sans engagement", href: undefined as string | undefined },
               ].map(({ t, href }) => {
+                // Mesure au navigateur : 15 px de haut pour deux liens vers la page
+                // Securite. `minHeight` sur les deux, marge negative pour que la ligne
+                // garde exactement la meme allure ; les deux mentions non cliquables
+                // gardent leur hauteur naturelle.
                 const st: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 8, color: "#BCB6A6", fontSize: 12.5, textDecoration: "none" }
+                const stLien: React.CSSProperties = { ...st, minHeight: 44, margin: "-14px 0" }
                 const inner = <><span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 2, background: "rgba(201,168,76,0.85)" }} />{t}</>
                 return href
-                  ? <Link key={t} href={href} style={st} title="En savoir plus sur la sécurité">{inner}</Link>
+                  ? <Link key={t} href={href} style={stLien} title="En savoir plus sur la sécurité">{inner}</Link>
                   : <span key={t} style={st}>{inner}</span>
               })}
             </div>

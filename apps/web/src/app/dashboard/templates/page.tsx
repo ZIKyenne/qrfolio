@@ -422,7 +422,7 @@ export default function TemplatesPage() {
           /* ── Mobile : un seul bouton Filtrer (ouvre le bottom sheet) ────── */
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
             <button type="button" onClick={() => setFiltersOpen(true)}
-              style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "10px 18px", borderRadius: 22, cursor: "pointer", fontSize: 13, fontWeight: 700,
+              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9, minHeight: 44, padding: "0 20px", borderRadius: 22, cursor: "pointer", fontSize: 13, fontWeight: 700,
                 background: hasFilters ? "color-mix(in srgb, var(--accent) 14%, transparent)" : "rgba(255,255,255,0.04)",
                 border: "1px solid " + (hasFilters ? "color-mix(in srgb, var(--accent) 35%, transparent)" : "rgba(255,255,255,0.1)"),
                 color: hasFilters ? "var(--accent)" : "#F5F0E8" }}>
@@ -558,7 +558,7 @@ export default function TemplatesPage() {
                     {/* Favori (haut droit) */}
                     <button type="button" aria-pressed={isFav} aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"} onClick={(e) => toggleFav(template.id, e)}
                       className={`dat-fav${isFav ? " on" : ""}`}
-                      style={{ position: "absolute", top: 8, right: 8, width: isMobile ? 38 : 30, height: isMobile ? 38 : 30, zIndex: 2 }}>
+                      style={{ position: "absolute", top: 8, right: 8, width: isMobile ? 44 : 30, height: isMobile ? 44 : 30, zIndex: 2 }}>
                       <Heart size={14} fill={isFav ? "currentColor" : "none"} />
                     </button>
 
@@ -639,7 +639,7 @@ export default function TemplatesPage() {
                         className="dam-selbar-sec" aria-label={`Aperçu de ${template.name}`}
                         title={isMobile ? "Aperçu" : undefined}
                         style={isMobile
-                          ? { flex: "none", width: 44, padding: "11px 0", justifyContent: "center", fontSize: 13.5 }
+                          ? { flex: "none", width: 44, minHeight: 44, padding: "0", justifyContent: "center", fontSize: 13.5 }
                           : { flex: "none", padding: "11px 17px", fontSize: 13.5 }}>
                         <Eye size={14} />{!isMobile && " Aperçu"}
                       </button>
@@ -649,8 +649,8 @@ export default function TemplatesPage() {
                         disabled={!!creating}
                         className={locked ? undefined : "dam-primary"}
                         style={locked
-                          ? { flex: isMobile ? 1 : 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: isMobile ? "11px 10px" : "11px 16px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 11, color: MUTED, fontSize: 13.5, fontWeight: 700, cursor: "pointer", transition: "all 0.15s" }
-                          : { flex: isMobile ? 1 : 2, padding: isMobile ? "11px 10px" : "11px 16px", fontSize: 13.5, fontWeight: 700, opacity: creating && !isCreating ? 0.5 : 1, cursor: creating ? "not-allowed" : "pointer" }}>
+                          ? { flex: isMobile ? 1 : 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: isMobile ? "11px 10px" : "11px 16px", minHeight: isMobile ? 44 : undefined, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 11, color: MUTED, fontSize: 13.5, fontWeight: 700, cursor: "pointer", transition: "all 0.15s" }
+                          : { flex: isMobile ? 1 : 2, padding: isMobile ? "11px 10px" : "11px 16px", minHeight: isMobile ? 44 : undefined, justifyContent: "center", fontSize: 13.5, fontWeight: 700, opacity: creating && !isCreating ? 0.5 : 1, cursor: creating ? "not-allowed" : "pointer" }}>
                         {!locked && <span className="dam-gloss" aria-hidden />}
                         {!locked && <span className="dam-sheen" aria-hidden />}
                         <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>

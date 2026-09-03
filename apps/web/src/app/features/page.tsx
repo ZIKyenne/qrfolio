@@ -59,11 +59,11 @@ function SectionHeader({ chip, title, sub }: { chip: string; title: React.ReactN
 function CtaInline({ label = "Essayer gratuitement" }: { label?: string }) {
   return (
     <Link href={creerUrl()} style={{
-      display: "inline-flex", alignItems: "center", gap: 8,
+      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
       background: "linear-gradient(90deg, #C9A84C, #b8953f)",
       color: BG, textDecoration: "none",
       fontSize: 14, fontWeight: 700,
-      padding: "11px 26px", borderRadius: 11,
+      minHeight: 44, padding: "0 26px", borderRadius: 11,
       boxShadow: "0 4px 20px rgba(201,168,76,0.3)",
       transition: "transform 0.2s var(--mo-ease-spring), box-shadow 0.2s",
     }}
@@ -228,7 +228,7 @@ function QRMockupSvg() {
       <div style={{display:"flex",gap:8}}>
         {STYLES.map((st,i) => (
           <button key={st.name} onClick={()=>setActive(i)} style={{
-            padding:"6px 14px",borderRadius:20,border:"1px solid",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"inherit",
+            display:"inline-flex",alignItems:"center",minHeight:44,padding:"0 16px",borderRadius:22,border:"1px solid",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"inherit",
             background:active===i?"rgba(201,168,76,0.1)":"transparent",
             borderColor:active===i?"rgba(201,168,76,0.5)":"rgba(255,255,255,0.12)",
             color:active===i?G:"rgba(245,240,232,0.5)",transition:"all 0.2s",

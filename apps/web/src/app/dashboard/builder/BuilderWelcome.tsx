@@ -127,12 +127,14 @@ export default function BuilderWelcome({ mobile = false }: { mobile?: boolean })
         {/* Pied : progression + navigation */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 24, gap: 12, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 4 }}>
               {STEPS.map((_, k) => (
-                // Le point mesure 8 px — joli, intapable. Le BOUTON qui le porte
-                // fait 40 px de haut et reste transparent : même dessin, cible réelle.
+                // Le point mesure 8 px — joli, intapable. Le BOUTON qui le porte est
+                // transparent et fait 24 x 40 : même dessin, vraie cible. Mesuré au
+                // navigateur : la version précédente ne faisait que 14 px de large,
+                // sous le minimum de 24 px, et les six points se touchaient.
                 <button key={k} onClick={() => setI(k)} aria-label={`Étape ${k + 1}`}
-                  style={{ background: "none", border: "none", padding: "16px 3px", margin: "-16px -3px", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                  style={{ background: "none", border: "none", width: 24, minWidth: 24, height: 40, padding: 0, margin: "-16px 0", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span aria-hidden style={{ display: "block", width: k === i ? 20 : 8, height: 8, borderRadius: 999, background: k === i ? G : "rgba(255,255,255,0.18)", transition: "width .2s ease, background .2s ease" }} />
                 </button>
               ))}

@@ -1393,7 +1393,7 @@ import { BLOCK_DEFS } from "./blockDefs"
         {/* TOPBAR (masquee en mode Apercu plein ecran sur mobile) */}
         <div style={{ height: 50, background: "#0D0D0D", borderBottom: "1px solid rgba(201,168,76,0.12)", display: (preview && isMobile) ? "none" : "flex", alignItems: "center", padding: isMobile ? "0 9px" : "0 14px", gap: isMobile ? 6 : 10, flexShrink: 0, zIndex: 20 }}>
           <a href="/dashboard" aria-label="Retour au tableau de bord"
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0, textDecoration: "none", color: G, fontFamily: "Fraunces, serif", fontSize: 16, fontWeight: 700, textTransform: "lowercase", whiteSpace: "nowrap", ...(isMobile ? { width: 30, fontSize: 19 } : {}) }}>
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0, textDecoration: "none", color: G, fontFamily: "Fraunces, serif", fontSize: 16, fontWeight: 700, textTransform: "lowercase", whiteSpace: "nowrap", ...(isMobile ? { width: 44, height: 44, fontSize: 19 } : {}) }}>
             {isMobile ? "←" : "← QRowg"}
           </a>
           {!isMobile && <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />}
@@ -1429,14 +1429,17 @@ import { BLOCK_DEFS } from "./blockDefs"
           {guest && draftState === "too_big" && <span style={{ color: "#FBBF24", fontSize: 10, whiteSpace: "nowrap" }} title="Le brouillon dépasse ce que le navigateur peut garder — créez un compte pour ne rien perdre.">⚠ {isMobile ? "Trop lourd" : "Brouillon trop lourd"}</span>}
           {guest && draftState === "unavailable" && <span style={{ color: "#FBBF24", fontSize: 10, whiteSpace: "nowrap" }} title="Ce navigateur refuse d'enregistrer (navigation privée ?) — créez un compte pour garder votre page.">⚠ {isMobile ? "Non gardé" : "Rien ne peut être gardé ici"}</span>}
           {!guest && !pageId && !isMobile && <span style={{ color: "#8A8478", fontSize: 9 }}>Mode démo</span>}
-          <div style={{ flex: 1 }} />
+          {/* Ce vide extensible partageait la place restante avec le champ du nom :
+              mesure au navigateur sur un ecran de 360 px, le nom de la page tombait
+              a 33 px de large — trois lettres. Sur telephone, la place va au nom. */}
+          {!isMobile && <div style={{ flex: 1 }} />}
 
           {/* Boutons Undo / Redo */}
           <div style={{ display: "flex", gap: 3 }}>
             <button onClick={() => { const p = undoRedo.undo(); if(p) applySnapshot(p) }}
               disabled={!undoRedo.canUndo()}
               title="Annuler — Ctrl+Z"
-              style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canUndo() ? "pointer" : "default", color: undoRedo.canUndo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
+              style={{ width: isMobile ? 40 : 28, height: isMobile ? 40 : 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canUndo() ? "pointer" : "default", color: undoRedo.canUndo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
               onMouseEnter={e => { if(undoRedo.canUndo()) { e.currentTarget.style.background="rgba(201,168,76,0.1)"; e.currentTarget.style.borderColor="rgba(201,168,76,0.3)" }}}
               onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.08)" }}>
               <Undo2 size={15} />
@@ -1444,7 +1447,7 @@ import { BLOCK_DEFS } from "./blockDefs"
             <button onClick={() => { const n = undoRedo.redo(); if(n) applySnapshot(n) }}
               disabled={!undoRedo.canRedo()}
               title="Rétablir — Ctrl+Shift+Z"
-              style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canRedo() ? "pointer" : "default", color: undoRedo.canRedo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
+              style={{ width: isMobile ? 40 : 28, height: isMobile ? 40 : 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canRedo() ? "pointer" : "default", color: undoRedo.canRedo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
               onMouseEnter={e => { if(undoRedo.canRedo()) { e.currentTarget.style.background="rgba(201,168,76,0.1)"; e.currentTarget.style.borderColor="rgba(201,168,76,0.3)" }}}
               onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.08)" }}>
               <Redo2 size={15} />
@@ -1453,7 +1456,7 @@ import { BLOCK_DEFS } from "./blockDefs"
 
           {/* Modèles de page complets (icone seule sur mobile pour degager la barre) */}
           <button onClick={() => setShowTemplates(true)} title="Partir d'un modèle de page complet"
-            style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: isMobile ? "5px 9px" : "5px 10px", color: G, fontSize: 10, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+            style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: isMobile ? "0 12px" : "5px 10px", ...(isMobile ? { minHeight: 40, justifyContent: "center" } : {}), color: G, fontSize: 10, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
             <Sparkles size={12} />{!isMobile && " Modèles"}
           </button>
 
@@ -2451,7 +2454,7 @@ import { BLOCK_DEFS } from "./blockDefs"
                 Ajouter un nouveau bloc
               </button>}
               {!preview && <button onClick={() => setShowTemplates(true)}
-                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "transparent", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", marginTop: 10 }}
+                style={{ width: "100%", minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "transparent", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", marginTop: 10 }}
                 onMouseEnter={e => e.currentTarget.style.color = G} onMouseLeave={e => e.currentTarget.style.color = MUTED}>
                 <Sparkles size={13} /> ou partir d&apos;un modèle de page complet
               </button>}

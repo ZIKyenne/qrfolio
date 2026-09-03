@@ -131,8 +131,14 @@ export default function UpgradePage() {
           {/* Toggle annuel */}
           <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "#111009", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 30, padding: "8px 16px" }}>
             <span style={{ color: !annual ? "#F5F0E8" : MUTED, fontSize: 14, fontWeight: !annual ? 600 : 400 }}>Mensuel</span>
-            <button onClick={() => setAnnual(a => !a)} style={{ width: 44, height: 24, borderRadius: 12, background: annual ? G : "rgba(255,255,255,0.1)", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s" }}>
-              <div style={{ position: "absolute", top: 3, left: annual ? 23 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+            {/* L'interrupteur mesurait 44 x 24 : sous le seuil du pouce. Le dessin ne
+                change pas — c'est le BOUTON qui passe a 44 x 44, avec une marge
+                negative pour que la pastille garde exactement sa hauteur visuelle. */}
+            <button onClick={() => setAnnual(a => !a)} role="switch" aria-checked={annual} aria-label="Facturation annuelle"
+              style={{ width: 44, height: 44, margin: "-10px 0", padding: 0, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ display: "block", width: 44, height: 24, borderRadius: 12, background: annual ? G : "rgba(255,255,255,0.1)", position: "relative", transition: "background 0.2s" }}>
+                <span style={{ position: "absolute", top: 3, left: annual ? 23 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+              </span>
             </button>
             <span style={{ color: annual ? "#F5F0E8" : MUTED, fontSize: 14, fontWeight: annual ? 600 : 400 }}>Annuel</span>
             {annual && <span style={{ background: "rgba(57,255,143,0.15)", border: "1px solid rgba(57,255,143,0.3)", borderRadius: 10, padding: "2px 8px", fontSize: 11, color: "var(--success)", fontWeight: 700 }}>-20%</span>}

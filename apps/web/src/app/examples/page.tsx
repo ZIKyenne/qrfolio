@@ -330,7 +330,7 @@ export default function ExamplesPage() {
         * { box-sizing:border-box; }
         body { background:${BG}; }
         .ex-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
-        .filter-btn { background:none; border:1px solid; border-radius:100px; padding:7px 16px; cursor:pointer; font-size:13px; font-weight:500; font-family:inherit; transition:all 0.2s; white-space:nowrap; }
+        .filter-btn { display:inline-flex; align-items:center; min-height:44px; background:none; border:1px solid; border-radius:100px; padding:0 18px; cursor:pointer; font-size:13px; font-weight:500; font-family:inherit; transition:all 0.2s; white-space:nowrap; }
         .filter-btn:focus-visible { outline:2px solid rgba(201,168,76,0.5); outline-offset:3px; }
         @media(max-width:1000px){ .ex-grid{ grid-template-columns:repeat(2,1fr)!important; } }
         @media(max-width:640px){ .ex-grid{ grid-template-columns:1fr!important; } .ex-hero{ padding:120px 24px 60px!important; } .ex-main{ padding:0 24px 80px!important; } .filters-row{ flex-direction:column!important; gap:12px!important; } }

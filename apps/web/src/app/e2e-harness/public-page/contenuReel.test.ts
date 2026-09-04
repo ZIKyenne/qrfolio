@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { join, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
-import { contenuEprouve, estCleTechnique, sansImages, valeurEprouvee, EPREUVES } from "./contenuReel"
+import { avecImages, contenuEprouve, estCleTechnique, formatPour, sansImages, valeurEprouvee, EPREUVES } from "./contenuReel"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DU TEXTE COUPÉ QUE PERSONNE NE POUVAIT VOIR
@@ -87,6 +87,23 @@ describe("le contenu d'épreuve", () => {
     for (const k of ["title", "item1_name", "item1_desc", "m1_role", "note", "category"]) {
       expect(estCleTechnique(k), k).toBe(false)
     }
+  })
+
+  it("les photos injectées viennent de la définition du bloc, pas d'une devinette", () => {
+    // Aucun modèle de la galerie ne renseigne d'image : il n'y a rien à
+    // remplacer, il faut savoir quels champs EXISTENT.
+    const r = avecImages({ title: "T" }, ["img1", "img2", "m1_photo"], 5)
+    expect(r.title).toBe("T")
+    expect(String(r.img1)).toContain("/e2e-harness/photo/")
+    expect(String(r.img1)).toContain("-5.png")
+    expect(String(r.img2)).toContain("-6.png")
+    expect(String(r.m1_photo)).toContain("-7.png")
+  })
+
+  it("le format suit le rôle de l'image", () => {
+    expect(formatPour("m1_avatar")).toEqual([800, 800])
+    expect(formatPour("banner_img")).toEqual([1600, 600])
+    expect(formatPour("img1")).toEqual([1600, 1200])
   })
 
   it("« vide » retire aussi les images : une page sans le moindre visuel", () => {

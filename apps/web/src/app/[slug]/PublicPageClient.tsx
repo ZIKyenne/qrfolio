@@ -371,6 +371,19 @@ function CarouselPublic({ imgs, title, autoplay, MUTED, FONT_B }: { imgs: string
 }
 
 // ── Galerie publique avec lightbox plein écran (clic pour agrandir + navigation) ──
+/**
+ * Largeur d'affichage d'une vignette de galerie, en CSS.
+ *
+ * Sans `sizes`, le navigateur suppose la pleine largeur et prend la plus grosse
+ * variante : mesuré, une photo de 1600 px pour une vignette de 168 px. La page
+ * publiée fait au plus 520 px de large ; en dessous, chaque vignette occupe
+ * 100/colonnes pour cent de l'écran.
+ */
+export function sizesGrille(colonnesMobile: number, colonnes: number): string {
+  const m = Math.max(1, colonnesMobile), d = Math.max(1, colonnes)
+  return `(max-width: 520px) ${Math.round(100 / m)}vw, ${Math.round(520 / d)}px`
+}
+
 function GalleryPublic({ imgs, layout, cols, colsMobile, title, MUTED, FONT_B }: { imgs: string[]; layout: string; cols: number; colsMobile: number; title?: string; MUTED: string; FONT_B: string }) {
   const [idx, setIdx] = useState<number | null>(null)
   useEffect(() => {
@@ -394,7 +407,7 @@ function GalleryPublic({ imgs, layout, cols, colsMobile, title, MUTED, FONT_B }:
         <button onClick={e => { e.stopPropagation(); setIdx(i => i === null ? i : (i - 1 + imgs.length) % imgs.length) }} aria-label="Précédente" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", fontSize: 24, cursor: "pointer" }}>‹</button>
         <button onClick={e => { e.stopPropagation(); setIdx(i => i === null ? i : (i + 1) % imgs.length) }} aria-label="Suivante" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", fontSize: 24, cursor: "pointer" }}>›</button>
       </>}
-      <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={imgs[idx]} alt="" onClick={e => e.stopPropagation()} style={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain", borderRadius: 8 }} />
+      <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} width={1600} height={1200} sizes="100vw" src={imgs[idx]} alt="" onClick={e => e.stopPropagation()} style={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain", borderRadius: 8 }} />
       {imgs.length > 1 && <span style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", color: "rgba(255,255,255,0.8)", fontSize: 12, background: "rgba(0,0,0,0.4)", borderRadius: 20, padding: "4px 12px" }}>{idx + 1} / {imgs.length}</span>}
     </div>
   )
@@ -403,7 +416,7 @@ function GalleryPublic({ imgs, layout, cols, colsMobile, title, MUTED, FONT_B }:
     <div style={{ padding: "6px 24px 16px" }}>
       {titleEl}
       <div className={`qf-cm-${colsMobile}`} style={{ columnCount: cols, columnGap: 8 }}>
-        {imgs.map((img, i) => <img key={i} src={img} alt="" loading="lazy" onClick={() => open(i)} onError={e => (e.currentTarget.style.display = "none")} style={{ width: "100%", borderRadius: 10, marginBottom: 8, display: "block", breakInside: "avoid", cursor: "zoom-in" }} />)}
+        {imgs.map((img, i) => <SmartImage key={i} src={img} alt="" width={1200} height={1600} sizes={sizesGrille(colsMobile, cols)} onClick={() => open(i)} onError={e => (e.currentTarget.style.display = "none")} style={{ width: "100%", borderRadius: 10, marginBottom: 8, display: "block", breakInside: "avoid", cursor: "zoom-in" }} />)}
       </div>
       {lightbox}
     </div>
@@ -417,7 +430,7 @@ function GalleryPublic({ imgs, layout, cols, colsMobile, title, MUTED, FONT_B }:
       <div className={`qf-gm-${colsMobile}`} style={{ display: "grid", gridTemplateColumns: `repeat(${effCols},1fr)`, gap }}>
         {imgs.map((img, i) => (
           <div key={i} onClick={() => open(i)} style={{ overflow: "hidden", borderRadius: rad, aspectRatio: "1", cursor: "zoom-in" }}>
-            <img src={img} alt="" loading="lazy" onError={e => { const p = e.currentTarget.parentElement; if (p) p.style.display = "none" }} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s" }}
+            <SmartImage src={img} alt="" width={1200} height={1200} sizes={sizesGrille(colsMobile, effCols)} onError={e => { const p = e.currentTarget.parentElement; if (p) p.style.display = "none" }} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s" }}
               onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.08)")}
               onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
           </div>

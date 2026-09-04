@@ -66,3 +66,34 @@ export function sansImages(contenu: Record<string, unknown>): Record<string, unk
   }
   return out
 }
+
+/**
+ * Injecte de vraies photos dans les champs d'image d'un bloc.
+ *
+ * Les clés viennent de la DÉFINITION du bloc (`type: "image"`), pas d'une
+ * devinette sur les noms : aucun modèle de la galerie ne renseigne d'image, donc
+ * il n'y a rien à remplacer — il faut savoir quels champs EXISTENT. 112 champs
+ * d'image sont déclarés dans les définitions de blocs ; c'est la seule liste
+ * qui fasse foi.
+ */
+export function avecImages(contenu: Record<string, unknown>, clesImages: string[], depart = 1): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...contenu }
+  let n = depart
+  for (const k of clesImages) {
+    const [w, h] = formatPour(k)
+    // Dimensions dans le chemin : l'optimiseur de Next refuse une adresse
+    // source locale qui porte une chaîne de requête.
+    out[k] = `/e2e-harness/photo/${w}x${h}-${n++}.png`
+  }
+  return out
+}
+
+/**
+ * Le format compte : une bannière est panoramique, un avatar est carré. Servir
+ * du 4:3 partout masquerait les défauts de mise en page propres à chaque forme.
+ */
+export function formatPour(cle: string): [number, number] {
+  if (/avatar|logo/.test(cle)) return [800, 800]
+  if (/banner|cover/.test(cle)) return [1600, 600]
+  return [1600, 1200]
+}

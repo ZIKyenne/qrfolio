@@ -55,6 +55,34 @@ describe("les images de la page publiée", () => {
     expect((bloc.match(/<SmartImage/g) || []).length, "grille, mosaïque et visionneuse").toBeGreaterThanOrEqual(3)
   })
 
+  it("plus une seule image brute dans le rendu public", () => {
+    // Une <img> brute, c'est le fichier d'origine servi tel quel : 1600 px de
+    // large pour une vignette de 168, sans conversion AVIF. Mesuré ensuite sur
+    // le vrai rendu, six modèles : 17 images, 17 optimisées, 0 brute.
+    const restantes = publique.split("\n")
+      .map((l, i) => [i + 1, l] as const)
+      .filter(([, l]) => /<img[\s>]/.test(l))
+      .map(([n, l]) => `ligne ${n} : ${l.trim().slice(0, 90)}`)
+    expect(restantes).toEqual([])
+  })
+
+  it("chaque image dit sa largeur d'affichage", () => {
+    const sans = publique.split("\n")
+      .map((l, i) => [i + 1, l] as const)
+      .filter(([, l]) => l.includes("<SmartImage") && !l.includes("sizes="))
+      // Les images à taille fixe (avatar 96 px, logo 44 px) n'en ont pas besoin :
+      // next/image déduit déjà la bonne variante de leur largeur déclarée.
+      .filter(([, l]) => !/width=\{\d{1,3}\}/.test(l))
+      .map(([n, l]) => `ligne ${n} : ${l.trim().slice(0, 90)}`)
+    expect(sans).toEqual([])
+  })
+
+  it("la première image du carrousel reste en chargement immédiat", () => {
+    // C'est souvent la première chose que voit le visiteur ; la conversion
+    // avait perdu ce `loading="eager"` au passage.
+    expect(publique).toContain("eager={i === 0}")
+  })
+
   it("chaque vignette annonce sa largeur d'affichage", () => {
     expect(publique).toContain("sizes={sizesGrille(colsMobile, effCols)}")
     expect(publique).toContain("sizes={sizesGrille(colsMobile, cols)}")

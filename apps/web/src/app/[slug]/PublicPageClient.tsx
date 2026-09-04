@@ -140,8 +140,8 @@ function BeforeAfterPublic({ before, after, beforeLabel, afterLabel }: { before:
       onPointerMove={e => { if (dragging.current) move(e.clientX) }}
       onPointerUp={() => dragging.current = false} onPointerCancel={() => dragging.current = false}
       style={{ position: "relative", height: 260, borderRadius: 12, overflow: "hidden", touchAction: "pan-y", userSelect: "none", cursor: "ew-resize" }}>
-      <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={before} alt="Avant" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-      <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={after} alt="Après" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", clipPath: `inset(0 ${100 - pos}% 0 0)` }} />
+      <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} src={before} alt="Avant" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} src={after} alt="Après" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", clipPath: `inset(0 ${100 - pos}% 0 0)` }} />
       {/* Ligne + poignée */}
       <div style={{ position: "absolute", top: 0, bottom: 0, left: `${pos}%`, width: 2, background: "#fff", transform: "translateX(-1px)", boxShadow: "0 0 8px rgba(0,0,0,0.5)" }} />
       <div style={{ position: "absolute", top: "50%", left: `${pos}%`, transform: "translate(-50%,-50%)", width: 34, height: 34, borderRadius: "50%", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", color: "#080808", fontSize: 14, fontWeight: 700 }}>⇔</div>
@@ -356,7 +356,7 @@ function CarouselPublic({ imgs, title, autoplay, MUTED, FONT_B }: { imgs: string
       <div style={{ position: "relative", overflow: "hidden", borderRadius: 14, touchAction: "pan-y" }}
         onPointerDown={onDown} onPointerUp={onUp} onMouseEnter={() => paused.current = true} onMouseLeave={() => paused.current = false}>
         <div style={{ display: "flex", transition: "transform .45s var(--mo-ease-standard)", transform: `translateX(-${idx * 100}%)` }}>
-          {imgs.map((img, i) => <img onError={e => { e.currentTarget.style.display = 'none' }} key={i} src={img} alt="" loading={i === 0 ? "eager" : "lazy"} draggable={false} style={{ width: "100%", height: 240, flexShrink: 0, objectFit: "cover", display: "block", userSelect: "none" }} />)}
+          {imgs.map((img, i) => <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} eager={i === 0} onError={e => { e.currentTarget.style.display = 'none' }} key={i} src={img} alt="" draggable={false} style={{ width: "100%", height: 240, flexShrink: 0, objectFit: "cover", display: "block", userSelect: "none" }} />)}
         </div>
         {imgs.length > 1 && <>
           <button onClick={() => go(idx - 1)} aria-label="Précédente" style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.45)", border: "none", color: "#fff", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
@@ -371,6 +371,18 @@ function CarouselPublic({ imgs, title, autoplay, MUTED, FONT_B }: { imgs: string
 }
 
 // ── Galerie publique avec lightbox plein écran (clic pour agrandir + navigation) ──
+/**
+ * Largeur d'affichage d'une image qui occupe toute la largeur du contenu.
+ *
+ * La page publiée ne dépasse jamais 520 px. Sans cette indication, le
+ * navigateur suppose la pleine largeur de l'écran et prend la plus grosse
+ * variante disponible — une photo de 1600 px là où 828 suffisent.
+ */
+export const SIZES_PLEINE = "(max-width: 520px) 100vw, 520px"
+
+/** Idem pour une image posée dans une grille de deux colonnes. */
+export const SIZES_DEMI = "(max-width: 520px) 50vw, 260px"
+
 /**
  * Largeur d'affichage d'une vignette de galerie, en CSS.
  *
@@ -807,7 +819,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       return (c.url || c.title) ? (
         <div style={{ padding: "8px 24px 14px" }}>
           <a href={socialHref(c.network, c.url) || "#"} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.url || "social")} style={{ display: "block", background: `linear-gradient(135deg,${col}22,${col}0a)`, border: `1.5px solid ${col}45`, borderRadius: 18, overflow: "hidden", textDecoration: "none" }}>
-            {c.image && <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.image} alt="" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />}
+            {c.image && <SmartImage width={1200} height={900} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={c.image} alt="" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />}
             <div style={{ padding: "16px 18px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                 <span style={{ fontSize: 28 }}>{n.icon}</span>
@@ -852,7 +864,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       const ar = isCircle ? "1" : ratioMap[c.ratio || "original"]
       const radius = isCircle ? "50%" : c.rounded === "rounded" ? 16 : 0
       const imgEl = (
-        <img src={c.src} alt={c.alt || c.caption || ""} loading="lazy" onError={e => (e.currentTarget.style.display = "none")}
+        <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} src={c.src} alt={c.alt || c.caption || ""} onError={e => (e.currentTarget.style.display = "none")}
           style={{ width: "100%", height: ar ? "100%" : undefined, maxHeight: ar ? undefined : 320, aspectRatio: ar, objectFit: "cover", display: "block", borderRadius: radius, transition: "transform 0.3s" }}
           onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
           onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
@@ -956,7 +968,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 15, overflow: "hidden", transition: "transform 0.2s, box-shadow 0.2s" }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 40px rgba(0,0,0,0.3)` }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "none" }}>
-          {c.image && <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.image} alt={c.name||""} style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }} />}
+          {c.image && <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} src={c.image} alt={c.name||""} style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }} />}
           <div style={{ padding: "14px 16px" }}>
             <p style={{ color: TEXT, fontSize: 16, fontWeight: 700, margin: "0 0 5px", fontFamily: FONT_D }}>{c.name}</p>
             <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 7 }}>
@@ -1141,7 +1153,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           {anim && <style>{BANNER_ANIM_CSS}</style>}
           {btype === "image"
             ? (c.src
-              ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" className="qfb-media" src={c.src} alt="" style={{ width: "100%", height: h, display: "block", ...bannerImageStyle(c) }} />
+              ? <SmartImage width={1600} height={600} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} className="qfb-media" src={c.src} alt="" style={{ width: "100%", height: h, display: "block", ...bannerImageStyle(c) }} />
               : <div className="qfb-media" style={{ width: "100%", height: h, background: `linear-gradient(135deg,${G}33,${theme.accent || "var(--success)"}22)` }} />)
             : <div className="qfb-media" style={{ width: "100%", height: h, ...bannerBg }} />}
           {anim === "shimmer" && <div className="qfb-shine" />}
@@ -1393,7 +1405,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ background: `linear-gradient(135deg,${G}12,${theme.accent || "var(--success)"}0a)`, border: `1.5px solid ${G}30`, borderRadius: 16, overflow: "hidden" }}>
           {c.badge && (() => { const bs = productBadgeStyle(c.badge, G); return <div style={{ background: bs.color, color: bs.fg, padding: "7px 14px", fontSize: 12, fontWeight: 700, textAlign: "center" }}>{bs.icon ? bs.icon + " " : ""}{c.badge}</div> })()}
           {c.image
-            ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.image} alt="" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
+            ? <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} src={c.image} alt="" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
             : <div style={{ height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(249,115,22,0.06)", fontSize: 48 }}>⭐</div>}
           <div style={{ padding: "16px" }}>
             {c.name && <p style={{ color: TEXT, fontSize: 18, fontWeight: 700, margin: "0 0 6px", fontFamily: FONT_D }}>{c.name}</p>}
@@ -1547,7 +1559,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
             {works.map(([img, title, desc]: any[], i: number) => (
               <div key={i} style={{ borderRadius: 11, overflow: "hidden", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                {img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(img)} alt="" style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} /> : <div style={{ height: 100, background: `${G}08`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>📂</div>}
+                {img ? <SmartImage width={1200} height={900} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={String(img)} alt="" style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} /> : <div style={{ height: 100, background: `${G}08`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>📂</div>}
                 <div style={{ padding: "9px 10px" }}>
                   <p style={{ color: TEXT, fontSize: 12, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{title}</p>
                   {desc && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{desc}</p>}
@@ -1580,7 +1592,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         return links.length ? <div style={{ display: "flex", gap: 7, marginTop: 8, justifyContent: center ? "center" : "flex-start" }}>{links.map((l, k) => <span key={k}>{l}</span>)}</div> : null
       }
       const avatar = (m: any, size: number) => m.photo
-        ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(m.photo)} alt={String(m.name)} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} />
+        ? <SmartImage width={800} height={800} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={String(m.photo)} alt={String(m.name)} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${G}40` }} />
         : <div style={{ width: size, height: size, borderRadius: "50%", background: `linear-gradient(135deg,${G},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size*0.42, fontWeight: 700, color: "#080808", flexShrink: 0 }}>{String(m.name)[0]}</div>
       return (
         <div style={{ padding: "10px 24px 14px" }}>
@@ -1623,7 +1635,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 9 }}>
             {logos.map(([img, name]: any[], i: number) => (
               <div key={i} style={{ height: 48, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                {img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(img)} alt={String(name)} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", padding: 5 }} /> : <p style={{ color: MUTED, fontSize: 11, margin: 0, textAlign: "center", padding: "0 5px" }}>{name}</p>}
+                {img ? <SmartImage width={800} height={800} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={String(img)} alt={String(name)} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", padding: 5 }} /> : <p style={{ color: MUTED, fontSize: 11, margin: 0, textAlign: "center", padding: "0 5px" }}>{name}</p>}
               </div>
             ))}
           </div>
@@ -1638,7 +1650,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 9 }}>
             {logos.map(([img, name]: any[], i: number) => (
               <div key={i} style={{ height: 40, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                {img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(img)} alt={String(name)} style={{ maxWidth: "90%", maxHeight: "90%", objectFit: "contain" }} /> : <p style={{ color: MUTED, fontSize: 9, margin: 0, textAlign: "center", padding: "0 4px", lineHeight: 1.2 }}>{name}</p>}
+                {img ? <SmartImage width={800} height={800} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={String(img)} alt={String(name)} style={{ maxWidth: "90%", maxHeight: "90%", objectFit: "contain" }} /> : <p style={{ color: MUTED, fontSize: 9, margin: 0, textAlign: "center", padding: "0 4px", lineHeight: 1.2 }}>{name}</p>}
               </div>
             ))}
           </div>
@@ -1941,11 +1953,11 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           ? <BeforeAfterPublic before={c.before_img} after={c.after_img} beforeLabel={c.before_label || "Avant"} afterLabel={c.after_label || "Après"} />
           : <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
           <div style={{ borderRadius: 11, overflow: "hidden" }}>
-            {c.before_img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.before_img} alt="Avant" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(239,68,68,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>📸</div>}
+            {c.before_img ? <SmartImage width={1200} height={900} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={c.before_img} alt="Avant" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(239,68,68,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>📸</div>}
             <div style={{ background: "rgba(239,68,68,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "#EF4444", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.before_label || "Avant"}</p></div>
           </div>
           <div style={{ borderRadius: 11, overflow: "hidden" }}>
-            {c.after_img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.after_img} alt="Après" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>✨</div>}
+            {c.after_img ? <SmartImage width={1200} height={900} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={c.after_img} alt="Après" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>✨</div>}
             <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "var(--success)", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.after_label || "Après"}</p></div>
           </div>
         </div>}
@@ -1988,7 +2000,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
     case "pdf_viewer": return (c.url || c.title) ? (
       <div style={{ padding: "10px 24px 14px" }}>
         <div style={{ background: "rgba(78,205,196,0.06)", border: "1.5px solid rgba(78,205,196,0.2)", borderRadius: 15, padding: "17px" }}>
-          {c.cover && <div style={{ borderRadius: 11, overflow: "hidden", marginBottom: 13, boxShadow: "0 6px 20px rgba(0,0,0,0.35)" }}><img onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt={c.title || "Couverture du document"} loading="lazy" style={{ width: "100%", maxHeight: 260, objectFit: "cover", display: "block" }} /></div>}
+          {c.cover && <div style={{ borderRadius: 11, overflow: "hidden", marginBottom: 13, boxShadow: "0 6px 20px rgba(0,0,0,0.35)" }}><SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt={c.title || "Couverture du document"} style={{ width: "100%", maxHeight: 260, objectFit: "cover", display: "block" }} /></div>}
           <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: c.url ? 13 : 0 }}>
             {!c.cover && <div style={{ width: 46, height: 54, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>📄</div>}
             <div style={{ flex: 1 }}>
@@ -2016,7 +2028,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               const videoId = youtubeId(String(url))
               return (
                 <a key={i} href={extHref(String(url))} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, String(url))} style={{ display: "block", borderRadius: 11, overflow: "hidden", background: "#000", position: "relative", textDecoration: "none" }}>
-                  {videoId ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(255,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>▶️</div>}
+                  {videoId ? <SmartImage width={1200} height={900} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(255,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>▶️</div>}
                   <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <div style={{ width: 44, height: 44, background: "rgba(255,0,0,0.9)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fff", fontSize: 16, marginLeft: 3 }}>▶</span></div>
                   </div>
@@ -2058,7 +2070,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
                 <>
                   {videoId && (
                     <div style={{ position: "relative" }}>
-                      <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
+                      <SmartImage width={1200} height={900} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
                       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <div style={{ width: 40, height: 40, background: "rgba(0,0,0,0.7)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fff", fontSize: 15, marginLeft: 3 }}>▶</span></div>
                       </div>
@@ -2444,11 +2456,11 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         {c.title && <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 11px", textAlign: "center", fontFamily: FONT_B }}>{c.title}</p>}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
           <div style={{ borderRadius: 11, overflow: "hidden" }}>
-            {c.before_img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.before_img} alt="Avant" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(239,68,68,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>📸</div>}
+            {c.before_img ? <SmartImage width={1200} height={900} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={c.before_img} alt="Avant" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(239,68,68,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>📸</div>}
             <div style={{ background: "rgba(239,68,68,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "#EF4444", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.before_label || "Avant"}</p></div>
           </div>
           <div style={{ borderRadius: 11, overflow: "hidden" }}>
-            {c.after_img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.after_img} alt="Après" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>✨</div>}
+            {c.after_img ? <SmartImage width={1200} height={900} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={c.after_img} alt="Après" style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(57,255,143,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>✨</div>}
             <div style={{ background: "rgba(57,255,143,0.15)", padding: "7px", textAlign: "center" }}><p style={{ color: "var(--success)", fontSize: 12, fontWeight: 700, margin: 0 }}>{c.after_label || "Après"}</p></div>
           </div>
         </div>
@@ -2715,7 +2727,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       return (c.title || c.cover) ? (
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ background: "rgba(29,185,84,0.06)", border: "1px solid rgba(29,185,84,0.2)", borderRadius: 15, overflow: "hidden" }}>
-            {c.cover ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.cover} alt="" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(29,185,84,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52 }}>💿</div>}
+            {c.cover ? <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(29,185,84,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52 }}>💿</div>}
             <div style={{ padding: "15px" }}>
               <p style={{ color: TEXT, fontSize: 19, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.title || "Mon Album"}</p>
               {c.artist && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 3px" }}>{c.artist}</p>}
@@ -2790,7 +2802,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 9, marginBottom: c.cta_label ? 13 : 0 }}>
             {products.map(([img, name, price]: any[], i: number) => (
               <div key={i} style={{ background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.15)", borderRadius: 11, overflow: "hidden" }}>
-                {img ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={String(img)} alt="" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} /> : <div style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>👕</div>}
+                {img ? <SmartImage width={1000} height={1000} sizes={SIZES_DEMI} onError={e => { e.currentTarget.style.display = 'none' }} src={String(img)} alt="" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} /> : <div style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>👕</div>}
                 <div style={{ padding: "7px 9px" }}><p style={{ color: TEXT, fontSize: 11, fontWeight: 700, margin: "0 0 1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: FONT_B }}>{name}</p><p style={{ color: "#9146FF", fontSize: 12, fontWeight: 700, margin: 0 }}>{price}</p></div>
               </div>
             ))}
@@ -2807,7 +2819,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       return (c.title || c.bg_image) ? (
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ position: "relative", overflow: "hidden", borderRadius: 14 }}>
-            {c.bg_image ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={c.bg_image} alt="" style={{ width: "100%", height: h, objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: h, background: c.bg_color ? c.bg_color : `linear-gradient(135deg,${G}30,${accent}15,#080808)` }} />}
+            {c.bg_image ? <SmartImage width={1600} height={900} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} src={c.bg_image} alt="" style={{ width: "100%", height: h, objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: h, background: c.bg_color ? c.bg_color : `linear-gradient(135deg,${G}30,${accent}15,#080808)` }} />}
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,transparent 20%,rgba(0,0,0,0.7) 100%)" }} />
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: align, justifyContent: "flex-end", padding: "22px" }}>
               {c.title && <h2 style={{ color: "#fff", fontSize: c.height === "lg" ? 28 : 22, fontWeight: 700, margin: "0 0 6px", fontFamily: FONT_D, textAlign: ta, textShadow: "0 2px 10px rgba(0,0,0,0.5)", lineHeight: 1.2 }}>{c.title}</h2>}
@@ -3039,7 +3051,7 @@ export default function PublicPageClient({ page, blocks, showBranding = true, in
         <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 2147482999, background: theme.bgGradient || theme.bg, display: "grid", placeItems: "center" }}>
           <div style={{ width: 108, height: 108, borderRadius: 30, overflow: "hidden", background: introAccent, display: "grid", placeItems: "center", color: introOn, fontSize: 40, fontWeight: 600 }}>
             {introProfile.avatar
-              ? <img src={introProfile.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ? <SmartImage width={800} height={800} sizes={SIZES_DEMI} src={introProfile.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : (String(introTitle).trim().charAt(0) || "?").toUpperCase()}
           </div>
         </div>

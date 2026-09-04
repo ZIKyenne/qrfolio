@@ -1,0 +1,118 @@
+{
+  "total": 16,
+  "avec_alerte": 0,
+  "details": [
+    {
+      "fichier": "qr-code-invendus-du-soir-boulangerie-anti-gaspi.png",
+      "fond_sombre_pct": 89.7,
+      "or_pct": 4.1,
+      "qr": "https://qrowg.com/qr-code/boutique?utm_source=pinterest&utm_medium=pin&utm_campaign=20260904-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-liste-attente-samedi-soir-restaurant-01.png",
+      "fond_sombre_pct": 92.9,
+      "or_pct": 1.5,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-liste-attente-samedi-soir-restaurant-02.png",
+      "fond_sombre_pct": 93.3,
+      "or_pct": 1.0,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-liste-attente-samedi-soir-restaurant-03.png",
+      "fond_sombre_pct": 85.6,
+      "or_pct": 8.8,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260904-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-liste-attente-samedi-soir-restaurant-04.png",
+      "fond_sombre_pct": 94.2,
+      "or_pct": 1.1,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-liste-attente-samedi-soir-restaurant-05.png",
+      "fond_sombre_pct": 94.1,
+      "or_pct": 1.0,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-liste-attente-samedi-soir-restaurant-06.png",
+      "fond_sombre_pct": 84.4,
+      "or_pct": 6.5,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260904-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-menu-quatre-langues-touristes-restaurant.png",
+      "fond_sombre_pct": 90.0,
+      "or_pct": 4.9,
+      "qr": "https://qrowg.com/qr-code/menu?utm_source=pinterest&utm_medium=pin&utm_campaign=20260904-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-panier-de-la-semaine-producteur-marche.png",
+      "fond_sombre_pct": 90.2,
+      "or_pct": 4.7,
+      "qr": "https://qrowg.com/qr-code/artisan?utm_source=pinterest&utm_medium=pin&utm_campaign=20260904-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-vins-au-verre-qui-tournent-bar.png",
+      "fond_sombre_pct": 89.7,
+      "or_pct": 5.0,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=pinterest&utm_medium=pin&utm_campaign=20260904-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-liste-attente-samedi-soir-restaurant-01.png",
+      "fond_sombre_pct": 92.9,
+      "or_pct": 1.5,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-liste-attente-samedi-soir-restaurant-02.png",
+      "fond_sombre_pct": 93.4,
+      "or_pct": 1.0,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-liste-attente-samedi-soir-restaurant-03.png",
+      "fond_sombre_pct": 85.6,
+      "or_pct": 8.8,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260904-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-liste-attente-samedi-soir-restaurant-04.png",
+      "fond_sombre_pct": 94.2,
+      "or_pct": 1.1,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-liste-attente-samedi-soir-restaurant-05.png",
+      "fond_sombre_pct": 94.1,
+      "or_pct": 1.0,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-liste-attente-samedi-soir-restaurant-06.png",
+      "fond_sombre_pct": 84.4,
+      "or_pct": 6.5,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260904-restaurant",
+      "alertes": []
+    }
+  ]
+}

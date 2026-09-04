@@ -1,0 +1,89 @@
+{
+ "carousels": [
+  {
+   "slug": "qr-code-liste-attente-samedi-soir-restaurant",
+   "sector": "restaurant",
+   "url": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260904-restaurant",
+   "slides": [
+    {
+     "kind": "cover",
+     "tag": "Restaurant",
+     "title": "Complet à 20 h. Vingt couverts [[perdus]].",
+     "body": "La liste d'attente qui les retient dehors."
+    },
+    {
+     "kind": "body",
+     "kicker": "Le problème",
+     "title": "Un prénom sur un carnet, et [[personne]] ne rappelle",
+     "body": "La table se libère à 21 h 10. Le client est déjà parti ailleurs."
+    },
+    {
+     "kind": "qr",
+     "kicker": "En direct",
+     "title": "Un QR à l'entrée. Une [[place]] dans la file.",
+     "body": "Il scanne, laisse son numéro, va boire un verre à côté."
+    },
+    {
+     "kind": "body",
+     "kicker": "Le geste",
+     "title": "Une table se libère. Tu [[publies]].",
+     "body": "La page se met à jour, le client est prévenu. Aucun appel à passer."
+    },
+    {
+     "kind": "metric",
+     "kicker": "Preuve",
+     "number": "0",
+     "title": "appel à passer pendant le [[coup de feu]]",
+     "body": "Le service continue, la file s'occupe toute seule."
+    },
+    {
+     "kind": "cta",
+     "title": "Crée ta liste d'attente en 2 [[minutes]]",
+     "body": "Support à imprimer, page à ta marque.",
+     "cta": "qrowg.com",
+     "qr": true
+    }
+   ]
+  }
+ ],
+ "pins": [
+  {
+   "slug": "qr-code-menu-quatre-langues-touristes-restaurant",
+   "layout": 0,
+   "sector": "restaurant",
+   "tag": "Restaurant",
+   "title": "Ta carte en 4 langues. Sans [[réimprimer]].",
+   "subtitle": "Le même QR, la bonne langue selon le téléphone.",
+   "qr": true,
+   "url": "https://qrowg.com/qr-code/menu?utm_source=pinterest&utm_medium=pin&utm_campaign=20260904-restaurant"
+  },
+  {
+   "slug": "qr-code-vins-au-verre-qui-tournent-bar",
+   "layout": 1,
+   "sector": "bar",
+   "tag": "Bar & cave",
+   "title": "Les vins au verre tournent. Le [[support]], non.",
+   "subtitle": "La sélection du soir, à jour en dix secondes.",
+   "qr": true,
+   "url": "https://qrowg.com/qr-code/restaurant?utm_source=pinterest&utm_medium=pin&utm_campaign=20260904-restaurant"
+  },
+  {
+   "slug": "qr-code-invendus-du-soir-boulangerie-anti-gaspi",
+   "layout": 2,
+   "tag": "Boulangerie",
+   "title": "Les invendus du soir, annoncés à [[18 h]].",
+   "subtitle": "Un QR en vitrine, le panier part avant la fermeture.",
+   "qr": true,
+   "url": "https://qrowg.com/qr-code/boutique?utm_source=pinterest&utm_medium=pin&utm_campaign=20260904-restaurant"
+  },
+  {
+   "slug": "qr-code-panier-de-la-semaine-producteur-marche",
+   "layout": 3,
+   "tag": "Marché & producteur",
+   "title": "Le panier de la semaine, [[réservé]] avant l'étal.",
+   "subtitle": "Ce qu'il y a dedans, ce qu'il coûte, qui l'a préparé.",
+   "qr": true,
+   "url": "https://qrowg.com/qr-code/artisan?utm_source=pinterest&utm_medium=pin&utm_campaign=20260904-restaurant"
+  }
+ ]
+}

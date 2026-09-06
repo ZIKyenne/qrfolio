@@ -201,6 +201,8 @@ export function RenduLegacy({ block, theme, pageId, ownerEmail, totalViews, h1Ow
       // publiée gardait une taille fixe. L'échelle respecte le plancher de lisibilité
       // de 12 px que le reste du site s'impose (voir lisibilite.test.ts).
       const tailles: Record<string, number> = { small: 13, normal: 14, large: 16 }
+      // Sans texte, il publiait un paragraphe vide : un trou dans la page.
+      if (!(c.text || "").trim()) return null
       return (
       <div style={{ padding: "4px 24px 14px", textAlign: (c.align as any) || "left" }}>
         <p style={{ color: MUTED, fontSize: tailles[c.size] ?? 14, lineHeight: 1.75, margin: 0, fontFamily: FONT_B }}>{c.text}</p>
@@ -322,7 +324,8 @@ export function RenduLegacy({ block, theme, pageId, ownerEmail, totalViews, h1Ow
       ) : null
     }
 
-    case "product": return (
+    // Une fiche produit sans nom, sans image et sans prix publiait une carte vide.
+    case "product": return (!(c.name || "").trim() && !c.image && !(c.price || "").trim()) ? null : (
       <div style={{ padding: "6px 24px 16px" }}>
         <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 15, overflow: "hidden", transition: "transform 0.2s, box-shadow 0.2s" }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 40px rgba(0,0,0,0.3)` }}
@@ -470,7 +473,9 @@ export function RenduLegacy({ block, theme, pageId, ownerEmail, totalViews, h1Ow
       return <div style={{ height: spSizes[c.size || "md"] }} />
     }
 
-    case "calendly": return (
+    // Sans adresse de reservation, ce bloc publiait un bouton « Reserver » qui
+    // menait a « # ». Un bouton mort est pire qu'un bloc absent.
+    case "calendly": return !(c.url || "").trim() ? null : (
       <div style={{ padding: "6px 24px 16px" }}>
         <div style={{ background: `${G}07`, border: `1px solid ${G}20`, borderRadius: 14, padding: "16px 18px" }}>
           <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
@@ -485,16 +490,23 @@ export function RenduLegacy({ block, theme, pageId, ownerEmail, totalViews, h1Ow
       </div>
     )
 
-    case "instagram_feed": return (
+    case "instagram_feed": {
+      // Sans adresse, « Me suivre sur Instagram » ne suivait personne.
+      if (!(c.cta_url || "").trim()) return null
+      return (
       // Pas d'intégration de feed Instagram -> on ne publie PAS de fausses
       // vignettes 📸 (contenu factice nuisant à la crédibilité). Seul le vrai CTA
       // « Me suivre » est rendu.
       <div style={{ padding: "6px 24px 16px" }}>
         <a href={extHref(c.cta_url) || "#"} onClick={() => trackLinkClick(pageId, block.id, c.cta_url||"instagram")} style={{ display: "block", background: "rgba(225,48,108,0.1)", border: "1px solid rgba(225,48,108,0.25)", color: "#E1306C", textAlign: "center", padding: "12px", borderRadius: 9, textDecoration: "none", fontSize: 13, fontWeight: 700, fontFamily: FONT_B }}>{c.cta_label || "Me suivre sur Instagram"}</a>
       </div>
-    )
+      )
+    }
 
     case "cover_banner": {
+      // Sans image, sans titre ni sous-titre, la banniere n'etait qu'un rectangle
+      // de 167 caracteres de HTML : rien a voir, mais un trou dans la page.
+      if (!c.src && !(c.cover_title || "").trim() && !(c.cover_subtitle || "").trim() && (c.banner_type || "") !== "gradient" && (c.banner_type || "") !== "color") return null
       const h = bannerHeight(c, "public")
       const btype = c.banner_type || (c.src ? "image" : "gradient")
       const pos = c.text_position || "bottom-left"
@@ -539,6 +551,10 @@ export function RenduLegacy({ block, theme, pageId, ownerEmail, totalViews, h1Ow
       </div>
     ) : null
     case "availability": {
+      // `availabilityStatus` retombe sur « Disponible » : un bloc vide annoncait
+      // donc au visiteur que le commercant EST disponible — une affirmation que
+      // personne n'avait faite. Meme famille que le « 1 240 » du compteur de scans.
+      if (!(c.status || "").trim() && !(c.message || "").trim() && !(c.cta_label || "").trim()) return null
       const sc = availabilityStatus(c.status, c.dot_color)
       return (
         <div style={{ padding: "8px 24px 12px" }}>
@@ -870,7 +886,8 @@ export function RenduLegacy({ block, theme, pageId, ownerEmail, totalViews, h1Ow
         </a>
       </div>
     )
-    case "free_gift": return (
+    // Idem : « Recevoir mon cadeau » sans rien au bout.
+    case "free_gift": return !(c.url || "").trim() ? null : (
       <div style={{ padding: "6px 24px 12px" }}>
         <div style={{ background: "rgba(236,72,153,0.08)", border: "1.5px solid rgba(236,72,153,0.25)", borderRadius: 13, padding: "16px", textAlign: "center" }}>
           <span style={{ fontSize: 32, display: "block", marginBottom: 8 }}>{c.emoji || "🎁"}</span>
@@ -2217,8 +2234,10 @@ export function RenduLegacy({ block, theme, pageId, ownerEmail, totalViews, h1Ow
       ) : null
     }
     case "section_banner": {
+      // « SECTION » etait un texte de remplissage publie tel quel.
+      if (!(c.title || "").trim()) return null
       const col = c.color || G
-      const t = c.title || "SECTION"
+      const t = c.title
       const style = c.style || "lines"
       return (
         <div style={{ padding: "12px 24px" }}>

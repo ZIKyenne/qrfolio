@@ -61,6 +61,15 @@ const KEY: Record<string, (v: string) => Record<string, any>> = {
   tickets_left: v => ({ count: v }),
   limited_offer: v => ({ title: v }),
   vcard: v => ({ name: v }),
+  // Balayage du 6 septembre au soir.
+  rich_text: v => ({ text: v }),
+  cover_banner: v => ({ cover_title: v }),
+  product: v => ({ name: v }),
+  availability: v => ({ status: v }),
+  section_banner: v => ({ title: v }),
+  calendly: v => ({ url: v }),
+  free_gift: v => ({ url: v }),
+  instagram_feed: v => ({ cta_url: v }),
 }
 
 describe("hasPublishableContent — toutes les familles listées sont couvertes", () => {

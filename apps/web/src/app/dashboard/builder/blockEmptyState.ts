@@ -75,6 +75,24 @@ const DETECTORS: Record<string, (c: Record<string, any>) => boolean> = {
   limited_offer:           c => hasMeaningfulText(c.title) || hasMeaningfulText(c.description),
   // La fiche de contact ne s'enregistre que s'il y a quelque chose a enregistrer.
   vcard:                   c => hasMeaningfulText(c.name) || hasMeaningfulText(c.phone) || hasMeaningfulText(c.email),
+
+  // ── Balayage du 6 septembre au soir ───────────────────────────────────────
+  // Huit blocs publiaient quelque chose sans que personne ne l'ait saisi :
+  // trois coquilles vides (un trou dans la page) et cinq contenus par defaut.
+  // Le pire : `availability` annonçait « Disponible » — une affirmation faite au
+  // visiteur que le commerçant n'avait jamais écrite.
+  rich_text:               c => hasMeaningfulText(c.text),
+  // Les champs s'appellent cover_title / cover_subtitle : `title` n'existe pas
+  // sur ce bloc, et une premiere version de cette garde l'avait cru. Un fond
+  // choisi expres (degrade, couleur) est un contenu en soi : la banniere reste.
+  cover_banner:            c => hasMeaningfulText(c.src) || hasMeaningfulText(c.cover_title) || hasMeaningfulText(c.cover_subtitle)
+                                 || c.banner_type === "gradient" || c.banner_type === "color",
+  product:                 c => hasMeaningfulText(c.name) || hasMeaningfulText(c.image) || hasMeaningfulText(c.price),
+  availability:            c => hasMeaningfulText(c.status) || hasMeaningfulText(c.message) || hasMeaningfulText(c.cta_label),
+  section_banner:          c => hasMeaningfulText(c.title),
+  calendly:                c => hasMeaningfulText(c.url),
+  free_gift:               c => hasMeaningfulText(c.url),
+  instagram_feed:          c => hasMeaningfulText(c.cta_url),
   google_reviews_block:    c => anyIndexed(c, i => c[`r${i}_name`]) || hasMeaningfulText(c.avg_rating),
   event_access:            c => hasMeaningfulText(c.embed_url) || hasMeaningfulText(c.address)
                               || hasMeaningfulText(c.transport1_label) || hasMeaningfulText(c.transport2_label) || hasMeaningfulText(c.transport3_label),

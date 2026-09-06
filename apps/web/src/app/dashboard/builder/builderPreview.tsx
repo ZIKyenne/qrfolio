@@ -167,7 +167,8 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           </div>
         )
       }
-      case "rich_text": {
+      case "rich_text": if (!hasPublishableContent("rich_text", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("✍️", "Ajoutez votre texte", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        {
         const tSizes: Record<string,number> = { small: 11, normal: 13, large: 15 }
         return <div style={{ padding: "8px 16px", textAlign: (c.align as any)||"left", ...s }}><InlineEditable as="p" editable={canEdit} value={c.text} placeholder="Votre texte…" multiline onCommit={edit("text")} style={{ color: muted, fontSize: tSizes[c.size||"normal"], lineHeight: 1.7, margin: 0 }} /></div>
       }
@@ -379,7 +380,8 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           </div>
         )
       }
-      case "product": return (
+      case "product": if (!hasPublishableContent("product", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("🏷️", "Ajoutez un nom, une photo ou un prix", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        return (
         <div style={{ padding: "10px 16px", ...s }}>
           <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {c.image ? <img src={c.image} alt={c.name} style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} />
@@ -488,7 +490,8 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           </div>
         )
       }
-      case "instagram_feed": return (
+      case "instagram_feed": if (!hasPublishableContent("instagram_feed", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("📸", "Ajoutez le lien de votre profil Instagram", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        return (
         // Parité avec le rendu public : pas de fausses vignettes (aucun feed réel),
         // seulement le CTA. On indique dans l'éditeur que le feed n'est pas affiché.
         <div style={{ padding: "10px 16px", ...s }}>
@@ -625,7 +628,8 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           </div>
         </div>
       )
-      case "free_gift": return (
+      case "free_gift": if (!hasPublishableContent("free_gift", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("🎁", "Ajoutez le lien du cadeau", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        return (
         <div style={{ padding: "4px 16px 10px", ...s }}>
           <div style={{ background: "rgba(236,72,153,0.08)", border: "1.5px solid rgba(236,72,153,0.25)", borderRadius: 12, padding: "12px 14px", textAlign: "center" }}>
             <span style={{ fontSize: 28, display: "block", marginBottom: 6 }}>{c.emoji||"🎁"}</span>
@@ -721,7 +725,8 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           </div>
         </div>
       )
-      case "cover_banner": {
+      case "cover_banner": if (!hasPublishableContent("cover_banner", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("🖼️", "Ajoutez une image ou un titre", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        {
         const bh = bannerHeight(c, "editor")
         const btype = c.banner_type || (c.src ? "image" : "gradient")
         const pos = c.text_position || "bottom-left"
@@ -763,7 +768,8 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           <p style={{ color: text, fontSize: 12, lineHeight: 1.75, margin: 0 }}>{c.text||"Votre histoire ici..."}</p>
         </div>
       )
-      case "availability": {
+      case "availability": if (!hasPublishableContent("availability", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("🟢", "Choisissez votre statut de disponibilité", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        {
         const sc = availabilityStatus(c.status, c.dot_color)
         return (
           <div style={{ padding: "8px 16px", ...s }}>
@@ -2547,7 +2553,9 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         )
       }
 
-      case "section_banner": {
+      case "section_banner": if (!hasPublishableContent("section_banner", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("〰️", "Ajoutez le titre de la section", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+
+        {
         const bannerStyles: Record<string,any> = {
           lines: <div style={{ display: "flex", alignItems: "center", gap: 12 }}><div style={{ flex: 1, height: 1, background: `linear-gradient(90deg,transparent,${primary}60)` }} /><span style={{ color: c.color||primary, fontSize: 12, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", whiteSpace: "nowrap" }}>{c.title||"SECTION"}</span><div style={{ flex: 1, height: 1, background: `linear-gradient(90deg,${primary}60,transparent)` }} /></div>,
           dots: <div style={{ display: "flex", alignItems: "center", gap: 8 }}><div style={{ display: "flex", gap: 3 }}>{[0,1,2].map(i=><div key={i} style={{ width: 4, height: 4, borderRadius: "50%", background: c.color||primary }}/>)}</div><span style={{ color: c.color||primary, fontSize: 12, fontWeight: 700, letterSpacing: 3 }}>{c.title||"SECTION"}</span><div style={{ display: "flex", gap: 3 }}>{[0,1,2].map(i=><div key={i} style={{ width: 4, height: 4, borderRadius: "50%", background: c.color||primary }}/>)}</div></div>,
@@ -2699,7 +2707,9 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         )
       }
 
-      case "calendly": return (
+      case "calendly": if (!hasPublishableContent("calendly", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("📅", "Ajoutez le lien de votre agenda", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+
+        return (
         <div style={{ padding: "8px 16px", ...s }}>
           <div style={{ background: `${primary}08`, border: `1px solid ${primary}20`, borderRadius: 12, padding: "12px 14px" }}>
             <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>

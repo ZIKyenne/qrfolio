@@ -37,7 +37,7 @@ describe("la porte des harness", () => {
   })
 
   it("toutes les routes de harness passent par cette porte", () => {
-    const dossiers = readdirSync(ici, { withFileTypes: true }).filter(d => d.isDirectory())
+    const dossiers = readdirSync(ici, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name)).filter(d => d.isDirectory())
     expect(dossiers.length).toBeGreaterThan(10)
     for (const d of dossiers) {
       const p = join(ici, d.name, "page.tsx")

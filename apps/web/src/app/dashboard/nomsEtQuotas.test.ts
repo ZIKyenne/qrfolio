@@ -31,7 +31,7 @@ describe("un seul abonnement", () => {
   it("plus rien ne pointe vers la page de tarification supprimée", () => {
     const morts: string[] = []
     const parcourir = (d: string) => {
-      for (const e of readdirSync(d)) {
+      for (const e of readdirSync(d).sort()) {
         const p = join(d, e)
         if (statSync(p).isDirectory()) { parcourir(p); continue }
         if (!/\.tsx?$/.test(e) || /\.test\.tsx?$/.test(e)) continue // ce fichier cite le chemin
@@ -48,7 +48,7 @@ describe("un seul abonnement", () => {
   it("aucune colonne dyn_ n'est plus lue nulle part", () => {
     const restes: string[] = []
     const parcourir = (d: string) => {
-      for (const e of readdirSync(d)) {
+      for (const e of readdirSync(d).sort()) {
         const p = join(d, e)
         if (statSync(p).isDirectory()) { parcourir(p); continue }
         if (!/\.tsx?$/.test(e) || /\.test\.tsx?$/.test(e)) continue

@@ -12,7 +12,7 @@ import { join } from "node:path"
 const RACINE = __dirname
 
 function routes(dir: string, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
+  for (const e of readdirSync(dir).sort()) {
     const p = join(dir, e)
     if (statSync(p).isDirectory()) routes(p, acc)
     else if (e === "route.ts") acc.push(p)

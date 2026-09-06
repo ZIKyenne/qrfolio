@@ -48,7 +48,7 @@ const ici = dirname(fileURLToPath(import.meta.url))
 
 function tousLesFichiers(d: string): string[] {
   const out: string[] = []
-  for (const e of readdirSync(d)) {
+  for (const e of readdirSync(d).sort()) {
     const c = join(d, e)
     if (statSync(c).isDirectory()) { out.push(...tousLesFichiers(c)); continue }
     if ((e.endsWith(".tsx") || e.endsWith(".ts")) && !e.includes(".test.")) out.push(c)

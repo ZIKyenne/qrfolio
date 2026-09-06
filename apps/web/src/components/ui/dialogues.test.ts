@@ -62,7 +62,7 @@ describe("plus de boîte native", () => {
   it("aucun écran n'appelle window.confirm, window.alert ni window.prompt", () => {
     const fautifs: string[] = []
     const marcher = (d: string) => {
-      for (const n of readdirSync(d)) {
+      for (const n of readdirSync(d).sort()) {
         const p = join(d, n)
         if (statSync(p).isDirectory()) { if (n !== "e2e-harness") marcher(p) }
         else if (/\.tsx?$/.test(n) && !/\.test\./.test(n)) {

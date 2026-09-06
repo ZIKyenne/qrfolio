@@ -14,7 +14,7 @@ import { join } from "node:path"
 const SRC = join(__dirname, "../..")
 
 function fichiersClient(dir: string, acc: string[] = []): string[] {
-  for (const e of readdirSync(dir)) {
+  for (const e of readdirSync(dir).sort()) {
     const p = join(dir, e)
     if (statSync(p).isDirectory()) {
       // Le serveur utilise la clé de service et contourne RLS : hors sujet ici.

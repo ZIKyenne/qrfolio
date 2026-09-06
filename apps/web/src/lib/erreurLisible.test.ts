@@ -37,7 +37,7 @@ describe("plus aucun message brut affiché au commerçant", () => {
   const racine = join(__dirname, "../app")
   const fichiers: string[] = []
   const marcher = (d: string) => {
-    for (const n of readdirSync(d)) {
+    for (const n of readdirSync(d).sort()) {
       const p = join(d, n)
       if (statSync(p).isDirectory()) { if (n !== "api" && n !== "e2e-harness") marcher(p) }
       else if (/\.tsx?$/.test(n) && !/\.test\.tsx?$/.test(n)) fichiers.push(p)

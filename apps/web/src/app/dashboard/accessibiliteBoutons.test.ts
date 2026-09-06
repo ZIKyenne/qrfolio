@@ -7,7 +7,7 @@ import { join } from "node:path"
 // et actions icône-seule sans nom. Un lecteur d'écran lit « bouton ».
 
 const fichiers: string[] = []
-const marcher = (d: string) => { for (const n of readdirSync(d)) { const p = join(d, n); if (statSync(p).isDirectory()) { if (n !== "shared-renderer") marcher(p) } else if (/\.tsx$/.test(n) && !/\.test\.tsx$/.test(n)) fichiers.push(p) } }
+const marcher = (d: string) => { for (const n of readdirSync(d).sort()) { const p = join(d, n); if (statSync(p).isDirectory()) { if (n !== "shared-renderer") marcher(p) } else if (/\.tsx$/.test(n) && !/\.test\.tsx$/.test(n)) fichiers.push(p) } }
 marcher(__dirname)
 marcher(join(__dirname, "../../components"))
 

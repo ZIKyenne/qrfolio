@@ -40,7 +40,7 @@ describe("les descriptions de la page publiée se lisent", () => {
   it("aucune description sous 13 px dans les renderers publics partagés", () => {
     const fautifs: string[] = []
     const parcourir = (d: string) => {
-      for (const e of readdirSync(d, { withFileTypes: true })) {
+      for (const e of readdirSync(d, { withFileTypes: true }).sort()) {
         const p = join(d, e.name)
         if (e.isDirectory()) { parcourir(p); continue }
         if (!/^Public.*\.tsx$/.test(e.name)) continue

@@ -24,7 +24,7 @@ function sansCommentaires(t: string): string {
 function fichiersDe(dossier: string, ext = [".tsx", ".ts"]): string[] {
   const out: string[] = []
   const parcourir = (d: string) => {
-    for (const e of readdirSync(d)) {
+    for (const e of readdirSync(d).sort()) {
       const chemin = join(d, e)
       if (statSync(chemin).isDirectory()) { if (e !== "node_modules") parcourir(chemin); continue }
       if (ext.some(x => e.endsWith(x)) && !e.includes(".test.")) out.push(chemin)

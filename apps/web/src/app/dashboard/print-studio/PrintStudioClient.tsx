@@ -1,6 +1,6 @@
 "use client"
 
-// Print Studio — UI guidée « objets, pas outils » (Print Studio Mobile v3).
+// Atelier d'impression — UI guidée « objets, pas outils » (Atelier d'impression Mobile v3).
 // Bibliothèque -> aperçu packshot + 3 volets bornés -> contrôle avant export -> export.
 // Consomme les modules purs : catalog / mockup / states / tokens.
 
@@ -124,7 +124,7 @@ const ICON_CATS: { cat: string; items: { name: string; label: string }[] }[] = [
   { cat: "Restaurant", items: [{ name: "Coffee", label: "Café" }, { name: "Utensils", label: "Couverts" }, { name: "Wine", label: "Vin" }, { name: "Beer", label: "Bière" }, { name: "Pizza", label: "Pizza" }] },
   { cat: "Commerce", items: [{ name: "ShoppingBag", label: "Sac" }, { name: "ShoppingCart", label: "Panier" }, { name: "CreditCard", label: "Paiement" }, { name: "Percent", label: "Promo" }, { name: "Tag", label: "Étiquette" }, { name: "Gift", label: "Cadeau" }] },
   { cat: "Réseaux", items: [{ name: "Camera", label: "Photo" }, { name: "Music", label: "Musique" }, { name: "MessageCircle", label: "Message" }, { name: "ThumbsUp", label: "J'aime" }, { name: "Share2", label: "Partager" }, { name: "Send", label: "Envoyer" }, { name: "AtSign", label: "Mention" }, { name: "Link2", label: "Lien" }] },
-  { cat: "Fonctionnel", items: [{ name: "Wifi", label: "Wifi" }, { name: "QrCode", label: "QR" }, { name: "Smartphone", label: "Mobile" }, { name: "Zap", label: "Éclair" }, { name: "Calendar", label: "Agenda" }, { name: "Bell", label: "Cloche" }, { name: "Info", label: "Info" }, { name: "Scissors", label: "Coupe" }] },
+  { cat: "Fonctionnel", items: [{ name: "wifi", label: "wifi" }, { name: "QrCode", label: "QR" }, { name: "Smartphone", label: "Mobile" }, { name: "Zap", label: "Éclair" }, { name: "Calendar", label: "Agenda" }, { name: "Bell", label: "Cloche" }, { name: "Info", label: "Info" }, { name: "Scissors", label: "Coupe" }] },
 ]
 // Formes libres (avec libellé FR pour la recherche du « + Ajouter »).
 const SHAPES: { id: string; label: string; g: string }[] = [
@@ -163,7 +163,7 @@ function cS(x: number, y: number, w: number, h2: number, shape: string, color: s
 const COMPOSITIONS: { id: string; label: string; hint: string; build: (p: Palette) => Omit<FreeEl, "id">[] }[] = [
   { id: "scannez", label: "Scannez ici", hint: "flèche + accroche", build: p => [cT(0.2, 0.06, 0.6, 0.07, "Scannez ici", 800, p.fg), cI(0.44, 0.18, 0.12, "ArrowDown", p.band)] },
   { id: "avis", label: "Votre avis", hint: "5 étoiles + texte", build: p => [...[0, 1, 2, 3, 4].map(i => cI(0.18 + i * 0.13, 0.08, 0.08, "Star", p.band)), cT(0.15, 0.2, 0.7, 0.055, "Votre avis compte", 700, p.fg)] },
-  { id: "wifi", label: "Wi-Fi gratuit", hint: "icône + réseau", build: p => [cI(0.43, 0.06, 0.14, "Wifi", p.band), cT(0.15, 0.24, 0.7, 0.07, "Wi-Fi gratuit", 800, p.fg), cT(0.15, 0.34, 0.7, 0.04, "Réseau : ________", 500, p.fg)] },
+  { id: "wifi", label: "Wi-Fi gratuit", hint: "icône + réseau", build: p => [cI(0.43, 0.06, 0.14, "wifi", p.band), cT(0.15, 0.24, 0.7, 0.07, "Wi-Fi gratuit", 800, p.fg), cT(0.15, 0.34, 0.7, 0.04, "Réseau : ________", 500, p.fg)] },
   { id: "suivre", label: "Suivez-nous", hint: "@ + identifiant", build: p => [cI(0.34, 0.06, 0.1, "AtSign", p.band), cT(0.15, 0.19, 0.7, 0.065, "Suivez-nous", 800, p.fg), cT(0.15, 0.28, 0.7, 0.045, "@votrecompte", 600, p.band)] },
   { id: "reserver", label: "Réservez", hint: "bouton + infos", build: p => [cS(0.28, 0.08, 0.44, 0.1, "pill", p.band), cT(0.28, 0.1, 0.44, 0.055, "Réservez", 800, p.bandFg), cT(0.2, 0.23, 0.6, 0.04, "Sur place ou en ligne", 500, p.fg)] },
   { id: "fidelite", label: "Fidélité", hint: "tampons + points", build: p => [cT(0.2, 0.06, 0.6, 0.065, "Vos points", 800, p.fg), ...[0, 1, 2, 3, 4].map(i => cS(0.18 + i * 0.13, 0.18, 0.08, 0.08, "circle", p.band))] },
@@ -356,7 +356,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
   const kbd = useRef<any>({})   // dernières closures (raccourcis clavier montés une seule fois)
 
   // Source du QR : un QR EXISTANT de l'utilisateur, ou un PNG importé. AUCUNE création ici
-  // (Print Studio n'est pas un concepteur de QR — il met en scène un QR déjà fait).
+  // (Atelier d'impression n'est pas un concepteur de QR — il met en scène un QR déjà fait).
   const [qrSource, setQrSource] = useState<"mine" | "png">("mine")
   const [qrPickId, setQrPickId] = useState("")
   const [qrPng, setQrPng] = useState<string | null>(null)
@@ -849,7 +849,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
       <div style={{ minHeight: "100dvh", background: C.bg, color: C.fg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "Inter, system-ui, sans-serif" }}>
         <div style={{ maxWidth: 400, textAlign: "center" }}>
           <div style={{ width: 54, height: 54, borderRadius: 16, background: C.goldSoft, border: `1px solid ${C.goldA55}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Lock size={22} color={C.gold} /></div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 8px" }}>Print Studio</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 8px" }}>Atelier d'impression</h1>
           <p style={{ color: C.fgMuted, fontSize: 14.5, lineHeight: 1.6, margin: "0 0 20px" }}>Concevez des supports imprimables prêts à poser — stickers, chevalets, affiches, cartes — avec votre QR. Inclus dès le plan Établissement.</p>
           <Link href="/upgrade" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.gold, color: "#0A0A0A", fontWeight: 800, fontSize: 14, padding: "12px 24px", borderRadius: 12, textDecoration: "none" }}>Voir les plans →</Link>
         </div>
@@ -899,7 +899,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             <Link href="/dashboard/qr-codes" className="ps2-chip" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 13px 6px 10px", borderRadius: 999, border: "1px solid #26211a", color: "#8a8177", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
               <span aria-hidden style={{ width: 6, height: 6, borderLeft: "1.5px solid currentColor", borderBottom: "1.5px solid currentColor", transform: "rotate(45deg)" }} /> QR codes
             </Link>
-            <span style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 700 }}>Print Studio</span>
+            <span style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase", color: "#8a8177", fontWeight: 700 }}>Atelier d'impression</span>
           </header>
 
           {/* Titre + compteurs réels */}
@@ -1336,7 +1336,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
             {qrSource === "mine" ? (
               myQRs.length > 0 ? (
                 <Field label="Votre QR code">
-                  <select value={qrPickId} onChange={e => setQrPickId(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}>
+                  <select aria-label="QR code à placer" value={qrPickId} onChange={e => setQrPickId(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}>
                     {myQRs.map(q => <option key={q.id} value={q.id}>{q.label}</option>)}
                   </select>
                   <p style={{ margin: "8px 0 0", fontSize: 11, color: C.fgFaint, lineHeight: 1.45 }}>On met en scène ce QR existant — il reste pilotable depuis vos QR codes (destination modifiable) même après impression.</p>
@@ -1355,7 +1355,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <button onClick={() => qrPngInput.current?.click()} style={{ marginTop: 10, width: "100%", minHeight: 44, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer un PNG</button>
               )
             )}
-            <input ref={qrPngInput} type="file" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+            <input ref={qrPngInput} type="file" aria-label="Importer un QR code en PNG" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
             {/* Taille du QR : 3 tailles sémantiques (Compact/Recommandé/Maximum) + barre fine, bornée à une
                 plage SÛRE par support (anti-overflow : le QR ne peut plus écraser la composition — audit §6/§8). */}
             {(() => {
@@ -1464,7 +1464,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                     <button onClick={() => { setBgImage(null); setBgCredit("") }} aria-label="Retirer la photo" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 40, height: 40, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button>
                   </div>
                 : <button onClick={() => bgInput.current?.click()} style={{ width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer une photo</button>}
-              <input ref={bgInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => { setBgImage(String(r.result)); setBgCredit("") }; r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+              <input ref={bgInput} type="file" aria-label="Importer une image de fond" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => { setBgImage(String(r.result)); setBgCredit("") }; r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
               {/* Recherche de photos (Unsplash) — orientation calée sur le support */}
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 <input value={bgSearch} onChange={e => setBgSearch(e.target.value)} onKeyDown={e => { if (e.key === "Enter") searchPhotos() }} placeholder="Chercher une photo (café, nature…)" style={{ ...inputStyle, height: 42 }} />
@@ -1495,7 +1495,7 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                   </div>
                 : <button onClick={() => logoInput.current?.click()} style={{ marginTop: 8, width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Ajouter un logo</button>
               )}
-              <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setLogoUrl(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+              <input ref={logoInput} type="file" aria-label="Importer un logo" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setLogoUrl(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
             </Field>
             <button onClick={() => setAdvColor(v => !v)} style={{ alignSelf: "flex-start", background: "none", border: "none", color: C.fgMuted, textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0 }}>{advColor ? "Masquer les couleurs par élément" : "Couleurs par élément (avancé) →"}</button>
             {advColor && <>
@@ -1573,12 +1573,12 @@ export default function PrintStudioClient({ canAccess }: { canAccess: boolean })
                 <Seg value={qrSource} options={["mine", "png"]} labels={["Mes QR", "Importer un PNG"]} onPick={v => setQrSource(v as "mine" | "png")} />
                 {qrSource === "mine"
                   ? (myQRs.length > 0
-                      ? <select value={qrPickId} onChange={e => setQrPickId(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer", marginTop: 8 }}>{myQRs.map(q => <option key={q.id} value={q.id}>{q.label}</option>)}</select>
+                      ? <select aria-label="QR code à placer" value={qrPickId} onChange={e => setQrPickId(e.target.value)} style={{ ...inputStyle, appearance: "none", cursor: "pointer", marginTop: 8 }}>{myQRs.map(q => <option key={q.id} value={q.id}>{q.label}</option>)}</select>
                       : <p style={{ fontSize: 12, color: C.fgMuted, margin: "8px 0 0", lineHeight: 1.45 }}>Aucun QR — <Link href="/dashboard/qr-codes" style={{ color: C.gold }}>créez-en un</Link> ou importez un PNG.</p>)
                   : (qrPng
                       ? <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}><div style={{ width: 42, height: 42, borderRadius: 8, background: "#fff", overflow: "hidden", flexShrink: 0, border: `1px solid ${C.hairline}` }}><img src={qrPng} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div><span style={{ flex: 1, fontSize: 11.5, color: C.fgMuted }}>QR importé.</span><button onClick={() => setQrPng(null)} aria-label="Retirer le QR" style={{ background: "rgba(255,86,74,0.1)", border: "1px solid rgba(255,86,74,0.25)", borderRadius: 8, width: 34, height: 34, color: C.bad, cursor: "pointer", flexShrink: 0 }}><X size={15} /></button></div>
                       : <button onClick={() => qrPngInput.current?.click()} style={{ marginTop: 8, width: "100%", minHeight: 42, borderRadius: 11, border: `1.5px dashed ${C.goldA55}`, background: C.goldSoft, color: C.gold, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Importer un PNG</button>)}
-                <input ref={qrPngInput} type="file" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
+                <input ref={qrPngInput} type="file" aria-label="Importer un QR code en PNG" accept="image/png,image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setQrPng(String(r.result)); r.readAsDataURL(f) } if (e.target) e.target.value = "" }} />
               </Field>
               {(() => {
                 const minDimMm = Math.min(trimWidthMm(item), item.hMm)
@@ -1834,7 +1834,7 @@ const inputStyle: React.CSSProperties = { width: "100%", boxSizing: "border-box"
 // Libellé de section/champ unifié (casse normale, muted) — même convention que <Field>.
 const secLabel: React.CSSProperties = { margin: "0 0 8px", fontSize: 11.5, fontWeight: 600, color: C.fgMuted }
 
-// Sélecteur déroulant doré (barre de filtres du Print Studio, refonte DA) : déclencheur + menu ancré,
+// Sélecteur déroulant doré (barre de filtres du Atelier d'impression, refonte DA) : déclencheur + menu ancré,
 // overlay de fermeture au clic extérieur. Or fixe assumé (identité DA), a11y : bouton + aria-expanded.
 function FilterSelect({ label, value, options, onPick }: { label: string; value: string; options: string[]; onPick: (v: string) => void }) {
   const [open, setOpen] = useState(false)
@@ -1937,10 +1937,10 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
     </div>
   )
 }
-function Range({ value, min, max, step, onChange, hint }: { value: number; min: number; max: number; step: number; onChange: (v: number) => void; hint?: string }) {
+function Range({ value, min, max, step, onChange, hint, label }: { label?: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; hint?: string }) {
   return (
     <div>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: C.gold, height: 40, cursor: "pointer" }} />
+      <input type="range" aria-label={label ?? hint ?? "Régler la valeur"} min={min} max={max} step={step} value={value} onChange={e => onChange(parseFloat(e.target.value))} style={{ width: "100%", accentColor: C.gold, height: 40, cursor: "pointer" }} />
       {hint && <div style={{ fontSize: 10.5, color: C.fgFaint, marginTop: -2 }}>{hint}</div>}
     </div>
   )
@@ -2245,7 +2245,11 @@ function MultiSheet({ items, design }: { items: Item[]; design: DesignProps }) {
 function FreeElView({ el, unit, bodyFont, editable, selected, onDown, onEdit }: { el: FreeEl; unit: number; bodyFont: string; editable?: boolean; selected?: boolean; onDown?: (e: React.PointerEvent, el: FreeEl) => void; onEdit?: (el: FreeEl) => void }) {
   const base: React.CSSProperties = { position: "absolute", left: `${el.x * 100}%`, top: `${el.y * 100}%`,
     ...(el.rot ? { transform: `rotate(${el.rot}deg)`, transformOrigin: "top left" } : {}), ...(el.opacity != null ? { opacity: el.opacity } : {}),
-    ...(editable ? { cursor: "move", userSelect: "none", outline: selected ? `2px solid ${C.gold}` : "1px dashed rgba(255,255,255,.35)", outlineOffset: 2, zIndex: 5 } : { pointerEvents: "none", zIndex: 4 }) }
+    // `touchAction: "none"` : sans lui, le premier mouvement du doigt fait défiler la
+    // page et annule le glissement. Le conteneur du support le pose déjà pour toute sa
+    // descendance ; on le redit ici pour que l'élément reste déplaçable au doigt même
+    // s'il est un jour rendu ailleurs.
+    ...(editable ? { cursor: "move", userSelect: "none", touchAction: "none", outline: selected ? `2px solid ${C.gold}` : "1px dashed rgba(255,255,255,.35)", outlineOffset: 2, zIndex: 5 } : { pointerEvents: "none", zIndex: 4 }) }
   const dp = editable && onDown ? { onPointerDown: (e: React.PointerEvent) => onDown(e, el), ...(onEdit ? { onDoubleClick: () => onEdit(el) } : {}) } : {}
   if (el.kind === "icon") {
     const Ico = ICON_LIB[el.icon || "Star"] || ICON_LIB.Star
@@ -2318,7 +2322,7 @@ const TPL_CATS: { id: string; label: string; m?: (t: PrintTemplate) => boolean }
   { id: "bar", label: "Bar", m: t => t.business.includes("Bar") || t.business.includes("Caviste") },
   { id: "commerce", label: "Commerce", m: t => t.business.some(b => ["Boutique", "Food truck", "Boucherie", "Traiteur"].includes(b)) },
   { id: "avis", label: "Avis", m: t => t.objective.includes("Avis") },
-  { id: "wifi", label: "Wi-Fi", m: t => t.objective.includes("Wifi") },
+  { id: "wifi", label: "wifi", m: t => t.objective.includes("wifi") },
   { id: "event", label: "Événement", m: t => t.business.includes("Événement") },
   { id: "reseaux", label: "Réseaux", m: t => t.objective.includes("Réseaux") },
   { id: "business", label: "Business", m: t => t.business.some(b => ["Freelance", "Artisan", "Immobilier", "Coach", "Photographe"].includes(b)) || t.objective.includes("Contact") },
@@ -2409,7 +2413,7 @@ function AddLibrary({ query, setQuery, onComp, onText, onShape, onIcon }: { quer
   const secLbl: React.CSSProperties = { margin: "0 0 8px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: C.fgFaint }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher (avis, wifi, réserver…)" style={{ ...inputStyle, height: 44 }} />
+      <input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher (avis, Wi-Fi, réserver…)" style={{ ...inputStyle, height: 44 }} />
       {comps.length > 0 && <div><p style={secLbl}>Compositions prêtes</p><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(132px,1fr))", gap: 8 }}>{comps.map(c => <button key={c.id} className="ps-chip" onClick={() => onComp(c.id)} style={{ ...tile, flexDirection: "row", alignItems: "flex-start", justifyContent: "flex-start", textAlign: "left", minHeight: 0, padding: "10px 12px" }}><span style={{ display: "flex", flexDirection: "column", gap: 2 }}><span style={{ fontSize: 12.5, fontWeight: 700 }}>{c.label}</span><span style={{ fontSize: 10.5, color: C.fgFaint }}>{c.hint}</span></span></button>)}</div></div>}
       {showText && <div><p style={secLbl}>Texte</p><div style={gridStyle}><button className="ps-chip" onClick={onText} style={tile}><span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>T</span>Texte</button></div></div>}
       {shownShapes.length > 0 && <div><p style={secLbl}>Formes</p><div style={gridStyle}>{shownShapes.map(s => <button key={s.id} className="ps-chip" onClick={() => onShape(s.id)} style={tile}><span style={{ fontSize: 18, lineHeight: 1 }}>{s.g}</span>{s.label}</button>)}</div></div>}

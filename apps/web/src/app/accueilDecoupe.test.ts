@@ -75,7 +75,7 @@ describe("les sections mises de côté ne pèsent plus rien", () => {
   it("et personne ne les importe — sans quoi elles reviendraient dans le bundle", () => {
     const importateurs: string[] = []
     const marcher = (d: string) => {
-      for (const n of readdirSync(d)) {
+      for (const n of readdirSync(d).sort()) {
         const p = join(d, n)
         if (statSync(p).isDirectory()) marcher(p)
         else if (/\.tsx?$/.test(n) && !/\.test\./.test(n) && readFileSync(p, "utf8").includes("homeSectionsRetirees")) {

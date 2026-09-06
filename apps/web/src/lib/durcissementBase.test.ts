@@ -36,7 +36,7 @@ describe("durcissement de la base", () => {
   it("aucun code applicatif n'écrit team_members ou n'appelle ces fonctions avec le client de session", () => {
     const racine = join(__dirname, "..")
     const fichiers: string[] = []
-    const marcher = (d: string) => { for (const n of readdirSync(d)) { const p = join(d, n); if (statSync(p).isDirectory()) marcher(p); else if (/\.tsx?$/.test(n) && !/\.test\./.test(n)) fichiers.push(p) } }
+    const marcher = (d: string) => { for (const n of readdirSync(d).sort()) { const p = join(d, n); if (statSync(p).isDirectory()) marcher(p); else if (/\.tsx?$/.test(n) && !/\.test\./.test(n)) fichiers.push(p) } }
     marcher(racine)
     const fautifs: string[] = []
     for (const f of fichiers) {

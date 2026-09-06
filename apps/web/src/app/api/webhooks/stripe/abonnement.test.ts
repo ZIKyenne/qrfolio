@@ -28,7 +28,7 @@ describe("l'abonnement s'enregistre vraiment", () => {
     // Sans elle, l'UPSERT du webhook est refuse par Postgres en 42P10 :
     // « there is no unique or exclusion constraint matching the ON CONFLICT
     // specification ». Verifie sur la base de production le 31/08/2026.
-    const sql = readdirSync(migrations)
+    const sql = readdirSync(migrations).sort()
       .filter(f => f.endsWith(".sql"))
       .map(f => readFileSync(join(migrations, f), "utf-8"))
       .join("\n")

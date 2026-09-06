@@ -29,7 +29,7 @@ const EXCEPTIONS: Record<string, { n: number; raison: string }> = {
 }
 
 function sources(dir: string, out: string[] = []): string[] {
-  for (const nom of readdirSync(join(SRC, dir))) {
+  for (const nom of readdirSync(join(SRC, dir)).sort()) {
     const rel = `${dir}/${nom}`
     if (statSync(join(SRC, rel)).isDirectory()) { sources(rel, out); continue }
     if (!/\.tsx?$/.test(nom) || /\.(test|spec)\.tsx?$/.test(nom)) continue

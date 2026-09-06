@@ -5,7 +5,7 @@ import { join } from "node:path"
 const SRC = join(__dirname, "../../../..")
 
 function tousLesFichiers(dir: string, acc: string[] = []): string[] {
-  for (const nom of readdirSync(dir)) {
+  for (const nom of readdirSync(dir).sort()) {
     if (nom === "node_modules" || nom.startsWith(".")) continue
     const chemin = join(dir, nom)
     if (statSync(chemin).isDirectory()) tousLesFichiers(chemin, acc)

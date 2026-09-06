@@ -125,12 +125,19 @@ describe("canoniques", () => {
 })
 
 describe("cartes de partage", () => {
-  it("chaque page publique déclare son propre openGraph", () => {
-    const sans = PUBLIC_PAGES.filter(p => p.route !== "/" && !read(p.file).includes("openGraph:")).map(p => p.route)
+  it("chaque page publique déclare sa propre carte", () => {
+    // Elles passaient toutes par un openGraph écrit à la main, qui perdait
+    // og:locale : c'est désormais `ogFor()` (lib/seoMeta) qui la construit.
+    const sans = PUBLIC_PAGES
+      .filter(p => p.route !== "/")
+      .filter(p => { const src = read(p.file); return !src.includes("ogFor(") && !src.includes("openGraph:") })
+      .map(p => p.route)
     expect(sans, "sinon elles publient l'og:url et l'og:title de l'accueil").toEqual([])
   })
 
   it("og:title et twitter:title disent la même chose", () => {
+    // `ogFor()` les dérive du même titre : la divergence n'est plus possible.
+    // Ce test garde les pages qui n'y sont pas encore passées.
     const divergents: string[] = []
     for (const { route, file } of PUBLIC_PAGES) {
       const src = read(file)
@@ -219,11 +226,13 @@ describe("pages publiques des utilisateurs", () => {
     expect(read("[slug]/page.tsx")).toContain("clampTitle(")
   })
 
-  it("la description de repli est accentuée et pas famélique", () => {
+  it("la description de repli est accentuée, pas famélique, et nomme la PAGE", () => {
     const src = read("[slug]/page.tsx")
     expect(src).not.toContain("Decouvre la page de")
-    const m = src.match(/\|\| `\$\{who\} (.*?)`\.slice/)
-    expect(m?.[1] && m[1].length).toBeGreaterThan(60)
+    // Elle vit maintenant dans lib/identitePageSeo (testée là-bas) : la route
+    // ne doit plus fabriquer sa phrase à partir du nom du titulaire du compte.
+    expect(src).toContain("descriptionRepli(identite)")
+    expect(src).not.toContain("${who} sur QRowg")
   })
 
   it("un seul <h1>, toujours présent", () => {
@@ -240,7 +249,7 @@ describe("pages publiques des utilisateurs", () => {
     const dir = join(__dirname, "dashboard/builder/shared-renderer/blocks")
     const fautifs: string[] = []
     const walk = (d: string) => {
-      for (const e of readdirSync(d, { withFileTypes: true })) {
+      for (const e of readdirSync(d, { withFileTypes: true }).sort()) {
         const p = join(d, e.name)
         if (e.isDirectory()) walk(p)
         else if (/\.tsx$/.test(e.name) && !/\.test\./.test(e.name) && /<h1[ >]/.test(readFileSync(p, "utf8"))) fautifs.push(e.name)
@@ -282,7 +291,7 @@ describe("aucun lien interne ne mène nulle part", () => {
       // [slug] y attrape les pages publiques des clients, et un lien marketing
       // vers /outils doit tomber sur une vraie route, pas sur ce fourre-tout.
       const dynamique = profondeur > 0 && existsSync(dossier)
-        ? readdirSync(dossier).find(d => d.startsWith("[") && d.endsWith("]"))
+        ? readdirSync(dossier).sort().find(d => d.startsWith("[") && d.endsWith("]"))
         : undefined
       if (!dynamique) return false
       dossier = join(dossier, dynamique)

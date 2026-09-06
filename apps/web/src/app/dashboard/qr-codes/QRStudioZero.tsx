@@ -4,7 +4,7 @@
 // QR Studio « ZERO SCROLL » (refonte UX radicale, opt-in via ?zero=1).
 // Objectif : 3 zones stables (Mes QR / Aperçu / Personnaliser) tenant dans 100dvh,
 // personnalisation réduite à Style / Forme / Couleurs / Logo (+ Avancé caché),
-// lisibilité AUTOMATIQUE (un seul indicateur), supports déportés vers Print Studio.
+// lisibilité AUTOMATIQUE (un seul indicateur), supports déportés vers Atelier d'impression.
 // Réutilise les moteurs existants (QRCanvas, presets, qrScannability, qrRender) —
 // aucune logique QR réimplémentée. L'ancien QRStudio reste intact (zéro régression).
 // ─────────────────────────────────────────────────────────────────────────────
@@ -15,7 +15,8 @@ import QRCanvas from "./QRCanvas"
 import { getQRBlob, downloadBlob, buildAndDownloadPdf } from "./qrRender"
 import { composeLogo } from "./logoCompose"
 import { qrScannability, scanLevelColor } from "./qrScannability"
-import { PRESETS, PRESET_CATS, DOT_STYLES, CORNER_STYLE_LIST, DEFAULT_STYLE, type QRStyleConfig, type Preset, type QRCode } from "./QRStudio"
+import { DOT_STYLES, CORNER_STYLE_LIST, DEFAULT_STYLE, type QRStyleConfig, type QRCode } from "./QRStudio"
+import { PRESETS, PRESET_CATS, canUsePreset, type Preset } from "./presetsQr"
 import { PLAN_RANK } from "@/lib/plans"
 
 const G = "var(--accent)"
@@ -26,9 +27,7 @@ const SHELL_BG = "#0B0A08"
 const SURF = "rgba(255,255,255,0.035)"
 const LINE = "rgba(255,255,255,0.08)"
 
-// Rang de plan minimal d'un preset (répliqué de QRStudio, cf. presetMinRank).
-const presetMinRank = (plan: string) => (plan === "business" ? 2 : plan === "pro" ? 1 : 0)
-const canUsePreset = (userPlan: string, p: Preset) => PLAN_RANK[userPlan] >= presetMinRank(p.plan)
+
 
 // Mesure d'un conteneur → taille carrée d'aperçu qui s'ajuste (fit-to-view, pas de scroll).
 function useFitSize(min = 180, max = 380) {
@@ -415,7 +414,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
             {/* LOGO */}
             <section>
               <h3 style={secH}>Logo</h3>
-              <input ref={logoInput} type="file" accept="image/*" onChange={onLogoFile} style={{ display: "none" }} />
+              <input ref={logoInput} type="file" aria-label="Importer un logo" accept="image/*" onChange={onLogoFile} style={{ display: "none" }} />
               {styleConf.logoUrl ? (
                 <>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -424,7 +423,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
                     <button type="button" onClick={() => setStyleConf(s => ({ ...s, logoUrl: "" }))} title="Retirer" style={{ ...smallBtn, width: 34, padding: 0, color: "var(--danger)" }}><Trash2 size={14} /></button>
                   </div>
                   <p style={miniLabel}>Taille — plafonnée pour garantir le scan</p>
-                  <input type="range" min={10} max={22} step={1} value={styleConf.logoSize ?? 18} onChange={e => setStyleConf(s => ({ ...s, logoSize: Number(e.target.value) }))} style={{ width: "100%", accentColor: "var(--accent)" }} />
+                  <input type="range" min={10} max={22} step={1} aria-label="Taille du logo" value={styleConf.logoSize ?? 18} onChange={e => setStyleConf(s => ({ ...s, logoSize: Number(e.target.value) }))} style={{ width: "100%", accentColor: "var(--accent)" }} />
                   <p style={{ ...miniLabel, marginTop: 8 }}>Forme</p>
                   <div style={{ display: "flex", gap: 6 }}>
                     {(["square", "rounded", "circle"] as const).map(sh => <button key={sh} type="button" onClick={() => setStyleConf(s => ({ ...s, logoShape: sh }))} style={shapeBtn((styleConf.logoShape ?? "rounded") === sh)}>{sh === "circle" ? "●" : sh === "rounded" ? "▢" : "■"}</button>)}
@@ -451,7 +450,7 @@ export default function QRStudioZero({ qrCodes: initialQRCodes, userPlan, appUrl
                   </div>
                   <div>
                     <p style={miniLabel}>Marge (zone silencieuse) · {styleConf.margin ?? 10}</p>
-                    <input type="range" min={0} max={30} step={1} value={styleConf.margin ?? 10} onChange={e => setStyleConf(s => ({ ...s, margin: Number(e.target.value) }))} style={{ width: "100%", accentColor: "var(--accent)" }} />
+                    <input type="range" min={0} max={30} step={1} aria-label="Marge blanche" value={styleConf.margin ?? 10} onChange={e => setStyleConf(s => ({ ...s, margin: Number(e.target.value) }))} style={{ width: "100%", accentColor: "var(--accent)" }} />
                   </div>
                   <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: INK, cursor: "pointer" }}>
                     <input type="checkbox" checked={!!styleConf.transparent} onChange={e => setStyleConf(s => ({ ...s, transparent: e.target.checked }))} style={{ accentColor: "var(--accent)" }} /> Fond transparent

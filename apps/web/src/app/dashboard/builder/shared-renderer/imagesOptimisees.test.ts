@@ -14,7 +14,7 @@ const ICI = __dirname
 function fichiers(dossier: string): string[] {
   const out: string[] = []
   const marcher = (d: string) => {
-    for (const n of readdirSync(d)) {
+    for (const n of readdirSync(d).sort()) {
       const p = join(d, n)
       if (statSync(p).isDirectory()) marcher(p)
       else if (/\.tsx$/.test(n) && !/\.test\./.test(n)) out.push(p)

@@ -52,7 +52,7 @@ describe("les icônes ne plombent pas chaque page", () => {
 describe("images de partage : runtime et pré-génération ne se contredisent pas", () => {
   const routes: string[] = []
   const marcher = (d: string) => {
-    for (const n of readdirSync(d)) {
+    for (const n of readdirSync(d).sort()) {
       const p = join(d, n)
       if (statSync(p).isDirectory()) { if (n !== "node_modules") marcher(p) }
       else if (/^(opengraph|twitter)-image\.tsx$/.test(n)) routes.push(p)

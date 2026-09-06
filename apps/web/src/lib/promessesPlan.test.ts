@@ -17,7 +17,7 @@ import { PLANS, PLAN_COMPARISON, getPlan } from "./plans"
 const dossierSections = join(__dirname, "../app/homeSections")
 const accueil = [
   readFileSync(join(__dirname, "../app/HomeClient.tsx"), "utf8"),
-  ...readdirSync(dossierSections).map(f => readFileSync(join(dossierSections, f), "utf8")),
+  ...readdirSync(dossierSections).sort().map(f => readFileSync(join(dossierSections, f), "utf8")),
 ].join("\n")
 const contact = readFileSync(join(__dirname, "../app/contact/page.tsx"), "utf8")
 const generateur = readFileSync(join(__dirname, "../app/generateur-qr-code/GeneratorClient.tsx"), "utf8")

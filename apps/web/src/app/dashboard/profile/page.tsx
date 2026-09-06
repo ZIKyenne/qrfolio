@@ -23,113 +23,11 @@ import NextStepCard from "@/components/NextStepCard"
 import { useToast } from "@/components/Toast"
 import { erreurLisible } from "@/lib/erreurLisible"
 import { cycleDe, echeance, type LigneAbonnement } from "@/lib/cycleAbonnement"
+import { construireJournal, type ActivityEvent, type ActivityEventType } from "./journalActivite"
+import { badges as badgesDe, niveau as niveauDe, type Badge } from "./progressionProfil"
+import { SectionCard, StatPill, CountUp, SqueletteProfil, inputStyle, labelStyle, formatDate } from "./briquesProfil"
+import { ACTIVITY_CFG, ACTIVITY_FILTER_OPTS, DEFAULT_PREFS, PLAN_CFG, type PlanLimit, type Profile, type ApiKey, type RecentPage, type RecentScan, type UserPreferences, type DomainRecord, type QRStat } from "./typesProfil"
 
-// -- Types --------------------------------------------------------------------
-type Profile = {
-  id: string; email: string; full_name: string | null; username: string | null
-  bio: string | null; avatar_url: string | null; plan: string; website: string | null
-  total_pages: number; total_scans: number; created_at: string; ref_code: string | null
-}
-
-type ApiKey = {
-  id: string; name: string; key_preview: string; last_used_at: string | null
-  expires_at: string | null; is_active: boolean; created_at: string
-  calls_this_month?: number   // enrichi cote client si disponible
-}
-
-type RecentPage = {
-  id: string; title: string; slug: string; status: string
-  total_views: number; unique_views: number; updated_at: string; created_at: string
-}
-
-type RecentScan = {
-  id: string; scanned_at: string; device: string; country: string | null
-}
-
-// -- Activity Log -------------------------------------------------------------
-type ActivityEventType =
-  | "page_created" | "page_published" | "page_updated"
-  | "qr_created"   | "qr_customized"  | "qr_scanned"   | "qr_downloaded"
-  | "plan_changed" | "referral_validated" | "profile_updated"
-  | "template_used"| "api_key_created"    | "export_done"
-
-type ActivityEvent = {
-  id:           string
-  user_id?:     string
-  event_type:   ActivityEventType
-  title:        string
-  description:  string | null
-  entity_id:    string | null
-  entity_type:  string | null
-  entity_label: string | null
-  metadata:     Record<string, any>
-  created_at:   string
-}
-
-// Config d'affichage par type d'evenement
-const ACTIVITY_CFG: Record<ActivityEventType, { icon: any; color: string; bg: string }> = {
-  page_created:       { icon: FileEdit,  color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  page_published:     { icon: CheckCircle,color: "var(--success)", bg: "rgba(57,255,143,0.1)"  },
-  page_updated:       { icon: FileEdit,  color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  qr_created:         { icon: QrCode,    color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  qr_customized:      { icon: Settings,  color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  qr_scanned:         { icon: ScanLine,      color: "var(--success)",  bg: "rgba(57,255,143,0.1)"  },
-  qr_downloaded:      { icon: Download,  color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  plan_changed:       { icon: Activity,       color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  referral_validated: { icon: Award,     color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  profile_updated:    { icon: Settings,  color: "#A8A190",  bg: "rgba(138,132,120,0.1)" },
-  template_used:      { icon: Tag,       color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  api_key_created:    { icon: Key,       color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-  export_done:        { icon: Download,  color: "var(--accent)",  bg: "color-mix(in srgb, var(--accent) 10%, transparent)"  },
-}
-
-const ACTIVITY_FILTER_OPTS = [
-  { id: "all",       label: "Tout"       },
-  { id: "pages",     label: "Pages"      },
-  { id: "qr",        label: "QR Codes"   },
-  { id: "account",   label: "Compte"     },
-]
-
-// -- Preferences utilisateur --------------------------------------------------
-type UserPreferences = {
-  locale:         string   // fr | en | es | de | pt
-  timezone:       string   // IANA timezone
-  date_format:    string   // DD/MM/YYYY | MM/DD/YYYY | YYYY-MM-DD
-  time_format:    string   // 24h | 12h
-  currency:       string   // EUR | USD | GBP | CHF
-  notif_email:    boolean
-  notif_scan:     boolean
-  notif_security: boolean
-  report_weekly:  boolean
-  report_monthly: boolean
-  accent_color:   string   // hex color
-}
-
-const DEFAULT_PREFS: UserPreferences = {
-  locale: "fr", timezone: "Europe/Paris", date_format: "DD/MM/YYYY",
-  time_format: "24 heures", currency: "EUR",
-  notif_email: true, notif_scan: true, notif_security: true,
-  report_weekly: false, report_monthly: false,
-  accent_color: "#C9A84C",
-}
-
-type DomainRecord = {
-  id:            string
-  domain:        string
-  page_id:       string
-  is_primary:    boolean
-  verified:      boolean
-  verified_at:   string | null
-  vercel_status: string   // "pending" | "active" | "error"
-  vercel_error:  string | null
-  created_at:    string
-  pages:         { title: string; slug: string } | null
-}
-
-type QRStat = {
-  id: string; short_code: string; total_scans: number; status: string | null
-  pages: { title: string } | null
-}
 
 // -- Constantes ---------------------------------------------------------------
 const G = "var(--accent)"
@@ -138,83 +36,9 @@ const BG = "#080808"
 const SURF = "#111009"
 const SURF2 = "#0F0E0B"
 
-// -- Plans complets avec limites reelles --------------------------------------
-type PlanLimit = { pages: number|null; views: number|null; qr: number|null; team: number|null }
-
-// Icônes par plan (l'UI seule ; les données viennent de lib/plans)
-const PLAN_ICONS: Record<string, any> = { free: Star, starter: Activity, pro: Activity, business: Crown }
-// PLAN_CFG dérivé de la source unique (lib/plans) — même forme qu'avant pour le reste du fichier
-const PLAN_CFG: Record<string, {
-  color: string; label: string; icon: any
-  price_monthly: string; price_annual: string
-  description: string
-  limits: PlanLimit
-  features: string[]
-  badge?: string
-}> = Object.fromEntries(PLAN_LIST.map(p => [p.id, {
-  color: p.color, label: p.label, icon: PLAN_ICONS[p.id],
-  price_monthly: fmtPrice(p.priceMonthly), price_annual: fmtPrice(p.priceAnnual),
-  description: p.description, limits: p.limits, features: p.features,
-  badge: p.badge ?? undefined,
-}]))
+// Les plans, leurs limites et leurs icônes : typesProfil.ts.
 
 // -- Composants utilitaires ----------------------------------------------------
-function SectionCard({ title, icon: Icon, color = G, children, action, tag }: {
-  title: string; icon: any; color?: string; children: React.ReactNode
-  action?: React.ReactNode; tag?: string
-}) {
-  return (
-    <div style={{ background: SURF, border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px 14px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: color + "12", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Icon size={14} color={color}/>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 700, margin: 0 }}>{title}</p>
-            {tag && <span style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 4, padding: "1px 6px", fontSize: 9, color: G, fontWeight: 700 }}>{tag}</span>}
-          </div>
-        </div>
-        {action}
-      </div>
-      <div style={{ padding: "16px 20px" }}>{children}</div>
-    </div>
-  )
-}
-
-function StatPill({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
-  return (
-    <div style={{ background: SURF2, border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ width: 32, height: 32, borderRadius: 8, background: color + "15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Icon size={15} color={color}/>
-      </div>
-      <div>
-        <p style={{ color: "#F5F0E8", fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1, fontFamily: "Fraunces, serif" }}>{value}</p>
-        <p style={{ color: MUTED, fontSize: 10, margin: "2px 0 0", textTransform: "uppercase", letterSpacing: 0.8 }}>{label}</p>
-      </div>
-    </div>
-  )
-}
-
-// Compteur animé (s'incrémente de 0 à la valeur au montage) — donne de la vie au Hero
-function CountUp({ value, duration = 900 }: { value: number; duration?: number }) {
-  const [n, setN] = useState(0)
-  useEffect(() => {
-    if (!value) { setN(0); return }
-    let raf = 0
-    const start = performance.now()
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - start) / duration)
-      setN(Math.round(value * (1 - Math.pow(1 - p, 3))))
-      if (p < 1) raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [value, duration])
-  return <>{n.toLocaleString("fr-FR")}</>
-}
-
-// -- Page principale -----------------------------------------------------------
 export default function ProfilePage() {
   const [profile, setProfile]           = useState<Profile | null>(null)
   const [referrals, setReferrals]       = useState<any[]>([])
@@ -336,7 +160,7 @@ export default function ProfilePage() {
         supabase.from("api_keys").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("pages").select("id,title,slug,status,total_views,unique_views,updated_at,created_at").eq("user_id", user.id).order("updated_at", { ascending: false }).limit(5),
         supabase.from("pages").select("id,title,slug,status,total_views,unique_views,updated_at,created_at").eq("user_id", user.id),
-        supabase.from("qr_codes").select("id,short_code,total_scans,status,pages(title)").eq("user_id", user.id).order("total_scans", { ascending: false }),
+        supabase.from("qr_codes").select("id,short_code,total_scans,status,created_at,pages(title)").eq("user_id", user.id).order("total_scans", { ascending: false }),
         supabase.from("subscriptions").select("current_period_start,current_period_end,cancel_at_period_end,status").eq("user_id", user.id).maybeSingle(),
       ])
       setAbonnement((abo as LigneAbonnement | null) ?? null)
@@ -428,48 +252,7 @@ export default function ProfilePage() {
     return evts
   }
 
-  // Construire la timeline depuis les donnees existantes (fallback si activity_logs vide)
-  function buildTimelineFromData(): ActivityEvent[] {
-    const evts: ActivityEvent[] = []
-    const now = Date.now()
-    // Pages
-    for (const p of allPages) {
-      if (p.created_at) evts.push({
-        id: `page-created-${p.id}`, event_type: "page_created",
-        title: "Page créée", description: p.title,
-        entity_id: p.id, entity_type: "page", entity_label: p.title,
-        metadata: {}, created_at: p.created_at,
-      })
-      if (p.updated_at && p.updated_at !== p.created_at) {
-        const diffMs = new Date(p.updated_at).getTime() - new Date(p.created_at).getTime()
-        if (diffMs > 60000) evts.push({
-          id: `page-updated-${p.id}-${p.updated_at}`, event_type: p.status === "published" ? "page_published" : "page_updated",
-          title: p.status === "published" ? "Page publiée" : "Page modifiée",
-          description: p.title, entity_id: p.id, entity_type: "page",
-          entity_label: p.title, metadata: {}, created_at: p.updated_at,
-        })
-      }
-    }
-    // QR
-    for (const q of qrStats) {
-      evts.push({
-        id: `qr-created-${q.id}`, event_type: "qr_created",
-        title: "QR code créé", description: (q.pages as any)?.title || `/${q.short_code}`,
-        entity_id: q.id, entity_type: "qr_code", entity_label: q.short_code,
-        metadata: {}, created_at: new Date(now - Math.random()*86400000*30).toISOString(),
-      })
-    }
-    // Referrals
-    for (const r of referrals.filter(r => r.status !== "pending")) {
-      evts.push({
-        id: `ref-${r.id}`, event_type: "referral_validated",
-        title: "Parrainage valide", description: `+${r.reward_months || 1} mois Pro`,
-        entity_id: r.id, entity_type: "referral", entity_label: null,
-        metadata: {}, created_at: r.created_at,
-      })
-    }
-    return evts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-  }
+  // Le journal reconstruit vit dans journalActivite.ts.
 
   // Logger un evenement
   async function logActivity(
@@ -943,59 +726,7 @@ export default function ProfilePage() {
   const convRate       = totalViews > 0 ? Math.round((totalScansQR / totalViews) * 100) : 0
   const avgViews       = totalPages > 0 ? Math.round(totalViews / totalPages) : 0
 
-  // -- Badges + Niveau QRowg -----------------------------------
-  type Badge = {
-    id: string; emoji: string; label: string; desc: string
-    category: "pages"|"scans"|"referrals"|"plan"|"milestone"
-    color: string; unlocked: boolean
-  }
-
-  function computeBadges(): Badge[] {
-    const plan    = profile?.plan || "free"
-    const isPro   = plan === "pro" || plan === "business"
-    const isBiz   = plan === "business"
-    const isEarly = memberMonths >= 0 && memberMonths <= 6
-    return [
-      { id:"first_page",     emoji:"📄", label:"Premiere page",      desc:"Publiez votre premiere page",               category:"pages",     color:"var(--accent)", unlocked: publishedPages >= 1      },
-      { id:"builder_expert", emoji:"🏗",  label:"Builder Expert",     desc:"Publiez 10 pages differentes",              category:"pages",     color:"var(--accent)", unlocked: publishedPages >= 10     },
-      { id:"template_master",emoji:"🎨", label:"Template Master",     desc:"Creez 3 pages ou plus",                    category:"pages",     color:"var(--accent)", unlocked: totalPages >= 3          },
-      { id:"first_qr",       emoji:"⬛", label:"Premier QR",         desc:"Creez votre premier QR Code",              category:"scans",     color:"var(--accent)", unlocked: qrStats.length >= 1      },
-      { id:"scans_100",      emoji:"📡", label:"100 Scans",          desc:"Atteignez 100 scans au total",             category:"scans",     color:"var(--accent)", unlocked: totalScansQR >= 100      },
-      { id:"scans_1k",       emoji:"🚀", label:"1 000 Scans",        desc:"Atteignez 1 000 scans",                    category:"scans",     color:"var(--accent)", unlocked: totalScansQR >= 1000     },
-      { id:"scans_10k",      emoji:"💫", label:"10 000 Scans",       desc:"Top 1% des utilisateurs",                  category:"scans",     color:"var(--accent)", unlocked: totalScansQR >= 10000    },
-      { id:"first_ref",      emoji:"🤝", label:"Parrain",            desc:"Validez votre premier parrainage",         category:"referrals", color:"var(--accent)", unlocked: validatedRefs >= 1       },
-      { id:"refs_5",         emoji:"🌟", label:"Super Parrain",      desc:"Validez 5 parrainages",                    category:"referrals", color:"var(--accent)", unlocked: validatedRefs >= 5       },
-      { id:"pro_user",       emoji:"⚡", label:"Utilisateur Pro",    desc:"Passez au plan Pro ou superieur",          category:"plan",      color:"var(--accent)", unlocked: isPro                   },
-      { id:"business_user",  emoji:"👑", label:"Business",           desc:"Atteignez le plan Business",               category:"plan",      color:"var(--accent)", unlocked: isBiz                   },
-      { id:"early_user",     emoji:"🌱", label:"Early User",         desc:"Parmi les premiers utilisateurs",          category:"milestone", color:"var(--accent)", unlocked: isEarly                 },
-    ]
-  }
-
-  function computeLevel() {
-    const score = Math.min(Math.round(
-      Math.min(totalScansQR / 100, 30)   +
-      Math.min(publishedPages * 5, 25)   +
-      Math.min(validatedRefs * 5, 20)    +
-      (profile?.plan==="business"?15 : profile?.plan==="pro"?10 : profile?.plan==="starter"?5 : 0) +
-      Math.min(memberMonths, 10)
-    ), 100)
-    type LevelDef = { min:number; label:string; color:string; emoji:string; next:number }
-    const LEVELS: LevelDef[] = [
-      { min:0,  label:"Debutant",      color:"#A8A190", emoji:"🌱", next:15  },
-      { min:15, label:"Explorateur",   color:"var(--accent)", emoji:"🧭", next:30  },
-      { min:30, label:"Createur",      color:"var(--accent)", emoji:"✨", next:50  },
-      { min:50, label:"Professionnel", color:"var(--accent)", emoji:"🔥", next:70  },
-      { min:70, label:"Expert",        color:"var(--accent)", emoji:"💎", next:90  },
-      { min:90, label:"Legende",       color:"var(--accent)", emoji:"👑", next:100 },
-    ]
-    const current     = [...LEVELS].reverse().find(l => score >= l.min) ?? LEVELS[0]
-    const nextIdx     = LEVELS.findIndex(l => l.min === current.min) + 1
-    const nextLvl     = nextIdx < LEVELS.length ? LEVELS[nextIdx] : null
-    const progressPct = nextLvl
-      ? Math.round(((score - current.min) / (nextLvl.min - current.min)) * 100)
-      : 100
-    return { score, current, nextLvl, progressPct }
-  }
+  // Badges et niveau : règles pures, dans progressionProfil.ts.
 
   // -- Consommation calculee --------------------------------------------------
   const currentPlan  = profile?.plan || "free"
@@ -1031,45 +762,13 @@ export default function ProfilePage() {
       : r.status === refFilter)
   const memberMonths  = profile ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24 * 30)) : 0
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%", background: SURF2, border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 9, padding: "10px 13px", color: "#F5F0E8", fontSize: 13,
-    outline: "none", boxSizing: "border-box", fontFamily: "DM Sans, sans-serif",
-    transition: "border-color 0.15s",
+  const statsJoueur = {
+    plan: profile?.plan || "free", publishedPages, totalPages, totalQr: qrStats.length,
+    totalScansQR, validatedRefs, memberMonths,
   }
 
-  const labelStyle: React.CSSProperties = {
-    color: MUTED, fontSize: 11, display: "block", marginBottom: 5, fontWeight: 500
-  }
-
-  function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })
-  }
-
-  // -- Loading ------------------------------------------------------------------
-  if (loading) return (
-    <div style={{ minHeight: "100vh", background: "transparent", padding: "28px 28px 48px", fontFamily: "DM Sans, sans-serif" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        {/* Bandeau profil */}
-        <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 28 }}>
-          <div className="skeleton" style={{ width: 92, height: 92, borderRadius: "50%", flexShrink: 0 }} />
-          <div style={{ flex: 1 }}>
-            <div className="skeleton" style={{ width: 220, height: 30, marginBottom: 10 }} />
-            <div className="skeleton" style={{ width: 300, height: 16 }} />
-          </div>
-        </div>
-        {/* Stat pills */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 26, flexWrap: "wrap" }}>
-          {[0, 1, 2, 3].map(i => <div key={i} className="skeleton" style={{ width: 150, height: 54, borderRadius: 12 }} />)}
-        </div>
-        {/* 2 colonnes */}
-        <div className="dash-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-          <div className="skeleton" style={{ height: 420, borderRadius: 16 }} />
-          <div className="skeleton" style={{ height: 420, borderRadius: 16 }} />
-        </div>
-      </div>
-    </div>
-  )
+  // L'écran d'attente (squelette) vit dans briquesProfil.tsx.
+  if (loading) return <SqueletteProfil />
 
   // -- RENDER -------------------------------------------------------------------
   return (
@@ -1469,7 +1168,7 @@ export default function ProfilePage() {
             }>
             {(() => {
               // Fusionner activity_logs et timeline reconstituee
-              const rawEvts = activityLog.length > 0 ? activityLog : buildTimelineFromData()
+              const rawEvts = activityLog.length > 0 ? activityLog : construireJournal({ pages: allPages, qrs: qrStats, parrainages: referrals })
               const filtered = filterEvents(rawEvts)
               const paginated = filtered.slice(0, (activityPage + 1) * ACTIVITY_PAGE_SIZE)
               const hasMore  = filtered.length > paginated.length
@@ -2523,8 +2222,8 @@ export default function ProfilePage() {
           {ptab === "parrainage" && (
           <SectionCard title="Recompenses & Niveau" icon={Star} color="var(--accent)">
             {(() => {
-              const badges  = computeBadges()
-              const lvl     = computeLevel()
+              const badges  = badgesDe(statsJoueur)
+              const lvl     = niveauDe(statsJoueur)
               const earned  = badges.filter(b => b.unlocked)
               const locked  = badges.filter(b => !b.unlocked)
               const cats    = ["pages","scans","referrals","plan","milestone"] as const

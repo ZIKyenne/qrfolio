@@ -781,6 +781,17 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               </div>
             ))}
           </div>
+          {/* Le bouton d'appel à l'action : réglé dans le panneau (« Bouton » +
+              son adresse), affiché dans l'aperçu de l'éditeur — et absent de la
+              page publiée jusqu'ici. Un tableau d'offres sans bouton ne convertit
+              rien : le visiteur compare, puis n'a nulle part où aller. */}
+          {c.cta_label && (
+            <a href={extHref(c.cta_url) || "#"} target={c.cta_url ? "_blank" : undefined} rel={c.cta_url ? "noopener noreferrer" : undefined}
+              onClick={() => trackLinkClick(pageId, block.id, c.cta_url || "offer_comparison")}
+              style={{ display: "block", marginTop: 12, background: `linear-gradient(90deg,${G},${G}cc)`, color: "#080808", borderRadius: 10, padding: "13px", textAlign: "center", fontSize: 14, fontWeight: 700, textDecoration: "none", fontFamily: FONT_B }}>
+              {c.cta_label}
+            </a>
+          )}
         </div>
       ) : null
     }

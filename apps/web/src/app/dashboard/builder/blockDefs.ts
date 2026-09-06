@@ -1112,7 +1112,6 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "end_date", label: "Date et heure de fin (optionnel)", type: "datetime", hint: "Par défaut : +1h" },
       { key: "location", label: "Lieu", type: "text", placeholder: "Paris, France" },
       { key: "description", label: "Description", type: "text", placeholder: "Rejoignez-nous pour..." },
-      { key: "cta_label", label: "Bouton", type: "text", placeholder: "Ajouter à mon agenda" },
       { key: "google_url", label: "Lien Google Calendar personnalisé (optionnel)", type: "url", placeholder: "https://calendar.google.com/...", hint: "Laissez vide : les liens se construisent depuis les dates" },
     ],
   },
@@ -1165,7 +1164,6 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "spotify_url", label: "Lien Spotify", type: "url", placeholder: "https://open.spotify.com/..." },
       { key: "apple_url", label: "Lien Apple Music", type: "url", placeholder: "https://music.apple.com/..." },
       { key: "youtube_url", label: "Lien YouTube", type: "url", placeholder: "https://youtube.com/..." },
-      { key: "cta_label", label: "Bouton", type: "text", placeholder: "Écouter maintenant" },
     ],
   },
   discography: {
@@ -1220,7 +1218,6 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "spotify_url", label: "Lien Spotify", type: "url", placeholder: "https://open.spotify.com/playlist/..." },
       { key: "apple_url", label: "Lien Apple Music", type: "url", placeholder: "https://music.apple.com/..." },
       { key: "deezer_url", label: "Lien Deezer", type: "url", placeholder: "https://deezer.com/playlist/..." },
-      { key: "cta_label", label: "Bouton", type: "text", placeholder: "Écouter la playlist" },
     ],
   },
   concerts: {
@@ -1272,7 +1269,6 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "release_date", label: "Date de sortie", type: "text", placeholder: "15 juin 2025" },
       { key: "spotify_url", label: "Lien pré-save Spotify", type: "url", placeholder: "https://distrokid.com/hyperfollow/..." },
       { key: "apple_url", label: "Lien pré-save Apple Music", type: "url", placeholder: "https://..." },
-      { key: "cta_label", label: "Bouton", type: "text", placeholder: "Pré-sauvegarder sur Spotify" },
     ],
   },
   booking_request: {
@@ -3053,4 +3049,20 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       ...LAYOUT_STYLE_FIELDS,
     ],
   },
+}
+
+// ── Blocs conservés mais retirés du choix ────────────────────────────────────
+// Un bloc listé ici garde sa définition — les pages qui en contiennent déjà un
+// continuent de fonctionner — mais il n'est plus proposé à l'ajout.
+//
+// `qr_code_block` : il était proposé dans « Mise en page », configurable (taille,
+// label, afficher l'URL), dessiné dans l'aperçu de l'éditeur… et la page publiée
+// rendait `null`. Le commerçant l'ajoutait, le voyait, publiait, et son client ne
+// voyait rien. Un QR vers la page, affiché SUR cette page, n'a de toute façon
+// aucun usage pour quelqu'un qui vient de la scanner.
+export const BLOCS_MASQUES: ReadonlySet<string> = new Set<string>(["qr_code_block"])
+
+/** Les blocs réellement proposables : tout sauf les masqués. */
+export function blocsProposables(): [string, BlockDef][] {
+  return Object.entries(BLOCK_DEFS).filter(([type]) => !BLOCS_MASQUES.has(type))
 }

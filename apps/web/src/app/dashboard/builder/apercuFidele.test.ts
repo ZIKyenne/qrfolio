@@ -59,6 +59,12 @@ const partages = (() => {
   return new Set([...src.slice(i, src.indexOf("])", i)).matchAll(/"([a-z_0-9]+)"/g)].map(m => m[1]))
 })()
 
+/** Les blocs conservés mais retirés du choix : ils ne promettent plus rien. */
+const masques = (() => {
+  const i = defs.indexOf("BLOCS_MASQUES")
+  return new Set([...defs.slice(i, defs.indexOf("])", i)).matchAll(/"([a-z_0-9]+)"/g)].map(m => m[1]))
+})()
+
 const legacy = Object.keys(editeur).filter(t => t in publique && !partages.has(t))
 
 /** Les champs qu'un texte lit dans le contenu du bloc. */
@@ -93,18 +99,20 @@ function champsOfferts(type: string): Set<string> {
 // Elles attendent un arbitrage : soit la page publiée honore le réglage, soit le
 // panneau cesse de le proposer. Aucune ne doit s'ajouter d'ici là.
 const ECARTS_CONNUS: Record<string, string[]> = {
-  about:            ["collapsible"],   // « Lire la suite » : bouton visible dans l'aperçu, absent en ligne
-  add_to_calendar:  ["cta_label"],     // libellé de bouton — aucun bouton public
-  booking_button:   ["description"],   // description affichée dans l'aperçu seulement
-  embed_block:      ["type"],          // le type d'intégration ne change rien publiquement
-  instagram_feed:   ["username"],      // le @pseudo n'est montré que dans l'aperçu (choix assumé : pas de faux feed)
-  latest_release:   ["cta_label"],     // idem : bouton dans l'aperçu, pas en ligne
-  offer_comparison: ["cta_label"],     // le tableau d'offres n'a AUCUN bouton en ligne — et il a pourtant un cta_url
-  playlist_block:   ["cta_label"],
-  presave:          ["cta_label"],
-  qr_code_block:    ["label", "show_url", "size"],  // le bloc entier ne rend rien en ligne (voir plus bas)
-  rich_text:        ["size"],          // petit/normal/grand dans l'aperçu, taille fixe en ligne
+  about:          ["collapsible"],   // « Lire la suite » : bouton visible dans l'aperçu, absent en ligne
+  booking_button: ["description"],   // description affichée dans l'aperçu seulement
+  embed_block:    ["type"],          // le type d'intégration ne change rien publiquement
+  instagram_feed: ["username"],      // le @pseudo n'est montré que dans l'aperçu (choix assumé : pas de faux feed)
+  rich_text:      ["size"],          // petit/normal/grand dans l'aperçu, taille fixe en ligne
 }
+// Réglés le 6 septembre, après arbitrage :
+//  · offer_comparison — le bouton existe maintenant sur la page publiée, avec son
+//    adresse et son suivi de clic ; c'est le seul des cinq qui avait un cta_url ;
+//  · presave, latest_release, playlist_block, add_to_calendar — le champ « Bouton »
+//    configurait un bouton sans destination possible : il est retiré du panneau, et
+//    les trois « boutons » de l'aperçu qui n'étaient que des états vides gardent un
+//    libellé fixe ;
+//  · qr_code_block — retiré de la bibliothèque : il ne rendait rien en ligne.
 
 describe("l'aperçu de l'éditeur ne promet rien que la page publiée ne tienne", () => {
   it("les deux renderers couvrent le même nombre de blocs", () => {
@@ -114,7 +122,8 @@ describe("l'aperçu de l'éditeur ne promet rien que la page publiée ne tienne"
 
   it("aucun nouveau réglage visible seulement dans l'éditeur", () => {
     const trouves: Record<string, string[]> = {}
-    for (const type of legacy) {
+    // Un bloc retiré du choix ne promet plus rien : il sort de la règle.
+    for (const type of legacy.filter(t => !masques.has(t))) {
       const e = champsLus(editeur[type])
       const p = champsLus(texteePublic(type))
       const offerts = champsOfferts(type)
@@ -130,19 +139,20 @@ describe("l'aperçu de l'éditeur ne promet rien que la page publiée ne tienne"
 })
 
 describe("un bloc proposé dans la bibliothèque arrive sur la page publiée", () => {
-  // `qr_code_block` : proposé dans la catégorie « Mise en page », configurable
-  // (taille, label, afficher l'URL), dessiné dans l'aperçu — et la page publiée
-  // rend `null`. Le commerçant l'ajoute, le voit, publie, et son client ne voit
-  // rien. En attente d'arbitrage : l'afficher en ligne, ou le retirer du panneau.
-  const EXCEPTIONS = ["qr_code_block"]
-
-  it("aucun autre bloc ne rend `null` sans condition en ligne", () => {
-    const muets = legacy.filter(t => /case "[a-z_0-9]+": return null\s*$/m.test(publique[t].trim()))
-    expect(muets.sort()).toEqual(EXCEPTIONS.sort())
+  it("aucun bloc encore proposé ne rend `null` sans condition en ligne", () => {
+    const muets = legacy
+      .filter(t => /case "[a-z_0-9]+": return null\s*$/m.test(publique[t].trim()))
+      .filter(t => !masques.has(t))
+    expect(muets.sort()).toEqual([])
   })
 
-  it("celui qui reste est bien offert au choix — ce n'est pas un bloc oublié", () => {
-    expect(champsOfferts("qr_code_block").size).toBeGreaterThan(0)
+  it("qr_code_block est bien retiré du choix, mais sa définition est conservée", () => {
+    // Les pages qui en contiennent déjà un continuent de fonctionner.
+    expect(masques.has("qr_code_block")).toBe(true)
     expect(defs).toContain('label: "Bloc QR Code"')
+  })
+
+  it("rien d'autre n'a été masqué au passage", () => {
+    expect([...masques]).toEqual(["qr_code_block"])
   })
 })

@@ -11,7 +11,7 @@
   } from "lucide-react"
   import { BLOCK_CATEGORIES, PRESET_CATEGORIES, SOCIAL_NETWORKS, SOCIAL_PRESETS, SOCIAL_URL_TEMPLATES, AVAILABILITY_STATUSES, availabilityStatus, profileBadgeStyle, productBadgeStyle, priceDiscount, countdownParts, stockStatus, paymentBrand, paymentLink, starRow, openStatus, DAY_KEYS, mapEmbedUrl, calendarLinks, spotifyEmbedUrl, youtubeId, docTypeMeta, docActionLabel, announcementMeta, optionLabel, blockDecoration, BLOCK_GRADIENTS, BLOCK_RADIUS_OPTIONS, BLOCK_SHADOW_OPTIONS, BLOCK_SPACE_OPTIONS, BLOCK_WIDTH_OPTIONS, BLOCK_ANIM_OPTIONS, BLOCK_ANIM_SPEED_OPTIONS, BLOCK_HOVER_OPTIONS, BLOCK_LOOP_OPTIONS, BLOCK_INTENSITY_OPTIONS, ctaButtonStyle, CTA_ANIM_CSS, stickyActionHref, GOOGLE_FONTS, hexToRgb, rgbToHsl, contrastRatio, wcagLevel, avatarShapeStyle, avatarDecoStyle, avatarBgStyle, bannerBackgroundStyle, bannerHeight, bannerImageStyle, bannerTitleStyle, bannerOverlayLayers, bannerFrame, BANNER_ANIM_CSS, normalizePageTheme, type Block, type BlockContent, type PageTheme } from "./types"
 import { BLOCK_HINTS, PRESET_THEMES, IDENTITY_PRESETS, ACTION_PRESETS, COMMERCE_PRESETS, MEDIA_PRESETS, INFO_PRESETS, BLOCK_STYLE_PRESETS } from "./editorPresets"
-import { BLOCK_DEFS } from "./blockDefs"
+import { BLOCK_DEFS, blocsProposables } from "./blockDefs"
   import { PAGE_TEMPLATES, PAGE_TEMPLATE_GROUPS, type PageTemplate } from "./page-templates"
   import { useUndoRedo, useResize, reorderArray, cloneBlocks } from "./builderHooks"
   import { scoreBlock } from "./builderSearch"
@@ -1130,11 +1130,11 @@ import { actionClavier } from "./raccourcisClavier"
             .map(type => [type, BLOCK_DEFS[type]] as [string, (typeof BLOCK_DEFS)[string]])
         }
         if (activeCategory === "favorites") {
-          return Object.entries(BLOCK_DEFS).filter(([type]) => favorites.includes(type))
+          return blocsProposables().filter(([type]) => favorites.includes(type))
         }
-        return Object.entries(BLOCK_DEFS).filter(([, def]) => def.category === activeCategory)
+        return blocsProposables().filter(([, def]) => def.category === activeCategory)
       }
-      return Object.entries(BLOCK_DEFS)
+      return blocsProposables()
         .map(([type, def]) => ({ type, def, score: searchScore(type, def, search) }))
         .filter(({ score }) => score > 0)
         .sort((a, b) => b.score - a.score)
@@ -1883,7 +1883,7 @@ import { actionClavier } from "./raccourcisClavier"
                           const cat = BLOCK_CATEGORIES.find(c => c.id===activeCategory)
                           if (!cat) return null
                           const collapsed = isCatCollapsed(activeCategory)
-                          const catBlocks = Object.entries(BLOCK_DEFS).filter(([, def]) => def.category === activeCategory)
+                          const catBlocks = blocsProposables().filter(([, def]) => def.category === activeCategory)
                           // Sous-groupes clairs pour la section Identité (Essentiel / Image / Présentation / Confiance)
                           const IDENTITY_GROUPS: { label: string; keys: string[] }[] = [
                             { label: "Essentiel",    keys: ["profile", "bio"] },
@@ -2133,8 +2133,8 @@ import { actionClavier } from "./raccourcisClavier"
                 {(drawerCategory === "recents"
                   ? recentBlocks.filter(t => BLOCK_DEFS[t]).map(t => [t, BLOCK_DEFS[t]] as [string, (typeof BLOCK_DEFS)[string]])
                   : drawerCategory === "favorites"
-                  ? Object.entries(BLOCK_DEFS).filter(([type]) => favorites.includes(type))
-                  : Object.entries(BLOCK_DEFS).filter(([, def]) => def.category === drawerCategory)
+                  ? blocsProposables().filter(([type]) => favorites.includes(type))
+                  : blocsProposables().filter(([, def]) => def.category === drawerCategory)
                 ).map(([type, def]) => (
                   <button key={type} onClick={() => { addBlock(type); setDrawerCategory(null) }}
                     style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 9px", background: "transparent", border: "1px solid transparent", borderRadius: 8, color: MUTED, fontSize: 12, cursor: "pointer", textAlign: "left" as const, marginBottom: 2 }}

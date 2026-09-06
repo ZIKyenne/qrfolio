@@ -7,7 +7,7 @@
 
 import { BLOCK_CATEGORIES, type BlockDef } from "./types"
 import { BLOCK_HINTS } from "./editorPresets"
-import { BLOCK_DEFS } from "./blockDefs"
+import { BLOCK_DEFS, BLOCS_MASQUES, blocsProposables } from "./blockDefs"
 import { BLOCK_SYNONYMS } from "./builderSearch"
 
 // Clés localStorage EXISTANTES (BuilderV4) — réutilisées, jamais dupliquées.
@@ -139,7 +139,7 @@ export function buildLibraryItems(opts: BuildLibraryOptions = {}): BlockLibraryI
   const rec = new Set(opts.recents ?? [])
   const reco = new Set(opts.recommended ?? [])
   const catLabel = (id: string) => BLOCK_CATEGORIES.find(c => c.id === id)?.label ?? id
-  return Object.entries(BLOCK_DEFS).map(([type, def]) => {
+  return blocsProposables().map(([type, def]) => {
     const categoryLabel = catLabel(def.category)
     const hint = BLOCK_HINTS[type]?.hint
     return {
@@ -233,7 +233,7 @@ export function pushRecentType(recents: string[], type: string, max: number = RE
 }
 
 // Nettoie une liste de récents des types disparus du catalogue (§12).
-export function sanitizeRecents(recents: string[], knownTypes: string[] = Object.keys(BLOCK_DEFS)): string[] {
+export function sanitizeRecents(recents: string[], knownTypes: string[] = blocsProposables().map(([t]) => t)): string[] {
   const known = new Set(knownTypes)
   return recents.filter(t => known.has(t))
 }
@@ -253,7 +253,7 @@ const RECO_MAP: Record<RecoContext, string[]> = {
 
 // Types recommandés pour un contexte, filtrés aux blocs réellement existants. Déterministe.
 export function recommendedForContext(context: RecoContext = "default"): string[] {
-  const known = new Set(Object.keys(BLOCK_DEFS))
+  const known = new Set(blocsProposables().map(([t]) => t))
   return (RECO_MAP[context] ?? RECO_MAP.default).filter(t => known.has(t))
 }
 
@@ -270,7 +270,7 @@ const UNIVERSAL_CORE: string[] = [
 ]
 
 export function essentialsForContext(context: RecoContext = "default"): string[] {
-  const known = new Set(Object.keys(BLOCK_DEFS))
+  const known = new Set(blocsProposables().map(([t]) => t))
   const seen = new Set<string>()
   const out: string[] = []
   for (const t of [...(RECO_MAP[context] ?? RECO_MAP.default), ...UNIVERSAL_CORE]) {

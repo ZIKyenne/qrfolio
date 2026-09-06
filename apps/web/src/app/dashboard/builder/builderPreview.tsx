@@ -2070,7 +2070,6 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                 </div>
               </div>
             </div>
-            {c.cta_label && <div style={{ margin: "0 14px 14px", background: "#1DB954", borderRadius: 10, padding: "11px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#000" }}>{c.cta_label}</div>}
           </div>
         </div>
       )
@@ -2147,7 +2146,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             {c.apple_url && <div style={{ flex: 1, background: "rgba(252,60,68,0.15)", border: "1px solid rgba(252,60,68,0.3)", borderRadius: 8, padding: "9px", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#FC3C44" }}>🍎 Apple</div>}
             {c.deezer_url && <div style={{ flex: 1, background: "rgba(162,56,255,0.12)", border: "1px solid rgba(162,56,255,0.25)", borderRadius: 8, padding: "9px", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#A238FF" }}>🎶 Deezer</div>}
             {!c.spotify_url && !c.apple_url && !c.deezer_url && (
-              <div style={{ flex: 1, background: "#1DB954", borderRadius: 8, padding: "9px", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>{c.cta_label||"Écouter la playlist"}</div>
+              <div style={{ flex: 1, background: "#1DB954", borderRadius: 8, padding: "9px", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>{"Écouter la playlist"}</div>
             )}
           </div>
         </div>
@@ -2205,7 +2204,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
               {c.apple_url && <div style={{ flex: 1, background: "rgba(252,60,68,0.15)", border: "1px solid rgba(252,60,68,0.3)", borderRadius: 9, padding: "11px", fontSize: 12, fontWeight: 700, color: "#FC3C44" }}>🍎 Apple Music</div>}
             </div>
             {!c.spotify_url && !c.apple_url && (
-              <div style={{ background: "#1DB954", borderRadius: 9, padding: "12px", fontSize: 13, fontWeight: 700, color: "#000" }}>{c.cta_label||"Pré-sauvegarder sur Spotify"}</div>
+              <div style={{ background: "#1DB954", borderRadius: 9, padding: "12px", fontSize: 13, fontWeight: 700, color: "#000" }}>{"Pré-sauvegarder sur Spotify"}</div>
             )}
           </div>
         </div>
@@ -2405,7 +2404,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                     <div style={{ flex: 1, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "9px", textAlign: "center", fontSize: 11, fontWeight: 700, color: text }}>🍎 Apple</div>
                     <div style={{ flex: 1, background: "rgba(0,120,212,0.1)", border: "1px solid rgba(0,120,212,0.2)", borderRadius: 8, padding: "9px", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#0078D4" }}>📆 Outlook</div>
                   </>
-                : <div style={{ flex: 1, background: "linear-gradient(90deg,#EC4899,#F472B6)", borderRadius: 9, padding: "11px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#fff" }}>{c.cta_label||"Ajouter à mon agenda"}</div>}
+                : <div style={{ flex: 1, background: "linear-gradient(90deg,#EC4899,#F472B6)", borderRadius: 9, padding: "11px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#fff" }}>{"Ajouter à mon agenda"}</div>}
             </div>
           </div>
         </div>

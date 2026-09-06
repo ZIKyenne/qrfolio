@@ -6,15 +6,18 @@ import {
   RECENT_MAX, LIBRARY_LABEL_OVERRIDES,
 } from "./builderLibrary"
 import { BLOCK_CATEGORIES } from "./types"
-import { BLOCK_DEFS } from "./blockDefs"
+import { BLOCK_DEFS, BLOCS_MASQUES } from "./blockDefs"
 
 const ALL = buildLibraryItems()
 const find = (t: string) => ALL.find(i => i.type === t)!
 
 describe("modèle de bibliothèque", () => {
-  it("un item par bloc de BLOCK_DEFS", () => {
-    expect(ALL.length).toBe(Object.keys(BLOCK_DEFS).length)
+  it("un item par bloc proposable — les blocs masqués n'y figurent pas", () => {
+    // BLOCS_MASQUES : des blocs conservés (les pages qui en contiennent un
+    // fonctionnent) mais retirés du choix, faute d'exister sur la page publiée.
+    expect(ALL.length).toBe(Object.keys(BLOCK_DEFS).length - BLOCS_MASQUES.size)
     expect(ALL.length).toBeGreaterThan(100)
+    expect(ALL.some(i => BLOCS_MASQUES.has(i.type))).toBe(false)
   })
   it("chaque item a titre, description, catégorie, icône", () => {
     for (const i of ALL) {

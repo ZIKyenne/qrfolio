@@ -745,7 +745,6 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           {c.emoji && <span style={{ fontSize: 18, display: "block", marginBottom: 5 }}>{c.emoji}</span>}
           {c.title && <p style={{ color: primary, fontSize: 10, fontWeight: 700, margin: "0 0 5px", textTransform: "uppercase", letterSpacing: 1.5 }}>{c.title}</p>}
           <p style={{ color: text, fontSize: 12, lineHeight: 1.75, margin: 0 }}>{c.text||"Votre histoire ici..."}</p>
-          {c.collapsible==="yes" && <button style={{ color: primary, fontSize: 10, background: "none", border: "none", cursor: "pointer", padding: "5px 0 0", fontWeight: 600 }}>Lire la suite →</button>}
         </div>
       )
       case "availability": {
@@ -2602,7 +2601,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             : <div style={{ background: "rgba(201,168,76,0.06)", border: "1.5px dashed rgba(201,168,76,0.25)", borderRadius: 12, padding: "30px", textAlign: "center" }}>
                 <span style={{ fontSize: 32, display: "block", marginBottom: 10 }}>🔗</span>
                 <p style={{ color: text, fontSize: 13, fontWeight: 600, margin: "0 0 5px" }}>{c.title||"Embed externe"}</p>
-                <p style={{ color: muted, fontSize: 11, margin: 0 }}>{c.type||"Google Forms, Typeform, Notion..."}</p>
+                <p style={{ color: muted, fontSize: 11, margin: 0 }}>Google Forms, Typeform, Notion…</p>
               </div>}
         </div>
       )

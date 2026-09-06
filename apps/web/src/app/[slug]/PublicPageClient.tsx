@@ -181,11 +181,17 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       )
     }
 
-    case "rich_text": return (
+    case "rich_text": {
+      // Petit / normal / grand : le réglage existait, l'aperçu l'appliquait, la page
+      // publiée gardait une taille fixe. L'échelle respecte le plancher de lisibilité
+      // de 12 px que le reste du site s'impose (voir lisibilite.test.ts).
+      const tailles: Record<string, number> = { small: 13, normal: 14, large: 16 }
+      return (
       <div style={{ padding: "4px 24px 14px", textAlign: (c.align as any) || "left" }}>
-        <p style={{ color: MUTED, fontSize: 14, lineHeight: 1.75, margin: 0, fontFamily: FONT_B }}>{c.text}</p>
+        <p style={{ color: MUTED, fontSize: tailles[c.size] ?? 14, lineHeight: 1.75, margin: 0, fontFamily: FONT_B }}>{c.text}</p>
       </div>
-    )
+      )
+    }
 
     case "faq": return <FAQPublic c={c} theme={theme} pageId={pageId} blockId={block.id} />
 
@@ -688,6 +694,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <a href={extHref(c.url)} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, "booking")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: `${G}12`, border: `1.5px solid ${G}35`, borderRadius: 13, padding: "15px 18px", textDecoration: "none", color: G, fontSize: 15, fontWeight: 700, fontFamily: FONT_B }}>
           📅 {c.label || "Prendre rendez-vous"}
         </a>
+        {/* La description (« Consultation de 30 min », « Sur rendez-vous uniquement »…)
+            était réglable, affichée dans l'aperçu, et n'arrivait jamais au visiteur. */}
+        {c.description && <p style={{ color: MUTED, fontSize: 13, margin: "6px 0 0", textAlign: "center", fontFamily: FONT_B }}>{c.description}</p>}
       </div>
     ) : null
     case "download_file": return c.url ? (

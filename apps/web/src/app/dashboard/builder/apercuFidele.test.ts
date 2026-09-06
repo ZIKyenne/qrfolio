@@ -99,11 +99,11 @@ function champsOfferts(type: string): Set<string> {
 // Elles attendent un arbitrage : soit la page publiée honore le réglage, soit le
 // panneau cesse de le proposer. Aucune ne doit s'ajouter d'ici là.
 const ECARTS_CONNUS: Record<string, string[]> = {
-  about:          ["collapsible"],   // « Lire la suite » : bouton visible dans l'aperçu, absent en ligne
-  booking_button: ["description"],   // description affichée dans l'aperçu seulement
-  embed_block:    ["type"],          // le type d'intégration ne change rien publiquement
-  instagram_feed: ["username"],      // le @pseudo n'est montré que dans l'aperçu (choix assumé : pas de faux feed)
-  rich_text:      ["size"],          // petit/normal/grand dans l'aperçu, taille fixe en ligne
+  // Le seul restant, et c'est un choix assumé : le bloc Instagram montre le @pseudo
+  // dans l'aperçu pour que le commerçant se repère, mais la page publiée n'affiche
+  // que le vrai bouton « Me suivre » — QRowg refuse de publier de fausses vignettes
+  // de feed, qui feraient croire à une intégration qui n'existe pas.
+  instagram_feed: ["username"],
 }
 // Réglés le 6 septembre, après arbitrage :
 //  · offer_comparison — le bouton existe maintenant sur la page publiée, avec son
@@ -113,6 +113,14 @@ const ECARTS_CONNUS: Record<string, string[]> = {
 //    les trois « boutons » de l'aperçu qui n'étaient que des états vides gardent un
 //    libellé fixe ;
 //  · qr_code_block — retiré de la bibliothèque : il ne rendait rien en ligne.
+//
+// Puis le 6 septembre au soir, les quatre derniers :
+//  · booking_button — la description écrite par le commerçant arrive en ligne ;
+//  · rich_text — petit/normal/grand s'applique aussi sur la page publiée, sur une
+//    échelle qui respecte le plancher de lisibilité de 12 px ;
+//  · about (« Lire la suite ») et embed_block (« Type ») — deux réglages qui ne
+//    configuraient rien publiquement : retirés du panneau, et l'aperçu cesse de
+//    dessiner le bouton et le libellé qui n'existeraient jamais.
 
 describe("l'aperçu de l'éditeur ne promet rien que la page publiée ne tienne", () => {
   it("les deux renderers couvrent le même nombre de blocs", () => {

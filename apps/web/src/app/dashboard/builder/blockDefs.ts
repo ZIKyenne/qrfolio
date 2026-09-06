@@ -933,7 +933,6 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "url", label: "URL à intégrer", type: "url", placeholder: "https://docs.google.com/forms/..." },
       { key: "title", label: "Titre (optionnel)", type: "text", placeholder: "Mon formulaire" },
       { key: "height", label: "Hauteur (px)", type: "text", placeholder: "400" },
-      { key: "type", label: "Type", type: "select", options: ["Google Forms", "Typeform", "Notion", "Airtable", "Autre"] },
     ],
   },
   tabs_block: {
@@ -2168,7 +2167,6 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "emoji", label: "Emoji decoratif", type: "text", placeholder: "📖" },
       { key: "title", label: "Titre", type: "text", placeholder: "Mon histoire" },
       { key: "text", label: "Texte", type: "textarea", placeholder: "Racontez votre histoire..." },
-      { key: "collapsible", label: "Afficher Lire la suite", type: "select", options: ["yes", "no"] },
     ],
   },
   availability: {

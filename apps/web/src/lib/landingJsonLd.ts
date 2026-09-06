@@ -61,15 +61,15 @@ export function landingJsonLd(faq: ReadonlyArray<{ q: string; a: string }>) {
         url: `${APP_URL}/`,
         publisher: { "@id": `${APP_URL}/#organization` },
         description:
-          "Une page de profil pro (link in bio) et un QR code dynamique dont la destination se modifie sans réimpression, avec analytics et modèles par métier.",
+          "Une page de profil pro (link in bio) et un QR code dynamique dont la destination se modifie sans réimpression, avec statistiques de scan et modèles par métier.",
         featureList: [
           "Éditeur de page no-code (blocs à glisser-déposer)",
           "Modèles par métier",
           "QR code dynamique (destination modifiable après impression)",
           "Personnalisation du QR (couleurs, modules, coins, logo)",
-          "QR imprimables (Print Studio)",
+          "QR imprimables (atelier d'impression)",
           "Export PNG, JPG, PDF, SVG",
-          "Analytics : scans, vues, clics, sources, appareils",
+          "Statistiques : scans, vues, clics, sources, appareils",
           "Objectifs de conversion et redirections",
           "Messagerie et formulaires de contact chiffrés",
           "Animation d'entrée personnalisable de la page",

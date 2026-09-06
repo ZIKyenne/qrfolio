@@ -105,8 +105,8 @@ describe("la porte d'entrée publique", () => {
 
   it("est indexable : canonique, description, et pas dans les zones bloquées", () => {
     expect(CREER).toContain("alternates: { canonical: `${APP}/creer` }")
-    expect(CREER).toContain("openGraph:")
-    expect(CREER).toContain("twitter:")
+    // La carte de partage passe par ogFor() (lib/seoMeta), qui pose aussi og:locale.
+    expect(CREER).toContain("ogFor({")
     expect(ROBOTS).not.toContain('"/creer')
     expect(SITEMAP).toContain("${baseUrl}/creer")
   })

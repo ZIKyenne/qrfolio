@@ -1,4 +1,4 @@
-﻿// trackPageView.ts — tracker une vue avec source de trafic détectée
+// trackPageView.ts — tracker une vue avec source de trafic détectée
 // Appelé côté client sur les pages publiques
 import { detectTrafficSource } from "./detectTrafficSource"
 import { qrSource } from "./qrSource"

@@ -111,15 +111,15 @@ export type DefinitionTypeQr = {
   label: string
   /**
    * Redirigeable (donc modifiable après impression et suivi au scan).
-   * WiFi et contact encodent leur contenu en dur : ils doivent fonctionner sans
-   * réseau, et un mot de passe WiFi n'a rien à faire dans une redirection.
+   * Wi-Fi et contact encodent leur contenu en dur : ils doivent fonctionner sans
+   * réseau, et un mot de passe Wi-Fi n'a rien à faire dans une redirection.
    */
   dynamique: boolean
 }
 
 export const TYPES_QR: readonly DefinitionTypeQr[] = [
   { k: "link",    label: "Lien",    dynamique: true },
-  { k: "wifi",    label: "WiFi",    dynamique: false },
+  { k: "wifi",    label: "Wi-Fi",   dynamique: false },
   { k: "text",    label: "Texte",   dynamique: true },
   { k: "contact", label: "Contact", dynamique: false },
   { k: "phone",   label: "Appel",   dynamique: true },
@@ -140,7 +140,7 @@ export function estTypeDynamique(t: unknown): boolean {
  * Le libellé français d'un type enregistré.
  *
  * La liste des QR affichait la valeur brute de la colonne `kind` : « link »,
- * « wifi », « sms » — les clés techniques, en anglais, à des clients français.
+ * « Wi-Fi », « sms » — les clés techniques, en anglais, à des clients français.
  * `call` est un ancien alias de `phone` encore accepté par l'API.
  */
 export function libelleTypeQr(kind: unknown): string {

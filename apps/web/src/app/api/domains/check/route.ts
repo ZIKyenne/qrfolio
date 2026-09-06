@@ -1,4 +1,4 @@
-﻿// app/api/domains/check/route.ts
+// app/api/domains/check/route.ts
 // Vérification DNS complète: TXT ownership + CNAME + A record + accessibilité HTTP
 
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server"

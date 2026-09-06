@@ -1,4 +1,4 @@
-﻿// app/api/qr-destination/route.ts
+// app/api/qr-destination/route.ts
 // Gestion des destinations dynamiques des QR codes
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"

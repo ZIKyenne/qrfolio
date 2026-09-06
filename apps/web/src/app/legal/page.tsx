@@ -1,25 +1,26 @@
 import type { Metadata } from "next"
 import { LegalLayout } from "@/components/legal-layout"
 import { EDITEUR, identiteRenseignee } from "@/lib/editeur"
+import { ogFor } from "@/lib/seoMeta"
+import { REVISIONS, enFrancais } from "@/lib/datesContenu"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const COMPLETE = identiteRenseignee()
 
 export const metadata: Metadata = {
   title: "Mentions légales",
-  description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact.",
+  description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle, coordonnées de contact et conditions d'utilisation du site.",
   alternates: { canonical: `${APP}/legal` },
   // Tant que l'identité de l'éditeur n'est pas renseignée (lib/editeur.ts), la
   // page ne doit pas être indexée : Google ne doit pas servir une page de
   // mentions légales qui n'en contient pas.
   ...(COMPLETE ? {} : { robots: { index: false, follow: true } }),
-  openGraph: { title: "Mentions légales | QRowg", description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact.", url: `${APP}/legal`, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Mentions légales | QRowg", description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact." },
+  ...ogFor({ url: `${APP}/legal`, title: "Mentions légales | QRowg", description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle, coordonnées de contact et conditions d'utilisation du site." }),
 }
 
 export default function LegalPage() {
   return (
-    <LegalLayout title="Mentions légales" updated="15 juin 2026">
+    <LegalLayout title="Mentions légales" updated={enFrancais(REVISIONS.legal)}>
       <div className="ls">
         <h2>Éditeur du site</h2>
         {COMPLETE ? (

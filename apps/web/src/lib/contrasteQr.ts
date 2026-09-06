@@ -1,7 +1,7 @@
 // Le contraste, calculé et jugé au même endroit pour tout le produit.
 //
-// Trois ÉCHELLES incompatibles coexistaient : le QR Studio, le Print Studio et
-// le testeur public. À 4,2 pour 1, le Print Studio annonçait « conforme » et le
+// Trois ÉCHELLES incompatibles coexistaient : le QR Studio, l'atelier d'impression et
+// le testeur public. À 4,2 pour 1, l'atelier d'impression annonçait « conforme » et le
 // testeur du même site annonçait « risque ». Deux outils de QRowg donnaient au
 // même client deux réponses opposées sur le même fichier. Les seuils ci-dessous
 // ont réglé ça.

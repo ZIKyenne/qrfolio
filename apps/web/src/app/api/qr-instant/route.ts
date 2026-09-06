@@ -1,4 +1,4 @@
-// /api/qr-instant — CRUD des QR autonomes (lien, WiFi, texte, contact, appel,
+// /api/qr-instant — CRUD des QR autonomes (lien, Wi-Fi, texte, contact, appel,
 // email). STATIQUES par défaut (contenu encodé directement) ; la plupart peuvent
 // être MODIFIABLES après impression (redirigés par /q/[code], destination
 // changeable). Stockés dans `instant_qrs`.
@@ -17,8 +17,8 @@ import { uniqueShortCode } from "@/lib/shortCode"
 import { objetBorne } from "@/lib/bornes"
 
 const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email", "sms"])
-// Types éligibles au DYNAMIQUE (redirigé + expirable). WiFi et Contact restent STATIQUES : ils
-// doivent fonctionner hors ligne (auto-connexion WiFi, ajout de contact) — impossible via redirection.
+// Types éligibles au DYNAMIQUE (redirigé + expirable). Wi-Fi et Contact restent STATIQUES : ils
+// doivent fonctionner hors ligne (auto-connexion Wi-Fi, ajout de contact) — impossible via redirection.
 const DYNAMIC_KINDS = new Set(["link", "text", "phone", "call", "email"])
 // `last_scan_at` manquait : la fiche affichait « Aucun scan pour l'instant » même
 // sur un QR scanné cent fois, parce que le champ n'était simplement jamais envoyé.
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({} as any))
   const kind = String(body?.kind || "")
   const payload = typeof body?.payload === "string" ? body.payload : ""
-  // WiFi/Contact : toujours statiques, même si `dynamic` est envoyé.
+  // Wi-Fi/Contact : toujours statiques, même si `dynamic` est envoyé.
   const wantsDynamic = body?.dynamic === true && DYNAMIC_KINDS.has(kind)
   if (!KINDS.has(kind)) return NextResponse.json({ error: "Type de QR invalide" }, { status: 400 })
   // Le contenu encodé (payload) n'est requis qu'en STATIQUE : en dynamique le serveur génère

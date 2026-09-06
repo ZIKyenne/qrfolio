@@ -210,7 +210,7 @@ a.btn{display:block;height:50px;line-height:50px;border-radius:12px;background:#
 </div></body></html>`
 }
 
-// Page de contenu pour un QR instantané DYNAMIQUE non-redirigeable (texte / WiFi / contact).
+// Page de contenu pour un QR instantané DYNAMIQUE non-redirigeable (texte / Wi-Fi / contact).
 // Le QR encode /q/<code> → cette page affiche le contenu (ne fonctionne donc plus hors ligne, mais
 // devient expirable). Contenu échappé (anti-XSS).
 function instantContentHtml(kind: string, content: string, appUrl: string): string {
@@ -219,7 +219,7 @@ function instantContentHtml(kind: string, content: string, appUrl: string): stri
     title = "Note"
     inner = `<p class="txt">${escapeHtml(content)}</p>`
   } else if (kind === "wifi") {
-    title = "Réseau WiFi"
+    title = "Réseau Wi-Fi"
     const g = (k: string) => { const m = content.match(new RegExp(k + ":((?:\\\\.|[^;])*)")); return m ? m[1].replace(/\\(.)/g, "$1") : "" }
     const ssid = g("S"), pass = g("P"), type = g("T") || "WPA"
     inner = `<div class="rows">

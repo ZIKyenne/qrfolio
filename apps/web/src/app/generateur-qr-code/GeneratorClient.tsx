@@ -194,8 +194,8 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
               style={{ width: "100%", boxSizing: "border-box", resize: "vertical", minHeight: 78, background: "#0A0A0A", border: `1px solid ${BOR}`, borderRadius: 12, color: INK, fontSize: 15, padding: "12px 14px", outline: "none", fontFamily: "inherit" }} />
           )}
           {qrType === "wifi" && (<>
-            <input value={ssid} onChange={e => setSsid(e.target.value)} placeholder="Nom du réseau (SSID)" aria-label="Nom du réseau WiFi" style={{ ...field, marginBottom: 10, borderColor: ssid.trim() ? G + "80" : BOR }} />
-            {wifiEnc !== "nopass" && <input value={wifiPass} onChange={e => setWifiPass(e.target.value)} placeholder="Mot de passe" aria-label="Mot de passe WiFi" style={{ ...field, marginBottom: 10 }} />}
+            <input value={ssid} onChange={e => setSsid(e.target.value)} placeholder="Nom du réseau (SSID)" aria-label="Nom du réseau Wi-Fi" style={{ ...field, marginBottom: 10, borderColor: ssid.trim() ? G + "80" : BOR }} />
+            {wifiEnc !== "nopass" && <input value={wifiPass} onChange={e => setWifiPass(e.target.value)} placeholder="Mot de passe" aria-label="Mot de passe Wi-Fi" style={{ ...field, marginBottom: 10 }} />}
             <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: 3 }}>
               {([["WPA", "WPA/WPA2"], ["WEP", "WEP"], ["nopass", "Ouvert"]] as [WifiEnc, string][]).map(([k, l]) => (
                 <button key={k} type="button" onClick={() => setWifiEnc(k)} style={{ flex: 1, minHeight: 44, borderRadius: 8, border: "none", cursor: "pointer", background: wifiEnc === k ? G : "transparent", color: wifiEnc === k ? "#080808" : MUT, fontSize: 12, fontWeight: wifiEnc === k ? 800 : 600 }}>{l}</button>
@@ -267,7 +267,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
               <Upload size={16} /> Ajouter un logo
             </button>
           )}
-          <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onLogoFile(f); e.target.value = "" }} />
+          <input ref={logoInput} type="file" aria-label="Importer un logo" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onLogoFile(f); e.target.value = "" }} />
         </div>
       </div>
 
@@ -293,7 +293,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
                 : <div style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--success,#39FF8F)", fontSize: 12, fontWeight: 600, background: "rgba(57,255,143,0.09)", border: "1px solid rgba(57,255,143,0.28)", borderRadius: 999, padding: "6px 14px" }}><ShieldCheck size={14} /> Scannable</div>}
         </div>
 
-        {/* Option QR dynamique — liens uniquement (WiFi/Texte/Email/Appel restent statiques) */}
+        {/* Option QR dynamique — liens uniquement (Wi-Fi/Texte/Email/Appel restent statiques) */}
         {qrType === "link" && (
           <button type="button" onClick={() => { setDyn(v => !v); setErr(null) }} aria-pressed={isDyn}
             style={{ ...card, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", textAlign: "left", borderColor: isDyn ? G + "66" : BOR, background: isDyn ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.025)" }}>

@@ -1,6 +1,6 @@
 // Faire tenir le contenu dans le support — au lieu de le couper.
 //
-// LE DÉFAUT. Toutes les tailles du Print Studio sont des fractions du support
+// LE DÉFAUT. Toutes les tailles du Atelier d'impression sont des fractions du support
 // (titre = 0,11 · sous-titre = 0,05 · QR = 0,44 sur un rond, etc.). Elles ne sont
 // JAMAIS confrontées à la place réellement disponible. Sur un sticker rond de
 // 50 mm, le contenu d'un modèle demande environ 0,94 fois le diamètre alors que

@@ -1,5 +1,5 @@
-// QRowg · Print Studio — catalogue de données
-// Porté depuis « Print Studio Mobile v3 ». Aucune dépendance, aucun DOM.
+// QRowg · Atelier d'impression — catalogue de données
+// Porté depuis « Atelier d'impression Mobile v3 ». Aucune dépendance, aucun DOM.
 // Tout est en français côté libellés : ce sont les chaînes affichées à l'utilisateur.
 //
 // Vocabulaire :
@@ -7,7 +7,7 @@
 // - STYLE          : un thème graphique complet (fond, encre, accent, typos, couleurs du QR).
 // - AMBIANCE       : un regroupement de styles proposé à l'utilisateur (8 entrées).
 // - MÉTIER         : filtre d'entrée (20 entrées) — ordonne objets et ambiances.
-// - OBJECTIF (OBJ) : à quoi sert l'objet (Menu, Avis, Wifi…), pour le filtre croisé.
+// - OBJECTIF (OBJ) : à quoi sert l'objet (Menu, Avis, Wi-Fi…), pour le filtre croisé.
 
 export type Style = {
   id: string; label: string; bg: string; ink: string; accent: string;
@@ -65,7 +65,7 @@ const STYLES: Style[] = [
   { id: 'soldes', label: 'Soldes Méga', bg: '#0E1116', ink: '#FFFFFF', accent: '#FF4D4D', title: 'Bebas Neue', body: 'Montserrat', qr: '#0A0A0A', qrBg: '#FFFFFF' },
   { id: 'creator', label: 'Link in bio', bg: '#120A1F', ink: '#F2E9FF', accent: '#9B5CF6', title: 'Bebas Neue', body: 'Poppins', qr: '#7C3AED', qrBg: '#FFFFFF' },
   { id: 'portfolio', label: 'Portfolio', bg: '#15181C', ink: '#F0F2F4', accent: '#D9A441', title: 'Raleway', body: 'Montserrat', qr: '#0A0A0A', qrBg: '#F8F8F8' },
-  { id: 'wifivert', label: 'Wifi Vert', bg: '#0E1A16', ink: '#EAF4F0', accent: '#2E8B7B', title: 'Montserrat', body: 'Poppins', qr: '#0F3D2E', qrBg: '#FFFFFF' },
+  { id: 'wifivert', label: 'Wi-Fi Vert', bg: '#0E1A16', ink: '#EAF4F0', accent: '#2E8B7B', title: 'Montserrat', body: 'Poppins', qr: '#0F3D2E', qrBg: '#FFFFFF' },
   { id: 'guide', label: 'Guide Étapes', bg: '#F3F0E9', ink: '#2A2419', accent: '#3FA796', title: 'Lora', body: 'Raleway', qr: '#0A0A0A', qrBg: '#FFFFFF' },
   // ── Lot 4 : socle sobre ──
   { id: 'papier', label: 'Papier', bg: '#F7F3EA', ink: '#23201B', accent: '#23201B', title: 'Fraunces', body: 'Inter', qr: '#141210', qrBg: '#FFFFFF' },
@@ -187,7 +187,7 @@ const OBJ: Record<string, string[]> = {
   i1: ['Menu', 'Commander', 'Avis', 'Réseaux', 'Site web'],
   i2: ['Menu', 'Commander', 'Réservation', 'Avis', 'Localisation'],
   i3: ['Avis', 'Réseaux', 'Site web', 'Horaires'],
-  i4: ['Wifi', 'Menu', 'Horaires', 'Localisation'],
+  i4: ['wifi', 'Menu', 'Horaires', 'Localisation'],
   i5: ['Paiement', 'Fidélité', 'Avis'],
   i6: ['Contact', 'Réseaux', 'Site web', 'Réservation'],
   i7: ['Promo', 'Réservation', 'Contact', 'Site web'],
@@ -209,7 +209,7 @@ const ITEMS: Item[] = [
   { id: 'i1', hMm: 50, place: 'Table', scene: 'table', layout: 'stack', name: 'Sticker de table', support: 'Sticker rond', size: 'Ø 50 mm', bleed: 2, margin: 4, dpi: 300, shape: 'round', ratio: 1, plain: 'Collé sur chaque table : vos clients scannent et la carte s\'ouvre sur leur téléphone.', kicker: 'Café Lune', title: 'Menu du jour', cta: 'Voir le menu', distanceCm: 30, qrMm: 30, pal: 'premiumdark' },
   { id: 'i2', hMm: 70, place: 'Table', scene: 'comptoir', layout: 'band', name: 'Chevalet de table', support: 'Carte de table', size: '100 × 70 mm', bleed: 3, margin: 4, dpi: 300, shape: 'rect', ratio: 100 / 70, plain: 'Debout entre le sel et le poivre : menu, avis ou réservation, sans rien demander.', kicker: 'Commandez ici', title: 'À table', cta: 'Voir le menu', distanceCm: 30, qrMm: 30, pal: 'restofresh' },
   { id: 'i3', hMm: 100, place: 'Vitrine', scene: 'vitrine', layout: 'stack', name: 'Sticker vitrine', support: 'Sticker carré', size: '100 × 100 mm', bleed: 2, margin: 3, dpi: 300, shape: 'rect', ratio: 1, plain: 'Collé côté rue : les passants laissent un avis Google en dix secondes.', kicker: 'Votre avis compte', title: 'Notez-nous', cta: 'Laisser un avis', distanceCm: 60, qrMm: 60, pal: 'inkedit' },
-  { id: 'i4', hMm: 148, place: 'Vitrine', scene: 'vitrine', layout: 'band', name: 'Panneau Wifi', support: 'A6 · carte postale', size: '105 × 148 mm', bleed: 3, margin: 4, dpi: 300, shape: 'rect', ratio: 105 / 148, plain: 'Le code Wifi sans le dicter : on scanne, on est connecté.', kicker: 'Wifi gratuit', title: 'Connectez-vous', cta: 'Scannez-moi', distanceCm: 50, qrMm: 50, pal: 'corporate' },
+  { id: 'i4', hMm: 148, place: 'Vitrine', scene: 'vitrine', layout: 'band', name: 'Panneau Wi-Fi', support: 'A6 · carte postale', size: '105 × 148 mm', bleed: 3, margin: 4, dpi: 300, shape: 'rect', ratio: 105 / 148, plain: 'Le code Wi-Fi sans le dicter : on scanne, on est connecté.', kicker: 'Wi-Fi gratuit', title: 'Connectez-vous', cta: 'Scannez-moi', distanceCm: 50, qrMm: 50, pal: 'corporate' },
   { id: 'i5', hMm: 85, place: 'Comptoir', scene: 'comptoir', layout: 'stack', name: 'Carte portrait paiement', support: 'Carte portrait', size: '55 × 85 mm', bleed: 2, margin: 3, dpi: 300, shape: 'rect', ratio: 55 / 85, plain: 'Au comptoir : le client scanne, paie, repart. Aucun terminal à tendre.', kicker: 'Sans contact', title: 'Payer ici', cta: 'Profitez-en', distanceCm: 25, qrMm: 28, pal: 'luxgold' },
   { id: 'i6', hMm: 55, place: 'Main', scene: 'main', layout: 'split', name: 'Carte de visite', support: 'Carte de visite', size: '85 × 55 mm', bleed: 2, margin: 3, dpi: 300, shape: 'rect', ratio: 85 / 55, plain: 'Tout votre profil en un scan — menu, horaires, réseaux, itinéraire.', kicker: 'Café Lune', title: 'Bonjour', cta: 'Scannez-moi', distanceCm: 20, qrMm: 24, pal: 'minimal' },
   { id: 'i7', hMm: 210, place: 'Main', scene: 'main', layout: 'band', name: 'Flyer A5', support: 'Flyer A5', size: '148 × 210 mm', bleed: 3, margin: 4, dpi: 300, shape: 'rect', ratio: 148 / 210, plain: 'À distribuer : l\'offre du moment, mise à jour sans réimprimer.', kicker: 'Cette semaine', title: 'Happy hour', cta: 'Profiter de l\'offre', distanceCm: 30, qrMm: 46, pal: 'sunset' },
@@ -236,7 +236,7 @@ const MESSAGES: Record<string, string[]> = {
   i1: ['Menu du jour', 'Notre carte', 'Nos boissons', 'La suite ici'],
   i2: ['À table', 'Menu du jour', 'Commandez ici', 'Nos suggestions'],
   i3: ['Notez-nous', 'Votre avis', 'Merci !', 'Laissez un mot'],
-  i4: ['Connectez-vous', 'Wifi gratuit', 'Réseau invité', 'Bienvenue'],
+  i4: ['Connectez-vous', 'Wi-Fi gratuit', 'Réseau invité', 'Bienvenue'],
   i5: ['Payer ici', 'Paiement', 'Sans contact', 'Réglez ici'],
   i6: ['Bonjour', 'Café Lune', 'Restons en contact', 'Notre carte'],
   i7: ['Happy hour', 'Offre du moment', '-20 % ce soir', 'Nouveau menu'],
@@ -255,7 +255,7 @@ export const BRANDNAMES = ['Café Lune', 'Maison Petit', 'Studio Nord', 'Le Comp
 
 export const METIERS = ['Tout', 'Restaurant', 'Café', 'Bar', 'Boulangerie', 'Boucherie', 'Traiteur', 'Food truck', 'Caviste', 'Coiffeur', 'Beauté', 'Spa', 'Tatoueur', 'Boutique', 'Bijouterie', 'Fleuriste', 'Pharmacie', 'Hôtel', 'Artisan', 'Garage', 'Coach', 'Salle de sport', 'Immobilier', 'Freelance', 'Photographe', 'Événement']
 
-export const OBJECTIFS = ['Tout', 'Menu', 'Commander', 'Avis', 'Wifi', 'Réseaux', 'Site web', 'Paiement', 'Réservation', 'Promo', 'Contact', 'Fidélité', 'Localisation', 'Horaires']
+export const OBJECTIFS = ['Tout', 'Menu', 'Commander', 'Avis', 'wifi', 'Réseaux', 'Site web', 'Paiement', 'Réservation', 'Promo', 'Contact', 'Fidélité', 'Localisation', 'Horaires']
 
 export { STYLES, TYPOS, AMBIANCES, MET_AMB, LAYOUTS, MET, OBJ, ITEMS, MESSAGES, SIZES }
 

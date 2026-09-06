@@ -1,4 +1,4 @@
-// printPreflight.ts — Contrôle qualité AVANT impression (pré-vol) pour le QR Print Studio.
+// printPreflight.ts — Contrôle qualité AVANT impression (pré-vol) pour le Atelier d'impression.
 import { verdictContraste, luminance, rapportAffiche } from "@/lib/contrasteQr"
 // Moteur PUR (aucun React, aucun canvas) -> entièrement testable (printPreflight.test.ts).
 // L'adaptateur (PrintStudio) mesure le design réel et remplit PreflightMetrics ; ce moteur note.
@@ -96,7 +96,7 @@ export function scanDistanceM(qrSizeMm?: number | null): number | null {
   // Règle du dixième : le côté du QR vaut ~1/10 de la distance de lecture.
   // Arrondi vers le BAS, jamais vers le haut : c'est une marge de sécurité, et
   // un arrondi généreux annonçait 0,3 m pour un QR de 26 mm — 15 % de mieux que
-  // ce que la règle autorise, affiché au client dans le Print Studio.
+  // ce que la règle autorise, affiché au client dans l'atelier d'impression.
   return Math.floor(qrSizeMm / 10) / 10
 }
 
@@ -122,7 +122,7 @@ export function printPreflight(m: PreflightMetrics): PreflightResult {
 
   // 1) Contraste QR / fond — le plus critique pour la lecture.
   {
-    // Seuils partagés (lib/contrasteQr) : le Print Studio annonçait « conforme »
+    // Seuils partagés (lib/contrasteQr) : l'atelier d'impression annonçait « conforme »
     // dès 4:1 pendant que le testeur public du même site annonçait « risque ».
     const s = verdictContraste(m.contrastRatio)
     const r = m.contrastRatio

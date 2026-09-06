@@ -1,4 +1,4 @@
-﻿// app/api/domains/routes/route.ts
+// app/api/domains/routes/route.ts
 // CRUD des routes domaine → page (multi-page par domaine)
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"

@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useMemo, useState, useEffect } from "react"
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps"
@@ -149,7 +149,7 @@ export default function GeoPanel({ scans, pageViews, pages, page, periodDays }: 
 
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
           {pages.length > 1 && page == null && (
-            <select value={pageId} onChange={e => setPageId(e.target.value)}
+            <select aria-label="Filtrer par page" value={pageId} onChange={e => setPageId(e.target.value)}
               style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 9, color: "#F5F0E8", padding: "5px 10px", fontSize: 11, cursor: "pointer", outline: "none" }}>
               <option value="all">Toutes les pages</option>
               {pages.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}

@@ -237,11 +237,17 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editId ? { id: editId, ...payload } : payload),
       })
-      const d = await res.json()
-      if (d.goal) {
-        setGoals(prev => editId ? prev.map(g => g.id === editId ? d.goal : g) : [d.goal, ...prev])
-        closeForm()
+      const d = await res.json().catch(() => ({}))
+      // La réponse n'était pas lue en cas d'échec : le formulaire restait ouvert,
+      // sans un mot, et l'objectif n'existait nulle part.
+      if (!res.ok || d.error || !d.goal) {
+        toast.error(d.error || "L'objectif n'a pas pu être enregistré.")
+        return
       }
+      setGoals(prev => editId ? prev.map(g => g.id === editId ? d.goal : g) : [d.goal, ...prev])
+      closeForm()
+    } catch {
+      toast.error("Connexion impossible. Vérifiez votre réseau et réessayez.")
     } finally {
       setSaving(false)
     }
@@ -400,7 +406,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
                   </div>
                   <div>
                     <label style={fieldLabel}>Page suivie</label>
-                    <select value={fPageId} onChange={e => setFPageId(e.target.value)}
+                    <select aria-label="Page concernée par l'objectif" value={fPageId} onChange={e => setFPageId(e.target.value)}
                       style={{ ...inputStyle, cursor: "pointer" }}>
                       <option value="all">Toutes les pages</option>
                       {pages.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}

@@ -35,9 +35,9 @@ describe("le menu Créer parle la langue du commerçant", () => {
   })
 
   it("les deux entrées « QR » se distinguent par leur DESTINATION", () => {
-    // « QR de mes pages » et « Créer un QR » : impossible de choisir. La vraie
-    // différence n'est pas le mot QR, c'est où il mène.
-    expect(actions).toContain('label: "QR de mes pages"')
+    // « QR de pages » et « QR vers un lien » : la différence n'est pas le mot QR,
+    // c'est où le QR mène.
+    expect(actions).toContain('label: "QR de pages"')
     expect(actions).toContain('label: "QR vers un lien"')
     // ...et ces noms sont EXACTEMENT ceux de la barre latérale : une destination
     // ne peut pas s'appeler autrement selon l'endroit où on la croise.

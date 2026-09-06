@@ -1,7 +1,7 @@
 // Données des pages SEO « QR code par usage » (/qr-code/[usage]).
 // Source unique alimentant la route dynamique + le hub + le sitemap + le JSON-LD.
 // Contenu HONNÊTE : aucun chiffre inventé, aucun faux avis. Chaque usage renvoie à une
-// vraie capacité QRowg (QR dynamique, blocs menu / avis / WiFi / événement / vCard).
+// vraie capacité QRowg (QR dynamique, blocs menu / avis / Wi-Fi / événement / vCard).
 
 export type FaqItem = { q: string; a: string }
 
@@ -19,6 +19,11 @@ export type Vertical = {
   faq: FaqItem[]           // affiché + schéma FAQPage
   ctaTitle: string
   related: string[]        // slugs pour le maillage interne
+  /** Outil gratuit dédié à CET usage, quand il en existe un. Le bouton principal
+   *  y mène : quelqu'un qui cherche « QR code Wi-Fi » veut le générateur Wi-Fi,
+   *  pas l'éditeur de page. */
+  outilHref?: string
+  outilLabel?: string
 }
 
 export const VERTICALS: Record<string, Vertical> = {
@@ -50,7 +55,7 @@ export const VERTICALS: Record<string, Vertical> = {
     faq: [
       { q: "Puis-je changer mon menu sans réimprimer le QR code ?", a: "Oui. Le QR code est dynamique : il reste identique sur vos supports imprimés, et vous modifiez le menu autant de fois que vous voulez." },
       { q: "Puis-je mettre un QR différent par table ?", a: "Oui. Vous pouvez créer plusieurs QR codes pointant vers la même carte pour mesurer les scans par emplacement (tables, vitrine, flyers)." },
-      { q: "Est-ce que ça fonctionne pour un menu avec allergènes et photos ?", a: "Oui. Chaque plat peut afficher description, prix, allergènes et photo, organisés par catégories." },
+      { q: "Puis-je regrouper menu, réservation et avis sur un seul QR ?", a: "Oui : une page peut porter la carte, un bouton de réservation, le lien d'avis Google et le Wi-Fi. Pour la carte seule, voir la page QR code menu." },
     ],
     ctaTitle: "Créez le QR code de votre restaurant",
     related: ["menu", "avis-google", "wifi"],
@@ -126,20 +131,22 @@ export const VERTICALS: Record<string, Vertical> = {
 
   wifi: {
     slug: "wifi",
+    outilHref: "/generateur-qr-code-wifi",
+    outilLabel: "Créer mon QR code Wi-Fi",
     emoji: "📶",
-    eyebrow: "WiFi",
-    metaTitle: "QR code WiFi : connexion en un scan (gratuit)",
-    metaDescription: "Créez un QR code WiFi : vos visiteurs se connectent en un scan, sans taper le mot de passe. Fonctionne hors ligne, prêt à imprimer sur une affiche.",
-    h1: "Vos invités se connectent au WiFi en un scan",
-    intro: "Fini le mot de passe à dicter ou à afficher en gros. Un QR code WiFi connecte vos clients au réseau instantanément — idéal sur une table, un mur ou une affiche.",
+    eyebrow: "wifi",
+    metaTitle: "QR code Wi-Fi : connexion en un scan (gratuit)",
+    metaDescription: "Créez un QR code Wi-Fi : vos visiteurs se connectent en un scan, sans taper le mot de passe. Fonctionne hors ligne, prêt à imprimer sur une affiche.",
+    h1: "Vos invités se connectent au Wi-Fi en un scan",
+    intro: "Fini le mot de passe à dicter ou à afficher en gros. Un QR code Wi-Fi connecte vos clients au réseau instantanément — idéal sur une table, un mur ou une affiche.",
     problems: [
-      { pain: "Répéter le mot de passe WiFi toute la journée.", gain: "Un scan connecte automatiquement, sans rien taper." },
+      { pain: "Répéter le mot de passe Wi-Fi toute la journée.", gain: "Un scan connecte automatiquement, sans rien taper." },
       { pain: "Un mot de passe compliqué mal recopié.", gain: "Plus d'erreur de saisie : la connexion est automatique." },
       { pain: "Une affiche « mot de passe » peu esthétique.", gain: "Un QR code propre, à votre image, prêt à imprimer." },
     ],
     features: [
       { title: "Connexion automatique", desc: "Le QR encode le réseau et le mot de passe : le téléphone propose de rejoindre." },
-      { title: "Fonctionne hors ligne", desc: "Le QR WiFi encode l'info directement — aucun réseau requis au moment du scan." },
+      { title: "Fonctionne hors ligne", desc: "Le QR Wi-Fi encode l'info directement — aucun réseau requis au moment du scan." },
       { title: "Sécurité au choix", desc: "WPA/WPA2, WEP ou réseau ouvert." },
       { title: "Design imprimable", desc: "Couleurs, logo et cadre pour un affichage soigné." },
     ],
@@ -150,11 +157,11 @@ export const VERTICALS: Record<string, Vertical> = {
       "Imprimez-le sur une affichette ou un chevalet.",
     ],
     faq: [
-      { q: "Le QR code WiFi fonctionne-t-il sans connexion Internet ?", a: "Oui. Il encode directement le réseau et le mot de passe : il fonctionne même sans réseau au moment du scan, et pour toujours." },
-      { q: "Est-ce compatible iPhone et Android ?", a: "Oui. Les appareils récents iOS et Android proposent de rejoindre le réseau automatiquement au scan." },
-      { q: "Est-ce sécurisé d'afficher mon WiFi en QR code ?", a: "Le QR contient le mot de passe comme une affichette classique. Pour un usage public, prévoyez un réseau invité dédié." },
+      { q: "Le QR code Wi-Fi fonctionne-t-il sans connexion Internet ?", a: "Oui. Il encode directement le réseau et le mot de passe : il fonctionne même sans réseau au moment du scan, et pour toujours." },
+      { q: "Faut-il une application pour rejoindre le réseau ?", a: "Non. L'appareil photo d'un iPhone ou d'un Android récent lit le code et propose de rejoindre le réseau." },
+      { q: "Est-ce sécurisé d'afficher mon Wi-Fi en QR code ?", a: "Le QR contient le mot de passe comme une affichette classique. Pour un usage public, prévoyez un réseau invité dédié." },
     ],
-    ctaTitle: "Créez votre QR code WiFi",
+    ctaTitle: "Créez votre QR code Wi-Fi",
     related: ["restaurant", "menu", "evenement"],
   },
 
@@ -332,30 +339,30 @@ export const VERTICALS: Record<string, Vertical> = {
     slug: "hotel",
     emoji: "🏨",
     eyebrow: "Hôtels & locations",
-    metaTitle: "QR code hôtel & location : WiFi, services et infos",
-    metaDescription: "Créez un QR code pour votre hôtel ou location (Airbnb) : WiFi, check-in, services et recommandations en un scan. Modifiable, prêt à imprimer en chambre.",
+    metaTitle: "QR code hôtel & location : Wi-Fi, services et infos",
+    metaDescription: "Créez un QR code pour votre hôtel ou location (Airbnb) : Wi-Fi, check-in, services et recommandations en un scan. Modifiable, prêt à imprimer en chambre.",
     h1: "Tout ce que vos voyageurs doivent savoir, en un scan",
-    intro: "WiFi, check-in, équipements, règles, bonnes adresses : rassemblez toutes les infos de votre hôtel ou de votre location sur une page, accessible d'un scan en chambre.",
+    intro: "Wi-Fi, check-in, équipements, règles, bonnes adresses : rassemblez toutes les infos de votre hôtel ou de votre location sur une page, accessible d'un scan en chambre.",
     problems: [
       { pain: "Répondre sans cesse aux mêmes questions.", gain: "Toutes les réponses sur une page, en libre-service." },
       { pain: "Un livret d'accueil papier vite périmé.", gain: "Mettez à jour horaires, codes et infos en direct." },
-      { pain: "Des voyageurs qui cherchent le WiFi.", gain: "Connexion WiFi et infos essentielles en un scan." },
+      { pain: "Des voyageurs qui cherchent le Wi-Fi.", gain: "Connexion Wi-Fi et infos essentielles en un scan." },
     ],
     features: [
       { title: "Livret d'accueil numérique", desc: "Check-in, équipements, règles, contacts d'urgence." },
-      { title: "WiFi intégré", desc: "Connexion au réseau sans taper le mot de passe." },
+      { title: "Wi-Fi intégré", desc: "Connexion au réseau sans taper le mot de passe." },
       { title: "Recommandations locales", desc: "Restaurants, activités et transports autour de vous." },
       { title: "Avis en fin de séjour", desc: "Un bouton pour laisser un avis Google ou Airbnb." },
     ],
     steps: [
-      "Composez votre livret (WiFi, check-in, services, adresses).",
+      "Composez votre livret (Wi-Fi, check-in, services, adresses).",
       "Personnalisez-le à votre image.",
       "Imprimez le QR en chambre et à l'accueil.",
       "Mettez à jour les infos quand vous voulez.",
     ],
     faq: [
       { q: "Puis-je mettre à jour les infos sans réimprimer ?", a: "Oui. Le QR code reste identique ; vous modifiez le livret à tout moment (codes, horaires, contacts)." },
-      { q: "Puis-je inclure la connexion WiFi ?", a: "Oui. Ajoutez la connexion WiFi pour que vos voyageurs se connectent en un geste." },
+      { q: "Puis-je inclure la connexion Wi-Fi ?", a: "Oui. Ajoutez la connexion Wi-Fi pour que vos voyageurs se connectent en un geste." },
       { q: "Est-ce adapté aux locations Airbnb ?", a: "Tout à fait. Le livret numérique remplace le classeur papier et se met à jour à distance." },
     ],
     ctaTitle: "Créez le QR code de votre hébergement",
@@ -723,7 +730,7 @@ export const VERTICALS: Record<string, Vertical> = {
     steps: [
       "Partez d'un modèle et renseignez vos horaires et vos spécialités.",
       "Ajoutez un formulaire de commande si vous prenez des gâteaux sur commande.",
-      "Imprimez le sticker vitrine et le panneau horaires depuis le Print Studio.",
+      "Imprimez le sticker vitrine et le panneau horaires depuis l'atelier d'impression.",
       "Mettez à jour vos horaires quand vous voulez : le QR collé ne change jamais.",
     ],
     faq: [
@@ -753,7 +760,7 @@ export const VERTICALS: Record<string, Vertical> = {
       { title: "Carte par catégories", desc: "Cocktails, bières pression, vins au verre, sans alcool. Prix et descriptions modifiables à tout moment." },
       { title: "Bannière happy hour", desc: "Une offre mise en avant, que vous activez et désactivez quand vous voulez." },
       { title: "Agenda des soirées", desc: "Concerts, DJ sets, matchs diffusés — avec date, heure et lien de réservation." },
-      { title: "Sous-bocks et chevalets", desc: "Le Print Studio produit vos sous-bocks ronds et chevalets de table, avec votre QR." },
+      { title: "Sous-bocks et chevalets", desc: "L'atelier d'impression produit vos sous-bocks ronds et chevalets de table, avec votre QR." },
     ],
     steps: [
       "Choisissez un modèle bar et saisissez votre carte.",
@@ -826,7 +833,7 @@ export const VERTICALS: Record<string, Vertical> = {
     steps: [
       "Saisissez vos horaires, vos services et vos coordonnées.",
       "Ajoutez l'information de garde si vous la communiquez.",
-      "Imprimez le panneau vitrine depuis le Print Studio.",
+      "Imprimez le panneau vitrine depuis l'atelier d'impression.",
       "Actualisez la page quand la garde ou les horaires changent.",
     ],
     faq: [
@@ -889,7 +896,7 @@ export const VERTICALS: Record<string, Vertical> = {
       { title: "Commande à distance", desc: "Occasion, budget, couleurs, date de livraison et texte de la carte, en un formulaire." },
       { title: "Vos compositions", desc: "Une galerie de vos réalisations, que vous renouvelez au fil des saisons." },
       { title: "Livraison et zone couverte", desc: "Les communes que vous livrez, les délais et les tarifs." },
-      { title: "Marque-page et sticker", desc: "Le Print Studio produit le marque-page à piquer dans le bouquet et le sticker vitrine." },
+      { title: "Marque-page et sticker", desc: "L'atelier d'impression produit le marque-page à piquer dans le bouquet et le sticker vitrine." },
     ],
     steps: [
       "Présentez vos compositions et votre zone de livraison.",
@@ -912,7 +919,7 @@ export const getVertical = (slug: string): Vertical | undefined => VERTICALS[slu
 
 // Objectif d'onboarding pré-sélectionné depuis une page SEO (deep-link du CTA vers
 // /dashboard/onboarding). Les valeurs correspondent à une clé d'OBJECTIVES du wizard
-// (validé par verticals.test.ts). Les usages sans objectif clair (wifi, pdf) sont omis
+// (validé par verticals.test.ts). Les usages sans objectif clair (Wi-Fi, pdf) sont omis
 // -> le CTA reste une inscription simple. Chaîne de contenu HONNÊTE conservée.
 export const VERTICAL_OBJECTIVE: Record<string, string> = {
   restaurant: "menu", menu: "menu", "avis-google": "avis", instagram: "reseaux",

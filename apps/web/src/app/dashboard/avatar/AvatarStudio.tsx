@@ -161,7 +161,7 @@ export default function AvatarStudio({
   // Le lien porte le code d'affiliation (?ref=) : chaque inscription via ce lien
   // devient un parrainage traçable (cf. onglet Parrainage du profil).
   const SHARE_URL = refCode ? `https://qrowg.com?ref=${refCode}` : "https://qrowg.com";
-  const SHARE_TEXT = "J'ai créé mon avatar QR-art avec QRowg ✨ Crée le tien gratuitement :";
+  const SHARE_TEXT = "J'ai créé mon avatar QR-art avec QRowg ✨ Créez le vôtre gratuitement :";
   const u = encodeURIComponent(SHARE_URL);
   const t = encodeURIComponent(SHARE_TEXT);
   const shareTargets: { label: string; href: string; color: string }[] = [
@@ -325,7 +325,7 @@ export default function AvatarStudio({
                 min={0}
                 max={0.4}
                 step={0.02}
-                value={cfg.gap}
+                aria-label="Espacement" value={cfg.gap}
                 onChange={(e) => set({ gap: parseFloat(e.target.value) })}
                 className={styles.range}
               />

@@ -1,4 +1,4 @@
-﻿// app/api/domains/resolve/route.ts v2
+// app/api/domains/resolve/route.ts v2
 // Résolution hiérarchique: exact > sous-domaine > wildcard > domaine racine
 
 import { createAdminClient } from "@/lib/supabase/server"

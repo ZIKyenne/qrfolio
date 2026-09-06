@@ -28,10 +28,22 @@ export type Guide = {
   cta: string
   /** Destination du bouton. Absente = déduite du libellé (voir la route). */
   ctaHref?: string
+  /** Dernière révision de CE guide (AAAA-MM-JJ). Absente = GUIDES_UPDATED. */
+  revise?: string
 }
 
-// Date de dernière révision (Article: datePublished/dateModified). Statique = pas de Date.now().
+// Date de révision par défaut (Article: datePublished/dateModified). Statique = pas de Date.now().
 export const GUIDES_UPDATED = "2026-08-11"
+
+/** Date de révision d'un guide, en ISO. Le sitemap et le JSON-LD lisent la même. */
+export function reviseLe(slug: string): string {
+  return GUIDES[slug]?.revise || GUIDES_UPDATED
+}
+
+/** Image de partage d'un guide : la route opengraph-image du guide lui-même. */
+export function imageGuide(slug: string, app: string): string {
+  return `${app}/guides/${slug}/opengraph-image`
+}
 
 export const GUIDES: Record<string, Guide> = {
   "qr-code-dynamique-vs-statique": {
@@ -44,10 +56,10 @@ export const GUIDES: Record<string, Guide> = {
     lede: "Deux QR codes peuvent se ressembler à l'écran mais se comporter très différemment. Voici comment choisir en connaissance de cause.",
     tldr: "Un QR code statique encode son contenu directement : gratuit et permanent, mais figé. Un QR code dynamique pointe vers une adresse modifiable à tout moment, avec suivi des scans — idéal dès qu'il est imprimé ou utilisé en pro.",
     sections: [
-      { h2: "Qu'est-ce qu'un QR code statique ?", body: ["Un QR code statique contient directement l'information (une URL, un texte, un réseau WiFi). Rien n'est stocké côté serveur : le contenu est « gravé » dans les modules du QR."], bullets: ["✅ Gratuit et permanent, fonctionne même hors ligne", "✅ Aucune dépendance à un service tiers", "❌ Impossible de changer le contenu après création", "❌ Aucun suivi des scans"] },
+      { h2: "Qu'est-ce qu'un QR code statique ?", body: ["Un QR code statique contient directement l'information (une URL, un texte, un réseau Wi-Fi). Rien n'est stocké côté serveur : le contenu est « gravé » dans les modules du QR."], bullets: ["✅ Gratuit et permanent, fonctionne même hors ligne", "✅ Aucune dépendance à un service tiers", "❌ Impossible de changer le contenu après création", "❌ Aucun suivi des scans"] },
       { h2: "Qu'est-ce qu'un QR code dynamique ?", body: ["Un QR code dynamique encode une courte adresse de redirection. Au scan, un serveur compte le passage puis renvoie vers la destination réelle — que vous pouvez modifier à tout moment."], bullets: ["✅ Destination modifiable sans réimprimer", "✅ Suivi des scans (nombre, date, appareil, pays)", "✅ Un même QR peut évoluer dans le temps", "❌ Nécessite une connexion au scan et un abonnement pour rester actif"] },
       { h2: "Tableau comparatif", table: { head: ["Critère", "Statique", "Dynamique"], rows: [["Modifiable après impression", "Non", "Oui"], ["Suivi des scans", "Non", "Oui"], ["Fonctionne hors ligne", "Oui", "Redirection requise"], ["Coût", "Gratuit", "Abonnement"], ["Durée de vie", "Permanent", "Tant que l'abonnement est actif"]] } },
-      { h2: "Lequel choisir ?", bullets: ["Choisissez le statique pour un usage ponctuel, un QR WiFi ou un contenu qui ne changera jamais.", "Choisissez le dynamique dès que le QR est imprimé en quantité, doit évoluer (menu, promo, destination) ou que vous voulez mesurer son impact."] },
+      { h2: "Lequel choisir ?", bullets: ["Choisissez le statique pour un usage ponctuel, un QR Wi-Fi ou un contenu qui ne changera jamais.", "Choisissez le dynamique dès que le QR est imprimé en quantité, doit évoluer (menu, promo, destination) ou que vous voulez mesurer son impact."] },
     ],
     faq: [
       { q: "Un QR code dynamique peut-il devenir statique ?", a: "Non. La logique de redirection est différente. En revanche, vous pouvez toujours générer un nouveau QR statique séparément." },
@@ -67,9 +79,9 @@ export const GUIDES: Record<string, Guide> = {
     metaDescription: "Créer un QR code étape par étape : choisir le type, générer, personnaliser, vérifier qu'il scanne et télécharger en PNG ou SVG. Guide clair et gratuit.",
     h1: "Comment créer un QR code : le guide complet",
     lede: "Créer un QR code prend quelques minutes. Ce guide couvre les types, les étapes, la personnalisation et les pièges à éviter.",
-    tldr: "Choisissez le type de contenu (lien, WiFi, texte…), générez le QR avec un outil en ligne, personnalisez-le (couleurs, logo), vérifiez qu'il est scannable, puis téléchargez-le en PNG ou SVG pour l'imprimer.",
+    tldr: "Choisissez le type de contenu (lien, Wi-Fi, texte…), générez le QR avec un outil en ligne, personnalisez-le (couleurs, logo), vérifiez qu'il est scannable, puis téléchargez-le en PNG ou SVG pour l'imprimer.",
     sections: [
-      { h2: "1. Choisissez le type de contenu", body: ["Un QR code peut encoder différents contenus. Les plus courants :"], bullets: ["Lien vers un site, une page ou un réseau social", "Réseau WiFi (connexion automatique)", "Texte libre", "Adresse email ou numéro de téléphone", "Carte de visite (vCard)"] },
+      { h2: "1. Choisissez le type de contenu", body: ["Un QR code peut encoder différents contenus. Les plus courants :"], bullets: ["Lien vers un site, une page ou un réseau social", "Réseau Wi-Fi (connexion automatique)", "Texte libre", "Adresse email ou numéro de téléphone", "Carte de visite (vCard)"] },
       { h2: "2. Générez le QR code", body: ["Utilisez un générateur en ligne : saisissez votre contenu, le QR se génère en direct. Un générateur gratuit suffit pour un QR statique."] },
       { h2: "3. Personnalisez (sans casser la scannabilité)", body: ["Vous pouvez changer les couleurs, le style des modules et ajouter un logo au centre. Gardez toujours un contraste fort et une marge blanche."] },
       { h2: "4. Vérifiez et téléchargez", body: ["Testez le QR sur plusieurs téléphones avant impression. Téléchargez-le en PNG haute résolution ou en SVG (vectoriel) pour une impression nette à toute taille."] },
@@ -225,7 +237,7 @@ export const GUIDES: Record<string, Guide> = {
     tldr: "Un QR code statique n'expire jamais : son contenu est encodé directement. Un QR code dynamique fonctionne tant que sa redirection reste active (le plus souvent liée à un abonnement) — le QR lui-même ne « s'use » pas.",
     sections: [
       { h2: "Le QR code en lui-même ne s'use pas", body: ["Un QR code est un motif imprimé : il ne se périme pas physiquement. Ce qui peut cesser de fonctionner, c'est ce vers quoi il pointe."] },
-      { h2: "QR statique : permanent", body: ["Un QR statique encode directement son contenu (lien, texte, WiFi). Tant que l'imprimé est lisible, il fonctionne — pour toujours, sans dépendre d'un service."] },
+      { h2: "QR statique : permanent", body: ["Un QR statique encode directement son contenu (lien, texte, Wi-Fi). Tant que l'imprimé est lisible, il fonctionne — pour toujours, sans dépendre d'un service."] },
       { h2: "QR dynamique : tant que la redirection est active", body: ["Un QR dynamique passe par une adresse de redirection. Il fonctionne tant que cette redirection reste active, le plus souvent tant que l'abonnement associé est en cours. Chez QRowg, un lien dynamique ne s'arrête pas brutalement sans que vous le sachiez."] },
       { h2: "Éviter les mauvaises surprises", bullets: ["Pour un support imprimé en masse, préférez un QR dynamique chez un fournisseur pérenne.", "Vérifiez la destination avant chaque grande impression.", "Gardez la main sur la destination pour la corriger sans réimprimer.", "Pour un usage ponctuel et définitif, un QR statique gratuit suffit."] },
       { h2: "Statique ou dynamique selon la durée ?", table: { head: ["Besoin", "Recommandation"], rows: [["Contenu qui ne changera jamais", "QR statique (permanent, gratuit)"], ["Support imprimé en quantité", "QR dynamique (corrigible sans réimprimer)"], ["Suivi des scans", "QR dynamique"], ["Usage unique et court", "QR statique"]] } },

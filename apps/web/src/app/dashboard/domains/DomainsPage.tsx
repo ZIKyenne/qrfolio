@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { useConfirm } from "@/components/ui/Confirm"
@@ -238,7 +238,7 @@ export default function DomainsPage({ pages, plan }: Props) {
 
                   <div>
                     <label style={{ color:MUTED, fontSize:11, fontWeight:600, display:"block", marginBottom:6 }}>Page associée</label>
-                    <select value={fPageId} onChange={e => setFPageId(e.target.value)}
+                    <select aria-label="Page à rattacher au domaine" value={fPageId} onChange={e => setFPageId(e.target.value)}
                       style={{ width:"100%", background:"#111009", border:"1px solid rgba(255,255,255,0.1)", borderRadius:9, color:"#F5F0E8", padding:"10px 14px", fontSize:13, outline:"none", cursor:"pointer" }}>
                       {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
                     </select>

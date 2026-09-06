@@ -1,9 +1,9 @@
-﻿import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import AnalyticsShell from "./AnalyticsShell"
 import { accessibleOwnerIds } from "@/lib/team"
 
-export const metadata = { title: "Analytics — QRowg" }
+export const metadata = { title: "Statistiques — QRowg" }
 
 export default async function AnalyticsPage() {
   const supabase = await createServerSupabaseClient()

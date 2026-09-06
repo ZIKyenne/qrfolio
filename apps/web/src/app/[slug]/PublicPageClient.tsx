@@ -3,6 +3,11 @@
 import { useEffect, useState, useRef, Component } from "react"
 import { ExternalLink } from "lucide-react"
 import SmartImage from "@/components/SmartImage"
+// Les images de la page publiée : celles qui SONT le contenu (galerie, carrousel,
+// bannière sans texte incrusté) reçoivent un texte alternatif ; les vignettes
+// posées à côté d'un titre déjà lisible gardent `alt=""` — un lecteur d'écran
+// qui annonce deux fois le même nom est plus pénible qu'utile (WCAG H67).
+import { altGalerie, altDe } from "@/lib/texteAlternatif"
 import PageIntro from "@/components/pageIntro/PageIntro"
 import { trackPageView } from "@/lib/trackPageView"
 import { queueEngagement, trackDwell, queueTap } from "@/lib/trackEngagement"
@@ -335,7 +340,7 @@ function CountdownPublic({ c, TEXT, MUTED, FONT_D, FONT_B, pageId, blockId }: { 
 }
 
 // ── Carrousel plein largeur (autoplay + points + flèches + swipe) ────────────
-function CarouselPublic({ imgs, title, autoplay, MUTED, FONT_B }: { imgs: string[]; title?: string; autoplay: boolean; MUTED: string; FONT_B: string }) {
+function CarouselPublic({ imgs, legendes = [], title, autoplay, MUTED, FONT_B }: { imgs: string[]; legendes?: string[]; title?: string; autoplay: boolean; MUTED: string; FONT_B: string }) {
   const [idx, setIdx] = useState(0)
   const paused = useRef(false)
   const drag = useRef<{ x: number } | null>(null)
@@ -356,7 +361,7 @@ function CarouselPublic({ imgs, title, autoplay, MUTED, FONT_B }: { imgs: string
       <div style={{ position: "relative", overflow: "hidden", borderRadius: 14, touchAction: "pan-y" }}
         onPointerDown={onDown} onPointerUp={onUp} onMouseEnter={() => paused.current = true} onMouseLeave={() => paused.current = false}>
         <div style={{ display: "flex", transition: "transform .45s var(--mo-ease-standard)", transform: `translateX(-${idx * 100}%)` }}>
-          {imgs.map((img, i) => <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} eager={i === 0} onError={e => { e.currentTarget.style.display = 'none' }} key={i} src={img} alt="" draggable={false} style={{ width: "100%", height: 240, flexShrink: 0, objectFit: "cover", display: "block", userSelect: "none" }} />)}
+          {imgs.map((img, i) => <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} eager={i === 0} onError={e => { e.currentTarget.style.display = 'none' }} key={i} src={img} alt={altGalerie(legendes[i], title, i, imgs.length)} draggable={false} style={{ width: "100%", height: 240, flexShrink: 0, objectFit: "cover", display: "block", userSelect: "none" }} />)}
         </div>
         {imgs.length > 1 && <>
           <button onClick={() => go(idx - 1)} aria-label="Précédente" style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.45)", border: "none", color: "#fff", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
@@ -396,7 +401,7 @@ export function sizesGrille(colonnesMobile: number, colonnes: number): string {
   return `(max-width: 520px) ${Math.round(100 / m)}vw, ${Math.round(520 / d)}px`
 }
 
-function GalleryPublic({ imgs, layout, cols, colsMobile, title, MUTED, FONT_B }: { imgs: string[]; layout: string; cols: number; colsMobile: number; title?: string; MUTED: string; FONT_B: string }) {
+function GalleryPublic({ imgs, legendes = [], layout, cols, colsMobile, title, MUTED, FONT_B }: { imgs: string[]; legendes?: string[]; layout: string; cols: number; colsMobile: number; title?: string; MUTED: string; FONT_B: string }) {
   const [idx, setIdx] = useState<number | null>(null)
   useEffect(() => {
     if (idx === null) return
@@ -419,7 +424,7 @@ function GalleryPublic({ imgs, layout, cols, colsMobile, title, MUTED, FONT_B }:
         <button onClick={e => { e.stopPropagation(); setIdx(i => i === null ? i : (i - 1 + imgs.length) % imgs.length) }} aria-label="Précédente" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", fontSize: 24, cursor: "pointer" }}>‹</button>
         <button onClick={e => { e.stopPropagation(); setIdx(i => i === null ? i : (i + 1) % imgs.length) }} aria-label="Suivante" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", fontSize: 24, cursor: "pointer" }}>›</button>
       </>}
-      <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} width={1600} height={1200} sizes="100vw" src={imgs[idx]} alt="" onClick={e => e.stopPropagation()} style={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain", borderRadius: 8 }} />
+      <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} width={1600} height={1200} sizes="100vw" src={imgs[idx]} alt={altGalerie(legendes[idx], title, idx, imgs.length)} onClick={e => e.stopPropagation()} style={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain", borderRadius: 8 }} />
       {imgs.length > 1 && <span style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", color: "rgba(255,255,255,0.8)", fontSize: 12, background: "rgba(0,0,0,0.4)", borderRadius: 20, padding: "4px 12px" }}>{idx + 1} / {imgs.length}</span>}
     </div>
   )
@@ -428,7 +433,7 @@ function GalleryPublic({ imgs, layout, cols, colsMobile, title, MUTED, FONT_B }:
     <div style={{ padding: "6px 24px 16px" }}>
       {titleEl}
       <div className={`qf-cm-${colsMobile}`} style={{ columnCount: cols, columnGap: 8 }}>
-        {imgs.map((img, i) => <SmartImage key={i} src={img} alt="" width={1200} height={1600} sizes={sizesGrille(colsMobile, cols)} onClick={() => open(i)} onError={e => (e.currentTarget.style.display = "none")} style={{ width: "100%", borderRadius: 10, marginBottom: 8, display: "block", breakInside: "avoid", cursor: "zoom-in" }} />)}
+        {imgs.map((img, i) => <SmartImage key={i} src={img} alt={altGalerie(legendes[i], title, i, imgs.length)} width={1200} height={1600} sizes={sizesGrille(colsMobile, cols)} onClick={() => open(i)} onError={e => (e.currentTarget.style.display = "none")} style={{ width: "100%", borderRadius: 10, marginBottom: 8, display: "block", breakInside: "avoid", cursor: "zoom-in" }} />)}
       </div>
       {lightbox}
     </div>
@@ -442,7 +447,7 @@ function GalleryPublic({ imgs, layout, cols, colsMobile, title, MUTED, FONT_B }:
       <div className={`qf-gm-${colsMobile}`} style={{ display: "grid", gridTemplateColumns: `repeat(${effCols},1fr)`, gap }}>
         {imgs.map((img, i) => (
           <div key={i} onClick={() => open(i)} style={{ overflow: "hidden", borderRadius: rad, aspectRatio: "1", cursor: "zoom-in" }}>
-            <SmartImage src={img} alt="" width={1200} height={1200} sizes={sizesGrille(colsMobile, effCols)} onError={e => { const p = e.currentTarget.parentElement; if (p) p.style.display = "none" }} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s" }}
+            <SmartImage src={img} alt={altGalerie(legendes[i], title, i, imgs.length)} width={1200} height={1200} sizes={sizesGrille(colsMobile, effCols)} onError={e => { const p = e.currentTarget.parentElement; if (p) p.style.display = "none" }} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s" }}
               onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.08)")}
               onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
           </div>
@@ -881,9 +886,13 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
     }
 
     case "gallery": {
-      const imgs = [c.img1, c.img2, c.img3, c.img4, c.img5, c.img6, c.img7, c.img8, c.img9, c.img10, c.img11, c.img12].filter(Boolean)
-      if (imgs.length === 0) return null
-      return <GalleryPublic imgs={imgs} layout={c.layout || "grid"} cols={parseInt(c.columns || "3")} colsMobile={parseInt(c.columns_mobile || "2")} title={c.title} MUTED={MUTED} FONT_B={FONT_B} />
+      // Les légendes suivent le MÊME filtre que les photos : sans ça, retirer la
+      // photo 2 décalait toutes les descriptions d'un cran.
+      const paires = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => [c[`img${n}`], c[`img${n}_alt`]] as const).filter(([u]) => Boolean(u))
+      if (paires.length === 0) return null
+      const imgs = paires.map(([u]) => u as string)
+      const legendes = paires.map(([, a]) => (a as string) || "")
+      return <GalleryPublic imgs={imgs} legendes={legendes} layout={c.layout || "grid"} cols={parseInt(c.columns || "3")} colsMobile={parseInt(c.columns_mobile || "2")} title={c.title} MUTED={MUTED} FONT_B={FONT_B} />
     }
 
     case "video": return c.url ? (
@@ -1153,7 +1162,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           {anim && <style>{BANNER_ANIM_CSS}</style>}
           {btype === "image"
             ? (c.src
-              ? <SmartImage width={1600} height={600} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} className="qfb-media" src={c.src} alt="" style={{ width: "100%", height: h, display: "block", ...bannerImageStyle(c) }} />
+              ? <SmartImage width={1600} height={600} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} className="qfb-media" src={c.src} alt={c.cover_title ? "" : altDe(c.title, "Bannière")} style={{ width: "100%", height: h, display: "block", ...bannerImageStyle(c) }} />
               : <div className="qfb-media" style={{ width: "100%", height: h, background: `linear-gradient(135deg,${G}33,${theme.accent || "var(--success)"}22)` }} />)
             : <div className="qfb-media" style={{ width: "100%", height: h, ...bannerBg }} />}
           {anim === "shimmer" && <div className="qfb-shine" />}
@@ -1943,8 +1952,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       ) : null
     }
     case "image_carousel": {
-      const imgs = [c.img1, c.img2, c.img3, c.img4, c.img5, c.img6, c.img7, c.img8, c.img9, c.img10, c.img11, c.img12].filter(Boolean)
-      return imgs.length > 0 ? <CarouselPublic imgs={imgs} title={c.title} autoplay={c.auto_play === "yes"} MUTED={MUTED} FONT_B={FONT_B} /> : null
+      const paires = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => [c[`img${n}`], c[`img${n}_alt`]] as const).filter(([u]) => Boolean(u))
+      const imgs = paires.map(([u]) => u as string)
+      return imgs.length > 0 ? <CarouselPublic imgs={imgs} legendes={paires.map(([, a]) => (a as string) || "")} title={c.title} autoplay={c.auto_play === "yes"} MUTED={MUTED} FONT_B={FONT_B} /> : null
     }
     case "media_before_after": return (c.before_img || c.after_img) ? (
       <div style={{ padding: "10px 24px 14px" }}>

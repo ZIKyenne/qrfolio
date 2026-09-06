@@ -1,9 +1,10 @@
-﻿import { createAdminClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { jugerPage } from "@/lib/indexation"
 import PublicPageClient from "./PublicPageClient"
 import { canRemoveBranding, canPageIntro } from "@/lib/plans"
 import { serializeJsonLd } from "@/lib/jsonLd"
+import { descriptionRepli, typeOg, jsonLdPage } from "@/lib/identitePageSeo"
 import { normalizePageTheme } from "../dashboard/builder/types"
 import type { Metadata } from "next"
 
@@ -49,11 +50,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Le titre part dans le gabarit « %s | QRowg » du layout racine : on le borne pour
   // que l'ensemble tienne dans la fenêtre de la SERP (~60 caractères).
   const title = clampTitle(page.seo_title || page.title)
-  // Repli quand l'utilisateur n'a pas rempli sa description : une phrase correcte
-  // et vouvoyée plutôt qu'un gabarit non accentué de trente caractères.
-  const who = (profile?.full_name || page.title || "").trim()
-  const description = page.seo_description
-    || `${who} sur QRowg : coordonnées, horaires, liens et contact réunis sur une seule page, accessible en un scan.`.slice(0, 158)
+  // Repli quand l'utilisateur n'a pas rempli sa description. Le nom lu par Google
+  // est celui de la PAGE, pas celui du titulaire du compte : l'extrait d'une
+  // brasserie annonçait « Jean Dupont sur QRowg ».
+  const identite = { titre: page.title, nomProprietaire: profile?.full_name, templateId: (page as any).template_id }
+  const description = page.seo_description || descriptionRepli(identite)
   // Image OG : custom si definie, sinon image de marque generee dynamiquement par page.
   const image = page.og_image_url || `${APP_URL}/${page.slug}/og`
   const url = `${APP_URL}/${page.slug}`
@@ -62,7 +63,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     openGraph: {
-      type: "profile",
+      // « profile » ne vaut que pour la page d'une personne : un restaurant était
+      // annoncé comme un profil personnel sur tous les réseaux.
+      type: typeOg((page as any).template_id),
+      locale: "fr_FR",
       url,
       title,
       description,
@@ -112,21 +116,17 @@ export default async function PublicPage({ params }: Props) {
     .eq("is_visible", true)
     .order("position")
 
-  // JSON-LD structured data
+  // JSON-LD : le type d'entité suit le MODÈLE d'origine (établissement, personne,
+  // organisation). Tout était déclaré « Person », brasseries comprises.
   const profile = page.profiles as any
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ProfilePage",
-    "name": page.title,
-    "description": page.seo_description || `Page de ${profile?.full_name || page.title}`,
-    "url": `${APP_URL}/${page.slug}`,
-    "mainEntity": {
-      "@type": "Person",
-      "name": profile?.full_name || page.title,
-      "url": `${APP_URL}/${page.slug}`,
-      ...(profile?.avatar_url ? { "image": profile.avatar_url } : {}),
-    }
-  }
+  const jsonLd = jsonLdPage({
+    titre: page.title,
+    nomProprietaire: profile?.full_name,
+    templateId: (page as any).template_id,
+    descriptionSeo: page.seo_description,
+    url: `${APP_URL}/${page.slug}`,
+    image: profile?.avatar_url ?? null,
+  })
 
   // Le tracking est fait côté client dans PublicPageClient
   // pour détecter la vraie source (referrer HTTP, paramètres UTM)

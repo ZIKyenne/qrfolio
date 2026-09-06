@@ -1,4 +1,4 @@
-﻿// app/api/goals/route.ts
+// app/api/goals/route.ts
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { serverError } from "@/lib/apiError"

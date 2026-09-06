@@ -1,4 +1,4 @@
-// handoff.ts — Passage d'une PAGE PUBLIÉE au Print Studio, sans rien resaisir.
+// handoff.ts — Passage d'une PAGE PUBLIÉE au Atelier d'impression, sans rien resaisir.
 //
 // Le studio sait déjà tout faire : 92 objets imprimables, filtres métier × objectif,
 // pré-vol, PDF vectoriel. Ce qui manquait, c'est le PONT — jusqu'ici l'utilisateur
@@ -88,7 +88,7 @@ const MESSAGE_BY_OBJECTIF: Record<string, string> = {
   "Horaires": "Infos & horaires",
   "Réseaux": "Suivez-nous",
   "Contact": "Nous contacter",
-  "Wifi": "Wi-Fi gratuit",
+  "Wi-Fi": "Wi-Fi gratuit",
 }
 
 const CTA_BY_OBJECTIF: Record<string, string> = {
@@ -99,7 +99,7 @@ const CTA_BY_OBJECTIF: Record<string, string> = {
   "Horaires": "Scannez pour tout savoir",
   "Réseaux": "Scannez pour nous suivre",
   "Contact": "Scannez pour nous écrire",
-  "Wifi": "Scannez pour vous connecter",
+  "Wi-Fi": "Scannez pour vous connecter",
 }
 
 // ── Objets conseillés ────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ const SUGGESTED: Record<string, { id: string; label: string; why: string }[]> = 
   "Artisan":     [{ id: "i6", label: "Carte de visite", why: "Laissée après l'intervention" }, { id: "i3", label: "Sticker vitrine", why: "Sur le véhicule" }, { id: "i7", label: "Flyer A5", why: "En boîte aux lettres du quartier" }],
   "Salle de sport": [{ id: "i8", label: "Affiche A3", why: "Au mur, près des machines" }, { id: "i6", label: "Carte de visite", why: "À l'accueil" }, { id: "i3", label: "Sticker vitrine", why: "Sur la porte d'entrée" }],
   "Événement":   [{ id: "i8", label: "Affiche A3", why: "Sur les lieux de passage" }, { id: "i7", label: "Flyer A5", why: "Distribué à l'entrée" }, { id: "i6", label: "Carte de visite", why: "Glissée dans les sacs" }],
-  "Hôtel":       [{ id: "i4", label: "Panneau Wifi", why: "Le premier réflexe d'un client" }, { id: "i2", label: "Chevalet de table", why: "Dans chaque chambre" }, { id: "i16", label: "Panneau horaires", why: "À la réception" }],
+  "Hôtel":       [{ id: "i4", label: "Panneau Wi-Fi", why: "Le premier réflexe d'un client" }, { id: "i2", label: "Chevalet de table", why: "Dans chaque chambre" }, { id: "i16", label: "Panneau horaires", why: "À la réception" }],
   "Boutique":    [{ id: "i3", label: "Sticker vitrine", why: "Vu depuis la rue" }, { id: "i9", label: "Marque-page", why: "Glissé dans chaque sac" }, { id: "i6", label: "Carte de visite", why: "À côté de la caisse" }],
   "Fleuriste":   [{ id: "i3", label: "Sticker vitrine", why: "Sur la devanture" }, { id: "i9", label: "Marque-page", why: "Piqué dans le bouquet" }, { id: "i6", label: "Carte de visite", why: "À l'encaissement" }],
   "Immobilier":  [{ id: "i6", label: "Carte de visite", why: "Remise en visite" }, { id: "i8", label: "Affiche A3", why: "En vitrine d'agence" }, { id: "i7", label: "Flyer A5", why: "En boîte aux lettres" }],

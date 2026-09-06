@@ -51,7 +51,7 @@ export function SharedLeadFormView(props: SharedLeadFormViewProps) {
               {f.type === "textarea"
                 ? <textarea {...common} placeholder={f.placeholder || f.label} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
                 : f.type === "select"
-                  ? <select {...common}>{(f.options || []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+                  ? <select {...common} aria-label={f.label}>{(f.options || []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
                   : <input {...common} type={f.type} autoComplete={f.autocomplete} placeholder={f.placeholder || f.label} />}
             </div>
           )

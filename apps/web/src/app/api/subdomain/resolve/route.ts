@@ -1,4 +1,4 @@
-﻿// app/api/subdomain/resolve/route.ts
+// app/api/subdomain/resolve/route.ts
 // Résout un sous-domaine username.qrowg.com → page principale de l'utilisateur
 
 import { createAdminClient } from "@/lib/supabase/server"

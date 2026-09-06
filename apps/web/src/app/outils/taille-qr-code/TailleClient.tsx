@@ -8,7 +8,7 @@ const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BOR = "rgba
 const CONTENUS = [
   { cle: "court", nom: "Une adresse courte", exemple: "qrowg.com/marcel", caracteres: 24 },
   { cle: "moyen", nom: "Une adresse longue", exemple: "un lien avec des paramètres de suivi", caracteres: 110 },
-  { cle: "long", nom: "Un texte ou une fiche contact", exemple: "vCard, réseau WiFi, message", caracteres: 300 },
+  { cle: "long", nom: "Un texte ou une fiche contact", exemple: "vCard, réseau Wi-Fi, message", caracteres: 300 },
 ]
 
 const cm = (mm: number) => `${Math.round(mm) / 10} cm`.replace(".", ",")

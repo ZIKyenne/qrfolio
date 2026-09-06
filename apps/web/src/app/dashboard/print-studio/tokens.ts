@@ -1,4 +1,4 @@
-// QRowg · Print Studio — jetons de design (réduits à ce qui est RÉELLEMENT consommé).
+// QRowg · Atelier d'impression — jetons de design (réduits à ce qui est RÉELLEMENT consommé).
 //
 // Aligné sur le design system de l'app (globals.css) : les couleurs référencent les VARIABLES CSS
 // (`var(--bg)`, `var(--ink)`, `var(--accent)`…) → impossible de dériver du reste du dashboard, et

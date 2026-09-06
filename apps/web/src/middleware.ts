@@ -1,4 +1,4 @@
-﻿// middleware.ts — Routing domaines custom + sous-domaines *.qrowg.com
+// middleware.ts — Routing domaines custom + sous-domaines *.qrowg.com
 
 import { NextRequest, NextResponse } from "next/server"
 

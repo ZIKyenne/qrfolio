@@ -122,7 +122,7 @@ export default function TesteurClient() {
           L&apos;image reste sur votre appareil : rien n&apos;est envoyé sur Internet.
         </p>
         <input
-          ref={inputRef} type="file" accept="image/*" hidden
+          ref={inputRef} type="file" aria-label="Choisir l'image du QR code à tester" accept="image/*" hidden
           onChange={e => { const f = e.target.files?.[0]; if (f) void analyser(f) }}
         />
       </div>

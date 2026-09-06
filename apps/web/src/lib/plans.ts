@@ -38,7 +38,7 @@ export type ExportFormat = "png" | "jpg" | "pdf" | "svg"
 
 // Capacités (fonctionnalités débloquées) par plan — utilisées pour le gating
 export type PlanCaps = {
-  printStudio: boolean      // accès à QR Print Studio (éditeur imprimables)
+  printStudio: boolean      // accès à Atelier d'impression (éditeur imprimables)
   qrStudioAdvanced: boolean // personnalisation QR avancée (couleurs / modules / coins)
   ai: boolean               // génération + rapports IA
   removeBranding: boolean   // retire le "Créé avec QRowg" des pages publiques
@@ -82,16 +82,16 @@ export const PLANS: Record<PlanId, Plan> = {
     limits: { pages: 1, views: null, qr: 3, dyn: 1, team: null },
     caps: { printStudio: false, qrStudioAdvanced: false, ai: false, removeBranding: false, pageIntro: false, exportFormats: ["png"],
             dynStatsDetaillees: false, dynDomaineMarque: false, dynSecuriteLien: false, dynEnMasse: false, apiAppelsMois: null },
-    features: ["1 page", "Vues illimitées", "3 QR autonomes, dont 1 modifiable", "Branding QRowg visible", "Analytics de base"],
+    features: ["1 page", "Vues illimitées", "3 QR autonomes, dont 1 modifiable", "Branding QRowg visible", "Statistiques de base"],
     perks: [
       { text: "1 page publiée", included: true },
       { text: "Vues illimitées — un QR imprimé ne s'arrête jamais", included: true },
       { text: "3 QR autonomes", included: true },
       { text: "1 QR modifiable après impression", included: true },
       { text: "Hébergement inclus", included: true },
-      { text: "Analytics de base", included: true },
+      { text: "Statistiques de base", included: true },
       { text: "Branding QRowg visible", included: true },
-      { text: "QR Print Studio", included: false },
+      { text: "Atelier d'impression", included: false },
       { text: "Domaine personnalisé", included: false },
       { text: "Génération IA", included: false },
     ],
@@ -107,7 +107,7 @@ export const PLANS: Record<PlanId, Plan> = {
     limits: { pages: 10, views: null, qr: 30, dyn: 20, team: null },
     caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"],
             dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: false, apiAppelsMois: 1000 },
-    features: ["10 pages", "Vues illimitées", "30 QR, dont 20 modifiables après impression", "Sans branding", "QR Print Studio complet", "Domaine personnalisé", "Statistiques détaillées"],
+    features: ["10 pages", "Vues illimitées", "30 QR, dont 20 modifiables après impression", "Sans branding", "atelier d'impression complet", "Domaine personnalisé", "Statistiques détaillées"],
     perks: [
       { text: "10 pages — de quoi couvrir un commerce entier", included: true },
       { text: "Vues illimitées", included: true },
@@ -118,7 +118,7 @@ export const PLANS: Record<PlanId, Plan> = {
       { text: "Branding QRowg retiré", included: true },
       { text: "Domaine personnalisé", included: true },
       { text: "QR Studio complet", included: true },
-      { text: "QR Print Studio complet", included: true },
+      { text: "atelier d'impression complet", included: true },
       { text: "Tous les modèles", included: true },
       { text: "Génération IA + rapports", included: true },
       { text: "Export PNG / JPG / PDF HD / SVG", included: true },
@@ -146,7 +146,7 @@ export const PLANS: Record<PlanId, Plan> = {
       { text: "Marque blanche", included: true },
       { text: "Domaine personnalisé", included: true },
       { text: "Statistiques détaillées + export", included: true },
-      { text: "QR Studio et Print Studio complets", included: true },
+      { text: "QR Studio et atelier d'impression complets", included: true },
       { text: "Génération IA illimitée + rapports", included: true },
       { text: "Accès API · 10 000 appels / mois", included: true }, // = caps.apiAppelsMois (testé)
       { text: "Support prioritaire", included: true },
@@ -219,7 +219,7 @@ export const PLAN_COMPARISON: { feature: string; free: string; pro: string; busi
   { feature: "…dont modifiables après impression", free: "1", pro: "20", business: "Illimités" },
   { feature: "Changer la destination sans réimprimer", free: "1 QR", pro: "20 QR", business: "Illimité" },
   { feature: "QR Studio", free: "—", pro: "Complet", business: "Complet" },
-  { feature: "QR Print Studio", free: "—", pro: "Complet", business: "Complet" },
+  { feature: "Atelier d'impression", free: "—", pro: "Complet", business: "Complet" },
   { feature: "Statistiques", free: "De base", pro: "Détaillées + export", business: "Détaillées + export" },
   { feature: "Mot de passe · expiration d'un lien", free: "—", pro: "✓", business: "✓" },
   { feature: "Import CSV en masse", free: "—", pro: "—", business: "✓" },

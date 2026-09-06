@@ -9,6 +9,7 @@
 // connecté qui atterrit ici y trouve simplement ses modèles.
 import type { Metadata } from "next"
 import TemplatesGallery from "../dashboard/templates/page"
+import { ogFor } from "@/lib/seoMeta"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 
@@ -19,8 +20,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESC,
   alternates: { canonical: `${APP}/creer` },
-  openGraph: { title: `${TITLE} | QRowg`, description: DESC, url: `${APP}/creer`, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: `${TITLE} | QRowg`, description: DESC },
+  ...ogFor({ url: `${APP}/creer`, title: `${TITLE} | QRowg`, description: DESC }),
 }
 
 export default function CreerPage() {

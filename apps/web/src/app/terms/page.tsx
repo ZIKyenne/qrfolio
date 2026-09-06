@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { LegalLayout } from "@/components/legal-layout"
 import { PLANS } from "@/lib/plans"
+import { ogFor } from "@/lib/seoMeta"
+import { REVISIONS, enFrancais } from "@/lib/datesContenu"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 
@@ -8,13 +10,12 @@ export const metadata: Metadata = {
   title: "Conditions d’utilisation",
   description: "Conditions générales d’utilisation de QRowg : accès au service, abonnements, obligations de chacun, résiliation et responsabilité.",
   alternates: { canonical: `${APP}/terms` },
-  openGraph: { title: "Conditions d’utilisation | QRowg", description: "Conditions générales d’utilisation de QRowg : accès au service, abonnements, obligations de chacun, résiliation et responsabilité.", url: `${APP}/terms`, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Conditions d’utilisation | QRowg", description: "Conditions générales d’utilisation de QRowg : accès au service, abonnements, obligations de chacun, résiliation et responsabilité." },
+  ...ogFor({ url: `${APP}/terms`, title: "Conditions d’utilisation | QRowg", description: "Conditions générales d’utilisation de QRowg : accès au service, abonnements, obligations de chacun, résiliation et responsabilité." }),
 }
 
 export default function TermsPage() {
   return (
-    <LegalLayout title="Conditions d’utilisation" updated="15 juin 2026">
+    <LegalLayout title="Conditions d’utilisation" updated={enFrancais(REVISIONS.terms)}>
       <div className="ls">
         <p>Les présentes conditions générales régissent l’accès et l’utilisation du service QRowg. En utilisant QRowg, vous les acceptez intégralement.</p>
       </div>

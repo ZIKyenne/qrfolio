@@ -182,7 +182,7 @@ export default function NotFound() {
           <div className="ql-grid">
             {[
               ["✦ Fonctionnalités", "/features"],
-              ["✦ Templates",       "/#templates"],
+              ["✦ Modèles",       "/#templates"],
               ["✦ Tarifs",          "/#pricing"],
               ["✦ Contact",         "/contact"],
             ].map(([label, href]) => (

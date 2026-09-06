@@ -1,4 +1,4 @@
-﻿// app/api/domains/route.ts
+// app/api/domains/route.ts
 // CRUD domaines + vérification DNS + ajout Vercel
 
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server"

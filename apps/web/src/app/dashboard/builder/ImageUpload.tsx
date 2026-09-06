@@ -128,7 +128,7 @@ export default function ImageUpload({ value, onChange, label, hint, cropAspect }
               <div style={{ width: 40, height: 40, background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
                 <ImageIcon size={18} color={G} />
               </div>
-              <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 4px" }}>Clique ou glisse une image</p>
+              <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: "0 0 4px" }}>Cliquez ou déposez une image</p>
               <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{hint || "JPG, PNG, WebP — max 5MB"}</p>
             </>
           )}
@@ -168,7 +168,7 @@ export default function ImageUpload({ value, onChange, label, hint, cropAspect }
       )}
 
       {error && <p style={{ color: "var(--danger)", fontSize: 11, margin: "6px 0 0" }}>{error}</p>}
-      <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
+      <input ref={inputRef} type="file" aria-label="Choisir une image" accept="image/*" style={{ display: "none" }}
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = "" }} />
 
       {/* Bibliothèque d'images : réutiliser une image déjà uploadée (pas de ré-upload) */}
@@ -233,7 +233,7 @@ export default function ImageUpload({ value, onChange, label, hint, cropAspect }
                     )}
                   </div>}
             </div>
-            <input ref={libInputRef} type="file" accept="image/*" style={{ display: "none" }}
+            <input ref={libInputRef} type="file" aria-label="Ajouter une image à la bibliothèque" accept="image/*" style={{ display: "none" }}
               onChange={e => { const f = e.target.files?.[0]; if (f) handleLibFile(f); e.target.value = "" }} />
           </div>
         </div>

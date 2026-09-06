@@ -1,4 +1,4 @@
-﻿// app/api/qr-stats/[id]/route.ts
+// app/api/qr-stats/[id]/route.ts
 // Stats performance d'un QR code : totaux, évolution, top device/pays, sparkline
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"

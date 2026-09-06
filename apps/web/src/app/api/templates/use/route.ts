@@ -64,14 +64,14 @@ export async function POST(req: NextRequest) {
     if (slug && typeof slug === "string" && slug.trim()) {
       const s = slug.trim().toLowerCase()
       if (!/^[a-z0-9_-]{2,60}$/.test(s)) {
-        return NextResponse.json({ error: "Slug invalide (2-60 caracteres, lettres minuscules, chiffres et tirets)." }, { status: 400 })
+        return NextResponse.json({ error: "Adresse invalide : 2 à 60 caractères, minuscules, chiffres et tirets." }, { status: 400 })
       }
       if (RESERVED.includes(s)) {
-        return NextResponse.json({ error: "Ce slug est reserve, choisis-en un autre." }, { status: 400 })
+        return NextResponse.json({ error: "Cette adresse est réservée, choisissez-en une autre." }, { status: 400 })
       }
       const { data: taken } = await supabaseAdmin.from("pages").select("id").eq("slug", s).maybeSingle()
       if (taken) {
-        return NextResponse.json({ error: "Ce slug est deja pris." }, { status: 409 })
+        return NextResponse.json({ error: "Cette adresse est déjà prise." }, { status: 409 })
       }
       cleanSlug = s
     } else {
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     if (pageError || !newPage) {
       const isDup = pageError?.message?.includes("pages_slug_unique") || pageError?.code === "23505"
       return NextResponse.json(
-        { error: isDup ? "Ce slug est deja pris." : (pageError?.message || "Erreur creation page") },
+        { error: isDup ? "Cette adresse est déjà prise." : (pageError?.message || "Erreur creation page") },
         { status: isDup ? 409 : 500 }
       )
     }

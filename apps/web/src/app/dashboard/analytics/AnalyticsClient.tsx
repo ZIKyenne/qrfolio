@@ -219,7 +219,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
           </div>
           {/* Filtre page */}
           <select
-            value={selectedPage}
+            aria-label="Filtrer par page" value={selectedPage}
             onChange={e => setSelectedPage(e.target.value)}
             style={{
               background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
@@ -240,7 +240,7 @@ export default function AnalyticsClient({ profile, pages, recentScans, recentVie
 
         {/* ── Onglets (handoff #1) : Vue d'ensemble · Contenu · Audience · Supports · Rapports ── */}
         {!noData && (
-          <div role="tablist" aria-label="Sections analytics" style={{ position: "sticky", top: 0, zIndex: 20, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", borderBottom: "1px solid #1c1917", marginBottom: 16, background: "color-mix(in srgb, #0d0b09 92%, transparent)", backdropFilter: "blur(10px)", paddingTop: 6, marginTop: -6 }}>
+          <div role="tablist" aria-label="Sections des statistiques" style={{ position: "sticky", top: 0, zIndex: 20, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", borderBottom: "1px solid #1c1917", marginBottom: 16, background: "color-mix(in srgb, #0d0b09 92%, transparent)", backdropFilter: "blur(10px)", paddingTop: 6, marginTop: -6 }}>
             {[
               { id: "overview" as const, label: "Vue d'ensemble", icon: <BarChart2 size={14} /> },
               { id: "content" as const, label: "Contenu", icon: <Layers size={14} /> },

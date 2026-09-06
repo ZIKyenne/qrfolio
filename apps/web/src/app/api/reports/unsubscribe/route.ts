@@ -1,4 +1,4 @@
-﻿// app/api/reports/unsubscribe/route.ts
+// app/api/reports/unsubscribe/route.ts
 // Désabonnement one-click depuis le lien email
 
 import { createAdminClient } from "@/lib/supabase/server"

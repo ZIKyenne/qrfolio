@@ -231,11 +231,17 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "columns", label: "Colonnes (ordinateur)", type: "select", options: ["2", "3", "4"] },
       { key: "columns_mobile", label: "Colonnes (mobile)", type: "select", options: ["1", "2", "3"] },
       { key: "img1", label: "Photo 1", type: "image" },
+      { key: "img1_alt", label: "Photo 1 — description", type: "text", placeholder: "Ce que montre la photo", hint: "Lu à voix haute par les lecteurs d'écran, et affiché si la photo ne charge pas." },
       { key: "img2", label: "Photo 2", type: "image" },
+      { key: "img2_alt", label: "Photo 2 — description", type: "text", placeholder: "Ce que montre la photo", hint: "Lu à voix haute par les lecteurs d'écran, et affiché si la photo ne charge pas." },
       { key: "img3", label: "Photo 3", type: "image" },
+      { key: "img3_alt", label: "Photo 3 — description", type: "text", placeholder: "Ce que montre la photo", hint: "Lu à voix haute par les lecteurs d'écran, et affiché si la photo ne charge pas." },
       { key: "img4", label: "Photo 4", type: "image" },
+      { key: "img4_alt", label: "Photo 4 — description", type: "text", placeholder: "Ce que montre la photo", hint: "Lu à voix haute par les lecteurs d'écran, et affiché si la photo ne charge pas." },
       { key: "img5", label: "Photo 5", type: "image" },
+      { key: "img5_alt", label: "Photo 5 — description", type: "text", placeholder: "Ce que montre la photo", hint: "Lu à voix haute par les lecteurs d'écran, et affiché si la photo ne charge pas." },
       { key: "img6", label: "Photo 6", type: "image" },
+      { key: "img6_alt", label: "Photo 6 — description", type: "text", placeholder: "Ce que montre la photo", hint: "Lu à voix haute par les lecteurs d'écran, et affiché si la photo ne charge pas." },
     ],
   },
   video: {
@@ -1320,7 +1326,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     defaultContent: { title: "Demander un devis", button_label: "Envoyer ma demande" },
     fields: [
       { key: "title", label: "Titre", type: "text", placeholder: "Demander un devis" },
-      { key: "description", label: "Description", type: "text", placeholder: "Réponse sous 24h" },
+      { key: "description", label: "Description", type: "text", placeholder: "Réponse sous 24 heures" },
       { key: "show_phone", label: "Champ téléphone", type: "select", options: ["yes", "no"] },
       { key: "show_budget", label: "Champ budget", type: "select", options: ["yes", "no"] },
       { key: "show_deadline", label: "Champ délai souhaité", type: "select", options: ["no", "yes"] },
@@ -1429,7 +1435,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "s1_icon", label: "Service 1 — Emoji", type: "text", placeholder: "♿" },
       { key: "s1_label", label: "Service 1 — Texte", type: "text", placeholder: "Accès PMR" },
       { key: "s2_icon", label: "Service 2 — Emoji", type: "text", placeholder: "📶" },
-      { key: "s2_label", label: "Service 2 — Texte", type: "text", placeholder: "WiFi gratuit" },
+      { key: "s2_label", label: "Service 2 — Texte", type: "text", placeholder: "Wi-Fi gratuit" },
       { key: "s3_icon", label: "Service 3 — Emoji", type: "text", placeholder: "🚗" },
       { key: "s3_label", label: "Service 3 — Texte", type: "text", placeholder: "Parking gratuit" },
       { key: "s4_icon", label: "Service 4 — Emoji", type: "text", placeholder: "🐶" },
@@ -1447,7 +1453,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
 
   // ── Nouveaux blocs Infos ─────────────────────────────────────────────────
   stats_block: {
-    label: "Statistiques", description: "Chiffres clés de ton activité",
+    label: "Statistiques", description: "Chiffres clés de votre activité",
     icon: "📊", color: "#38BDF8", category: "info",
     defaultContent: { s1_value: "500+", s1_label: "Clients", s1_icon: "👥", s2_value: "4.9/5", s2_label: "Note moyenne", s2_icon: "⭐", s3_value: "10 ans", s3_label: "Expérience", s3_icon: "🏆" },
     fields: [
@@ -1515,7 +1521,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "s1_desc", label: "Étape 1 — Description", type: "text", placeholder: "Prenez rendez-vous" },
       { key: "s2_icon", label: "Étape 2 — Emoji", type: "text", placeholder: "📋" },
       { key: "s2_title", label: "Étape 2 — Titre", type: "text", placeholder: "Devis" },
-      { key: "s2_desc", label: "Étape 2 — Description", type: "text", placeholder: "Sous 24h" },
+      { key: "s2_desc", label: "Étape 2 — Description", type: "text", placeholder: "Sous 24 heures" },
       { key: "s3_icon", label: "Étape 3 — Emoji", type: "text", placeholder: "🚀" },
       { key: "s3_title", label: "Étape 3 — Titre", type: "text", placeholder: "Réalisation" },
       { key: "s3_desc", label: "Étape 3 — Description", type: "text", placeholder: "Livraison dans les délais" },
@@ -1535,7 +1541,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "v1_desc", label: "Valeur 1 — Description", type: "text", placeholder: "Honnêteté et clarté" },
       { key: "v2_icon", label: "Valeur 2 — Emoji", type: "text", placeholder: "⚡" },
       { key: "v2_label", label: "Valeur 2 — Nom", type: "text", placeholder: "Réactivité" },
-      { key: "v2_desc", label: "Valeur 2 — Description", type: "text", placeholder: "Réponse en 24h" },
+      { key: "v2_desc", label: "Valeur 2 — Description", type: "text", placeholder: "Réponse en 24 heures" },
       { key: "v3_icon", label: "Valeur 3 — Emoji", type: "text", placeholder: "🎯" },
       { key: "v3_label", label: "Valeur 3 — Nom", type: "text", placeholder: "Qualité" },
       { key: "v3_desc", label: "Valeur 3 — Description", type: "text", placeholder: "Excellence à chaque étape" },
@@ -1584,10 +1590,10 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   engagements: {
     label: "Engagements", description: "Engagements qualité et promesses",
     icon: "✅", color: "#38BDF8", category: "info",
-    defaultContent: { title: "Nos engagements", e1: "✅ Réponse sous 24h", e2: "✅ Satisfaction garantie", e3: "✅ Sans engagement" },
+    defaultContent: { title: "Nos engagements", e1: "✅ Réponse sous 24 heures", e2: "✅ Satisfaction garantie", e3: "✅ Sans engagement" },
     fields: [
       { key: "title", label: "Titre section", type: "text", placeholder: "Nos engagements" },
-      { key: "e1", label: "Engagement 1", type: "text", placeholder: "✅ Réponse sous 24h" },
+      { key: "e1", label: "Engagement 1", type: "text", placeholder: "✅ Réponse sous 24 heures" },
       { key: "e2", label: "Engagement 2", type: "text", placeholder: "✅ Satisfaction garantie" },
       { key: "e3", label: "Engagement 3", type: "text", placeholder: "✅ Sans engagement" },
       { key: "e4", label: "Engagement 4", type: "text", placeholder: "✅ Livraison rapide" },
@@ -1935,7 +1941,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     ],
   },
   sticky_bar: {
-    label: "Barre d'actions (mobile)", description: "Barre fixe en bas de l ecran sur la page publiee",
+    label: "Barre d'actions (mobile)", description: "Barre fixe en bas de l'écran sur la page publiée",
     icon: "📌", color: "#C9A84C", category: "actions",
     defaultContent: { a1_type: "call", a1_value: "", a2_type: "whatsapp", a2_value: "", a3_type: "directions", a3_value: "", a4_type: "none", a4_value: "", a5_type: "none", a5_value: "", bar_style: "blur", show_labels: "yes", position: "bottom" },
     fields: [
@@ -2018,7 +2024,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     fields: [
       { key: "label", label: "Texte", type: "text", placeholder: "Réserver une table" },
       { key: "url", label: "Lien réservation", type: "url", placeholder: "https://..." },
-      { key: "platform", label: "Plateforme", type: "select", options: ["TheFork","Zenchef","OpenTable","URL personnalisee"] },
+      { key: "platform", label: "Plateforme", type: "select", options: ["TheFork","Zenchef","OpenTable","Adresse personnalisée"] },
     ],
   },
   order_online: {
@@ -2106,11 +2112,11 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
   booking_button: {
     label: "Prendre rendez-vous", description: "Réservation autre que Calendly",
     icon: "📅", color: "#38BDF8", category: "actions",
-    defaultContent: { label: "Prendre rendez-vous", platform: "URL personnalisee" },
+    defaultContent: { label: "Prendre rendez-vous", platform: "Adresse personnalisée" },
     fields: [
       { key: "label", label: "Texte", type: "text", placeholder: "Prendre rendez-vous" },
       { key: "url", label: "Lien", type: "url", placeholder: "https://..." },
-      { key: "platform", label: "Plateforme", type: "select", options: ["Google Calendar","Microsoft Bookings","HubSpot Meetings","URL personnalisee"] },
+      { key: "platform", label: "Plateforme", type: "select", options: ["Google Calendar","Microsoft Bookings","HubSpot Meetings","Adresse personnalisée"] },
       { key: "description", label: "Description", type: "text", placeholder: "30 min - Gratuit" },
     ],
   },
@@ -2133,7 +2139,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     fields: [
       { key: "label", label: "Texte", type: "text", placeholder: "Demander un devis" },
       { key: "url", label: "Lien formulaire", type: "url", placeholder: "https://..." },
-      { key: "description", label: "Description", type: "text", placeholder: "Reponse sous 24h" },
+      { key: "description", label: "Description", type: "text", placeholder: "Reponse sous 24 heures" },
     ],
   },
 
@@ -2176,13 +2182,13 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     fields: [
       { key: "status", label: "Statut", type: "select", options: ["available", "busy", "closed"] },
       { key: "available_from", label: "Disponible a partir de", type: "text", placeholder: "Janvier 2025" },
-      { key: "message", label: "Message", type: "text", placeholder: "Ouvert aux missions freelance", suggestions: ["Ouvert aux nouvelles missions", "Disponible cette semaine", "Complet ce mois-ci", "Réponse en moins de 24h"] },
+      { key: "message", label: "Message", type: "text", placeholder: "Ouvert aux missions freelance", suggestions: ["Ouvert aux nouvelles missions", "Disponible cette semaine", "Complet ce mois-ci", "Réponse en moins de 24 heures"] },
       { key: "cta_label", label: "Bouton", type: "text", placeholder: "Prendre contact" },
       { key: "cta_url", label: "Lien", type: "url", placeholder: "https://calendly.com/..." },
     ],
   },
   journey: {
-    label: "Parcours", description: "Chiffres cles et faits marquants",
+    label: "Parcours", description: "Chiffres clés et faits marquants",
     icon: "🚀", color: "#C9A84C", category: "identity",
     defaultContent: { title: "Mon parcours", line_1: "🚀 5 ans d expérience", line_2: "💼 20+ projets realises" },
     fields: [
@@ -2625,7 +2631,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     icon: "📢", color: "#C9A84C", category: "freeform",
     defaultContent: { separator: "✦", speed: "24", direction: "Gauche", size: "14" },
     fields: [
-      { key: "items", label: "Messages (séparés par une virgule)", type: "text", placeholder: "Ouvert 7j/7, Terrasse chauffée, Wi-Fi gratuit", suggestions: ["Ouvert 7j/7, Terrasse chauffée, Wi-Fi gratuit", "Fait maison, Produits locaux, Sans additifs", "Devis gratuit, Intervention 24h, Garantie 2 ans"] },
+      { key: "items", label: "Messages (séparés par une virgule)", type: "text", placeholder: "Ouvert 7j/7, Terrasse chauffée, Wi-Fi gratuit", suggestions: ["Ouvert 7j/7, Terrasse chauffée, Wi-Fi gratuit", "Fait maison, Produits locaux, Sans additifs", "Devis gratuit, Intervention en 24 heures, Garantie 2 ans"] },
       { key: "separator", label: "Symbole de séparation", type: "text", placeholder: "✦" },
       { key: "bg_color", label: "Couleur du bandeau", type: "color" },
       { key: "text_color", label: "Couleur du texte", type: "color" },
@@ -2952,7 +2958,7 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
       { key: "title", label: "Titre", type: "text", placeholder: "Sur place" },
       { key: "i1_emoji", label: "Icône 1 — Emoji", type: "text", placeholder: "📶" },
       { key: "i1_image", label: "Icône 1 — Image", type: "image" },
-      { key: "i1_label", label: "Icône 1 — Texte", type: "text", placeholder: "Wi-Fi" },
+      { key: "i1_label", label: "Icône 1 — Texte", type: "text", placeholder: "wifi" },
       { key: "i2_emoji", label: "Icône 2 — Emoji", type: "text", placeholder: "🌿" },
       { key: "i2_image", label: "Icône 2 — Image", type: "image" },
       { key: "i2_label", label: "Icône 2 — Texte", type: "text", placeholder: "Terrasse" },

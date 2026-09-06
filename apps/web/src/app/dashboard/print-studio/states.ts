@@ -1,4 +1,4 @@
-// QRowg · Print Studio — machine d'états et structure d'écran. Porté depuis Print Studio Mobile v3.
+// QRowg · Atelier d'impression — machine d'états et structure d'écran. Porté depuis Atelier d'impression Mobile v3.
 //
 // Principe : aucun canvas libre. L'utilisateur choisit un objet, puis ajuste dans trois
 // volets fermés par défaut. Deux taps suffisent pour obtenir le fichier.

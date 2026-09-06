@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import {
@@ -200,7 +200,7 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
             {/* Domaine racine */}
             <div>
               <label style={{ color:MUTED, fontSize:11, fontWeight:600, display:"block", marginBottom:5 }}>Domaine racine</label>
-              <select value={fDomain} onChange={e => setFDomain(e.target.value)}
+              <select aria-label="Domaine" value={fDomain} onChange={e => setFDomain(e.target.value)}
                 style={{ width:"100%", background:"#111009", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"#F5F0E8", padding:"9px 12px", fontSize:12, outline:"none", cursor:"pointer", boxSizing:"border-box" as const }}>
                 {verifiedDomains.map(d => (
                   <option key={d.id} value={d.domain}>{d.domain}</option>
@@ -211,7 +211,7 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
             {/* Sous-domaine */}
             <div>
               <label style={{ color:MUTED, fontSize:11, fontWeight:600, display:"block", marginBottom:5 }}>Sous-domaine</label>
-              <select value={fSub} onChange={e => setFSub(e.target.value)}
+              <select aria-label="Sous-domaine" value={fSub} onChange={e => setFSub(e.target.value)}
                 style={{ width:"100%", background:"#111009", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"#F5F0E8", padding:"9px 12px", fontSize:12, outline:"none", cursor:"pointer", boxSizing:"border-box" as const, marginBottom:6 }}>
                 <option value="">Domaine racine ({fDomain})</option>
                 <option value="www">www.{fDomain}</option>
@@ -243,7 +243,7 @@ export default function DomainRoutesPanel({ verifiedDomains, pages }: Props) {
             {/* Page cible */}
             <div>
               <label style={{ color:MUTED, fontSize:11, fontWeight:600, display:"block", marginBottom:5 }}>Page cible</label>
-              <select value={fPageId} onChange={e => setFPageId(e.target.value)}
+              <select aria-label="Page de destination" value={fPageId} onChange={e => setFPageId(e.target.value)}
                 style={{ width:"100%", background:"#111009", border:"1px solid rgba(255,255,255,0.1)", borderRadius:8, color:"#F5F0E8", padding:"9px 12px", fontSize:12, outline:"none", cursor:"pointer", boxSizing:"border-box" as const }}>
                 {pages.map(p => (
                   <option key={p.id} value={p.id}>

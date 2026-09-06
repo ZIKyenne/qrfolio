@@ -126,8 +126,8 @@ function NavGlyph({ name }: { name: string }) {
 // Navigation groupée en 4 familles étiquetées (DA §10) — glyphes filaires maison (voir NavGlyph).
 const NAV_GROUPS = [
   { label: "Principal", items: [
-    { href: "/dashboard", glyph: "dashboard", label: "Dashboard", exact: true },
-    { href: "/dashboard/templates", glyph: "templates", label: "Templates" },
+    { href: "/dashboard", glyph: "dashboard", label: "Accueil", exact: true },
+    { href: "/dashboard/templates", glyph: "templates", label: "Modèles" },
     { href: "/dashboard/assets", glyph: "media", label: "Médias" },
   ] },
   // Deux entrées fabriquent des QR codes. Elles s'appelaient « QR Codes » et
@@ -135,12 +135,12 @@ const NAV_GROUPS = [
   // aucun moyen de choisir. Elles portent maintenant le nom de ce vers quoi le QR
   // mène — la seule question que se pose vraiment un commerçant.
   { label: "QR & impression", items: [
-    { href: "/dashboard/qr-codes", glyph: "qr", label: "QR de mes pages" },
-    { href: "/dashboard/print-studio", glyph: "print", label: "Print Studio" },
+    { href: "/dashboard/qr-codes", glyph: "qr", label: "QR de pages" },
+    { href: "/dashboard/print-studio", glyph: "print", label: "Atelier d'impression" },
     { href: "/dashboard/qr-link", glyph: "dynamic", label: "QR vers un lien" },
   ] },
   { label: "Mesure", items: [
-    { href: "/dashboard/analytics", glyph: "analytics", label: "Analytics" },
+    { href: "/dashboard/analytics", glyph: "analytics", label: "Statistiques" },
     // « Objectifs » n'est plus une page : la section vit en bas du Dashboard (#objectifs).
     { href: "/dashboard/leads", glyph: "messages", label: "Messages" },
   ] },
@@ -187,8 +187,8 @@ const GUEST_NAV: { label: string; items: { href: string; glyph: string; label: s
 const CREATE_ACTIONS = [
   { href: "/dashboard/onboarding", icon: Sparkles, label: "Créer ma page", sub: "Guidé en quelques questions — le plus simple" },
   { href: "/dashboard/templates", icon: LayoutTemplate, label: "Partir d'un modèle", sub: "48 designs par métier, à personnaliser" },
-  { href: "/dashboard/qr-codes", icon: QrCode, label: "QR de mes pages", sub: "Celui qui mène à une page QRowg" },
-  { href: "/dashboard/qr-link", icon: Link2, label: "QR vers un lien", sub: "Site web, WiFi, téléphone, fiche contact" },
+  { href: "/dashboard/qr-codes", icon: QrCode, label: "QR de pages", sub: "Celui qui mène à une page QRowg" },
+  { href: "/dashboard/qr-link", icon: Link2, label: "QR vers un lien", sub: "Site web, Wi-Fi, téléphone, fiche contact" },
   { href: "/dashboard/print-studio", icon: Printer, label: "Un support à imprimer", sub: "Sticker de table, chevalet, affiche" },
   { href: "/dashboard/assets", icon: ImageIcon, label: "Mes photos et logos", sub: "À importer une fois, réutilisables partout" },
 ]
@@ -197,7 +197,7 @@ const CREATE_ACTIONS = [
 // propose que celles qui aboutissent vraiment — et pas davantage la page vierge.
 const GUEST_CREATE_ACTIONS = [
   { href: "/dashboard/templates", icon: LayoutTemplate, label: "Partir d'un modèle", sub: "Le plus rapide — 48 modèles par métier" },
-  { href: "/dashboard/qr-link", icon: Link2, label: "QR vers un lien", sub: "Site web, WiFi, téléphone — sans compte" },
+  { href: "/dashboard/qr-link", icon: Link2, label: "QR vers un lien", sub: "Site web, Wi-Fi, téléphone — sans compte" },
 ]
 
 export default function DashboardShell({ children, initialSignedIn, initialCollapsed = false }: { children: React.ReactNode; initialSignedIn: boolean; initialCollapsed?: boolean }) {
@@ -250,7 +250,7 @@ export default function DashboardShell({ children, initialSignedIn, initialColla
     return () => window.removeEventListener("keydown", onKey)
   }, [createOpen])
   const G = accent
-  // Masquer la barre mobile dans les editeurs plein ecran (le Print Studio se porte deja au-dessus).
+  // Masquer la barre mobile dans les editeurs plein ecran (l'atelier d'impression se porte deja au-dessus).
   // Studios immersifs (Mode Focus) : la barre de nav globale ne doit jamais recouvrir un réglage.
   const hideMobileNav = pathname.startsWith("/dashboard/builder") || pathname.startsWith("/dashboard/print-studio")
 

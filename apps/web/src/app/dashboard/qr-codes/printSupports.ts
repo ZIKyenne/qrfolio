@@ -2,7 +2,7 @@
 // printSupports.ts — Catalogue PUR des supports imprimables (données + calculs).
 // Aucun React, aucun canvas -> entièrement testable (printSupports.test.ts).
 //
-// C'est la brique fondatrice du Print Studio : un « support » cesse d'être un
+// C"est la brique fondatrice du Atelier d'impression : un « support » cesse d"être un
 // {label, ratio, exportW} anémique pour devenir un vrai gabarit imprimeur
 // (dimensions mm, fond perdu, marge de sécurité, DPI conseillé, forme, catégorie).
 //

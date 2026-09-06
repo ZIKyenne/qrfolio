@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useMemo, useState, useEffect, type ReactNode } from "react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
@@ -190,7 +190,7 @@ export default function TopLinksPanel({ clicks, pageViews, pages, page, periodDa
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
           {/* Filtre page (masqué si piloté par la barre du haut) */}
           {pages.length > 1 && page == null && (
-            <select value={pageFilter} onChange={e => setPageFilter(e.target.value)}
+            <select aria-label="Filtrer par page" value={pageFilter} onChange={e => setPageFilter(e.target.value)}
               style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 9, color: "#F5F0E8", padding: "5px 10px", fontSize: 11, cursor: "pointer", outline: "none" }}>
               <option value="all">Toutes les pages</option>
               {pages.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}

@@ -10,7 +10,7 @@ import { construireVCard } from "@/lib/vcard"
 export function normalizeUrl(v: string): string {
   const s = v.trim()
   if (!s) return ""
-  if (/^(https?:\/\/|mailto:|tel:|sms:|geo:|wifi:)/i.test(s)) return s
+  if (/^(https?:\/\/|mailto:|tel:|sms:|geo:|WIFI:)/i.test(s)) return s
   return "https://" + s
 }
 
@@ -19,7 +19,7 @@ export function escapeWifi(s: string): string {
   return s.replace(/([\\;,":])/g, "\\$1")
 }
 
-// Construit la charge utile d'un QR WiFi standard (scan -> propose de rejoindre le reseau).
+// Construit la charge utile d'un QR Wi-Fi standard (scan -> propose de rejoindre le reseau).
 export function buildWifi(ssid: string, password: string, enc: "WPA" | "WEP" | "nopass"): string {
   const s = ssid.trim()
   if (!s) return ""

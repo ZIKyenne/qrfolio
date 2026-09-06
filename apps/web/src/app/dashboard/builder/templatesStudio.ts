@@ -381,7 +381,7 @@ export const STUDIO_TEMPLATES: PageTemplate[] = [
 
   {
     key: "studio_coffee", group: "Restauration", label: "Coffee shop", emoji: "☕",
-    desc: "Torréfaction, carte du jour, wifi et travail sur place — clair et chaleureux",
+    desc: "Torréfaction, carte du jour, Wi-Fi et travail sur place — clair et chaleureux",
     theme: STUDIO_THEMES.mocha,
     blocks: [
       { type: "overlay_card", content: {
@@ -391,7 +391,7 @@ export const STUDIO_TEMPLATES: PageTemplate[] = [
         overlay: "45", radius: "Aucun", edge: "Bord à bord",
       } },
       { type: "icon_row", content: {
-        i1_emoji: "📶", i1_label: "Wi-Fi", i2_emoji: "🔌", i2_label: "Prises", i3_emoji: "🌿", i3_label: "Terrasse",
+        i1_emoji: "📶", i1_label: "wifi", i2_emoji: "🔌", i2_label: "Prises", i3_emoji: "🌿", i3_label: "Terrasse",
         i4_emoji: "🐕", i4_label: "Chiens acceptés", icon_style: "Cercle", per_row: "4", pad: "Compact", bg_type: "Aucun",
       } },
       { type: "big_statement", content: {
@@ -416,7 +416,7 @@ export const STUDIO_TEMPLATES: PageTemplate[] = [
         b3_label: "Sucrosité", b3_value: "70", thickness: "8", show_value: "Oui", pad: "Compact", bg_type: "Carte", radius: "Arrondi",
       } },
       { type: "toggle_content", content: {
-        title: "Travailler ici", text: "Le wifi est libre et sans mot de passe. Les prises sont le long du mur gauche et sous le comptoir.\n\nDe 12h à 14h, nous demandons de libérer les grandes tables pour le service du midi. Le reste de la journée, restez autant que vous voulez.",
+        title: "Travailler ici", text: "Le Wi-Fi est libre et sans mot de passe. Les prises sont le long du mur gauche et sous le comptoir.\n\nDe 12h à 14h, nous demandons de libérer les grandes tables pour le service du midi. Le reste de la journée, restez autant que vous voulez.",
         preview_lines: "2", open_label: "Voir les règles", close_label: "Replier", pad: "Compact", bg_type: "Aucun",
       } },
       { type: "opening_hours", content: { title: "Horaires", mon_fri: "8h – 18h", saturday: "9h – 19h", sunday: "10h – 17h" } },

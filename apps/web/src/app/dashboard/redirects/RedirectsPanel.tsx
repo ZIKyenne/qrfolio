@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { useConfirm } from "@/components/ui/Confirm"
@@ -232,7 +232,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
               <div style={{ marginBottom:14 }}>
                 <label style={{ color:MUTED, fontSize:11, fontWeight:600, display:"block", marginBottom:7 }}>Source</label>
                 <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                  <select value={fDomain} onChange={e => setFDomain(e.target.value)}
+                  <select aria-label="Domaine de départ" value={fDomain} onChange={e => setFDomain(e.target.value)}
                     style={{ flex:2, background:"#111009", border:"1px solid rgba(255,255,255,0.1)", borderRadius:9, color:"#F5F0E8", padding:"9px 12px", fontSize:12, outline:"none", cursor:"pointer" }}>
                     {userDomains.map(d => <option key={d} value={d}>{d}</option>)}
                     <option value="qrowg.com">qrowg.com (sous-domaine)</option>

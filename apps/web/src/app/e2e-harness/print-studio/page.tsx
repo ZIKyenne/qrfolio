@@ -1,4 +1,4 @@
-// Banc d'essai du Print Studio (tests) : monte l'îlot client sans la garde d'auth,
+// Banc d'essai du Atelier d'impression (tests) : monte l'îlot client sans la garde d'auth,
 // pour vérifier l'arrivée depuis une page publiée (?metier/?objectif/?brand/?message/?cta/?item).
 // GATÉE : 404 en production.
 import { notFound } from "next/navigation"

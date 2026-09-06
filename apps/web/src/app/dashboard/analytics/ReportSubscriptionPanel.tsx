@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { Mail, Calendar, Bell, BellOff, CheckCircle, Clock, Loader, ChevronRight, BarChart2 } from "lucide-react"

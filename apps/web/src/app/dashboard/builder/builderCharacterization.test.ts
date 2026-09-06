@@ -131,8 +131,13 @@ describe("view models — contact form", () => {
 
 // ── Limites de répéteurs : PARITÉ éditeur/public ────────────────────────────
 describe("limites de répéteurs (parité éditeur/public)", () => {
-  it("gallery : même plafond (img12 des deux côtés, pas d'img13)", () => {
-    expect(editorSrc.includes("img12") && publicSrc.includes("img12")).toBe(true)
+  it("gallery : même plafond (12 des deux côtés, pas de 13e)", () => {
+    // Le rendu public liste ses clés par gabarit (`c[`img${n}`]`) depuis que
+    // chaque photo porte aussi sa description : on vérifie le plafond, pas la
+    // façon dont il est écrit.
+    expect(editorSrc).toContain("img12")
+    expect(publicSrc).toContain("[1,2,3,4,5,6,7,8,9,10,11,12]")
+    expect(publicSrc).not.toContain("[1,2,3,4,5,6,7,8,9,10,11,12,13]")
     expect(editorSrc.includes("c.img13") || publicSrc.includes("c.img13")).toBe(false)
   })
   it("les répéteurs longs utilisent length:50 côté public (limite homogène)", () => {

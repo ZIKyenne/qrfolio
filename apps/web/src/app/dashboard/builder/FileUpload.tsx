@@ -80,7 +80,7 @@ export default function FileUpload({ value, onChange, hint }: Props) {
       </button>
       {hint && <p style={{ color: MUTED, fontSize: 11, margin: "4px 0 0", lineHeight: 1.4 }}>{hint}</p>}
       {error && <p style={{ color: "var(--danger)", fontSize: 11, margin: "6px 0 0" }}>{error}</p>}
-      <input ref={inputRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,application/pdf" style={{ display: "none" }}
+      <input ref={inputRef} type="file" aria-label="Choisir un fichier" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,application/pdf" style={{ display: "none" }}
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = "" }} />
 
       {libOpen && (

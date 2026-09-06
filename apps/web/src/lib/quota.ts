@@ -8,7 +8,7 @@
 //     pause (orange) ou en brouillon (rouge, non publié) ne consomme aucun slot.
 //     Activer un QR au-delà du quota est refusé ; il faut d'abord en mettre un autre
 //     en pause. À ne pas confondre avec `limits.qr`, qui borne les QR AUTONOMES
-//     (instant_qrs) — un lien, un wifi, un contact, sans page derrière.
+//     (instant_qrs) — un lien, un Wi-Fi, un contact, sans page derrière.
 //
 // L'axe de visibilité est `qr_codes.status` (lu par /q/[code]) : active = vert
 // = visitable, paused = orange, draft = rouge = non publié.

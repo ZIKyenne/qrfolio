@@ -77,8 +77,8 @@ export const MORE_ITEMS: { href: string; label: string; sub: string }[] = [
   { href: '/dashboard/leads', label: 'Messages', sub: 'Demandes reçues depuis vos pages' },
   { href: '/dashboard/templates', label: 'Modèles', sub: '48 modèles par métier' },
   { href: '/dashboard/assets', label: 'Médias', sub: 'Photos et fichiers réutilisables' },
-  { href: '/dashboard/print-studio', label: 'Print Studio', sub: 'Supports à imprimer' },
-  { href: '/dashboard/qr-link', label: 'QR vers un lien', sub: 'Site, WiFi, téléphone' },
+  { href: '/dashboard/print-studio', label: "Atelier d'impression", sub: 'Supports à imprimer' },
+  { href: '/dashboard/qr-link', label: 'QR vers un lien', sub: 'Site, Wi-Fi, téléphone' },
   { href: '/dashboard/team', label: 'Équipe', sub: 'Inviter des collaborateurs' },
   { href: '/dashboard/domains', label: 'Domaines', sub: 'Votre propre adresse' },
   { href: '/dashboard/redirects', label: 'Redirections', sub: 'Anciennes adresses' },
@@ -89,9 +89,9 @@ export const MORE_ITEMS: { href: string; label: string; sub: string }[] = [
 // Routes réelles du projet (cf. dashboard/layout.tsx). "Créer" = sheet, pas de href.
 const FULL_TABS: Tab[] = [
   { key: 'home', label: 'Accueil', href: '/dashboard', icon: Icon.home },
-  { key: 'pages', label: 'Mes pages', href: '/dashboard/qr-codes', icon: Icon.qr },
+  { key: 'pages', label: 'QR de pages', href: '/dashboard/qr-codes', icon: Icon.qr },
   { key: 'create', label: 'Créer', icon: Icon.plus, create: true },
-  { key: 'stats', label: 'Stats', href: '/dashboard/analytics', icon: Icon.stats },
+  { key: 'stats', label: 'Statistiques', href: '/dashboard/analytics', icon: Icon.stats },
   { key: 'more', label: 'Plus', icon: Icon.more, more: true, routes: MORE_ITEMS.map(m => m.href) },
 ]
 

@@ -1,4 +1,4 @@
-﻿// app/api/subdomain/route.ts
+// app/api/subdomain/route.ts
 // Gestion des sous-domaines personnalisés: vérification + réservation + modification
 
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server"

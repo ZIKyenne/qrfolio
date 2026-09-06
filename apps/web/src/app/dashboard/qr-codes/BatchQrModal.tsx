@@ -121,7 +121,7 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
           <input type="file" accept=".csv,.txt,text/csv,text/plain" style={{ display: "none" }}
             onChange={async e => { const f = e.target.files?.[0]; if (f) { try { setText(await f.text()) } catch {} } e.target.value = "" }} />
         </label>
-        <span style={{ color: MUTED, fontSize: 11 }}>ou colle ta liste ci-dessous</span>
+        <span style={{ color: MUTED, fontSize: 11 }}>ou collez votre liste ci-dessous</span>
       </div>
       <textarea
         value={text}
@@ -165,7 +165,7 @@ export function BatchQrModal({ open, onClose, genBlob, isPro, onUpsell, max = 50
       )}
 
       <p style={{ color: MUTED, fontSize: 12, margin: "10px 0 0" }}>
-        {count > 0 ? `${count} QR seront générés` : "Colle ta liste ci-dessus"}
+        {count > 0 ? `${count} QR seront générés` : "Collez votre liste ci-dessus"}
         {parsed.truncated && ` · limité à ${max} (le reste est ignoré)`}
         {!isPro && " · réservé au plan Pro"}
       </p>

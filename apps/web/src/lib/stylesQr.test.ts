@@ -136,7 +136,7 @@ describe("les types de QR", () => {
   it("un écran choisit son ordre sans recopier les libellés", () => {
     const offerts = typesQr(["link", "wifi", "text"])
     expect(offerts.map(t => t.k)).toEqual(["link", "wifi", "text"])
-    expect(offerts.map(t => t.label)).toEqual(["Lien", "WiFi", "Texte"])
+    expect(offerts.map(t => t.label)).toEqual(["Lien", "Wi-Fi", "Texte"])
   })
 })
 

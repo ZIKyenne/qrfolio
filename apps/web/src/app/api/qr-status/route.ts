@@ -1,4 +1,4 @@
-﻿// app/api/qr-status/route.ts
+// app/api/qr-status/route.ts
 // Gestion des statuts QR: activer, pause, archive, restore, delete
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"

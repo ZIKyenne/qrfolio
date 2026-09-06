@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useCallback } from "react"
 import { Download, Calendar, Lock, CheckCircle, Loader, Eye, QrCode, Link2, Layers, Globe } from "lucide-react"
@@ -312,12 +312,12 @@ export default function ExportPanel({ plan, pages, views, scans, clicks, blocks,
               <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <label style={{ color: MUTED, fontSize: 10, fontWeight: 600 }}>Du</label>
-                  <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                  <input type="date" aria-label="Date de début" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
                     style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 8, color: "#F5F0E8", padding: "7px 10px", fontSize: 12, outline: "none", cursor: "pointer" }} />
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <label style={{ color: MUTED, fontSize: 10, fontWeight: 600 }}>Au</label>
-                  <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                  <input type="date" aria-label="Date de fin" value={customTo} onChange={e => setCustomTo(e.target.value)}
                     style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius: 8, color: "#F5F0E8", padding: "7px 10px", fontSize: 12, outline: "none", cursor: "pointer" }} />
                 </div>
               </div>

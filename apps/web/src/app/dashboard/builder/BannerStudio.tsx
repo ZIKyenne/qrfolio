@@ -53,7 +53,7 @@ function Slider({ label, value, min, max, step = 1, unit = "", def, onChange }: 
         style={{ position: "relative", height: 26, display: "flex", alignItems: "center", background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "0 10px", cursor: "ew-resize" }}>
         <div style={{ position: "absolute", left: 10, right: 10, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.1)" }} />
         <div style={{ position: "absolute", left: 10, width: `calc((100% - 20px) * ${pct / 100})`, height: 4, borderRadius: 2, background: `linear-gradient(90deg,${G},${G}bb)` }} />
-        <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(Number(e.target.value))}
+        <input type="range" aria-label={label} min={min} max={max} step={step} value={value} onChange={e => onChange(Number(e.target.value))}
           style={{ position: "relative", width: "100%", accentColor: G, cursor: "pointer", background: "transparent", zIndex: 1, margin: 0 }} />
       </div>
     </div>
@@ -460,7 +460,7 @@ export default function BannerStudio({ content, onChange }: { content: Record<st
         {(parseFloat(c.overlay_opacity || "0") > 0) && (
           <div>
             <label style={{ color: MUTED, fontSize: 11, fontWeight: 500, display: "block", marginBottom: 6 }}>Mode de fusion de la teinte</label>
-            <select value={c.blend_mode || "normal"} onChange={e => set("blend_mode", e.target.value)} style={{ width: "100%", background: "#0A0A0A", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8, padding: "8px 10px", color: TEXT, fontSize: 12, outline: "none" }}>
+            <select aria-label="Mode de fusion" value={c.blend_mode || "normal"} onChange={e => set("blend_mode", e.target.value)} style={{ width: "100%", background: "#0A0A0A", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8, padding: "8px 10px", color: TEXT, fontSize: 12, outline: "none" }}>
               {["normal", "multiply", "screen", "overlay", "soft-light", "color-burn", "darken", "lighten"].map(m => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>

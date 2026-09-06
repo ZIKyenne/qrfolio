@@ -1,4 +1,4 @@
-﻿// app/api/redirects/route.ts
+// app/api/redirects/route.ts
 // CRUD des redirections domaine (301/302)
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"

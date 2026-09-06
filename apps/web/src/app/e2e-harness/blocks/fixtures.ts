@@ -37,7 +37,7 @@ export const FILL: Record<string, Record<string, any>> = {
   steps_horizontal: { title: "Comment ça marche", s1_emoji: "📱", s1_title: "Scannez", s1_text: "Avec l'appareil photo", s2_emoji: "👀", s2_title: "Choisissez", s2_text: "Le créneau qui vous va", s3_emoji: "✅", s3_title: "C'est réservé", s3_text: "Confirmation immédiate" },
   stat_hero: { eyebrow: "DEPUIS 2009", value: "15", unit: "ans", label: "au service du quartier", text: "Et toujours la même équipe", fill: "Dégradé" },
   badge_row: { title: "Nos labels", items: "Fait maison, Bio, Local, Sans gluten" },
-  icon_row: { title: "Sur place", i1_emoji: "📶", i1_label: "Wi-Fi", i2_emoji: "🌿", i2_label: "Terrasse", i3_emoji: "♿", i3_label: "Accès PMR", i4_emoji: "🐕", i4_label: "Animaux acceptés" },
+  icon_row: { title: "Sur place", i1_emoji: "📶", i1_label: "wifi", i2_emoji: "🌿", i2_label: "Terrasse", i3_emoji: "♿", i3_label: "Accès PMR", i4_emoji: "🐕", i4_label: "Animaux acceptés" },
   compare_two: { title: "Pourquoi nous choisir", left_title: "Chez nous", right_title: "Ailleurs", r1_left: "Rendez-vous en 24 h", r1_right: "Plusieurs semaines d'attente", r2_left: "Devis gratuit", r2_right: "Frais de déplacement", r3_left: "Garantie 2 ans", r3_right: "Garantie légale seule" },
   progress_bars: { title: "Où en est le projet", b1_label: "Objectif de la cagnotte", b1_value: "72", b1_note: "3 600 € / 5 000 €", b2_label: "Travaux réalisés", b2_value: "45", b3_label: "Places réservées", b3_value: "90" },
   highlight_box: { emoji: "💡", title: "Bon à savoir", text: "Le parking de la place est gratuit après 19 h." },
@@ -77,7 +77,7 @@ export const FILL: Record<string, Record<string, any>> = {
   product_catalog: { title: "Catalogue", p1_img: IMG, p1_name: "Produit A", p1_price: "29€", p1_desc: "Best-seller", p1_url: "https://exemple.com", p2_name: "Produit B", p2_price: "39€", cta_label: "Acheter" },
   // ── répéteurs info/business (waves 3-4) ──
   process_steps: { title: "Comment ça marche", s1_title: "Étape 1", s1_desc: "Inscription", s2_title: "Étape 2", s2_desc: "Création" },
-  on_site_services: { s1_icon: "📶", s1_label: "Wifi gratuit", s2_icon: "🅿️", s2_label: "Parking" },
+  on_site_services: { s1_icon: "📶", s1_label: "Wi-Fi gratuit", s2_icon: "🅿️", s2_label: "Parking" },
   engagements: { e1: "Sans engagement", e2: "Annulation gratuite", e3: "Satisfait ou remboursé" },
   trust_badge: { b1_icon: "✅", b1_label: "Certifié bio", b2_icon: "🏆", b2_label: "Élu produit de l'année" },
   stats_block: { s1_icon: "👥", s1_value: "10k", s1_label: "Abonnés", s2_icon: "⭐", s2_value: "4.9", s2_label: "Note" },

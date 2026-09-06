@@ -1,4 +1,4 @@
-﻿// detectTrafficSource.ts
+// detectTrafficSource.ts
 // Détection automatique de la source de trafic — RGPD friendly (pas d'IP stockée)
 
 export type TrafficSource =

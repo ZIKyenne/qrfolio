@@ -467,7 +467,7 @@ export function profileBadgeStyle(label: string, accent: string): { color: strin
     { kw: ["france", "local"], color: "#EF4444", icon: "📍" },
     { kw: ["populaire", "top "], color: "#F97316", icon: "🔥" },
     { kw: ["nouveau", "new"], color: "#39FF8F", icon: "✨" },
-    { kw: ["rapide", "24h", "réponse", "reponse"], color: "#38BDF8", icon: "⚡" },
+    { kw: ["rapide", "24 heures", "réponse", "reponse"], color: "#38BDF8", icon: "⚡" },
     { kw: ["recommand"], color: "#C9A84C", icon: "★" },
     { kw: ["partenaire", "partner"], color: "#9146FF", icon: "🤝" },
     { kw: ["créateur", "createur", "creator"], color: "#EC4899", icon: "🎨" },
@@ -933,7 +933,7 @@ export const AVAILABILITY_STATUSES: { key: string; label: string; color: string 
   { key: "booking", label: "Ouvert aux réservations", color: "#39FF8F" },
   { key: "tour", label: "En tournée", color: "#9146FF" },
   { key: "works", label: "En travaux", color: "#FBBF24" },
-  { key: "fast_reply", label: "Réponse sous 24h", color: "#38BDF8" },
+  { key: "fast_reply", label: "Réponse sous 24 heures", color: "#38BDF8" },
   { key: "temp_closed", label: "Fermé temporairement", color: "#EF4444" },
   { key: "closed", label: "Indisponible", color: "#EF4444" },
 ]

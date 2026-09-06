@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     }
     if (!data || data.length === 0) {
       return NextResponse.json(
-        { error: "Aucune ligne modifiee (QR introuvable ou non autorise)" },
+        { error: "Aucune ligne modifiée (QR introuvable ou non autorisé)" },
         { status: 404 },
       )
     }

@@ -37,7 +37,7 @@ export const IDENTITY_PRESETS: { key: string; label: string; emoji: string; bloc
   {
     key: "immobilier", label: "Immobilier", emoji: "🏡",
     blocks: [
-      { type: "profile", content: { name: "Votre nom", tagline: "Conseiller immobilier", badge: "Réponse sous 24h" } },
+      { type: "profile", content: { name: "Votre nom", tagline: "Conseiller immobilier", badge: "Réponse sous 24 heures" } },
       { type: "cover_banner", content: { banner_type: "gradient", grad_preset: "ocean", overlay_gradient: "bottom" } },
       { type: "bio", content: { text: "J'accompagne acheteurs et vendeurs à chaque étape, avec expertise et transparence.", align: "center" } },
       { type: "business_stats", content: { stat1_icon: "🏡", stat1_value: "85", stat1_label: "Biens vendus", stat2_icon: "👥", stat2_value: "200+", stat2_label: "Clients", stat3_icon: "⭐", stat3_value: "4.9", stat3_label: "Note" } },
@@ -176,7 +176,7 @@ export const COMMERCE_PRESETS: { key: string; label: string; emoji: string; bloc
     blocks: [
       { type: "services_pricing", content: { title: "Mes prestations" } },
       { type: "packs", content: { title: "Mes forfaits" } },
-      { type: "booking_button", content: { label: "Réserver un rendez-vous", platform: "URL personnalisee" } },
+      { type: "booking_button", content: { label: "Réserver un rendez-vous", platform: "Adresse personnalisée" } },
       { type: "gift_card", content: { title: "Offrir un bon cadeau", cta_label: "Offrir" } },
     ],
   },
@@ -186,14 +186,14 @@ export const COMMERCE_PRESETS: { key: string; label: string; emoji: string; bloc
       { type: "packs", content: { title: "Mes offres" } },
       { type: "offer_comparison", content: { title: "Comparez mes formules", plan2_highlight: "yes" } },
       { type: "payment_button", content: { label: "Payer / s'inscrire", platform: "Stripe" } },
-      { type: "booking_button", content: { label: "Réserver un appel", platform: "URL personnalisee" } },
+      { type: "booking_button", content: { label: "Réserver un appel", platform: "Adresse personnalisée" } },
     ],
   },
   {
     key: "freelance", label: "Freelance / Artisan", emoji: "💼",
     blocks: [
       { type: "services_pricing", content: { title: "Mes tarifs" } },
-      { type: "quote_request", content: { label: "Demander un devis", description: "Réponse sous 24h" } },
+      { type: "quote_request", content: { label: "Demander un devis", description: "Réponse sous 24 heures" } },
       { type: "download_file", content: { label: "Télécharger la plaquette", type_doc: "Brochure" } },
     ],
   },
@@ -245,7 +245,7 @@ export const ACTION_PRESETS: { key: string; label: string; emoji: string; blocks
     key: "artiste", label: "Artiste / Musicien", emoji: "🎤",
     blocks: [
       { type: "cta_button", content: { label: "Écouter sur Spotify", icon: "🎧", style: "gold" } },
-      { type: "booking_button", content: { label: "Booking / me contacter", platform: "URL personnalisee" } },
+      { type: "booking_button", content: { label: "Booking / me contacter", platform: "Adresse personnalisée" } },
       { type: "download_file", content: { label: "Télécharger le press kit", type_doc: "Brochure" } },
       { type: "cta_button", content: { label: "Mes prochaines dates", icon: "📅", style: "outline" } },
     ],
@@ -255,14 +255,14 @@ export const ACTION_PRESETS: { key: string; label: string; emoji: string; blocks
     blocks: [
       { type: "call_button", content: { label: "Appeler l'agent" } },
       { type: "whatsapp_button", content: { label: "WhatsApp", message: "Bonjour, je suis intéressé(e) par un bien." } },
-      { type: "quote_request", content: { label: "Demander une estimation", description: "Réponse sous 24h" } },
+      { type: "quote_request", content: { label: "Demander une estimation", description: "Réponse sous 24 heures" } },
       { type: "download_file", content: { label: "Télécharger la brochure", type_doc: "Brochure" } },
     ],
   },
   {
     key: "coach", label: "Coach / Formation", emoji: "🎓",
     blocks: [
-      { type: "booking_button", content: { label: "Réserver un appel", platform: "URL personnalisee" } },
+      { type: "booking_button", content: { label: "Réserver un appel", platform: "Adresse personnalisée" } },
       { type: "download_file", content: { label: "Voir le programme (PDF)", type_doc: "PDF" } },
       { type: "payment_button", content: { label: "Payer / s'inscrire", platform: "Stripe" } },
       { type: "cta_button", content: { label: "Voir les témoignages", icon: "⭐", style: "outline" } },
@@ -272,7 +272,7 @@ export const ACTION_PRESETS: { key: string; label: string; emoji: string; blocks
     key: "freelance", label: "Freelance / Entreprise", emoji: "💼",
     blocks: [
       { type: "quote_request", content: { label: "Demander un devis", description: "Réponse rapide" } },
-      { type: "booking_button", content: { label: "Prendre rendez-vous", platform: "URL personnalisee" } },
+      { type: "booking_button", content: { label: "Prendre rendez-vous", platform: "Adresse personnalisée" } },
       { type: "email_button", content: { label: "M'écrire", subject: "Demande de renseignements" } },
       { type: "download_file", content: { label: "Télécharger la plaquette", type_doc: "Brochure" } },
     ],

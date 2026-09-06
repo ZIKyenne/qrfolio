@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next"
+import { FOND_APP } from "@/lib/couleursApp"
 
 // Manifest PWA — permet l'installation ("Ajouter a l'ecran d'accueil") avec identite,
 // icone et couleurs de marque. Next injecte automatiquement <link rel="manifest">.
@@ -10,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#080808",
-    theme_color: "#080808",
+    background_color: FOND_APP,
+    theme_color: FOND_APP,   // = viewport.themeColor de layout.tsx
     lang: "fr",
     dir: "ltr",
     categories: ["business", "productivity", "utilities"],

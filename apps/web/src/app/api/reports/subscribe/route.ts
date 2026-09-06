@@ -1,4 +1,4 @@
-﻿// app/api/reports/subscribe/route.ts
+// app/api/reports/subscribe/route.ts
 // Abonnement / désabonnement aux rapports automatiques
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"

@@ -76,7 +76,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       { type: "profile", content: { name: "The Alchemist", tagline: "Cocktails d'auteur · Paris", badge: "🍸 Mixologie" } },
       { type: "announcement", content: { type: "Information", title: "Happy hour 18h - 20h", message: "Tous les cocktails signature à -30%.", style: "Compact" } },
       { type: "menu_section", content: { category: "🍸 Signatures", item1_name: "Smoked Old Fashioned", item1_price: "14€", item1_desc: "Bourbon, fumée de hêtre", item2_name: "Garden Spritz", item2_price: "12€", item2_desc: "Gin, concombre, basilic", item3_name: "Velvet Espresso", item3_price: "13€", item3_desc: "Vodka, café, tonka" } },
-      { type: "table_booking", content: { label: "Réserver une table", platform: "URL personnalisee" } },
+      { type: "table_booking", content: { label: "Réserver une table", platform: "Adresse personnalisée" } },
       { type: "timeline", content: { title: "La soirée", layout: "Horizontale", e1_icon: "🍸", e1_date: "18h", e1_title: "Happy hour", e2_icon: "🎧", e2_date: "21h", e2_title: "DJ set", e3_icon: "✨", e3_date: "23h", e3_title: "Ambiance club" } },
       { type: "opening_hours", content: { title: "Horaires", mon_fri: "18h - 02h", saturday: "18h - 03h", sunday: "Fermé" } },
       { type: "google_maps_embed", content: { label: "The Alchemist", address: "8 rue Oberkampf, 75011 Paris", zoom: "16" } },
@@ -171,7 +171,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     blocks: [
       { type: "profile", content: { name: "Villa Azur", tagline: "Location vue mer · 6 personnes", badge: "🏖️ Superhost" } },
       { type: "cta_button", content: { label: "Réserver mon séjour", url: "#", style: "gold", icon: "🗓️", full_width: "yes" } },
-      { type: "values", content: { title: "Les équipements", v1_icon: "📶", v1_label: "Wifi fibre", v2_icon: "🅿️", v2_label: "Parking privé", v3_icon: "🏊", v3_label: "Piscine chauffée", v4_icon: "🌅", v4_label: "Terrasse vue mer" } },
+      { type: "values", content: { title: "Les équipements", v1_icon: "📶", v1_label: "Wi-Fi fibre", v2_icon: "🅿️", v2_label: "Parking privé", v3_icon: "🏊", v3_label: "Piscine chauffée", v4_icon: "🌅", v4_label: "Terrasse vue mer" } },
       { type: "stats_block", content: { s1_icon: "⭐", s1_value: "4,95/5", s1_label: "Note voyageurs", s2_icon: "🛏️", s2_value: "3 ch.", s2_label: "6 couchages", s3_icon: "📐", s3_value: "110 m²", s3_label: "Surface" } },
       { type: "testimonials", content: { name1: "Camille & Théo", text1: "Vue à couper le souffle, logement impeccable.", stars1: "5", name2: "Marc D.", text2: "Accueil parfait, on reviendra sans hésiter.", stars2: "5" } },
       { type: "faq", content: { title: "Infos pratiques", q1: "Quelle est l'heure d'arrivée ?", a1: "Check-in à partir de 16h, check-out avant 11h.", q2: "Les animaux sont-ils acceptés ?", a2: "Oui, sur demande préalable.", q3: "Y a-t-il une caution ?", a3: "Oui, 500€ restitués au départ." } },

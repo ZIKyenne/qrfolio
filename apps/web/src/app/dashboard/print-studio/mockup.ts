@@ -1,4 +1,4 @@
-// QRowg · Print Studio — rendu packshot studio
+// QRowg · Atelier d'impression — rendu packshot studio
 // Paramètres de scène et calculs de rendu, sans DOM ni framework.
 // Un moteur (React, Vue, canvas, WebGL) consomme ces valeurs telles quelles.
 //

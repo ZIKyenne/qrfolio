@@ -1,5 +1,5 @@
 // =============================================================================
-// /api/print-design — Persistance du design "QR Print Studio"
+// /api/print-design — Persistance du design "Atelier d'impression"
 // Un design courant par QR : colonnes print_design (JSONB) + print_format (TEXT)
 // sur la table qr_codes. Ecriture serveur uniquement (RLS).
 // Migration requise (Supabase SQL Editor) :

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import { FOND_APP } from "@/lib/couleursApp"
 import "./globals.css"
 import { PLAN_LIST } from "@/lib/plans"
 import { serializeJsonLd } from "@/lib/jsonLd"
@@ -12,7 +13,12 @@ const SUPABASE_ORIGIN = (() => {
 })()
 
 export const viewport: Viewport = {
-  themeColor: "#C9A84C",
+  // Même valeur que manifest.ts (theme_color) : le <meta name="theme-color">
+  // annonçait l'or et le manifeste le noir. Android suit le manifeste une fois
+  // l'app installée, la balise avant : la barre de statut changeait de couleur
+  // entre le site et l'icône posée sur l'écran d'accueil. C'est le fond de
+  // l'application qui fait foi.
+  themeColor: FOND_APP,
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -112,8 +118,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               featureList: [
                 "QR code dynamique",
                 "Page mobile professionnelle",
-                "Analytics en temps reel",
-                "Templates metiers",
+                "Statistiques en temps réel",
+                "Modèles par métier",
                 "Domaine personnalise",
               ],
               inLanguage: "fr-FR",

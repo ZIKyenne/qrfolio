@@ -162,7 +162,7 @@ export default function TeamPage() {
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="adresse@email.com"
                   style={{ flex: "1 1 220px", minWidth: 0, padding: "11px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "#0A0908", color: "#F5F0E8", fontSize: 14 }} />
-                <select value={role} onChange={e => setRole(e.target.value as "editor" | "admin")}
+                <select aria-label="Rôle de la personne invitée" value={role} onChange={e => setRole(e.target.value as "editor" | "admin")}
                   style={{ padding: "11px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "#0A0908", color: "#F5F0E8", fontSize: 14, cursor: "pointer" }}>
                   <option value="editor">Éditeur</option>
                   <option value="admin">Admin</option>
@@ -200,7 +200,7 @@ export default function TeamPage() {
                     <div style={{ color: "#8A8478", fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis" }}>{m.profiles?.email}</div>
                   </div>
                   {canManage && (m.role === "editor" || m.role === "admin") ? (
-                    <select value={m.role} onChange={e => changeRole(m.id, e.target.value as "editor" | "admin")}
+                    <select aria-label={`Rôle de ${m.profiles?.full_name || m.profiles?.email || "ce membre"}`} value={m.role} onChange={e => changeRole(m.id, e.target.value as "editor" | "admin")}
                       style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)", background: "#0A0908", color: "#F5F0E8", fontSize: 12.5, cursor: "pointer" }}>
                       <option value="editor">Éditeur</option>
                       <option value="admin">Admin</option>

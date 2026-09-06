@@ -1,4 +1,4 @@
-﻿// app/api/reports/send/route.ts
+// app/api/reports/send/route.ts
 // Génération et envoi des rapports — appelé par cron (Vercel Cron ou pg_cron)
 // Protégé par CRON_SECRET
 
@@ -79,7 +79,7 @@ function buildEmailHtml(params: {
     </tr></table>
     ${topTable("🔗 Top liens cliqués", params.topLinks.map(l => ({ label: l.target.slice(0, 60), value: l.clicks, accent: "#C9A84C" })))}
     ${topTable("📄 Top pages", params.topPages.map(p => ({ label: p.title, value: p.views, accent: "#39FF8F" })))}
-    ${emailButton("Voir le dashboard complet →", `${appUrl}/dashboard/analytics`)}
+    ${emailButton("Voir le tableau de bord complet →", `${appUrl}/dashboard/analytics`)}
   `
 
   const footer = `Vous recevez ce rapport car vous êtes abonné aux notifications QRowg.<br><a href="${params.unsubUrl}" style="color:#8A8478;text-decoration:underline;">Se désabonner</a> · <a href="${appUrl}/dashboard/settings" style="color:#8A8478;text-decoration:underline;">Gérer les notifications</a>`

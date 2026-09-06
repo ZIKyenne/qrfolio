@@ -290,8 +290,8 @@ export default function DashboardClient({
               </p>
               <p style={{ color: MUTED, fontSize: 11.5, margin: 0, lineHeight: 1.5 }}>
                 {overViews
-                  ? "Tes QR codes et pages restent 100% en ligne — rien n'est coupé. Passe à un plan supérieur pour relancer le compteur et débloquer plus de vues."
-                  : "Tes pages restent en ligne sans interruption. Pense à monter en plan pour ne pas être limité."}
+                  ? "Vos QR codes et vos pages restent en ligne — rien n'est coupé. Passez à un plan supérieur pour relancer le compteur et débloquer plus de vues."
+                  : "Vos pages restent en ligne sans interruption. Un plan supérieur lève la limite."}
               </p>
               <div style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.08)", marginTop: 8, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: Math.min(viewsPct, 100) + "%", background: overViews ? "linear-gradient(90deg,var(--danger),#F97316)" : "linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 75%, #000))", borderRadius: 3 }} />

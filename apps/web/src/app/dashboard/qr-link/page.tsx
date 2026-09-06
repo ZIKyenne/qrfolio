@@ -1,11 +1,11 @@
 "use client"
 
-// « Créer un QR » — Lien / WiFi / Texte / Contact / Appel / Email.
+// « Créer un QR » — Lien / Wifi / Texte / Contact / Appel / Email.
 // Rendu 100% local (qr-code-styling via qrRender), sans API. Deux sorties :
 //  · TÉLÉCHARGEMENT PNG/SVG : fichier, contenu encodé directement, rien à gérer.
 //  · COMPTE : QR MODIFIABLE après impression (lien/texte/appel/email → redirigé
 //    /q/<code>, destination changeable, suivi des scans, sans expiration) ou
-//    STATIQUE (WiFi/Contact → doivent fonctionner hors ligne).
+//    STATIQUE (Wi-Fi/Contact → doivent fonctionner hors ligne).
 //
 // La page s'appelait « QR Dynamique », du nom de l'abonnement qu'elle vendait —
 // alors qu'elle fabrique surtout des QR ordinaires, et que la page voisine
@@ -61,7 +61,7 @@ type Demande =
   | { type: "message"; titre: string; texte: string }
   | null
 
-// Types éligibles au QR DYNAMIQUE (redirigé + expirable). WiFi/Contact restent statiques.
+// Types éligibles au QR DYNAMIQUE (redirigé + expirable). Wi-Fi/Contact restent statiques.
 
 
 // Champs qui determinent la charge utile du QR (partages entre l'etat live et l'historique).
@@ -177,7 +177,7 @@ export default function QrLinkPage() {
     fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.plan) setPlan(d.plan) }).catch(() => {})
   }, [signedIn])
   const saveToHistory = () => setHistory(prev => {
-    // Le mot de passe WiFi était écrit en clair dans localStorage à chaque
+    // Le mot de passe Wifi était écrit en clair dans localStorage à chaque
     // téléchargement — alors que le même fichier refuse explicitement de l'envoyer
     // au serveur. Le brouillon garde tout sauf lui ; on le retape, c'est tout.
     const entry: QrHistEntry = { type: qrType, url: url.trim(), ssid, wifiPass: "", wifiEnc, text: text.trim(), vc, phone, em, fg, bg, ecc, styleKey }
@@ -246,7 +246,7 @@ export default function QrLinkPage() {
     } finally { setBusy(null) }
   }
 
-  // Enregistre le QR courant côté serveur (STATIQUE : contenu encodé, hors ligne). WiFi/Contact.
+  // Enregistre le QR courant côté serveur (STATIQUE : contenu encodé, hors ligne). Wi-Fi/Contact.
   async function saveInstant() {
     if (!ready || saveBusy) return
     // Le contrôle manquait ici : le bouton restait cliquable au quota, partait en
@@ -255,8 +255,8 @@ export default function QrLinkPage() {
     if (!quota.peutEnregistrer) { annoncer(quota.raison ?? "Limite atteinte sur votre plan.", false, 4500); return }
     setSaveBusy(true); setSaveMsg(null)
     try {
-      // On ne stocke pas le mot de passe WiFi en clair dans `inputs` (il figure de
-      // toute façon dans `payload`, inhérent au QR WiFi, protégé par la RLS proprio).
+      // On ne stocke pas le mot de passe Wifi en clair dans `inputs` (il figure de
+      // toute façon dans `payload`, inhérent au QR Wifi, protégé par la RLS proprio).
       const inputs = { type: qrType, url, ssid, wifiEnc, text, vc, phone, em }
       const res = await fetch("/api/qr-instant", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -436,7 +436,7 @@ export default function QrLinkPage() {
         </div>
         <div>
           <h1 style={{ color: "#F5F0E8", fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: -0.4 }}>Créer un QR code</h1>
-          <p style={{ color: MUTED, fontSize: 13, margin: "2px 0 0", lineHeight: 1.4 }}>Vers un lien, votre WiFi, un contact, un numéro. Modifiable après impression si vous voulez.</p>
+          <p style={{ color: MUTED, fontSize: 13, margin: "2px 0 0", lineHeight: 1.4 }}>Vers un lien, votre Wi-Fi, un contact, un numéro. Modifiable après impression si vous voulez.</p>
         </div>
       </div>
 
@@ -470,7 +470,7 @@ export default function QrLinkPage() {
         </>)}
 
         {qrType === "wifi" && (<>
-          <p style={secTitle}>{accentBar} Réseau WiFi</p>
+          <p style={secTitle}>{accentBar} Réseau Wi-Fi</p>
           <input value={ssid} onChange={e => setSsid(e.target.value)} placeholder="Nom du réseau (SSID)" style={{ ...field, marginBottom: 10, borderColor: ssid.trim() ? G + "80" : "rgba(255,255,255,0.14)" }} />
           {wifiEnc !== "nopass" && (
             <input value={wifiPass} onChange={e => setWifiPass(e.target.value)} placeholder="Mot de passe" style={{ ...field, marginBottom: 10 }} />
@@ -591,7 +591,7 @@ export default function QrLinkPage() {
                 <Upload size={16} /> <span>Ajouter un logo</span>
               </button>
             )}
-            <input ref={logoInput} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onLogoFile(f); e.target.value = "" }} />
+            <input ref={logoInput} type="file" aria-label="Importer un logo" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onLogoFile(f); e.target.value = "" }} />
           </div>
         )}
       </div>
@@ -642,7 +642,7 @@ export default function QrLinkPage() {
       </div>
 
       {/* 5 · Actions — hiérarchie selon le type. Dynamique (lien/texte/appel/email) : créer en avant,
-          téléchargement en repli. Statique (WiFi/Contact) : téléchargement en avant, enregistrement en repli. */}
+          téléchargement en repli. Statique (Wi-Fi/Contact) : téléchargement en avant, enregistrement en repli. */}
       <div style={{ ...card, marginBottom: hasSaved || history.length > 0 ? 4 : 14 }}>
         {dynamic ? (<>
           {dynBlocked ? (
@@ -678,7 +678,7 @@ export default function QrLinkPage() {
             {saveBusy ? spin() : <Save size={16} />}<span>Enregistrer ce QR</span>
           </button>
           <p style={{ color: "#6E685E", fontSize: 11, margin: "8px 2px 0", lineHeight: 1.45 }}>
-            QR statique — fonctionne hors ligne, sans expiration ({qrType === "wifi" ? "auto-connexion WiFi" : "ajout du contact"} au scan).
+            QR statique — fonctionne hors ligne, sans expiration ({qrType === "wifi" ? "auto-connexion Wi-Fi" : "ajout du contact"} au scan).
           </p>
         </>)}
         {saveMsg && <p style={{ color: saveMsg.ok ? "var(--success)" : "#FBBF24", fontSize: 12.5, textAlign: "center", margin: "11px 0 0" }}>{saveMsg.text}</p>}

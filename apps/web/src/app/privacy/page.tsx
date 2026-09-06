@@ -3,6 +3,8 @@ import { RETENTION_DAYS } from "@/lib/eventRetention"
 import { phraseHebergement } from "@/lib/editeur"
 import Link from "next/link"
 import { LegalLayout } from "@/components/legal-layout"
+import { ogFor } from "@/lib/seoMeta"
+import { REVISIONS, enFrancais } from "@/lib/datesContenu"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 
@@ -10,13 +12,12 @@ export const metadata: Metadata = {
   title: "Politique de confidentialité",
   description: "Comment QRowg collecte, utilise et protège vos données personnelles : finalités, durées de conservation, sous-traitants et vos droits.",
   alternates: { canonical: `${APP}/privacy` },
-  openGraph: { title: "Politique de confidentialité | QRowg", description: "Comment QRowg collecte, utilise et protège vos données personnelles : finalités, durées de conservation, sous-traitants et vos droits.", url: `${APP}/privacy`, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Politique de confidentialité | QRowg", description: "Comment QRowg collecte, utilise et protège vos données personnelles : finalités, durées de conservation, sous-traitants et vos droits." },
+  ...ogFor({ url: `${APP}/privacy`, title: "Politique de confidentialité | QRowg", description: "Comment QRowg collecte, utilise et protège vos données personnelles : finalités, durées de conservation, sous-traitants et vos droits." }),
 }
 
 export default function PrivacyPage() {
   return (
-    <LegalLayout title="Politique de confidentialité" updated="4 septembre 2026">
+    <LegalLayout title="Politique de confidentialité" updated={enFrancais(REVISIONS.privacy)}>
       <div className="ls">
         <p>QRowg accorde une importance primordiale à la protection de vos données personnelles. Cette politique décrit comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre service.</p>
       </div>

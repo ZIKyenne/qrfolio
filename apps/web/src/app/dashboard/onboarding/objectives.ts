@@ -154,7 +154,7 @@ export const SECTORS: Sector[] = [
 // Ambiance visuelle (thème cohérent, réutilise AMBIANCE_THEMES) par secteur puis par objectif :
 // la page générée est belle et adaptée dès l'ouverture, pas sur le thème générique par défaut.
 const SECTOR_AMBIANCE: Record<string, string> = { restaurant: "velvet", beaute: "rose", commerce: "slate", artisan: "wood", createur: "violet", pro: "navy" }
-const OBJ_AMBIANCE: Record<string, string> = { avis: "gold", menu: "velvet", reservation: "velvet", appels: "calm", vente: "slate", contact: "calm", evenement: "cocktail", portfolio: "ink", reseaux: "violet" }
+const OBJ_AMBIANCE: Record<string, string> = { avis: "gold", menu: "velvet", reservation: "velvet", appels: "calm", vente: "slate", contact: "calm", evenement: "cocktail", portfolio: "ink", réseaux: "violet" }
 
 // Compose la recette finale (objectif [× secteur]) envoyée à /api/templates/use.
 export function composeRecipe(o: Objective, s?: Sector) {

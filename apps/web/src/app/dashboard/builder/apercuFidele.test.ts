@@ -48,7 +48,7 @@ function corpsComposant(src: string, nom: string): string {
 }
 
 const editeur = casParBloc(lire("builderPreview.tsx"))
-const publique = casParBloc(lire("../../[slug]/PublicPageClient.tsx"))
+const publique = casParBloc(lire("../../[slug]/renduLegacy.tsx"))
 const blocsPublics = lire("../../[slug]/blocsPublics.tsx")
 const defs = lire("blockDefs.ts")
 

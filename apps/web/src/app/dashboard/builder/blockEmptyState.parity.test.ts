@@ -84,7 +84,7 @@ describe("état vide éditeur — aucune donnée de démonstration trompeuse ne 
 })
 
 describe("la page publiée n'invente aucun chiffre", () => {
-  const publique = readFileSync(fileURLToPath(new URL("../../[slug]/PublicPageClient.tsx", import.meta.url)), "utf8")
+  const publique = readFileSync(fileURLToPath(new URL("../../[slug]/renduLegacy.tsx", import.meta.url)), "utf8")
 
   it("le compteur de scans n'affiche que le chiffre du commerçant", () => {
     // `{c.count || "1 240"}` : un visiteur lisait « 1 240 scans » sur une page où

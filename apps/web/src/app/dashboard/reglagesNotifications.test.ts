@@ -72,7 +72,7 @@ describe("nouveaux messages", () => {
     expect(route).toContain("notifierProprietaireLead")
     expect(route).toContain("after(")
     expect(lire("../../lib/submitLead.ts")).not.toContain("/api/emails/new-lead")
-    expect(lire("../[slug]/PublicPageClient.tsx")).toContain("submitLead")
+    expect(lire("../[slug]/renduLegacy.tsx")).toContain("submitLead")
   })
 })
 

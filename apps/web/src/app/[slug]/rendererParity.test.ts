@@ -23,7 +23,7 @@ const casesOf = (relUrl: string) => {
 // Le rendu de bloc du builder vit dans builderPreview.tsx (BlockPreview, extrait
 // de BuilderV4). On lit les deux fichiers en union pour rester robuste à un futur
 // re-découpage.
-const publicCases = casesOf("./PublicPageClient.tsx")
+const publicCases = casesOf("./renduLegacy.tsx")
 const builderCases = new Set([
   ...casesOf("../dashboard/builder/builderPreview.tsx"),
   ...casesOf("../dashboard/builder/BuilderV4.tsx"),

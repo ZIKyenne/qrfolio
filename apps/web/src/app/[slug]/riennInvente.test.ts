@@ -12,7 +12,7 @@ import { join } from "node:path"
 // Ce test l'étend à toute la page publiée.
 
 const ICI = __dirname
-const publique = ["PublicPageClient.tsx", "blocsPublics.tsx"]
+const publique = ["PublicPageClient.tsx", "renduLegacy.tsx", "blocsPublics.tsx"]
   .map(f => readFileSync(join(ICI, f), "utf8")).join("\n")
 
 /**

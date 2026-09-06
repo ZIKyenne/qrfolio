@@ -82,7 +82,7 @@ describe("les liens gardent le filtre déjà utilisé partout ailleurs", () => {
 })
 
 describe("aucune adresse brute ne subsiste dans le rendu", () => {
-  const pub = readFileSync(join(__dirname, "../../[slug]/PublicPageClient.tsx"), "utf8")
+  const pub = readFileSync(join(__dirname, "../../[slug]/renduLegacy.tsx"), "utf8")
   const apercu = readFileSync(join(__dirname, "./builderPreview.tsx"), "utf8")
 
   it("plus aucun cadre d'intégration ne reçoit l'adresse telle quelle", () => {

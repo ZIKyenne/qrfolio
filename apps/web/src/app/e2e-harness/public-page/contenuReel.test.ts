@@ -31,9 +31,9 @@ const racine = join(ici, "..", "..")
 
 describe("les prix ne peuvent plus déborder de l'écran", () => {
   const SITES: [string, string][] = [
-    ["[slug]/PublicPageClient.tsx", "{p}</span>"],
-    ["[slug]/PublicPageClient.tsx", "{price}</span>"],
-    ["[slug]/PublicPageClient.tsx", "{price}</p>"],
+    ["[slug]/renduLegacy.tsx", "{p}</span>"],
+    ["[slug]/renduLegacy.tsx", "{price}</span>"],
+    ["[slug]/renduLegacy.tsx", "{price}</p>"],
     ["dashboard/builder/shared-renderer/primitives/MenuItemList.tsx", "{it.price}</span>"],
   ]
 

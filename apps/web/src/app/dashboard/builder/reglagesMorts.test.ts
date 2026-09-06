@@ -158,11 +158,11 @@ describe("les réglages redressés le 6 septembre restent branchés", () => {
   })
 
   it("le champ « délai souhaité » du devis apparaît quand il est activé", () => {
-    expect(lire("[slug]/PublicPageClient.tsx")).toContain('c.show_deadline === "yes"')
+    expect(lire("[slug]/renduLegacy.tsx")).toContain('c.show_deadline === "yes"')
   })
 
   it("« pleine largeur » change vraiment la largeur du bouton, des deux côtés", () => {
-    for (const f of ["[slug]/PublicPageClient.tsx", "dashboard/builder/builderPreview.tsx"]) {
+    for (const f of ["[slug]/renduLegacy.tsx", "dashboard/builder/builderPreview.tsx"]) {
       expect(lire(f), f).toContain('c.full_width !== "no"')
     }
   })
@@ -175,7 +175,7 @@ describe("les réglages redressés le 6 septembre restent branchés", () => {
   it("la plateforme choisie est annoncée au visiteur, sur les quatre blocs qui la proposent", () => {
     // external_shop l'affichait deja ; les trois autres la demandaient et
     // l'ignoraient. Meme forme partout : « via TheFork », « via Uber Eats ».
-    const pub = lire("[slug]/PublicPageClient.tsx")
+    const pub = lire("[slug]/renduLegacy.tsx")
     expect(pub.match(/via \{c\.platform\}/g) ?? [], "booking_button, table_booking, external_shop").toHaveLength(3)
     expect(lire("dashboard/builder/builderPreview.tsx").match(/via \{c\.platform\}/g) ?? []).toHaveLength(3)
     expect(lire("dashboard/builder/shared-renderer/models/orderOnline.ts"), "order_online").toContain("c.platform")
@@ -183,7 +183,7 @@ describe("les réglages redressés le 6 septembre restent branchés", () => {
 
   it("le titre du bloc pré-sauvegarde et celui du bloc application s'affichent", () => {
     expect(lire("dashboard/builder/shared-renderer/models/appDownload.ts")).toContain("c.label")
-    for (const f of ["[slug]/PublicPageClient.tsx", "dashboard/builder/builderPreview.tsx"]) {
+    for (const f of ["[slug]/renduLegacy.tsx", "dashboard/builder/builderPreview.tsx"]) {
       expect(lire(f), `presave dans ${f}`).toMatch(/\{c\.title && <p[^>]*>\{c\.title\}<\/p>\}/)
     }
   })

@@ -58,7 +58,7 @@ describe("les fichiers déjà découpés ne regonflent pas", () => {
     "app/dashboard/qr-codes/QRStudio.tsx": 3000,
     "app/dashboard/profile/page.tsx": 3000,
     "app/dashboard/builder/BuilderV4.tsx": 3050,
-    "app/[slug]/PublicPageClient.tsx": 2600,
+    "app/[slug]/renduLegacy.tsx": 2400,
     "app/HomeClient.tsx": 1500,
   }
   for (const [f, max] of Object.entries(PLAFOND)) {

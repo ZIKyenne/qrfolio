@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url"
 
 const ici = dirname(fileURLToPath(import.meta.url))
 const smart = readFileSync(join(ici, "SmartImage.tsx"), "utf8")
-const publique = ["PublicPageClient.tsx", "blocsPublics.tsx"].map(f => readFileSync(join(ici, "..", "app", "[slug]", f), "utf8")).join("\n")
+const publique = ["PublicPageClient.tsx", "renduLegacy.tsx", "blocsPublics.tsx"].map(f => readFileSync(join(ici, "..", "app", "[slug]", f), "utf8")).join("\n")
 
 describe("les images de la page publiée", () => {
   it("SmartImage accepte une largeur d'affichage", () => {

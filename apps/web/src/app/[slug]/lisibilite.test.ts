@@ -34,7 +34,7 @@ function tropPetit(src: string, fichier: string): string[] {
 
 describe("les descriptions de la page publiée se lisent", () => {
   it("aucune description sous 13 px dans le renderer historique", () => {
-    expect(tropPetit(readFileSync(join(ici, "PublicPageClient.tsx"), "utf8"), "PublicPageClient.tsx")).toEqual([])
+    expect(tropPetit(readFileSync(join(ici, "renduLegacy.tsx"), "utf8"), "renduLegacy.tsx")).toEqual([])
   })
 
   it("aucune description sous 13 px dans les renderers publics partagés", () => {

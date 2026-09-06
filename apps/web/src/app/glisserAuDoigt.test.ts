@@ -73,7 +73,7 @@ describe("tout ce qui se glisse à la souris se glisse au doigt", () => {
 
   it("le carrousel public défile verticalement mais se balaie horizontalement", () => {
     // `pan-y` et non `none` : le doigt doit encore pouvoir faire défiler la page.
-    const src = ["app/[slug]/PublicPageClient.tsx", "app/[slug]/blocsPublics.tsx"].map(f => readFileSync(join(SRC, f), "utf8")).join("\n")
+    const src = ["app/[slug]/PublicPageClient.tsx", "app/[slug]/renduLegacy.tsx", "app/[slug]/blocsPublics.tsx"].map(f => readFileSync(join(SRC, f), "utf8")).join("\n")
     expect(src).toContain('touchAction: "pan-y"')
     expect(src).not.toContain('touchAction: "none"')
   })

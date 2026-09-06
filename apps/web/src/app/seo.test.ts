@@ -236,7 +236,7 @@ describe("pages publiques des utilisateurs", () => {
   })
 
   it("un seul <h1>, toujours présent", () => {
-    const client = read("[slug]/PublicPageClient.tsx")
+    const client = read("[slug]/PublicPageClient.tsx") + read("[slug]/renduLegacy.tsx")
     expect(client).toContain("const h1Owner = blocks.find")
     expect(client).toContain("h1Owner === block.id")
     // Repli quand aucun bloc profil n'est nommé : le titre de la page.

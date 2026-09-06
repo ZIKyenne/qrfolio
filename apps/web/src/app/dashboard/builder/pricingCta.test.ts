@@ -10,7 +10,7 @@ describe("parité pricing CTA — même source de décision dans les deux render
     expect(read("./builderPreview.tsx").includes("pricingCtaModel(")).toBe(true)
   })
   it("le rendu public consomme pricingCtaModel", () => {
-    expect(read("../../[slug]/PublicPageClient.tsx").includes("pricingCtaModel(")).toBe(true)
+    expect(read("../../[slug]/renduLegacy.tsx").includes("pricingCtaModel(")).toBe(true)
   })
 })
 

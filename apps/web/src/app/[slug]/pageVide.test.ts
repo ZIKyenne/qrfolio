@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { BLOCK_DEFS } from "../dashboard/builder/blockDefs"
 
-const page = readFileSync(join(__dirname, "PublicPageClient.tsx"), "utf8")
+const page = ["PublicPageClient.tsx", "renduLegacy.tsx"].map(f => readFileSync(join(__dirname, f), "utf8")).join("\n")
 
 // Ce que voit le CLIENT qui scanne, quand le commerçant a ajouté un bloc sans le
 // remplir. Constaté en rendant les 178 types de blocs un par un, tels qu'ils

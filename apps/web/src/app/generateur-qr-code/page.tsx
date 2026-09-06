@@ -7,6 +7,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { VERTICAL_ORDER, VERTICALS } from "../qr-code/verticals"
 import GeneratorClient from "./GeneratorClient"
 import { creerUrl } from "../creer/entry"
+import { ogFor } from "@/lib/seoMeta"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -14,10 +15,9 @@ const URL = `${APP}/generateur-qr-code`
 
 export const metadata: Metadata = {
   title: "Générateur de QR code gratuit — en ligne, PNG & SVG",
-  description: "Créez un QR code en ligne : lien, texte, WiFi, email, téléphone. Couleurs, logo, téléchargement PNG et SVG haute résolution. Gratuit, sans compte, sans filigrane.",
+  description: "Créez un QR code en ligne : lien, texte, Wi-Fi, e-mail, téléphone. Couleurs, logo, export PNG et SVG haute résolution. Gratuit, sans compte.",
   alternates: { canonical: URL },
-  openGraph: { title: "Générateur de QR code gratuit | QRowg", description: "Créez un QR code en ligne (lien, WiFi, texte…) avec couleurs et logo. Téléchargement PNG/SVG, sans compte.", url: URL, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Générateur de QR code gratuit | QRowg", description: "Créez un QR code en ligne sans compte. PNG/SVG haute résolution." },
+  ...ogFor({ url: URL, title: "Générateur de QR code gratuit | QRowg", description: "Créez un QR code en ligne (lien, Wi-Fi, texte…) avec couleurs et logo. Téléchargement PNG/SVG, sans compte." }),
 }
 
 const FAQ = [
@@ -28,7 +28,7 @@ const FAQ = [
   { q: "Puis-je ajouter mon logo et mes couleurs ?", a: "Oui, gratuitement. Choisissez les couleurs, le style des modules, le niveau de correction et ajoutez votre logo au centre." },
 ]
 const STEPS = [
-  "Choisissez le type (lien, texte, WiFi, email ou téléphone) et saisissez votre contenu.",
+  "Choisissez le type (lien, texte, Wi-Fi, email ou téléphone) et saisissez votre contenu.",
   "Personnalisez les couleurs, le style et, si vous voulez, ajoutez votre logo.",
   "Vérifiez que le QR est bien scannable (indicateur en direct).",
   "Téléchargez-le en PNG ou SVG haute résolution, prêt à imprimer.",
@@ -47,7 +47,7 @@ export default async function GeneratorPage() {
     name: "Générateur de QR code gratuit QRowg", url: URL,
     applicationCategory: "UtilitiesApplication", operatingSystem: "Web",
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-    description: "Générateur de QR code gratuit en ligne (lien, WiFi, texte, email, téléphone) avec couleurs, logo et export PNG/SVG.",
+    description: "Générateur de QR code gratuit en ligne (lien, Wi-Fi, texte, email, téléphone) avec couleurs, logo et export PNG/SVG.",
   }
   const faqLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }
   const crumbLd = {
@@ -68,7 +68,7 @@ export default async function GeneratorPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(crumbLd) }} />
       <Particles behind />
 
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(9px,2.6vw,14px)" }}>
           <Link href="/auth/login" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Connexion</Link>
@@ -85,7 +85,7 @@ export default async function GeneratorPage() {
         <section style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 30px" }}>
           <p style={{ color: G, fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase" }}>Outil gratuit</p>
           <h1 style={{ color: INK, fontSize: "clamp(30px,6vw,50px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, margin: "12px 0 16px", textWrap: "balance" }}>Générateur de QR code gratuit</h1>
-          <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto", maxWidth: 620 }}>Créez votre QR code en ligne — lien, texte, WiFi, email ou téléphone. Couleurs, logo, aperçu en direct, téléchargement PNG et SVG. Gratuit, sans compte, sans filigrane.</p>
+          <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto", maxWidth: 620 }}>Créez votre QR code en ligne — lien, texte, Wi-Fi, email ou téléphone. Couleurs, logo, aperçu en direct, téléchargement PNG et SVG. Gratuit, sans compte, sans filigrane.</p>
         </section>
 
         {/* L'outil (îlot client) */}
@@ -140,7 +140,7 @@ export default async function GeneratorPage() {
         {/* Maillage : usages */}
         <section>
           <p style={{ color: G, fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", textAlign: "center", marginBottom: 14 }}>QR codes par usage</p>
-          <p style={{ textAlign: "center", margin: "0 0 14px" }}><Link href="/generateur-qr-code-wifi" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>📶 Besoin d'un QR code WiFi ? Utilisez le générateur WiFi dédié →</Link></p>
+          <p style={{ textAlign: "center", margin: "0 0 14px" }}><Link href="/generateur-qr-code-wifi" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>📶 Besoin d'un QR code Wi-Fi ? Utilisez le générateur Wi-Fi dédié →</Link></p>
           <p style={{ textAlign: "center", margin: "0 0 14px" }}><Link href="/outils/testeur-qr-code" style={{ color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 600 }}>🔎 Avant d&apos;imprimer : testez votre QR code (contraste, marge, définition) →</Link></p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
             {usages.map(v => (

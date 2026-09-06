@@ -18,7 +18,7 @@ export function EditorAlbumBlock({ content, ctx }: EditorAdapterProps) {
     <div style={{ padding: "10px 16px", ...surfaceStyle }}>
       <div style={{ background: "rgba(29,185,84,0.06)", border: "1px solid rgba(29,185,84,0.2)", borderRadius: 14, overflow: "hidden" }}>
         {cover.src
-          ? <EditorSharedImage model={cover} style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }} />
+          ? <EditorSharedImage model={cover} width={480} height={160} sizes="(max-width: 640px) 100vw, 480px" style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }} />
           : <div style={{ height: 140, background: "rgba(29,185,84,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48 }}>💿</div>}
         <div style={{ padding: "14px" }}>
           <p style={{ color: text, fontSize: 18, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }}>{title}</p>

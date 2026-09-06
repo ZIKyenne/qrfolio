@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { readFileSync, statSync } from "node:fs"
+import { readFileSync, readdirSync, statSync } from "node:fs"
 import { join, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -44,4 +44,32 @@ describe("les icônes ne plombent pas chaque page", () => {
     expect(dimensionsPng(join(ici, "icon.png")).l).toBeGreaterThanOrEqual(96)
     expect(dimensionsPng(join(ici, "apple-icon.png")).l).toBeGreaterThanOrEqual(120)
   })
+})
+
+// Le build a échoué là-dessus le 6 septembre : « Page /guides/[slug]/opengraph-image
+// cannot use both export const runtime = 'edge' and export generateStaticParams ».
+// Next 16 refuse la combinaison, et rien ne la signale avant le build de production.
+describe("images de partage : runtime et pré-génération ne se contredisent pas", () => {
+  const routes: string[] = []
+  const marcher = (d: string) => {
+    for (const n of readdirSync(d)) {
+      const p = join(d, n)
+      if (statSync(p).isDirectory()) { if (n !== "node_modules") marcher(p) }
+      else if (/^(opengraph|twitter)-image\.tsx$/.test(n)) routes.push(p)
+    }
+  }
+  marcher(ici)
+
+  it("au moins une route image existe (sinon ce test ne garde rien)", () => {
+    expect(routes.length).toBeGreaterThan(0)
+  })
+
+  for (const r of routes) {
+    it(`${r.replace(ici, "")} : pas d'edge ET de generateStaticParams`, () => {
+      const src = readFileSync(r, "utf8")
+      const edge = /^export const runtime = ["']edge["']/m.test(src)
+      const statiques = /export (async )?function generateStaticParams/.test(src)
+      expect(edge && statiques).toBe(false)
+    })
+  }
 })

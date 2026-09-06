@@ -76,7 +76,7 @@ describe("les descriptions de la page publiée se lisent", () => {
 describe("le texte de lecture du site et de l'éditeur ne descend plus sous 12 px", () => {
   const app = join(ici, "..")
   const cas: [string, string][] = [
-    ["HomeClient.tsx", "{tpl.includes.join(\" · \")}"],
+    ["homeSections/Templates.tsx", "{tpl.includes.join(\" · \")}"],
     ["dashboard/templates/page.tsx", "{template.description}</p>"],
     ["dashboard/templates/page.tsx", "✦ {template.highlight}"],
     ["dashboard/templates/page.tsx", "{template.name} · {template.category} · {blockCount} blocs"],

@@ -14,7 +14,7 @@ export default function CreerLayout({ children }: { children: React.ReactNode })
   return (
     <ToastProvider><ConfirmProvider>
       <div style={{ minHeight: "100dvh", background: "#080808", display: "flex", flexDirection: "column" }}>
-        <header style={{
+        <header className="qf-entete" style={{
           flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between",
           gap: 16, padding: "14px clamp(16px, 4vw, 28px)",
           borderBottom: "1px solid rgba(255,255,255,0.06)",

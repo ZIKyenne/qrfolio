@@ -24,6 +24,8 @@ describe("la fenêtre Publier", () => {
   it("la primitive défile bien et ferme à Échap", () => {
     const modal = readFileSync(join(__dirname, "../../../components/ui/Modal.tsx"), "utf8")
     expect(modal).toContain('maxHeight: "90dvh", overflowY: "auto"')
-    expect(modal).toContain('e.key === "Escape"')
+    // Échap, piège de focus et restitution vivent dans le hook partagé.
+    expect(modal).toContain("useDialogue(open, onClose")
+    expect(readFileSync(join(__dirname, "../../../components/ui/useDialogue.ts"), "utf8")).toContain('e.key === "Escape"')
   })
 })

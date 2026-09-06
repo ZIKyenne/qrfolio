@@ -68,6 +68,7 @@ export function BuilderMobileHarness() {
         <MobileBuilderShell
           pageName="Ma page de test" saving={false} saved={!saveError} saveError={saveError} hasUnsaved={false}
           canUndo canRedo onUndo={() => {}} onRedo={() => {}} onBack={() => {}}
+          confirm={async () => true}   /* harnais : rien à confirmer */
           blocks={blocks} selectedId={selectedId} onSelect={setSelectedId}
           favorites={favorites} recents={recents} onToggleFavorite={t => setFavorites(f => toggleFavorite(f, t))}
           onAddBlock={onAddBlock}

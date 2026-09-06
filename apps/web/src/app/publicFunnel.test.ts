@@ -20,7 +20,7 @@ const read = (p: string) => readFileSync(join(SRC, p), "utf8")
 
 /** Les seuls endroits où mener au formulaire d'inscription se justifie. */
 const EXCEPTIONS: Record<string, { n: number; raison: string }> = {
-  "app/HomeClient.tsx": { n: 2, raison: "les deux offres PAYANTES : choisir un plan suppose un compte" },
+  "app/homeSections/Pricing.tsx": { n: 2, raison: "les deux offres PAYANTES : choisir un plan suppose un compte" },
   "app/creer/entry.ts": { n: 1, raison: "un commentaire qui explique justement pourquoi on n'y mène plus" },
   "app/dashboard/DashboardShell.tsx": { n: 1, raison: "la carte « Créer mon compte » du visiteur : elle promet un compte, elle en donne un" },
   "app/dashboard/builder/BuilderV4.tsx": { n: 1, raison: "le mur de la publication : publier exige une page en base, donc un compte" },
@@ -69,7 +69,7 @@ describe("les portes d'entrée mènent à l'essai", () => {
   })
 
   it("l'offre gratuite : rien à payer, donc rien à ouvrir avant d'essayer", () => {
-    const h = read("app/HomeClient.tsx")
+    const h = read("app/homeSections/Pricing.tsx")
     const ligne = h.split("\n").find(l => l.includes("free:") && l.includes("cta:")) || ""
     expect(ligne).toContain('href: "/creer"')
     // Les offres payantes, elles, gardent l'inscription.
@@ -113,7 +113,7 @@ describe("les portes d'entrée mènent à l'essai", () => {
 
   it("« Nous contacter » mène au contact, pas à l'inscription", () => {
     // Le bouton disait « Nous contacter » et ouvrait le formulaire d'inscription.
-    const h = read("app/HomeClient.tsx")
+    const h = read("app/homeSections/Faq.tsx")
     const i = h.indexOf("Nous contacter")
     expect(i).toBeGreaterThan(0)
     expect(h.slice(Math.max(0, i - 900), i)).toContain('href="/contact"')

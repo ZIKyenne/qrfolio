@@ -106,6 +106,61 @@ Aucun post en statut `error` ni `draft` sur Buffer au 03/09.
 `#boulangerie #pausedejeuner #organisation #qrcode`
 **Tableau** : QR code food truck
 
+---
+
+## 06/09 — production du jour
+
+> **Dépôt fait** (15 PNG via `QRowg-Depot.cmd`), puis **5 posts mis en file** : carrousel
+> Instagram (19 h 07 UTC), carrousel photo TikTok (07/09, 06 h 40) et les 3 épingles sur
+> 3 tableaux distincts — QR code salon coiffure (10 h 26), QR code restaurant (13 h 17),
+> QR code boutique commerce (18 h 27). **File à 5/10**, aucune erreur.
+> Contrôle qualité : **15 visuels, 0 alerte**, chaque QR décodé vers son lien tracké.
+> Seule l'épingle **hôtel** reste en réserve `dispo` (voir la note plus bas).
+
+| statut | fichier | canal cible | tableau / meta | angle | lien | ajouté le |
+|---|---|---|---|---|---|---|
+| en-file | qr-code-carte-enfants-jeu-table-restaurant-01..06.png | Instagram (carrousel) | — | restaurant · carte enfants sur le set de table · les parents restent jusqu'au dessert | https://qrowg.com/qr-code/restaurant | 2026-09-06 |
+| en-file | tiktok-qr-code-carte-enfants-jeu-table-restaurant-01..06.png | TikTok (carrousel photo) | — | idem, copies 1080×1350 | https://qrowg.com/qr-code/restaurant | 2026-09-06 |
+| en-file | qr-code-tarifs-durees-prestations-salon-coiffure.png | Pinterest | QR code salon coiffure (726416683586817657) | salon/coiffeur · tarifs et durées des prestations · le prix affiché sans avoir à le demander | https://qrowg.com/qr-code/salon | 2026-09-06 |
+| en-file | qr-code-menu-buffet-reception-traiteur.png | Pinterest | QR code restaurant (726416683586817614) | traiteur · formules buffet et devis · la demande aboutit au lieu de dormir dans une boîte mail | https://qrowg.com/qr-code/artisan | 2026-09-06 |
+| en-file | qr-code-carte-cadeau-dematerialisee-boutique.png | Pinterest | QR code boutique commerce (726416683586817655) | commerce · carte cadeau dématérialisée · offrir sans emballer ni imprimer | https://qrowg.com/qr-code/boutique | 2026-09-06 |
+| **dispo** | qr-code-arrivee-tardive-check-in-autonome-hotel.png | Pinterest | QR code hôtel (726416683586817656) | hôtel/chambre d'hôtes · arrivée tardive en autonomie · le code, l'étage et la marche à suivre sur la porte | https://qrowg.com/qr-code/hotel | 2026-09-06 |
+
+> L'épingle **hôtel** a été rendue puis écartée de la sélection du jour pour respecter la
+> règle du pont d'audience (`audience-bridge.md` : une seule épingle hors-food par jour ;
+> le salon occupait déjà cette place). Elle est contrôlée, QR décodé, réutilisable telle
+> quelle un jour où le quota hors-food est libre. Son fichier vit dans
+> `social-a-deposer/2026-09-06/`.
+
+> La vidéo `qr-code-carte-enfants-jeu-table-restaurant-reel.mp4` (32,2 s) reste **manuelle**
+> et n'entre jamais dans ce circuit.
+
+### qr-code-tarifs-durees-prestations-salon-coiffure
+**Titre Pinterest** : Tarifs coiffeur : le prix affiché, sans avoir à demander
+**Description** : « C'est combien, un balayage ? » Personne n'ose poser la question au bac, et la cliente découvre le montant à la caisse. Un QR sur le miroir ouvre la carte des prestations : chaque geste, sa durée, son tarif. Les prix changent en janvier, la page suit, l'affiche reste la même. Idée d'organisation pour salon de coiffure, barbier et institut de beauté.
+`#coiffure #salondecoiffure #organisation #qrcode`
+**Tableau** : QR code salon coiffure
+
+### qr-code-menu-buffet-reception-traiteur
+**Titre Pinterest** : Traiteur : les formules buffet consultables en un scan
+**Description** : La demande de devis part par mail un mardi soir, et personne ne rappelle. Le client compare ailleurs, la réception se fera sans toi. Un QR sur ta carte ouvre les formules buffet : les menus, le prix par personne, le formulaire à remplir en deux minutes. Les tarifs bougent à la saison, la page suit, la carte reste la même. Idée pratique pour traiteur, chef à domicile et organisation de réception.
+`#traiteur #reception #buffet #qrcode`
+**Tableau** : QR code restaurant
+
+### qr-code-carte-cadeau-dematerialisee-boutique
+**Titre Pinterest** : Carte cadeau dématérialisée : offrir sans emballer ni imprimer
+**Description** : Le cadeau se décide la veille, la boutique est fermée et le bon papier dort dans le tiroir. Un QR envoyé par message ouvre la carte cadeau : le montant, la date de validité, les conditions, l'adresse de la boutique. Rien à imprimer, rien à perdre au fond d'un sac, et le montant se met à jour sans réimprimer quoi que ce soit. Idée pour boutique, commerce de proximité et créateur.
+`#cartecadeau #boutique #commercelocal #qrcode`
+**Tableau** : QR code boutique commerce
+
+### qr-code-arrivee-tardive-check-in-autonome-hotel *(réserve, non planifiée)*
+**Titre Pinterest** : Arrivée tardive : le check-in qui se fait sans toi
+**Description** : Le train a du retard, il sonne à 23 h et tu dors depuis une heure. Un QR sur la porte ouvre la page d'arrivée : le code de la boîte à clés, l'étage, la marche à suivre, qui appeler en cas de souci. Le code change à chaque réservation, l'autocollant reste le même. Idée pratique pour chambre d'hôtes, location saisonnière et petit hôtel.
+`#chambredhotes #locationsaisonniere #hotel #qrcode`
+**Tableau** : QR code hôtel
+
+---
+
 ### qr-code-carte-bieres-pression-du-moment-bar
 **Titre Pinterest** : Bières pression : ce qui coule ce soir, à jour
 **Description** : Le fût de la blonde artisanale est vide depuis mardi et l'ardoise l'annonce encore. Le client commande, le serveur s'excuse, la vente se transforme en négociation. Un QR sur la table ouvre la sélection pression du soir : ce qui coule, le degré, le prix — modifié en dix secondes depuis le téléphone du patron. Idée simple pour bar, brasserie et pub.

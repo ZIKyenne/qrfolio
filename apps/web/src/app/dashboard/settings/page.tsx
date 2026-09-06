@@ -221,8 +221,8 @@ export default function SettingsPage() {
   )
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#080808", padding: "32px 28px", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
-      <style>{`input:focus,textarea:focus{border-color:color-mix(in srgb, var(--accent) 50%, transparent)!important;background:#111009!important}`}</style>
+    <div className="qf-reglages" style={{ minHeight: "100dvh", background: "#080808", padding: "32px 28px", fontFamily: "DM Sans, sans-serif", position: "relative" }}>
+      <style>{`.qf-reglages input:focus,.qf-reglages textarea:focus{border-color:color-mix(in srgb, var(--accent) 50%, transparent);background:#111009}`}</style>
 
       {/* Particules dorées en fond (comble le vide, comme la landing) */}
       <Particles />

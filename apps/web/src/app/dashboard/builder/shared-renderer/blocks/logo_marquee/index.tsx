@@ -6,6 +6,7 @@ import { safeImageUrl, clampInt } from "../../models/layoutStyle"
 import { LayoutSurface, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { Marquee } from "../../primitives/Marquee"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 export function marqueeLogos(c: Record<string, any>): { src: string; name: string }[] {
   return extractIndexed<{ src: string; name: string }>(c || {}, 10, (src, i) => {
@@ -28,7 +29,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
           {logos.map((l, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: Math.round(h * u.scale), flexShrink: 0 }}>
               {l.src
-                ? <img src={l.src} alt={l.name} loading="lazy" decoding="async" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ maxHeight: "100%", maxWidth: Math.round(120 * u.scale), objectFit: "contain", filter: grey ? "grayscale(1)" : undefined, opacity: grey ? 0.75 : 1 }} />
+                ? <SmartImage src={l.src} alt={l.name} width={120} height={60} sizes="120px" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ maxHeight: "100%", maxWidth: Math.round(120 * u.scale), objectFit: "contain", filter: grey ? "grayscale(1)" : undefined, opacity: grey ? 0.75 : 1 }} />
                 : <span style={{ color: u.MUTED, fontSize: Math.round(13 * u.scale), fontWeight: 700, whiteSpace: "nowrap", fontFamily: u.FONT_B }}>{l.name}</span>}
             </div>
           ))}

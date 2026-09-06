@@ -52,11 +52,15 @@
 | Commerce / boutique | Retours & garantie sur le ticket de caisse | 05/09 |
 | Boulangerie | Carte des sandwichs du midi | 05/09 |
 | Bar / brasserie | Bières pression du moment | 05/09 |
+| Restaurant | Carte enfants : jeu / coloriage sur le set de table (carrousel + reel) | 06/09 |
+| Salon / coiffeur | Tarifs et durées des prestations affichés au miroir | 06/09 |
+| Traiteur | Formules buffet et demande de devis | 06/09 |
+| Commerce / boutique | Carte cadeau dématérialisée | 06/09 |
 
 ## Angles NEUFS disponibles (piocher ici en priorité)
-- Restaurant : carte enfants · plat à emporter du soir · anniversaire / privatisation ·
+- Restaurant : plat à emporter du soir · anniversaire / privatisation ·
   fiche « d'où vient ce plat » (producteurs) · le service du midi en 20 minutes chrono ·
-  la carte des softs et sans-alcool.
+  la carte des softs et sans-alcool · le menu de Noël réservé dès novembre.
 - Bar : carte des cocktails saisonnière · quiz / jeu de table ·
   happy hour qui change selon l'heure · la carte des softs maison · le programme du dimanche sport.
 - Boulangerie : commande de galette / bûche selon la saison · liste d'allergènes ·
@@ -64,8 +68,11 @@
 - Food truck : le camion privatisé pour un événement · la carte de la semaine par thème.
 - Marché / producteur : la recette du produit de saison · le calendrier des marchés du mois.
 - Commerce : inscription newsletter en caisse · parrainage · la notice du produit sans papier ·
-  la carte cadeau dématérialisée · le mode d'emploi de l'article en cabine ·
-  les horaires exceptionnels affichés en vitrine.
+  le mode d'emploi de l'article en cabine · les horaires exceptionnels affichés en vitrine.
+- Hôtel / chambre d'hôtes : l'arrivée tardive en autonomie (code, étage, marche à suivre —
+  **visuel déjà produit et contrôlé, en réserve**) · le plan des transports depuis la gare.
+- Salon / coiffeur : le créneau libéré à la dernière minute · la routine d'entretien
+  après un balayage · la carte cadeau du salon.
 - Transverse : « ton QR imprimé en 2024 marche encore » (QR dynamique) ·
   le plafond souple (la page ne se coupe pas) · QR statique vs dynamique en 20 s ·
   ce que ton support papier ne te dit pas (mesure) · un support, une page, un chiffre.
@@ -135,6 +142,11 @@
 - « Le ticket qui explique le retour. »
 - « À midi, la file veut savoir ce qu'il reste. »
 - « Les pressions changent. L'ardoise, jamais. »
+- « Les enfants ont fini. Les parents demandent l'addition. »
+- « Le prix, personne n'ose le demander. »
+- « Le devis part par mail. La réponse, jamais. »
+- « Offrir sans emballer, ni imprimer. »
+- « Il arrive à 23 h. Toi, tu dors. » *(en réserve, non publiée)*
 
 | 05/09 | commerce / boutique (100 % inédit) | qr-code-stock-disponible-magasin-boutique (carrousel IG + TikTok + reel 32,2 s), qr-code-retours-garantie-ticket-caisse-boutique, qr-code-carte-sandwichs-du-midi-boulangerie, qr-code-carte-bieres-pression-du-moment-bar | Pinterest, IG, TikTok, X |
 
@@ -158,3 +170,36 @@
 > **273 vues, 58,95 min de visionnage, 12,91 s en moyenne** — contre 3,88 s le 03/09.
 > Le temps de visionnage a triplé. C'est le seul canal où le contenu est vu :
 > priorité TikTok, volume Pinterest volontairement réduit à **3 épingles** au lieu de 5.
+
+| 06/09 | restaurant · carte enfants (100 % inédit) | qr-code-carte-enfants-jeu-table-restaurant (carrousel IG + TikTok + reel 32,2 s), qr-code-tarifs-durees-prestations-salon-coiffure, qr-code-menu-buffet-reception-traiteur, qr-code-carte-cadeau-dematerialisee-boutique | Pinterest, IG, TikTok |
+
+> **Note 06/09 — file Buffer trouvée VIDE (0/10)**, les 5 posts du 05/09 sont partis.
+> Réserve `_STOCK` vide au démarrage (tout en `en-file`) : production 100 % neuve.
+> Secteur du jour : **restaurant · carte enfants**, jamais traité. Rotation respectée
+> (05/09 = commerce/boutique). 4 angles neufs, 3 gabarits d'épingle distincts
+> (layouts 0, 1, 3) sur **3 tableaux distincts** — QR code salon coiffure (premier
+> épinglage sur ce tableau), QR code restaurant, QR code boutique commerce.
+> Contrôle qualité : **15 visuels, 0 alerte**, chaque QR décodé vers son lien tracké.
+> Vidéo Motion **32,2 s**, 8 scènes, 8 moteurs différents (glitch · shatter · pendulum ·
+> scan · focus · publish · stats · portal), palette `or` stable, scrim 0,74,
+> `maxDuration: 36` (validateur actif, « rien à signaler ») — **à publier à la main**.
+> **Pont d'audience appliqué** : une épingle hors-food maximum par jour. Une première
+> épingle « hôtel · arrivée tardive » avait été rendue puis remplacée par le traiteur
+> pour tenir cette règle ; elle part en réserve, contrôlée et réutilisable.
+> **Dépôt fait** (15 PNG via `QRowg-Depot.cmd`), puis **5 posts mis en file** :
+> carrousel Instagram (19 h 07 UTC), carrousel photo TikTok (07/09, 06 h 40) et les
+> 3 épingles Pinterest — QR code salon coiffure (10 h 26), QR code restaurant (13 h 17),
+> QR code boutique commerce (18 h 27). **File à 5/10**, aucune erreur.
+> Le stock repasse à vide (`en-file`), **sauf** l'épingle hôtel gardée en `dispo`.
+> **Apprentissage Buffer.** Pinterest : **0 impression sur la totalité des épingles
+> publiées depuis le 02/09**, sans exception — y compris les trois épingles du test de
+> placement du 04/09, tableaux historiques (Productivité au travail, Templates gratuits)
+> **et** témoin (QR code restaurant). Le test est de fait déjà tranché : le placement
+> n'est pas la cause. Reste la **cause n°2 du diagnostic — domaine `qrowg.com` non
+> revendiqué / compte déclassé**. Produire plus d'épingles ne changera rien tant que ce
+> point n'est pas réglé (Paramètres Pinterest → Comptes connectés → revendiquer le site).
+> TikTok reste le seul canal distribué : 267 vues le 05/09, mais **4,44 s de visionnage
+> moyen contre 12,82 s le 04/09**. Le pic du 04/09 (restaurant · liste d'attente du
+> samedi soir) tenait au sujet, pas au format : on garde donc la **restauration en
+> tension de service** et on change l'angle — d'où la carte enfants aujourd'hui.
+> Instagram : toujours 0 vue, 0 reach sur les carrousels.

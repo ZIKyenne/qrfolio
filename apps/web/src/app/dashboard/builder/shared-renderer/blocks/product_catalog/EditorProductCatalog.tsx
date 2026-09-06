@@ -15,7 +15,7 @@ export function EditorProductCatalog({ content, ctx }: EditorAdapterProps) {
           : items.map((p, i) => (
             <div key={i} style={{ display: "flex", gap: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
               {p.img.src
-                ? <EditorSharedImage model={p.img} style={{ width: 70, height: 70, objectFit: "cover", flexShrink: 0 }} />
+                ? <EditorSharedImage model={p.img} width={70} height={70} sizes="70px" style={{ width: 70, height: 70, objectFit: "cover", flexShrink: 0 }} />
                 : <div style={{ width: 70, height: 70, background: "rgba(249,115,22,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>🛍️</div>}
               <div style={{ flex: 1, padding: "8px 10px 8px 0" }}>
                 <p style={{ color: text, fontSize: 12, fontWeight: 700, margin: "0 0 2px" }}>{p.name}</p>

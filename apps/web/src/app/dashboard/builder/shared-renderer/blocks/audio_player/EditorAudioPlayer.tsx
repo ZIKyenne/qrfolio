@@ -1,6 +1,7 @@
 "use client"
 import { audioPlayerViewModel } from "../../models/audioPlayer"
 import type { EditorAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 // Éditeur : carte représentative (barre de progression décorative), aucun lecteur réel — fidèle legacy.
 export function EditorAudioPlayer({ content, ctx }: EditorAdapterProps) {
@@ -11,7 +12,7 @@ export function EditorAudioPlayer({ content, ctx }: EditorAdapterProps) {
       <div style={{ background: "rgba(167,139,250,0.06)", border: "1.5px solid rgba(167,139,250,0.22)", borderRadius: 14, padding: "13px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
           {cover
-            ? <img src={cover} alt="" style={{ width: 46, height: 46, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} />
+            ? <SmartImage src={cover} alt="" width={46} height={46} sizes="46px" style={{ width: 46, height: 46, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} />
             : <div style={{ width: 46, height: 46, borderRadius: 9, background: "rgba(167,139,250,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎧</div>}
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 1px" }}>{title}</p>

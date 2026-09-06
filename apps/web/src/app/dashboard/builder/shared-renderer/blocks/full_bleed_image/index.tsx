@@ -4,6 +4,7 @@
 // obtenir une bande régulière, utile en tête de page ou entre deux sections.
 import { safeImageUrl, clampInt, edgeCss, radiusOf } from "../../models/layoutStyle"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 const HEIGHTS: Record<string, number> = { "Petite": 140, "Moyenne": 220, "Grande": 320, "Très grande": 420 }
 
@@ -16,7 +17,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
   return (
     <div style={{ padding: edgeCss(c.edge ?? "Bord à bord", u.scale) }}>
       {img
-        ? <img src={img} alt={String(c.caption || "")} loading="lazy" decoding="async"
+        ? <SmartImage src={img} alt={String(c.caption || "")} width={1200} height={600} sizes="100vw"
             onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
             style={{ width: "100%", display: "block", borderRadius: radius, ...(auto ? {} : { height: Math.round(h * u.scale), objectFit: "cover" }) }} />
         : <div style={{ width: "100%", height: Math.round((auto ? 200 : h) * u.scale), borderRadius: radius, background: u.FILL, border: `1px dashed ${u.LINE_STRONG}`, display: "flex", alignItems: "center", justifyContent: "center", color: u.MUTED, fontSize: Math.round(12 * u.scale), fontFamily: u.FONT_B }}>Ajoutez une image</div>}

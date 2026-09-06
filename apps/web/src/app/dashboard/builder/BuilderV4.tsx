@@ -52,6 +52,7 @@ import { BLOCK_DEFS } from "./blockDefs"
   import { printHandoff, printStudioUrl } from "../print-studio/handoff"
   import PublishedScreen from "./PublishedScreen"
   import { browserStorage, loadDraft, saveDraft, clearDraft, makeDraft, draftIsMeaningful, draftSummary, type LocalDraft } from "./draftStore"
+  import { useDialogue } from "@/components/ui/useDialogue"
 
   // Helper module-scope (evite la temporal-dead-zone du UUID_RE interne au composant).
   const IS_UUID = (s?: string | null): boolean => !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
@@ -83,6 +84,7 @@ import { BLOCK_DEFS } from "./blockDefs"
 
   export default function BuilderV4({ pageId }: { pageId?: string }) {
     const confirm = useConfirm()
+    const toast = useToast()
     const undoRedo = useUndoRedo<EditorSnapshot>({ blocks: INITIAL_BLOCKS, theme: PRESET_THEMES.midnight_gold, name: INITIAL_NAME })
     // Refs synchronisées : thème/nom lus AU MOMENT d'un push d'historique (les push
     // de blocs et de nom ont besoin du thème courant, et inversement).
@@ -258,7 +260,7 @@ import { BLOCK_DEFS } from "./blockDefs"
     const [qrShortCode, setQrShortCode] = useState("")
     // Cible du QR (lien de scan) + telechargement PNG genere en local (sans API externe).
     const qrTarget = qrShortCode ? `${typeof window !== "undefined" ? window.location.origin : ""}/q/${qrShortCode}` : ""
-    // Pont vers le Print Studio : on déduit métier, usage et textes depuis la page elle-même,
+    // Pont vers l'atelier d'impression : on déduit métier, usage et textes depuis la page elle-même,
     // pour que l'utilisateur atterrisse sur un support déjà rempli au lieu d'une page blanche.
     const handoff = useMemo(() => printHandoff({ title: pageName, blocks: blocks.filter(b => b.visible !== false) }), [pageName, blocks])
     const downloadQrPng = async () => {
@@ -269,7 +271,7 @@ import { BLOCK_DEFS } from "./blockDefs"
     const [showQrPanel, setShowQrPanel] = useState(false)
     const [pageStats, setPageStats] = useState({ views: 0, scans: 0 })
     const [clickCounts, setClickCounts] = useState<Record<string, number>>({}) // clics par bloc (90j) pour le compteur builder
-    const [messages, setMessages] = useState<Message[]>([{ role: "assistant", content: "Salut ! 👋 Décris ton activité et je construis ta page." }])
+    const [messages, setMessages] = useState<Message[]>([{ role: "assistant", content: "Bonjour ! 👋 Décrivez votre activité et je construis votre page." }])
     const [aiInput, setAiInput] = useState("")
     const [aiLoading, setAiLoading] = useState(false)
     const messagesEnd = useRef<HTMLDivElement>(null)
@@ -493,6 +495,10 @@ import { BLOCK_DEFS } from "./blockDefs"
     // C06 — activation progressive : valeur ENV au 1er rendu (SSR-safe), override canary après montage.
     const BUILDER_REDESIGN = useBuilderRedesign()
     const [blockMenu, setBlockMenu] = useState<string | null>(null) // #10 : actions secondaires d'un bloc en bottom sheet
+    // La feuille « ⋯ » d'un bloc est une vraie fenêtre modale : rôle, Échap,
+    // piège de focus, focus rendu au bouton « ⋯ ».
+    const fermerMenuBloc = useCallback(() => setBlockMenu(null), [])
+    const { ref: menuBlocDlg, props: menuBlocDlgProps } = useDialogue(blockMenu !== null, fermerMenuBloc, { label: "Actions du bloc" })
     const [blockSearchFocus, setBlockSearchFocus] = useState(false) // #13 : recherche de bloc focus -> on masque la barre du bas pour degager les resultats
     const [preview, setPreview] = useState(false) // #02 : mode Apercu plein ecran (masque tout le chrome d'edition)
     const enterPreview = () => { setPreview(true); setMobileTab("canvas"); setSelectedId(null) }
@@ -1012,10 +1018,38 @@ import { BLOCK_DEFS } from "./blockDefs"
       preset.blocks.forEach(b => addBlock(b.type, mk(b.type, b.content)))
     }
 
+    // Une seule règle pour supprimer un bloc, quel que soit le chemin (panneau de
+    // réglages, feuille « ⋯ », barre mobile, touche Suppr) : on ne demande rien, on
+    // supprime, et on rend la marche arrière immédiate. Avant, le panneau de réglages
+    // ouvrait une confirmation et les trois autres chemins non — la même touche
+    // faisait deux choses différentes selon l'endroit d'où on la pressait.
+    function retirerBlocs(ids: string[], message: string) {
+      const supprimables = ids.filter(id => !blocks.find(b => b.id === id)?.locked)
+      if (supprimables.length === 0) return
+      // On garde la position d'origine de chacun : « Annuler » remet les blocs là où
+      // ils étaient, pas à la fin de la page.
+      const retires = blocks
+        .map((b, i) => ({ b, i }))
+        .filter(({ b }) => supprimables.includes(b.id))
+      setBlocks(p => p.filter(b => !supprimables.includes(b.id)))
+      if (selectedId && supprimables.includes(selectedId)) { setSelectedId(null); setRightTab("edit") }
+      setMultiSelection(prev => prev.filter(id => !supprimables.includes(id)))
+      toast.info(message, {
+        action: {
+          label: "Annuler",
+          onClick: () => {
+            setBlocks(p => {
+              const next = [...p]
+              for (const { b, i } of retires) next.splice(Math.min(i, next.length), 0, b)
+              return next
+            })
+          },
+        },
+      })
+    }
+
     function deleteBlock(id: string) {
-      if (blocks.find(b => b.id === id)?.locked) return
-      setBlocks(p => p.filter(b => b.id !== id))
-      if (selectedId === id) { setSelectedId(null); setRightTab("edit") }
+      retirerBlocs([id], "Bloc supprimé.")
     }
 
     function resetBlock(id: string) {
@@ -1067,9 +1101,8 @@ import { BLOCK_DEFS } from "./blockDefs"
     function deleteMulti() {
       const ids = multiSelection.length > 0 ? multiSelection : []
       if (ids.length === 0) return
-      setBlocks(p => p.filter(b => !ids.includes(b.id) || b.locked))
-      setMultiSelection([])
-      setSelectedId(null)
+      const n = ids.filter(id => !blocks.find(b => b.id === id)?.locked).length
+      retirerBlocs(ids, `${n} bloc${n > 1 ? "s" : ""} supprimé${n > 1 ? "s" : ""}.`)
     }
     // Le handler clavier global appelle ces actions via ref (toujours à jour).
     deleteMultiRef.current = deleteMulti
@@ -1384,6 +1417,34 @@ import { BLOCK_DEFS } from "./blockDefs"
             onToggleVisible={(id) => toggleVisible(id)} onToggleLock={(id) => toggleLock(id)} onToggleDraft={(id) => toggleDraft(id)}
             onMove={(id, dir) => setBlocks(prev => { const i = prev.findIndex(b => b.id === id); return i < 0 ? prev : reorderArray(prev, i, dir === -1 ? i - 1 : i + 2) })}
             onReset={(id) => resetBlock(id)}
+            confirm={(m) => confirm({ title: "Confirmer", message: m, confirmLabel: "Confirmer" })}
+            // Le thème, les modèles, le QR et le nom de la page n'existaient que dans
+            // la colonne de droite du bureau : sur téléphone, la coquille les cachait.
+            onRename={(v) => { setPageName(v); undoRedo.push({ blocks: blocksKbRef.current, theme: themeRef.current, name: v }, "pagename") }}
+            renderTheme={() => (
+              <ThemePanel theme={theme} onThemeChange={commitTheme} userPlan={userPlan}
+                previewName={(blocks.find(b => b.type === "profile")?.content as any)?.name || pageName}
+                previewAvatar={(blocks.find(b => b.type === "profile")?.content as any)?.avatar || ""} />
+            )}
+            renderTemplates={() => (
+              <button type="button" onClick={() => setShowTemplates(true)}
+                style={{ width: "100%", minHeight: 44, borderRadius: 10, border: "1px solid rgba(201,168,76,0.25)", background: "rgba(201,168,76,0.1)", color: G, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                Voir les modèles de page
+              </button>
+            )}
+            renderQr={() => (
+              pageStatus === "published" && qrTarget ? (
+                <div style={{ paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                  <p style={{ color: MUTED, fontSize: 10, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: 1, textAlign: "center" }}>Votre QR code</p>
+                  <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 8, marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <QRCanvas value={qrTarget} size={132} />
+                  </div>
+                  <button type="button" onClick={downloadQrPng} style={{ width: "100%", minHeight: 44, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 10, color: G, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>↓ Télécharger le QR (PNG)</button>
+                </div>
+              ) : (
+                <p style={{ margin: 0, fontSize: 12, color: MUTED, textAlign: "center" }}>Le QR est généré dès que la page est en ligne.</p>
+              )
+            )}
             pageStatus={pageStatus} publishing={publishing} publishError={publishError} onPublish={() => { void handlePublish() }}
             publicUrl={pageSlug ? `/${pageSlug}` : undefined}
             renderCanvas={() => blocks.map(b => (
@@ -1411,7 +1472,7 @@ import { BLOCK_DEFS } from "./blockDefs"
           <input value={pageName} onChange={e => { const v = e.target.value; setPageName(v); undoRedo.push({ blocks: blocksKbRef.current, theme: themeRef.current, name: v }, "pagename") }}
             aria-label="Nom de la page"
             // 18 px de haut sur téléphone : on tape à côté et on ouvre autre chose.
-            style={{ background: "transparent", border: "none", color: "#F5F0E8", fontSize: 13, fontWeight: 600, outline: "none", minWidth: 0, textOverflow: "ellipsis", ...(isMobile ? { flex: "1 1 0", minHeight: 40 } : { width: 160 }) }} />
+            style={{ background: "transparent", border: "none", color: "#F5F0E8", fontSize: 13, fontWeight: 600, outline: "none", minWidth: 0, textOverflow: "ellipsis", ...(isMobile ? { flex: "1 1 0", minHeight: 40 } : { width: 180, minHeight: 32, padding: "0 6px", borderRadius: 6 }) }} />
           {/* Statut de sauvegarde. Flag ON (C01) : indicateur unifié tokenisé + a11y (role=status/aria-live).
               Flag OFF : coquille historique inchangée (zéro régression). */}
           {BUILDER_REDESIGN ? (
@@ -1448,7 +1509,7 @@ import { BLOCK_DEFS } from "./blockDefs"
             <button onClick={() => { const p = undoRedo.undo(); if(p) applySnapshot(p) }}
               disabled={!undoRedo.canUndo()}
               title="Annuler — Ctrl+Z"
-              style={{ width: isMobile ? 40 : 28, height: isMobile ? 40 : 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canUndo() ? "pointer" : "default", color: undoRedo.canUndo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
+              style={{ width: isMobile ? 40 : 32, height: isMobile ? 40 : 32, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canUndo() ? "pointer" : "default", color: undoRedo.canUndo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
               onMouseEnter={e => { if(undoRedo.canUndo()) { e.currentTarget.style.background="rgba(201,168,76,0.1)"; e.currentTarget.style.borderColor="rgba(201,168,76,0.3)" }}}
               onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.08)" }}>
               <Undo2 size={15} />
@@ -1456,7 +1517,7 @@ import { BLOCK_DEFS } from "./blockDefs"
             <button onClick={() => { const n = undoRedo.redo(); if(n) applySnapshot(n) }}
               disabled={!undoRedo.canRedo()}
               title="Rétablir — Ctrl+Shift+Z"
-              style={{ width: isMobile ? 40 : 28, height: isMobile ? 40 : 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canRedo() ? "pointer" : "default", color: undoRedo.canRedo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
+              style={{ width: isMobile ? 40 : 32, height: isMobile ? 40 : 32, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: undoRedo.canRedo() ? "pointer" : "default", color: undoRedo.canRedo() ? "#F5F0E8" : "rgba(255,255,255,0.2)", fontSize: 13, transition: "all 0.15s" }}
               onMouseEnter={e => { if(undoRedo.canRedo()) { e.currentTarget.style.background="rgba(201,168,76,0.1)"; e.currentTarget.style.borderColor="rgba(201,168,76,0.3)" }}}
               onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.08)" }}>
               <Redo2 size={15} />
@@ -1465,13 +1526,13 @@ import { BLOCK_DEFS } from "./blockDefs"
 
           {/* Modèles de page complets (icone seule sur mobile pour degager la barre) */}
           <button onClick={() => setShowTemplates(true)} title="Partir d'un modèle de page complet"
-            style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: isMobile ? "0 12px" : "5px 10px", ...(isMobile ? { minHeight: 40, justifyContent: "center" } : {}), color: G, fontSize: 10, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+            style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 7, padding: isMobile ? "0 12px" : "0 12px", minHeight: isMobile ? 40 : 32, ...(isMobile ? { minHeight: 40, justifyContent: "center" } : {}), color: G, fontSize: 10, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
             <Sparkles size={12} />{!isMobile && " Modèles"}
           </button>
 
           {/* Bouton Focus Mode (desktop uniquement — panneaux redimensionnables) */}
           {!isMobile && <button onClick={toggleFocus} title="Mode Focus — Ctrl+F"
-            style={{ display: "flex", alignItems: "center", gap: 5, background: focusMode ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${focusMode ? "rgba(201,168,76,0.4)" : "rgba(255,255,255,0.08)"}`, borderRadius: 7, padding: "5px 10px", color: focusMode ? G : MUTED, fontSize: 10, fontWeight: focusMode ? 700 : 400, cursor: "pointer" }}>
+            style={{ display: "flex", alignItems: "center", gap: 5, background: focusMode ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${focusMode ? "rgba(201,168,76,0.4)" : "rgba(255,255,255,0.08)"}`, borderRadius: 7, padding: "0 12px", minHeight: 32, color: focusMode ? G : MUTED, fontSize: 10, fontWeight: focusMode ? 700 : 400, cursor: "pointer" }}>
             {focusMode ? "⊞" : "⊡"} Focus
           </button>}
 
@@ -1524,7 +1585,7 @@ import { BLOCK_DEFS } from "./blockDefs"
                   <div onClick={() => setShowQrPanel(false)} style={{ position: "fixed", inset: 0, zIndex: 199 }} />
                   <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, background: "#161616", border: "1px solid rgba(201,168,76,0.25)", borderRadius: 16, padding: "18px", zIndex: 200, boxShadow: "0 8px 40px rgba(0,0,0,0.6)", width: 200 }}>
                     <p style={{ color: "#F5F0E8", fontSize: 12, fontWeight: 700, margin: "0 0 10px", textAlign: "center" }}>Mon QR Code</p>
-                    {pageStatus !== "published" && <p style={{ color: "#FBBF24", fontSize: 10, fontWeight: 700, textAlign: "center", margin: "0 0 8px", lineHeight: 1.35 }}>Publie ta page pour activer ce QR (sinon il mène à une page vide).</p>}
+                    {pageStatus !== "published" && <p style={{ color: "#FBBF24", fontSize: 10, fontWeight: 700, textAlign: "center", margin: "0 0 8px", lineHeight: 1.35 }}>Publiez votre page pour activer ce QR (sinon il mène à une page vide).</p>}
                     <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 8, marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <QRCanvas value={qrTarget} size={120} />
                     </div>
@@ -2299,13 +2360,8 @@ import { BLOCK_DEFS } from "./blockDefs"
                         <Copy size={11} /> <span>Dupliquer</span>
                       </button>
 
-                      {/* Supprimer avec confirmation */}
-                      <button onClick={async () => {
-                          const unlocked = multiSelection.filter(id => !blocks.find(b => b.id===id)?.locked)
-                          if (unlocked.length === 0) return
-                          const msg = `Supprimer ${unlocked.length} bloc${unlocked.length>1?"s":""}${unlocked.length<multiSelection.length?` (${multiSelection.length-unlocked.length} verrouillé${multiSelection.length-unlocked.length>1?"s":""} ignoré${multiSelection.length-unlocked.length>1?"s":""})`:""}?`
-                          if (await confirm({ title: "Supprimer les blocs ?", message: msg, confirmLabel: "Supprimer", danger: true })) deleteMulti()
-                        }}
+                      {/* Même règle que pour un bloc seul : pas de fenêtre, un retour en arrière. */}
+                      <button onClick={() => deleteMulti()}
                         title="Supprimer les blocs sélectionnés"
                         style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "6px 11px", color: "#EF4444", fontSize: 11, cursor: "pointer", transition: "all 0.15s" }}
                         onMouseEnter={e => { e.currentTarget.style.background="rgba(239,68,68,0.18)"; e.currentTarget.style.borderColor="rgba(239,68,68,0.5)" }}
@@ -2693,7 +2749,7 @@ import { BLOCK_DEFS } from "./blockDefs"
                                     <div>
                                       <label style={labelStyle}>Fond (couleur unie)</label>
                                       <div style={{ display: "flex", gap: 7 }}>
-                                        <input type="color" value={bc.__bg || "#111111"} onChange={e => set("__bg", e.target.value)} style={{ width: 34, height: 32, border: "none", borderRadius: 6, cursor: "pointer", padding: 0, background: "none" }} />
+                                        <input type="color" aria-label="Couleur de fond du bloc" value={bc.__bg || "#111111"} onChange={e => set("__bg", e.target.value)} style={{ width: 34, height: 32, border: "none", borderRadius: 6, cursor: "pointer", padding: 0, background: "none" }} />
                                         <input type="text" value={bc.__bg || ""} onChange={e => set("__bg", e.target.value)} placeholder="Aucun (transparent)" style={{ ...selStyle, flex: 1, cursor: "text" }} />
                                         {bc.__bg && <button onClick={() => set("__bg", "")} title="Retirer le fond" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", padding: "0 9px", fontSize: 12 }}>✕</button>}
                                       </div>
@@ -2842,7 +2898,7 @@ import { BLOCK_DEFS } from "./blockDefs"
           ]
           return (
             <div onClick={() => setBlockMenu(null)} style={{ position: "fixed", inset: 0, zIndex: 1100, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-              <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, background: "#141210", borderTopLeftRadius: 20, borderTopRightRadius: 20, border: "1px solid rgba(255,255,255,0.1)", borderBottom: "none", padding: "10px 12px calc(14px + env(safe-area-inset-bottom))", boxShadow: "0 -16px 44px rgba(0,0,0,0.55)" }}>
+              <div ref={menuBlocDlg} {...menuBlocDlgProps} onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, background: "#141210", borderTopLeftRadius: 20, borderTopRightRadius: 20, border: "1px solid rgba(255,255,255,0.1)", borderBottom: "none", padding: "10px 12px calc(14px + env(safe-area-inset-bottom))", boxShadow: "0 -16px 44px rgba(0,0,0,0.55)" }}>
                 <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.18)", margin: "0 auto 10px" }} />
                 <p style={{ color: "#F5F0E8", fontSize: 14, fontWeight: 700, margin: "0 6px 6px", display: "flex", alignItems: "center", gap: 8 }}><span>{def?.icon}</span> {def?.label || "Bloc"}</p>
                 {items.map((it, i) => (
@@ -2940,7 +2996,7 @@ import { BLOCK_DEFS } from "./blockDefs"
                   <span style={{ fontSize: 17 }}>🪄</span>
                   <p style={{ margin: 0, color: "#F5F0E8", fontSize: 13.5, fontWeight: 800 }}>Générer ma page avec l&apos;IA</p>
                 </div>
-                <p style={{ margin: "0 0 10px", color: MUTED, fontSize: 11.5, lineHeight: 1.4 }}>Décris ton activité en une phrase — l&apos;IA construit une page complète, prête à personnaliser.</p>
+                <p style={{ margin: "0 0 10px", color: MUTED, fontSize: 11.5, lineHeight: 1.4 }}>Décrivez votre activité en une phrase — l&apos;IA construit une page complète, prête à personnaliser.</p>
                 <div style={{ display: "flex", flexDirection: isMobile ? "column" as const : "row" as const, gap: 8, alignItems: isMobile ? "stretch" : "flex-start" }}>
                   <textarea
                     value={aiGenPrompt}
@@ -3056,7 +3112,7 @@ import { BLOCK_DEFS } from "./blockDefs"
           .iphone-scroll::-webkit-scrollbar{display:none}
           .panel-collapse{transition:width 0.25s var(--mo-ease-emphasized)}
           .focus-mode .sidebar{width:64px!important}
-          button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 2px solid #C9A84C; outline-offset: 2px; border-radius: 4px; }
+          /* Le contour de focus clavier vit dans globals.css : il vaut pour toute l'application, pas seulement quand l'éditeur est ouvert. */
         `}</style>
       </div>
     )

@@ -4,6 +4,7 @@ import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import { GUIDES, GUIDE_ORDER } from "./guides"
+import { ogFor } from "@/lib/seoMeta"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -12,8 +13,7 @@ export const metadata: Metadata = {
   title: "Guides QR code : créer, imprimer, suivre les scans",
   description: "Guides pratiques sur les QR codes : dynamique vs statique, comment en créer un, quelle taille pour l'impression, le rendre scannable et suivre les scans.",
   alternates: { canonical: `${APP}/guides` },
-  openGraph: { title: "Guides QR code : créer, imprimer, suivre les scans | QRowg", description: "Guides pratiques : dynamique vs statique, création, taille d'impression, scannabilité, statistiques.", url: `${APP}/guides`, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Guides QR code : créer, imprimer, suivre les scans | QRowg", description: "Guides pratiques sur les QR codes : dynamique vs statique, comment en créer un, quelle taille pour l'impression, le rendre scannable et suivre les scans." },
+  ...ogFor({ url: `${APP}/guides`, title: "Guides QR code : créer, imprimer, suivre les scans | QRowg", description: "Guides pratiques : dynamique vs statique, création, taille d'impression, scannabilité, statistiques." }),
 }
 
 export default function GuidesHub() {
@@ -29,7 +29,7 @@ export default function GuidesHub() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(listLd) }} />
       <Particles behind />
 
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <Link href="/generateur-qr-code" style={{ background: "rgba(201,168,76,0.1)", border: `1px solid ${BOR}`, color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 700, padding: "9px 16px", borderRadius: 10 }}>Générateur gratuit</Link>
       </header>

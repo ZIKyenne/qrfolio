@@ -5,6 +5,7 @@ import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import { creerUrl } from "../../creer/entry"
 import TesteurClient from "./TesteurClient"
+import { ogFor } from "@/lib/seoMeta"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -12,10 +13,9 @@ const URL = `${APP}/outils/testeur-qr-code`
 
 export const metadata: Metadata = {
   title: "Testeur de QR code — vérifiez avant d'imprimer",
-  description: "Déposez l'image de votre QR code : contraste, marge blanche, définition et destination sont vérifiés en quelques secondes. Gratuit, sans compte, l'image ne quitte pas votre appareil.",
+  description: "Déposez l'image de votre QR code : contraste, marge, définition et destination vérifiés en quelques secondes. L'image ne quitte pas votre appareil.",
   alternates: { canonical: URL },
-  openGraph: { title: "Testeur de QR code gratuit | QRowg", description: "Vérifiez qu'un QR code passera l'impression : contraste, marge, définition, destination.", url: URL, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Testeur de QR code gratuit | QRowg", description: "Vérifiez qu'un QR code passera l'impression, avant de lancer le tirage." },
+  ...ogFor({ url: URL, title: "Testeur de QR code gratuit | QRowg", description: "Vérifiez qu'un QR code passera l'impression : contraste, marge, définition, destination." }),
 }
 
 // Ce que l'outil vérifie, dit dans l'ordre où ça fait échouer un tirage.
@@ -77,7 +77,7 @@ export default function TesteurPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(crumbLd) }} />
       <Particles behind />
 
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(9px,2.6vw,14px)" }}>
           <Link href="/outils" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Outils</Link>

@@ -5,13 +5,14 @@ import { extractIndexed } from "../../models/repeaterExtract"
 import { safeImageUrl } from "../../models/layoutStyle"
 import { LayoutSurface, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 export function mosaicImages(c: Record<string, any>): string[] {
   return extractIndexed<string>(c || {}, 5, (src, i) => safeImageUrl(src[`img${i}`]) || null)
 }
 
 function Cell({ src, radius, height }: { src: string; radius: number; height?: number }) {
-  return <img src={src} alt="" loading="lazy" decoding="async"
+  return <SmartImage src={src} alt="" width={480} height={480} sizes="(max-width: 640px) 50vw, 480px"
     onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
     style={{ width: "100%", height: height ? height : "100%", objectFit: "cover", display: "block", borderRadius: radius }} />
 }

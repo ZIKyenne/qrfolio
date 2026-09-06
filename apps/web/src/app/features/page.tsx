@@ -104,7 +104,7 @@ function BuilderMockupSvg() {
         {["var(--danger)", "#F97316", "var(--success)"].map((c, i) => (
           <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, opacity: 0.65 }} />
         ))}
-        <span style={{ color: "rgba(201,168,76,0.4)", fontSize: 9, letterSpacing: 1.5, marginLeft: 8 }}>BUILDER — QRowg</span>
+        <span style={{ color: "rgba(201,168,76,0.4)", fontSize: 9, letterSpacing: 1.5, marginLeft: 8 }}>ÉDITEUR — QRowg</span>
         <div style={{
           marginLeft: "auto", padding: "3px 10px", borderRadius: 5,
           background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.25)",
@@ -168,7 +168,7 @@ function AnalyticsMockupSvg() {
     <div style={{ background: "linear-gradient(145deg, #0e0c08, #111009)", border: "1px solid " + BOR, borderRadius: 20, padding: 20, boxShadow: "0 24px 80px rgba(0,0,0,0.5)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
         {["var(--danger)","#F97316","var(--success)"].map((c,i) => <div key={i} style={{ width:8,height:8,borderRadius:"50%",background:c,opacity:0.65 }}/>)}
-        <span style={{ color:"rgba(201,168,76,0.4)",fontSize:9,letterSpacing:1.5,marginLeft:8 }}>ANALYTICS — QRowg</span>
+        <span style={{ color:"rgba(201,168,76,0.4)",fontSize:9,letterSpacing:1.5,marginLeft:8 }}>STATISTIQUES — QRowg</span>
       </div>
       {/* KPI */}
       <div className="rcols-4" style={{ display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14 }}>
@@ -259,7 +259,7 @@ export default function FeaturesPage() {
       `}</style>
 
       {/* NAV */}
-      <nav className="nav-page" style={{
+      <nav className="nav-page qf-entete" style={{
         position:"fixed",top:0,left:0,right:0,zIndex:100,height:64,
         background:"rgba(8,8,8,0.92)",backdropFilter:"blur(24px)",
         borderBottom:"1px solid rgba(201,168,76,0.12)",
@@ -269,7 +269,7 @@ export default function FeaturesPage() {
         <Link href="/" style={{textDecoration:"none"}}>
           <span style={{fontFamily:"Fraunces,serif",fontSize:20,color:G,fontWeight:700}}>QRowg</span>
         </Link>
-        <div style={{display:"flex",alignItems:"center",gap:24}}>
+        <div className="qf-entete" style={{display:"flex",alignItems:"center",gap:24}}>
           <Link href="/#pricing" style={{color:MUT,textDecoration:"none",fontSize:13,transition:"color 0.2s"}}
             onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.color=INK}}
             onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.color=MUT}}>Tarifs</Link>
@@ -298,7 +298,7 @@ export default function FeaturesPage() {
             color:INK,fontWeight:700,lineHeight:1.08,
             letterSpacing:"-0.02em",margin:"0 0 24px",
           }} className="au2">
-            Tout ce dont tu as besoin pour transformer<br/>
+            Tout ce qu'il vous faut pour transformer<br/>
             un QR code en <span style={{color:G}}>outil business.</span>
           </h1>
           <p style={{color:MUT,fontSize:18,lineHeight:1.7,maxWidth:560,margin:"0 auto 44px"}} className="au3">
@@ -321,7 +321,7 @@ export default function FeaturesPage() {
 
         {/* Badges features rapides */}
         <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center",marginTop:56,maxWidth:700,margin:"56px auto 0"}}>
-          {["Builder drag & drop","QR codes dynamiques","Analytics en temps réel","Templates métiers","Domaine personnalisé","Sans coder"].map(f => (
+          {["Éditeur glisser-déposer","QR codes dynamiques","Statistiques en temps réel","Modèles par métier","Domaine personnalisé","Sans coder"].map(f => (
             <span key={f} style={{
               display:"inline-flex",alignItems:"center",gap:6,
               background:"rgba(255,255,255,0.03)",
@@ -341,18 +341,18 @@ export default function FeaturesPage() {
           <div className="feat-2col">
             <div>
               <SectionHeader
-                chip="Builder visuel"
-                title={<>Crée ta page en <span style={{color:G}}>5 minutes.</span></>}
-                sub="Drag & drop, blocs prêts à l'emploi, aperçu mobile en temps réel. Sans coder, sans designer."
+                chip="Éditeur visuel"
+                title={<>Créez votre page en <span style={{color:G}}>5 minutes.</span></>}
+                sub="Glisser-déposer, blocs prêts à l'emploi, aperçu mobile en temps réel. Sans coder, sans designer."
               />
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                <Check text="Interface drag & drop — réorganise tes blocs en glissant" />
+                <Check text="Éditeur par glisser-déposer — réorganisez vos blocs à la souris" />
                 <Check text="Blocs prêts à l'emploi : profil, liens, galerie, WhatsApp, paiement" />
-                <Check text="Aperçu mobile instantané pendant que tu édites" />
+                <Check text="Aperçu mobile instantané pendant que vous composez" />
                 <Check text="Personnalisation couleurs, polices et styles en un clic" />
-                <Check text="Publication en un clic — ta page est live immédiatement" />
+                <Check text="Publication en un clic — votre page est en ligne aussitôt" />
               </div>
-              <div style={{marginTop:32}}><CtaInline label="Ouvrir le builder" /></div>
+              <div style={{marginTop:32}}><CtaInline label="Ouvrir l'éditeur" /></div>
             </div>
             <BuilderMockupSvg />
           </div>
@@ -366,15 +366,15 @@ export default function FeaturesPage() {
             <div style={{direction:"ltr" as const}}>
               <SectionHeader
                 chip="QR Dynamique"
-                title={<>Modifie ta destination sans <span style={{color:G}}>réimprimer.</span></>}
-                sub="Le QR code imprimé reste identique. Toi tu changes le contenu quand tu veux."
+                title={<>Changez de destination sans <span style={{color:G}}>réimprimer.</span></>}
+                sub="Le QR code imprimé reste identique. Vous changez le contenu quand vous voulez."
               />
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                <Check text="Destination modifiable à tout moment depuis ton dashboard" />
+                <Check text="Destination modifiable à tout moment depuis votre tableau de bord" />
                 <Check text="Zéro réimpression — le QR continue de fonctionner" />
                 <Check text="Couleurs, forme des points et des coins, logo au centre" />
                 <Check text={`Export PNG HD ; SVG et PDF pour l'impression dès ${PLANS.pro.label}`} />
-                <Check text="Logo intégré dans le QR code avec ton image" />
+                <Check text="Votre logo intégré au centre du QR code" />
               </div>
               <div style={{marginTop:32}}><CtaInline label="Créer mon QR code" /></div>
             </div>
@@ -402,7 +402,7 @@ export default function FeaturesPage() {
                 <Check text="Top pages les plus visitées" />
                 <Check text="Inclus nativement — sans plugin, sans configuration" />
               </div>
-              <div style={{marginTop:32}}><CtaInline label="Voir mes analytics" /></div>
+              <div style={{marginTop:32}}><CtaInline label="Voir mes statistiques" /></div>
             </div>
             <AnalyticsMockupSvg />
           </div>
@@ -415,7 +415,7 @@ export default function FeaturesPage() {
           <div style={{textAlign:"center",marginBottom:56}}>
             <div style={{marginBottom:16}}><Chip label="Templates" /></div>
             <h2 style={{fontFamily:"Fraunces,serif",fontSize:"clamp(26px,3.5vw,44px)",color:INK,fontWeight:700,lineHeight:1.1,letterSpacing:"-0.02em",margin:"0 auto 16px",maxWidth:560}}>
-              Démarre avec un template <span style={{color:G}}>fait pour ton métier.</span>
+              Partez d'un modèle <span style={{color:G}}>fait pour votre métier.</span>
             </h2>
             <p style={{color:MUT,fontSize:16,lineHeight:1.7,margin:"0 auto",maxWidth:480}}>
               Restaurant, freelance, artiste, immobilier, événement, commerce — une page structurée prête en 1 clic.
@@ -450,7 +450,7 @@ export default function FeaturesPage() {
             ))}
           </div>
           <div style={{textAlign:"center",marginTop:40}}>
-            <CtaInline label="Choisir un template" />
+            <CtaInline label="Choisir un modèle" />
           </div>
         </div>
       </section>
@@ -467,8 +467,8 @@ export default function FeaturesPage() {
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}} className="other-grid">
             <style>{`@media(max-width:700px){.other-grid{grid-template-columns:1fr !important;}}`}</style>
             {[
-              { icon:"🌐", color:"var(--action)", title:"Domaine personnalisé",   desc:"Connecte ton sous-domaine (carte.tonsite.fr). Ton image, pas la nôtre.", tag:PLANS.pro.label },
-              { icon:"✨", color:"#A78BFA", title:"Branding personnalisé",   desc:"Retire le branding QRowg. Ta page, tes couleurs, ton identité.", tag:PLANS.pro.label },
+              { icon:"🌐", color:"var(--action)", title:"Domaine personnalisé",   desc:"Connectez votre sous-domaine (carte.votresite.fr). Votre image, pas la nôtre.", tag:PLANS.pro.label },
+              { icon:"✨", color:"#A78BFA", title:"Branding personnalisé",   desc:"Retirez la mention QRowg. Votre page, vos couleurs, votre identité.", tag:PLANS.pro.label },
               { icon:"👥", color:"var(--success)", title:"Collaboration équipe",     desc:"Gérez vos pages à plusieurs avec des rôles et permissions.", tag:PLANS.business.label },
             ].map(f => (
               <div key={f.title} style={{
@@ -512,7 +512,7 @@ export default function FeaturesPage() {
         }}>
           <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#C9A84C,transparent)"}}/>
           <h2 style={{fontFamily:"Fraunces,serif",fontSize:"clamp(26px,3.5vw,44px)",color:INK,fontWeight:700,lineHeight:1.12,margin:"0 0 18px",letterSpacing:"-0.02em"}}>
-            Prêt à créer ta page <span style={{color:G}}>professionnelle ?</span>
+            Prêt à créer votre page <span style={{color:G}}>professionnelle ?</span>
           </h2>
           <p style={{color:MUT,fontSize:16,lineHeight:1.7,margin:"0 0 36px",maxWidth:420,marginLeft:"auto",marginRight:"auto"}}>
             Commence gratuitement. Pas de carte bancaire. Prêt en 5 minutes.

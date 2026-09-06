@@ -67,7 +67,8 @@ describe("tout ce qui se tape au pouce fait au moins 44 px", () => {
   it("la barre du haut de l'éditeur se tape au pouce sur téléphone", () => {
     const src = lire("dashboard", "builder", "BuilderV4.tsx")
     expect(src).toContain("{ width: 44, height: 44, fontSize: 19 }")                   // Retour
-    expect(src.match(/width: isMobile \? 40 : 28, height: isMobile \? 40 : 28/g)?.length ?? 0).toBe(2)
+    // 40 px au pouce ; 32 px à la souris depuis P2-14 (elles faisaient 28 px).
+    expect(src.match(/width: isMobile \? 40 : 32, height: isMobile \? 40 : 32/g)?.length ?? 0).toBe(2)
     expect(src).toContain("{ minHeight: 40, justifyContent: \"center\" }")             // Modèles
     // La barre mesure 50 px : elle doit rester assez haute pour ces cibles.
     expect(src).toContain("style={{ height: 50, background: \"#0D0D0D\"")

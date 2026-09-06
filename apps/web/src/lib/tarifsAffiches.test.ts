@@ -56,7 +56,7 @@ describe("les prix affichés ne mentent pas", () => {
   it("aucun ancien prix dans les pages publiques ni sur l'accueil", () => {
     const anciens = ["4,90", "12,90", "29,90", "4.90 €", "12.90 €", "29.90 €"]
     const coupables: string[] = []
-    for (const f of [...PAGES_PUBLIQUES.flatMap(d => fichiersDe(d)), join(src, "app/HomeClient.tsx")]) {
+    for (const f of [...PAGES_PUBLIQUES.flatMap(d => fichiersDe(d)), join(src, "app/HomeClient.tsx"), ...fichiersDe("app/homeSections")]) {
       const t = sansCommentaires(readFileSync(f, "utf-8"))
       for (const a of anciens) if (t.includes(a)) coupables.push(`${f.replace(src + "/", "")} : ${a}`)
     }
@@ -84,7 +84,10 @@ describe("les prix affichés ne mentent pas", () => {
   it("les libellés de plan utilisés dans le texte sont ceux de lib/plans", () => {
     expect(PLANS.pro.label).toBe("Établissement")
     expect(PLANS.business.label).toBe("Multi-sites")
-    const accueil = readFileSync(join(src, "app/HomeClient.tsx"), "utf-8")
+    // Les sections de l'accueil vivent dans app/homeSections depuis qu'elles sont
+    // chargées à part : on lit la page et ses sections comme un tout.
+    const accueil = [readFileSync(join(src, "app/HomeClient.tsx"), "utf-8"),
+      ...fichiersDe("app/homeSections").map(f => readFileSync(f, "utf-8"))].join("\n")
     expect(accueil).toContain(`plan ${PLANS.pro.label}`)
   })
 })

@@ -2,6 +2,7 @@
 import { portfolioWorkViewModel } from "../../models/portfolioWork"
 import { PublicCtaLink } from "../../primitives/BlockCtaLink"
 import type { PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 export function PublicPortfolioWork({ content, ctx }: PublicAdapterProps) {
   const { visible, title, items, ctaLabel, link } = portfolioWorkViewModel(content)
@@ -14,7 +15,7 @@ export function PublicPortfolioWork({ content, ctx }: PublicAdapterProps) {
         {items.map((w, i) => (
           <div key={i} style={{ borderRadius: 11, overflow: "hidden", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
             {w.img
-              ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={w.img} alt="" style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} />
+              ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={w.img} alt="" width={320} height={100} sizes="(max-width: 640px) 50vw, 320px" style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} />
               : <div style={{ height: 100, background: `${G}08`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>📂</div>}
             <div style={{ padding: "9px 10px" }}>
               <p style={{ color: TEXT, fontSize: 12, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{w.title}</p>

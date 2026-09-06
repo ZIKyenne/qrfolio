@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { readFileSync } from "node:fs"
+import { readFileSync, readdirSync } from "node:fs"
 import { join } from "node:path"
 import { PLANS, PLAN_COMPARISON, getPlan } from "./plans"
 
@@ -11,7 +11,14 @@ import { PLANS, PLAN_COMPARISON, getPlan } from "./plans"
 //
 // Depuis la fusion des deux abonnements, le gratuit donne 3 QR autonomes dont
 // 1 modifiable après impression, sans essai ni expiration.
-const accueil = readFileSync(join(__dirname, "../app/HomeClient.tsx"), "utf8")
+// L'accueil n'est plus un seul fichier : ses sections sont chargées à part pour
+// alléger le premier affichage. On les lit toutes — une promesse fausse ment autant
+// depuis un fichier de section que depuis la page.
+const dossierSections = join(__dirname, "../app/homeSections")
+const accueil = [
+  readFileSync(join(__dirname, "../app/HomeClient.tsx"), "utf8"),
+  ...readdirSync(dossierSections).map(f => readFileSync(join(dossierSections, f), "utf8")),
+].join("\n")
 const contact = readFileSync(join(__dirname, "../app/contact/page.tsx"), "utf8")
 const generateur = readFileSync(join(__dirname, "../app/generateur-qr-code/GeneratorClient.tsx"), "utf8")
 
@@ -145,9 +152,8 @@ describe("plus aucune page ne promet un essai de 7 jours", () => {
   // Il appartenait au palier « Starter », retiré. Le laisser écrit, c'est faire
   // payer quelqu'un qui croyait essayer.
   it("ni la page des plans, ni l'accueil", () => {
-    for (const f of ["app/upgrade/page.tsx", "app/HomeClient.tsx"]) {
-      const src = readFileSync(join(__dirname, "..", f), "utf8")
-      expect(src, `${f} promet encore un essai`).not.toMatch(/essai gratuit/i)
+    for (const [nom, src] of [["app/upgrade/page.tsx", readFileSync(join(__dirname, "../app/upgrade/page.tsx"), "utf8")], ["l'accueil", accueil]] as const) {
+      expect(src, `${nom} promet encore un essai`).not.toMatch(/essai gratuit/i)
     }
   })
 })

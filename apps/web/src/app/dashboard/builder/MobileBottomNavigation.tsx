@@ -1,4 +1,4 @@
-// MobileBottomNavigation.tsx — Barre de navigation principale mobile (mission C05, §6). Max 5 actions,
+// MobileBottomNavigation.tsx — Barre de navigation principale mobile (mission C05, §6). Max 6 actions,
 // icône + libellé, état actif, badge optionnel, safe area basse, variante compacte (paysage).
 // A11y : role=tablist, aria-selected, cibles ≥ 44 px.
 
@@ -17,7 +17,7 @@ export interface MobileBottomNavigationProps {
 
 export function MobileBottomNavigation({ active, onSelect, compact, badges }: MobileBottomNavigationProps) {
   return (
-    <nav role="tablist" aria-label="Navigation du Builder" data-testid="mobile-nav"
+    <nav role="tablist" aria-label="Navigation de l'éditeur" data-testid="mobile-nav"
       style={{ flexShrink: 0, display: "flex", background: "#0C0C0C", borderTop: "1px solid rgba(255,255,255,0.08)", paddingBottom: "env(safe-area-inset-bottom)" }}>
       {MOBILE_BOTTOM_NAV.map(item => {
         const on = active === item.id

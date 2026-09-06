@@ -2,6 +2,7 @@
 import { portfolioWorkViewModel } from "../../models/portfolioWork"
 import { EditorCtaShell } from "../../primitives/BlockCtaLink"
 import type { EditorAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 export function EditorPortfolioWork({ content, ctx }: EditorAdapterProps) {
   const { title, items, ctaLabel } = portfolioWorkViewModel(content)
@@ -13,7 +14,7 @@ export function EditorPortfolioWork({ content, ctx }: EditorAdapterProps) {
         {items.map((w, i) => (
           <div key={i} style={{ borderRadius: 10, overflow: "hidden", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
             {w.img
-              ? <img src={w.img} alt="" style={{ width: "100%", height: 80, objectFit: "cover", display: "block" }} />
+              ? <SmartImage src={w.img} alt="" width={200} height={80} sizes="(max-width: 640px) 50vw, 200px" style={{ width: "100%", height: 80, objectFit: "cover", display: "block" }} />
               : <div style={{ height: 80, background: primary + "08", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>📂</div>}
             <div style={{ padding: "8px" }}>
               <p style={{ color: text, fontSize: 11, fontWeight: 700, margin: "0 0 2px" }}>{w.title}</p>

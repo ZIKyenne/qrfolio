@@ -934,3 +934,28 @@ img, video, canvas { max-width: 100%; }
 @media (min-width: 860px) {
   .qf-mobile-nav { display: none; }
 }
+
+/* === Barre d'en-tête du site public ===
+   Mesuré : « Tarifs », « Connexion », « ← Retour » faisaient 15 à 19 px de haut.
+   Correct à la souris, sous le minimum de la règle WCAG 2.5.8 (24 px) — et
+   pénible au doigt. La règle mobile existait déjà ; celle-ci vaut partout. */
+.qf-entete a,
+.qf-entete button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+/* === Contour de focus clavier ===
+   Il était injecté par l'éditeur : la même touche Tab n'entourait donc rien sur
+   le reste de l'application. Il vaut partout. */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #C9A84C;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

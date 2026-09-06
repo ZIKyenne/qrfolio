@@ -7,6 +7,7 @@ import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import { VERTICALS, VERTICAL_SLUGS, getVertical } from "../verticals"
 import { GUIDES } from "../../guides/guides"
+import { ogFor } from "@/lib/seoMeta"
 
 // Guides fondamentaux montrés sur chaque page d'usage (maillage vers le cluster GEO,
 // réciproque du lien guides -> verticales). Pertinents pour tout usage imprimé.
@@ -29,8 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ usage: st
     title: v.metaTitle,
     description: v.metaDescription,
     alternates: { canonical: url },
-    openGraph: { title: v.metaTitle, description: v.metaDescription, url, siteName: "QRowg", type: "website" },
-    twitter: { card: "summary_large_image", title: v.metaTitle, description: v.metaDescription },
+    ...ogFor({ url, title: v.metaTitle, description: v.metaDescription }),
   }
 }
 
@@ -60,6 +60,10 @@ export default async function VerticalPage({ params }: { params: Promise<{ usage
   // arrivées, zéro compte créé. Elles mènent désormais à l'essai — sans compte, et
   // sur les modèles de leur secteur.
   const essaiHref = creerUrl(v.slug)
+  // Un usage qui a son outil gratuit y envoie : chercher « QR code Wi-Fi » et
+  // atterrir sur l'éditeur de page, c'est arriver au mauvais endroit.
+  const actionHref = v.outilHref ?? essaiHref
+  const actionLabel = v.outilLabel ?? "Créer mon QR code gratuitement"
   const faqLd = {
     "@context": "https://schema.org", "@type": "FAQPage",
     mainEntity: v.faq.map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
@@ -80,7 +84,7 @@ export default async function VerticalPage({ params }: { params: Promise<{ usage
       <Particles behind />
 
       {/* Header */}
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(9px,2.6vw,14px)" }}>
           <Link href="/auth/login" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Connexion</Link>
@@ -102,7 +106,7 @@ export default async function VerticalPage({ params }: { params: Promise<{ usage
           <p style={eyebrowCss}>{v.eyebrow}</p>
           <h1 style={{ color: INK, fontSize: "clamp(30px,6vw,50px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, margin: "12px 0 16px", textWrap: "balance" }}>{v.h1}</h1>
           <p style={{ color: MUT, fontSize: "clamp(15px,2.4vw,18px)", lineHeight: 1.6, margin: "0 auto 26px", maxWidth: 620 }}>{v.intro}</p>
-          <Cta label="Créer mon QR code gratuitement" sub="Sans carte bancaire · Prêt à imprimer en 5 minutes" href={essaiHref} />
+          <Cta label={actionLabel} sub="Sans carte bancaire · Prêt à imprimer en 5 minutes" href={actionHref} />
         </section>
 
         {/* Problème → solution */}
@@ -148,7 +152,7 @@ export default async function VerticalPage({ params }: { params: Promise<{ usage
         {/* CTA milieu */}
         <section style={{ ...card, textAlign: "center", padding: "34px 22px", marginBottom: 48, background: "radial-gradient(120% 90% at 50% 0%, rgba(201,168,76,0.12), transparent 60%), rgba(255,255,255,0.02)", border: `1px solid ${BOR}` }}>
           <h2 style={{ ...h2Css, marginBottom: 16 }}>{v.ctaTitle}</h2>
-          <Cta label="Commencer gratuitement" sub="Modifiable à tout moment · sans réimprimer" href={essaiHref} />
+          <Cta label={v.outilHref ? actionLabel : "Commencer gratuitement"} sub={v.outilHref ? "Gratuit, sans compte · prêt à imprimer" : "Modifiable à tout moment · sans réimprimer"} href={actionHref} />
         </section>
 
         {/* FAQ */}

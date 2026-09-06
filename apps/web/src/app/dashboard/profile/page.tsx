@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useConfirm } from "@/components/ui/Confirm"
 import { createClient } from "@/lib/supabase/client"
-import { PLAN_LIST, PLAN_ORDER, fmtPrice } from "@/lib/plans"
+import { PLAN_LIST, PLAN_ORDER, PLANS, fmtPrice } from "@/lib/plans"
 import Particles from "@/components/Particles"
 import { Button } from "@/components/ui/Button"
 import { ActionRow } from "@/components/ui/ActionRow"
@@ -107,7 +107,7 @@ type UserPreferences = {
 
 const DEFAULT_PREFS: UserPreferences = {
   locale: "fr", timezone: "Europe/Paris", date_format: "DD/MM/YYYY",
-  time_format: "24h", currency: "EUR",
+  time_format: "24 heures", currency: "EUR",
   notif_email: true, notif_scan: true, notif_security: true,
   report_weekly: false, report_monthly: false,
   accent_color: "#C9A84C",
@@ -308,13 +308,16 @@ export default function ProfilePage() {
       setAuthUser(user)
       setEmailVerified(!!user.email_confirmed_at)
       setLastSignIn(user.last_sign_in_at || null)
-      // Simuler sessions (Supabase ne retourne pas la liste des sessions actives en client)
+      // Supabase ne donne pas la liste des sessions au client : la seule que l'on
+      // connaisse est CELLE-CI. L'écran annonçait « Sessions actives » au pluriel
+      // avec une entrée fabriquée à partir du user-agent — un tableau qui laissait
+      // croire qu'on surveillait les autres appareils. On ne décrit que cet appareil.
       setSessions([{
         id: "current", device: navigator.userAgent.includes("Mobile") ? "mobile" : "desktop",
         browser: navigator.userAgent.includes("Chrome") ? "Chrome"
           : navigator.userAgent.includes("Firefox") ? "Firefox"
           : navigator.userAgent.includes("Safari") ? "Safari" : "Navigateur",
-        location: "Session actuelle",
+        location: "Cet appareil",
         last_active: new Date().toISOString(), current: true,
       }])
       setSecLoading(false)
@@ -433,7 +436,7 @@ export default function ProfilePage() {
     for (const p of allPages) {
       if (p.created_at) evts.push({
         id: `page-created-${p.id}`, event_type: "page_created",
-        title: "Page creee", description: p.title,
+        title: "Page créée", description: p.title,
         entity_id: p.id, entity_type: "page", entity_label: p.title,
         metadata: {}, created_at: p.created_at,
       })
@@ -441,7 +444,7 @@ export default function ProfilePage() {
         const diffMs = new Date(p.updated_at).getTime() - new Date(p.created_at).getTime()
         if (diffMs > 60000) evts.push({
           id: `page-updated-${p.id}-${p.updated_at}`, event_type: p.status === "published" ? "page_published" : "page_updated",
-          title: p.status === "published" ? "Page publiee" : "Page modifiee",
+          title: p.status === "published" ? "Page publiée" : "Page modifiée",
           description: p.title, entity_id: p.id, entity_type: "page",
           entity_label: p.title, metadata: {}, created_at: p.updated_at,
         })
@@ -451,7 +454,7 @@ export default function ProfilePage() {
     for (const q of qrStats) {
       evts.push({
         id: `qr-created-${q.id}`, event_type: "qr_created",
-        title: "QR Code cree", description: (q.pages as any)?.title || `/${q.short_code}`,
+        title: "QR code créé", description: (q.pages as any)?.title || `/${q.short_code}`,
         entity_id: q.id, entity_type: "qr_code", entity_label: q.short_code,
         metadata: {}, created_at: new Date(now - Math.random()*86400000*30).toISOString(),
       })
@@ -545,7 +548,7 @@ export default function ProfilePage() {
       const d = await res.json()
       if (d.ok || d.success) {
         setDomains(prev => prev.filter(dm => dm.id !== id))
-        showToast("Domaine supprime")
+        showToast("Domaine supprimé")
       } else {
         showToast(d.error || "Erreur suppression", "err")
       }
@@ -579,7 +582,7 @@ export default function ProfilePage() {
     const sb = createClient()
     try {
       await sb.auth.resend({ type: "signup", email: authUser.email })
-      setVerifSent(true); showToast("Email de verification envoye !")
+      setVerifSent(true); showToast("Email de vérification envoye !")
       setTimeout(() => setVerifSent(false), 5000)
     } catch { showToast("Erreur envoi email", "err") }
     setSendingVerif(false)
@@ -692,7 +695,7 @@ export default function ProfilePage() {
     setProfile(p => p ? { ...p, ...updated } : p)
     setFormOriginal(updated)
     setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2500)
-    showToast("Profil sauvegarde avec succes")
+    showToast("Profil sauvegarde avec succès")
     logActivity("profile_updated", "Profil mis a jour", { entity_type: "profile" })
   }
 
@@ -743,7 +746,7 @@ export default function ProfilePage() {
     const sb = createClient()
     await sb.from("profiles").update({ avatar_url: null }).eq("id", profile.id)
     setProfile(p => p ? { ...p, avatar_url: null } : p)
-    setDeletingAvatar(false); showToast("Avatar supprime")
+    setDeletingAvatar(false); showToast("Avatar supprimé")
   }
 
   function copyReferral() {
@@ -776,13 +779,13 @@ export default function ProfilePage() {
     const nm  = newKeyName.trim()
     const res = await fetch("/api/keys", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: nm }) })
     const d   = await res.json().catch(() => ({}))
-    if (!res.ok) { showToast(d.error || "Erreur création cle", "err"); return }
+    if (!res.ok) { showToast(d.error || "Erreur création clé", "err"); return }
     setApiKeys(prev => [d.record, ...prev])
     setNewKeyCreated(d.key)  // afficher UNE FOIS la cle complete (generee serveur, hashee)
     setNewKeyName("")
     setShowNewKey(false)
-    showToast("Cle API creee -- copiez-la maintenant !")
-    logActivity("api_key_created", "Cle API creee", { entity_label: nm, entity_type: "api_key" })
+    showToast("Clé API créée — copiez-la maintenant !")
+    logActivity("api_key_created", "Clé API créée", { entity_label: nm, entity_type: "api_key" })
   }
 
   async function regenerateApiKey(id: string) {
@@ -793,7 +796,7 @@ export default function ProfilePage() {
     else {
       setApiKeys(prev => prev.map(k => k.id === id ? { ...k, key_preview: d.record.key_preview } : k))
       setNewKeyCreated(d.key)
-      showToast("Cle regeneree -- copiez-la maintenant !")
+      showToast("Clé regeneree -- copiez-la maintenant !")
     }
     setRegenKeyId(null)
     setConfirmRegen(null)
@@ -806,7 +809,7 @@ export default function ProfilePage() {
     if (error) { showToast("Erreur revocation", "err") }
     else {
       setApiKeys(prev => prev.map(k => k.id === id ? { ...k, is_active: false } : k))
-      showToast("Cle revoquee")
+      showToast("Clé revoquee")
     }
     setDeletingKey(null)
     setConfirmRevoke(null)
@@ -1070,7 +1073,7 @@ export default function ProfilePage() {
 
   // -- RENDER -------------------------------------------------------------------
   return (
-    <div style={{ minHeight: "100dvh", background: "transparent", fontFamily: "DM Sans, sans-serif", position: "relative", isolation: "isolate" }}>
+    <div className="qf-profil" style={{ minHeight: "100dvh", background: "transparent", fontFamily: "DM Sans, sans-serif", position: "relative", isolation: "isolate" }}>
       <Particles behind />
       <style>{`
         @keyframes profileFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -1084,7 +1087,7 @@ export default function ProfilePage() {
         .hero-in{animation:heroIn .6s var(--mo-ease-standard) backwards}
         .hero-tile{transition:transform .2s var(--mo-ease-standard), border-color .2s, background .2s}
         .hero-tile:hover{transform:translateY(-3px);border-color:color-mix(in srgb, var(--accent) 35%, transparent)!important}
-        input:focus,textarea:focus,select:focus{border-color:color-mix(in srgb, var(--accent) 40%, transparent)!important}
+        .qf-profil input:focus,.qf-profil textarea:focus,.qf-profil select:focus{border-color:color-mix(in srgb, var(--accent) 40%, transparent)}
         .section-card{animation:profileFadeIn 0.3s ease}
         /* Carte "prochaine etape" masquee sur mobile (redondante avec le reste du profil) */
         @media (max-width: 760px){ .next-step-card{ display:none !important } }
@@ -1128,7 +1131,7 @@ export default function ProfilePage() {
                   ? <div style={{ width: 9, height: 9, border: "1.5px solid #080808", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.6s linear infinite" }}/>
                   : <Camera size={11} color="#080808"/>}
               </button>
-              <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) handleAvatarFile(f); e.target.value="" }}/>
+              <input ref={fileRef} type="file" aria-label="Choisir une photo" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) handleAvatarFile(f); e.target.value="" }}/>
             </div>
 
             <div style={{ minWidth: 0, flex: 1 }}>
@@ -1309,7 +1312,7 @@ export default function ProfilePage() {
                     style={{ position:"absolute", bottom:0, right:0, width:24, height:24, borderRadius:"50%", background:G, border:"2px solid #080808", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", boxShadow:"0 2px 8px rgba(0,0,0,0.4)" }}>
                     <Camera size={10} color="#080808"/>
                   </button>
-                  <input ref={fileRef} type="file" accept="image/*" style={{ display:"none" }}
+                  <input ref={fileRef} type="file" aria-label="Choisir une photo" accept="image/*" style={{ display:"none" }}
                     onChange={e => { const f = e.target.files?.[0]; if (f) handleAvatarFile(f); e.target.value="" }}/>
                 </div>
                 {/* Infos preview + actions */}
@@ -1343,7 +1346,7 @@ export default function ProfilePage() {
                   onClick={() => { setCropMode(false); setCropSrc(null) }}>
                   <div style={{ background:"#111009", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:16, padding:24, maxWidth:440, width:"100%" }}
                     onClick={e => e.stopPropagation()}>
-                    <p style={{ color:"#F5F0E8", fontSize:15, fontWeight:700, margin:"0 0 14px" }}>Apercu de l'avatar</p>
+                    <p style={{ color:"#F5F0E8", fontSize:15, fontWeight:700, margin:"0 0 14px" }}>Aperçu de l'avatar</p>
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:16, marginBottom:18 }}>
                       <img src={cropSrc} alt="preview" style={{ width:120, height:120, objectFit:"cover", borderRadius:"50%", border:"2px solid color-mix(in srgb, var(--accent) 30%, transparent)" }}/>
                       <div>
@@ -1420,7 +1423,7 @@ export default function ProfilePage() {
               <div>
                 <label style={{ color:"#A8A190", fontSize:11, display:"block", marginBottom:5, fontWeight:500 }}>Bio</label>
                 <textarea value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
-                  placeholder="Decris-toi en quelques mots..." rows={2}
+                  placeholder="Décrivez-vous en quelques mots…" rows={2}
                   style={{ width:"100%", background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, padding:"10px 13px", color:"#F5F0E8", fontSize:13, outline:"none", boxSizing:"border-box" as const, resize:"vertical" as const, lineHeight:1.6 }}/>
                 <p style={{ color:"#A8A190", fontSize:10, margin:"3px 0 0" }}>{form.bio.length}/160</p>
               </div>
@@ -1784,8 +1787,8 @@ export default function ProfilePage() {
               <div style={{ textAlign:"center" as const, padding:"20px 0" }}>
                 <TrendingUp size={28} color={MUTED} style={{ marginBottom:8 }}/>
                 <p style={{ color:"#F5F0E8", fontSize:13, fontWeight:600, margin:"0 0 4px" }}>Aucune donnee</p>
-                <p style={{ color:MUTED, fontSize:11, margin:"0 0 12px" }}>Creez votre premiere page pour voir vos stats</p>
-                <a href="/dashboard" style={{ color:G, fontSize:11, display:"inline-block" }}>Creer une page</a>
+                <p style={{ color:MUTED, fontSize:11, margin:"0 0 12px" }}>Creez votre première page pour voir vos stats</p>
+                <a href="/dashboard" style={{ color:G, fontSize:11, display:"inline-block" }}>Créer une page</a>
               </div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
@@ -1793,8 +1796,8 @@ export default function ProfilePage() {
                 {/* Grille principale 3x2 */}
                 <div className="rcols-3" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
                   {[
-                    { icon:Eye,        label:"Pages",        value:totalPages,              color:G,          tooltip:"Nombre total de pages creees" },
-                    { icon:CheckCircle,label:"Publiees",      value:publishedPages,          color:"var(--success)",  tooltip:"Pages avec statut Publie" },
+                    { icon:Eye,        label:"Pages",        value:totalPages,              color:G,          tooltip:"Nombre total de pages créées" },
+                    { icon:CheckCircle,label:"Publiees",      value:publishedPages,          color:"var(--success)",  tooltip:"Pages avec statut Publié" },
                     { icon:QrCode,     label:"QR actifs",     value:activeQR,                color:"var(--accent)",  tooltip:"QR Codes avec statut Actif" },
                     { icon:TrendingUp, label:"Vues total",    value:totalViews.toLocaleString("fr-FR"), color:"var(--accent)", tooltip:"Total des vues sur toutes les pages" },
                     { icon:Users,      label:"Visiteurs uniq",value:uniqueViews.toLocaleString("fr-FR"),color:"var(--accent)", tooltip:"Visiteurs uniques (hors doublons)" },
@@ -1910,7 +1913,7 @@ export default function ProfilePage() {
                   <div style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"12px 14px", background:"rgba(201,162,77,0.08)", border:"1px solid rgba(201,162,77,0.25)", borderRadius:10 }}>
                     <AlertTriangle size={15} color="var(--accent)" style={{ flexShrink:0, marginTop:1 }}/>
                     <div style={{ flex:1 }}>
-                      <p style={{ color:"var(--accent)", fontSize:12, fontWeight:700, margin:"0 0 3px" }}>Email non verifie</p>
+                      <p style={{ color:"var(--accent)", fontSize:12, fontWeight:700, margin:"0 0 3px" }}>E-mail non vérifié</p>
                       <p style={{ color:"rgba(201,162,77,0.8)", fontSize:11, margin:"0 0 8px" }}>
                         Verifiez votre email pour securiser votre compte et recevoir les notifications.
                       </p>
@@ -1918,7 +1921,7 @@ export default function ProfilePage() {
                         style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 13px", background:"rgba(201,162,77,0.15)", border:"1px solid rgba(201,162,77,0.3)", borderRadius:7, color:"var(--accent)", fontSize:11, fontWeight:700, cursor:sendingVerif||verifSent?"default":"pointer" }}>
                         {verifSent ? <><Check size={11}/> Email envoye !</>
                           : sendingVerif ? "Envoi..."
-                          : <><Mail size={11}/> Renvoyer l'email de verification</>}
+                          : <><Mail size={11}/> Renvoyer l'email de vérification</>}
                       </button>
                     </div>
                   </div>
@@ -1946,7 +1949,7 @@ export default function ProfilePage() {
                   </div>
                   {lastSignIn && (
                     <div style={{ textAlign:"right" as const }}>
-                      <p style={{ color:MUTED, fontSize:9, margin:0 }}>Derniere connexion</p>
+                      <p style={{ color:MUTED, fontSize:9, margin:0 }}>Dernière connexion</p>
                       <p style={{ color:"#F5F0E8", fontSize:10, fontWeight:600, margin:0 }}>
                         {new Date(lastSignIn).toLocaleDateString("fr-FR", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })}
                       </p>
@@ -2011,9 +2014,9 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                {/* Sessions actives */}
+                {/* Cet appareil (Supabase ne donne pas les autres sessions au client) */}
                 <div>
-                  <p style={{ color:MUTED, fontSize:9, textTransform:"uppercase" as const, letterSpacing:1.2, margin:"0 0 8px" }}>Sessions actives</p>
+                  <p style={{ color:MUTED, fontSize:9, textTransform:"uppercase" as const, letterSpacing:1.2, margin:"0 0 8px" }}>Cet appareil</p>
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     {sessions.map((sess, i) => {
                       const DevIcon = sess.device === "mobile" ? Smartphone : sess.device === "tablet" ? Tablet : Monitor
@@ -2031,7 +2034,7 @@ export default function ProfilePage() {
                                 </span>
                               )}
                             </div>
-                            <p style={{ color:MUTED, fontSize:10, margin:0 }}>{sess.location}</p>
+                            <p style={{ color:MUTED, fontSize:12, margin:0 }}>{sess.location}</p>
                           </div>
                           {!sess.current && (
                             <button type="button" onClick={() => signOutAllDevices()}
@@ -2083,7 +2086,7 @@ export default function ProfilePage() {
 
           {/* 5. EXPORT + DANGER */}
           {ptab === "donnees" && (
-          <SectionCard title="Donnees personnelles" icon={Download} color="var(--accent)">
+          <SectionCard title="Données personnelles" icon={Download} color="var(--accent)">
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
               {/* Badge RGPD */}
@@ -2106,7 +2109,7 @@ export default function ProfilePage() {
 
               {/* Exports granulaires */}
               <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
-                <p style={{ color:MUTED, fontSize:9, textTransform:"uppercase" as const, letterSpacing:1.2, margin:0 }}>Telecharger mes donnees</p>
+                <p style={{ color:MUTED, fontSize:9, textTransform:"uppercase" as const, letterSpacing:1.2, margin:0 }}>Télécharger mes données</p>
                 {exportJobs.map(job => {
                   const fmtMap: Record<string,string> = {
                     full:"JSON", pages:"CSV", qrcodes:"CSV", analytics:"CSV", activity:"JSON"
@@ -2136,8 +2139,8 @@ export default function ProfilePage() {
                             ? <span style={{ color:"var(--success)" }}>{job.filename}</span>
                             : job.status==="error"
                             ? <span style={{ color:"var(--danger)" }}>Erreur -- reessayez</span>
-                            : job.id==="full"       ? "Toutes vos donnees en un fichier (profil, pages, QR, activite)"
-                            : job.id==="pages"      ? "Titre, slug, statut, vues par page"
+                            : job.id==="full"       ? "Toutes vos données en un fichier (profil, pages, QR, activite)"
+                            : job.id==="pages"      ? "Titre, adresse, statut, vues par page"
                             : job.id==="qrcodes"    ? "Short code, scans, statut par QR"
                             : job.id==="analytics"  ? "Vues et visiteurs uniques par page"
                             : "Historique de vos actions sur QRowg"
@@ -2186,9 +2189,9 @@ export default function ProfilePage() {
               <div style={{ padding:"10px 13px", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:9 }}>
                 <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                   {([
-                    "Seules vos propres donnees sont incluses dans l'export",
+                    "Seules vos propres données sont incluses dans l'export",
                     "Les exports se font directement dans votre navigateur (aucune URL publique)",
-                    "Les cles API sont masquees (key_preview uniquement)",
+                    "Les clés API sont masquees (key_preview uniquement)",
                   ] as const).map((note, i) => (
                     <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:7 }}>
                       <Shield size={10} color={MUTED} style={{ flexShrink:0, marginTop:1 }}/>
@@ -2670,12 +2673,22 @@ export default function ProfilePage() {
                 <div style={{ width:48, height:48, borderRadius:14, background:"rgba(201,162,77,0.08)", border:"1px solid rgba(201,162,77,0.15)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 12px" }}>
                   <Lock size={20} color="var(--accent)"/>
                 </div>
-                <p style={{ color:"#F5F0E8", fontSize:13, fontWeight:600, margin:"0 0 5px" }}>Acces API</p>
+                <p style={{ color:"#F5F0E8", fontSize:13, fontWeight:600, margin:"0 0 5px" }}>Accès API</p>
                 <p style={{ color:MUTED, fontSize:11, margin:"0 0 14px", lineHeight:1.5 }}>
-                  Integrez QRowg dans vos applications<br/>avec notre API RESTful.
+                  Pilotez vos pages et vos QR codes depuis<br/>votre propre logiciel.
                 </p>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16, textAlign:"left" as const }}>
-                  {["1 000 appels/mois (Pro)","10 000 appels/mois (Business)","Gestion QR via API","Webhooks","Analytics en temps reel","SDK officiel"].map((f,i) => (
+                  {/* Ce que l'API fait VRAIMENT aujourd'hui : trois routes (/api/v1)
+                      et le plafond mensuel de plans.ts. « Webhooks » et « SDK officiel »
+                      étaient annoncés ici sans exister. */}
+                  {[
+                    `${PLANS.pro.caps.apiAppelsMois?.toLocaleString("fr-FR")} appels/mois en ${PLANS.pro.label}`,
+                    `${PLANS.business.caps.apiAppelsMois?.toLocaleString("fr-FR")} appels/mois en ${PLANS.business.label}`,
+                    "Lister vos pages",
+                    "Lister vos QR codes",
+                    "Changer la destination d'un QR",
+                    "Clés révocables à tout moment",
+                  ].map((f,i) => (
                     <div key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
                       <CheckCircle size={11} color="rgba(201,162,77,0.5)"/>
                       <span style={{ color:MUTED, fontSize:10 }}>{f}</span>
@@ -2683,7 +2696,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
                 <a href="/upgrade" className="da-btn-primary da-btn-primary--sm">
-                  <Activity className="da-ic" size={13}/> <span>Passer à Pro ou Business</span>
+                  <Activity className="da-ic" size={13}/> <span>Passer au plan {PLANS.pro.label} ou {PLANS.business.label}</span>
                 </a>
               </div>
             ) : (
@@ -2698,13 +2711,13 @@ export default function ProfilePage() {
                       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
                         <AlertTriangle size={18} color={confirmRevoke?"var(--danger)":"var(--accent)"}/>
                         <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:700, margin:0 }}>
-                          {confirmRevoke ? "Revoquer la cle ?" : "Regenerer la cle ?"}
+                          {confirmRevoke ? "Revoquer la clé ?" : "Regenerer la clé ?"}
                         </p>
                       </div>
                       <p style={{ color:MUTED, fontSize:12, margin:"0 0 16px", lineHeight:1.6 }}>
                         {confirmRevoke
-                          ? "La cle sera immediatement invalide. Les applications qui l'utilisent cesseront de fonctionner."
-                          : "L'ancienne cle sera invalide immediatement. Mettez a jour vos applications avant de regenerer."}
+                          ? "La clé sera immediatement invalide. Les applications qui l'utilisent cesseront de fonctionner."
+                          : "L'ancienne clé sera invalide immediatement. Mettez a jour vos applications avant de regenerer."}
                       </p>
                       <div style={{ display:"flex", gap:8 }}>
                         <button type="button" onClick={() => { setConfirmRegen(null); setConfirmRevoke(null) }}
@@ -2741,7 +2754,7 @@ export default function ProfilePage() {
                     <button type="button"
                       onClick={() => { navigator.clipboard.writeText(newKeyCreated); setCopiedKey("new"); showToast("Cle copiee !") }}
                       style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", background:copiedKey==="new"?"rgba(57,255,143,0.12)":"rgba(255,255,255,0.06)", border:`1px solid ${copiedKey==="new"?"rgba(57,255,143,0.3)":"rgba(255,255,255,0.1)"}`, borderRadius:8, color:copiedKey==="new"?"var(--success)":"#F5F0E8", fontSize:11, fontWeight:600, cursor:"pointer" }}>
-                      {copiedKey==="new" ? <><Check size={12}/> Copiee !</> : <><Copy size={12}/> Copier la cle</>}
+                      {copiedKey==="new" ? <><Check size={12}/> Copiee !</> : <><Copy size={12}/> Copier la clé</>}
                     </button>
                     <p style={{ color:"rgba(57,255,143,0.5)", fontSize:9, margin:"8px 0 0" }}>
                       Cette cle complete ne sera plus visible apres fermeture. Stockez-la dans votre gestionnaire de secrets.
@@ -2802,7 +2815,7 @@ export default function ProfilePage() {
                             <div style={{ display:"flex", gap:5, flexShrink:0 }}>
                               <button type="button"
                                 onClick={() => { navigator.clipboard.writeText(key.key_preview); setCopiedKey(key.id); setTimeout(()=>setCopiedKey(null),2000) }}
-                                title="Copier l'apercu"
+                                title="Copier l'aperçu"
                                 style={{ width:28, height:28, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:copiedKey===key.id?"var(--success)":MUTED }}>
                                 {copiedKey===key.id ? <Check size={12}/> : <Copy size={12}/>}
                               </button>
@@ -2828,7 +2841,7 @@ export default function ProfilePage() {
                           </span>
                           {key.last_used_at ? (
                             <span style={{ color:MUTED, fontSize:9 }}>
-                              {" . "}Derniere util. {new Date(key.last_used_at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}
+                              {" . "}Dernière util. {new Date(key.last_used_at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}
                             </span>
                           ) : (
                             <span style={{ color:MUTED, fontSize:9 }}>{" . "}Jamais utilisee</span>
@@ -2848,7 +2861,7 @@ export default function ProfilePage() {
                 {showNewKey ? (
                   <div style={{ display:"flex", gap:7 }}>
                     <input value={newKeyName} onChange={e => setNewKeyName(e.target.value)}
-                      placeholder="Nom de la cle (ex: Production App)"
+                      placeholder="Nom de la clé (ex: Production App)"
                       style={{ flex:1, background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, padding:"10px 12px", color:"#F5F0E8", fontSize:12, outline:"none", boxSizing:"border-box" as const }}
                       onKeyDown={e => e.key==="Enter" && createApiKey()}/>
                     <button type="button" onClick={createApiKey} disabled={!newKeyName.trim()} className="da-btn-primary da-btn-primary--sm" style={{ flexShrink:0 }}>
@@ -2860,7 +2873,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <button type="button" onClick={() => setShowNewKey(true)} className="da-btn-dashed" style={{ padding:12, fontSize:12.5 }}>
-                    <Plus className="da-ic da-ic-plus" size={14}/> <span>Nouvelle cle API</span>
+                    <Plus className="da-ic da-ic-plus" size={14}/> <span>Nouvelle clé API</span>
                   </button>
                 )}
 
@@ -2868,9 +2881,9 @@ export default function ProfilePage() {
                 <div style={{ padding:"10px 13px", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:9 }}>
                   <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
                     {([
-                      { icon:Shield,     text:"La cle complete n'est affichee qu'une seule fois a la création" },
-                      { icon:Key,        text:"Seul un hash SHA-256 est stocke en base de donnees" },
-                      { icon:AlertTriangle, text:"Revoquez immediatement toute cle compromise" },
+                      { icon:Shield,     text:"La clé complete n'est affichee qu'une seule fois a la création" },
+                      { icon:Key,        text:"Seul un hash SHA-256 est stocke en base de données" },
+                      { icon:AlertTriangle, text:"Revoquez immediatement toute clé compromise" },
                     ] as const).map((info, i) => (
                       <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:8 }}>
                         <info.icon size={11} color={MUTED} style={{ flexShrink:0, marginTop:1 }}/>
@@ -3098,7 +3111,7 @@ export default function ProfilePage() {
                   {/* Langue */}
                   <div>
                     <label style={{ color:MUTED, fontSize:10, display:"block", marginBottom:5, fontWeight:500 }}>Langue</label>
-                    <select value={prefs.locale} onChange={e => setPrefField("locale", e.target.value)}
+                    <select aria-label="Langue" value={prefs.locale} onChange={e => setPrefField("locale", e.target.value)}
                       style={{ width:"100%", background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"8px 10px", color:"#F5F0E8", fontSize:12, outline:"none", cursor:"pointer", boxSizing:"border-box" as const }}>
                       <option value="fr">Francais</option>
                       <option value="en">English</option>
@@ -3111,7 +3124,7 @@ export default function ProfilePage() {
                   {/* Devise */}
                   <div>
                     <label style={{ color:MUTED, fontSize:10, display:"block", marginBottom:5, fontWeight:500 }}>Devise</label>
-                    <select value={prefs.currency} onChange={e => setPrefField("currency", e.target.value)}
+                    <select aria-label="Devise" value={prefs.currency} onChange={e => setPrefField("currency", e.target.value)}
                       style={{ width:"100%", background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"8px 10px", color:"#F5F0E8", fontSize:12, outline:"none", cursor:"pointer", boxSizing:"border-box" as const }}>
                       <option value="EUR">EUR (Euro)</option>
                       <option value="USD">USD (Dollar)</option>
@@ -3131,7 +3144,7 @@ export default function ProfilePage() {
                         <RotateCcw size={9}/> Auto-detecter
                       </button>
                     </div>
-                    <select value={prefs.timezone} onChange={e => setPrefField("timezone", e.target.value)}
+                    <select aria-label="Fuseau horaire" value={prefs.timezone} onChange={e => setPrefField("timezone", e.target.value)}
                       style={{ width:"100%", background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"8px 10px", color:"#F5F0E8", fontSize:12, outline:"none", cursor:"pointer", boxSizing:"border-box" as const }}>
                       {[
                         "Europe/Paris","Europe/London","Europe/Berlin","Europe/Madrid","Europe/Rome",
@@ -3146,7 +3159,7 @@ export default function ProfilePage() {
                   {/* Format date */}
                   <div>
                     <label style={{ color:MUTED, fontSize:10, display:"block", marginBottom:5, fontWeight:500 }}>Format date</label>
-                    <select value={prefs.date_format} onChange={e => setPrefField("date_format", e.target.value)}
+                    <select aria-label="Format de date" value={prefs.date_format} onChange={e => setPrefField("date_format", e.target.value)}
                       style={{ width:"100%", background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"8px 10px", color:"#F5F0E8", fontSize:12, outline:"none", cursor:"pointer", boxSizing:"border-box" as const }}>
                       <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                       <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -3158,9 +3171,9 @@ export default function ProfilePage() {
                   {/* Format heure */}
                   <div>
                     <label style={{ color:MUTED, fontSize:10, display:"block", marginBottom:5, fontWeight:500 }}>Format heure</label>
-                    <select value={prefs.time_format} onChange={e => setPrefField("time_format", e.target.value)}
+                    <select aria-label="Format d'heure" value={prefs.time_format} onChange={e => setPrefField("time_format", e.target.value)}
                       style={{ width:"100%", background:"#0F0E0B", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"8px 10px", color:"#F5F0E8", fontSize:12, outline:"none", cursor:"pointer", boxSizing:"border-box" as const }}>
-                      <option value="24h">24h (14:30)</option>
+                      <option value="24 heures">24h (14:30)</option>
                       <option value="12h">12h (2:30 PM)</option>
                     </select>
                   </div>
@@ -3183,7 +3196,7 @@ export default function ProfilePage() {
                         : prefs.date_format === "MM/DD/YYYY" ? `${m}/${d}/${y}`
                         : prefs.date_format === "YYYY-MM-DD" ? `${y}-${m}-${d}`
                         : `${now.getDate()} ${now.toLocaleString("fr-FR",{month:"long"})} ${y}`
-                      const timeStr = prefs.time_format === "24h" ? `${h24}:${min}` : `${h12}:${min} ${ampm}`
+                      const timeStr = prefs.time_format === "24 heures" ? `${h24}:${min}` : `${h12}:${min} ${ampm}`
                       return `${dateStr} a ${timeStr}`
                     })()}
                   </span>
@@ -3196,8 +3209,8 @@ export default function ProfilePage() {
                 <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
                   {([
                     { key:"notif_email"    as const, label:"Notifications par email",   desc:"Alertes scans, vues, QR codes"         },
-                    { key:"notif_scan"     as const, label:"Alertes scan en temps reel", desc:"Notification a chaque scan QR"         },
-                    { key:"notif_security" as const, label:"Alertes de securite",        desc:"Connexions et changements de compte"   },
+                    { key:"notif_scan"     as const, label:"Alertes scan en temps réel", desc:"Notification a chaque scan QR"         },
+                    { key:"notif_security" as const, label:"Alertes de sécurité",        desc:"Connexions et changements de compte"   },
                   ]).map(item => (
                     <div key={item.key} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 12px", background:SURF2, border:"1px solid rgba(255,255,255,0.05)", borderRadius:9 }}>
                       <div>
@@ -3256,7 +3269,7 @@ export default function ProfilePage() {
                         style={{ width:28, height:28, borderRadius:8, background:color, border:prefs.accent_color===color?`2px solid #F5F0E8`:"2px solid transparent", cursor:"pointer", transition:"border 0.15s", boxShadow:prefs.accent_color===color?`0 0 10px ${color}60`:"none" }}/>
                     ))}
                     <label style={{ width:28, height:28, borderRadius:8, border:"1px dashed rgba(255,255,255,0.2)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" as const, overflow:"hidden" as const }}
-                      title="Couleur personnalisee">
+                      title="Couleur personnalisée">
                       <span style={{ color:MUTED, fontSize:14 }}>+</span>
                       <input type="color" value={prefs.accent_color}
                         onChange={e => setPrefField("accent_color", e.target.value)}

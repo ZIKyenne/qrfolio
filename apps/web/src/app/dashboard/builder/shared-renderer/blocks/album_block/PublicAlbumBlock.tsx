@@ -12,7 +12,7 @@ export function PublicAlbumBlock({ content, ctx }: PublicAdapterProps) {
     <div style={{ padding: "10px 24px 14px" }}>
       <div style={{ background: "rgba(29,185,84,0.06)", border: "1px solid rgba(29,185,84,0.2)", borderRadius: 15, overflow: "hidden" }}>
         {cover.src
-          ? <PublicSharedImage model={cover} width={800} height={200} style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
+          ? <PublicSharedImage model={cover} width={800} height={200} sizes="(max-width: 640px) 100vw, 800px" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
           : <div style={{ height: 150, background: "rgba(29,185,84,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52 }}>💿</div>}
         <div style={{ padding: "15px" }}>
           <p style={{ color: TEXT, fontSize: 19, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{title}</p>

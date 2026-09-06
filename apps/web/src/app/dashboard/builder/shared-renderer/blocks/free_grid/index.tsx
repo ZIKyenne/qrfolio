@@ -8,6 +8,7 @@ import { extractIndexed } from "../../models/repeaterExtract"
 import { safeImageUrl, alignOf, clampInt } from "../../models/layoutStyle"
 import { LayoutSurface, SmartCta, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 type Cell = { emoji: string; image: string; title: string; text: string; href: string }
 
@@ -36,7 +37,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
           const inner = (
             <>
               {cell.image
-                ? <img src={cell.image} alt="" loading="lazy" decoding="async" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: "100%", height: Math.round(84 * u.scale), objectFit: "cover", borderRadius: 8, display: "block", marginBottom: Math.round(8 * u.scale) }} />
+                ? <SmartImage src={cell.image} alt="" width={280} height={84} sizes="(max-width: 640px) 50vw, 280px" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: "100%", height: Math.round(84 * u.scale), objectFit: "cover", borderRadius: 8, display: "block", marginBottom: Math.round(8 * u.scale) }} />
                 : cell.emoji ? <span style={{ fontSize: Math.round(24 * u.scale), display: "block", marginBottom: Math.round(6 * u.scale) }}>{cell.emoji}</span> : null}
               {cell.title && <p style={{ color: u.TEXT, fontSize: Math.round(13 * u.scale), fontWeight: 700, margin: 0, fontFamily: u.FONT_D }}>{cell.title}</p>}
               {cell.text && <p style={{ color: u.MUTED, fontSize: Math.round(11.5 * u.scale), margin: `${Math.round(4 * u.scale)}px 0 0`, lineHeight: 1.45, fontFamily: u.FONT_B }}>{cell.text}</p>}

@@ -11,7 +11,7 @@ export function EditorPodcastLinks({ content, ctx }: EditorAdapterProps) {
     <div style={{ padding: "10px 16px", ...surfaceStyle }}>
       <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
         {cover.src
-          ? <EditorSharedImage model={cover} style={{ width: 52, height: 52, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+          ? <EditorSharedImage model={cover} width={52} height={52} sizes="52px" style={{ width: 52, height: 52, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
           : <div style={{ width: 52, height: 52, borderRadius: 10, background: "rgba(177,80,226,0.15)", border: "1px solid rgba(177,80,226,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>🎙️</div>}
         <div>
           <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 2px" }}>{name}</p>

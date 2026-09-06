@@ -14,7 +14,7 @@ export function PublicDiscography({ content, ctx }: PublicAdapterProps) {
         {items.map((a, i) => {
           const inner = <>
             {a.cover.src
-              ? <PublicSharedImage model={a.cover} width={54} height={54} style={{ width: 54, height: 54, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} />
+              ? <PublicSharedImage model={a.cover} width={54} height={54} sizes="54px" style={{ width: 54, height: 54, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} />
               : <div style={{ width: 54, height: 54, borderRadius: 9, background: "rgba(29,185,84,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25, flexShrink: 0 }}>💿</div>}
             <div style={{ flex: 1 }}><p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{a.title}</p><div style={{ display: "flex", alignItems: "center", gap: 7 }}>{a.type && <span style={{ background: "rgba(29,185,84,0.12)", border: "1px solid rgba(29,185,84,0.2)", borderRadius: 10, padding: "1px 8px", color: "#1DB954", fontSize: 10, fontWeight: 700 }}>{a.type}</span>}{a.year && <span style={{ color: MUTED, fontSize: 12 }}>{a.year}</span>}</div></div>
             <span style={{ color: "#1DB954", fontSize: 19 }}>▶</span>

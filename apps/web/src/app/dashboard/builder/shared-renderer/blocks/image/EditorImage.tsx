@@ -1,6 +1,7 @@
 "use client"
 import { imageViewModel } from "../../models/image"
 import type { EditorAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 // Éditeur : aucun lien (neutralisé) ; placeholder « Aucune image » si pas de média.
 export function EditorImage({ content, ctx }: EditorAdapterProps) {
@@ -14,7 +15,7 @@ export function EditorImage({ content, ctx }: EditorAdapterProps) {
       </div>
     </div>
   )
-  const img = <img src={src!} alt={alt} style={{ width: "100%", height: aspectRatio ? "auto" : undefined, maxHeight: aspectRatio ? undefined : 220, aspectRatio, objectFit: "cover", display: "block", borderRadius: isCircle ? "50%" : rounded === "rounded" ? 10 : 0 }} />
+  const img = <SmartImage src={src!} alt={alt} width={560} height={220} sizes="(max-width: 640px) 100vw, 560px" style={{ width: "100%", height: aspectRatio ? "auto" : undefined, maxHeight: aspectRatio ? undefined : 220, aspectRatio, objectFit: "cover", display: "block", borderRadius: isCircle ? "50%" : rounded === "rounded" ? 10 : 0 }} />
   return (
     <div style={{ ...surfaceStyle }}>
       <div>

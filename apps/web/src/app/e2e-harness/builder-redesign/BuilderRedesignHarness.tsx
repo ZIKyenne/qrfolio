@@ -97,6 +97,7 @@ export function BuilderRedesignHarness() {
           <MobileBuilderShell
             pageName="Page intégrée" saving={false} saved hasUnsaved={false} saveError={false}
             canUndo={false} canRedo={false} onUndo={() => {}} onRedo={() => {}} onBack={() => {}}
+            confirm={async () => true}   /* harnais : rien à confirmer */
             blocks={blocks} selectedId={selectedId} onSelect={setSelectedId}
             favorites={favorites} recents={recents} onToggleFavorite={t => setFavorites(f => toggleFavorite(f, t))}
             onAddBlock={t => addAt(t, null)}

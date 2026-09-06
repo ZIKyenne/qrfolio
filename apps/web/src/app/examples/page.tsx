@@ -343,7 +343,7 @@ export default function ExamplesPage() {
       `}</style>
 
       {/* NAV */}
-      <nav className="nav-page" style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,height:64,background:"rgba(8,8,8,0.93)",backdropFilter:"blur(24px)",borderBottom:"1px solid rgba(201,168,76,0.12)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 48px" }}>
+      <nav className="nav-page qf-entete" style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,height:64,background:"rgba(8,8,8,0.93)",backdropFilter:"blur(24px)",borderBottom:"1px solid rgba(201,168,76,0.12)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 48px" }}>
         <Link href="/" style={{ textDecoration:"none" }}>
           <span style={{ fontFamily:"Fraunces,serif",fontSize:20,color:G,fontWeight:700 }}>QRowg</span>
         </Link>
@@ -366,7 +366,7 @@ export default function ExamplesPage() {
             <span style={{ fontSize:9 }}>✦</span> Galerie d'exemples
           </div>
           <h1 style={{ fontFamily:"Fraunces,serif",fontSize:"clamp(30px,4vw,58px)",color:INK,fontWeight:700,lineHeight:1.1,letterSpacing:"-0.02em",margin:"0 0 20px" }} className="au2">
-            Ce que tu peux créer<br/><span style={{color:G}}>avec QRowg.</span>
+            Ce que vous pouvez créer<br/><span style={{color:G}}>avec QRowg.</span>
           </h1>
           <p style={{ color:MUT,fontSize:17,lineHeight:1.7,margin:"0 0 16px" }} className="au3">
             Restaurants, freelances, artistes, agents immobiliers — des pages professionnelles créées en moins de 5 minutes.

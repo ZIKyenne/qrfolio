@@ -97,9 +97,9 @@ export default function ContactPage() {
 
   function validate(): boolean {
     const e: Partial<FormState> = {}
-    if (!form.name.trim() || form.name.trim().length < 2) e.name = "Merci d'indiquer ton nom."
+    if (!form.name.trim() || form.name.trim().length < 2) e.name = "Merci d'indiquer votre nom."
     if (!form.email.trim() || !/^[^@]+@[^@]+\.[^@]+$/.test(form.email)) e.email = "Email invalide."
-    if (!form.subject) e.subject = "Choisis un sujet."
+    if (!form.subject) e.subject = "Choisissez un sujet."
     if (!form.message.trim() || form.message.trim().length < 10) e.message = "Message trop court (min. 10 caractères)."
     setErrors(e)
     return Object.keys(e).length === 0
@@ -121,7 +121,7 @@ export default function ContactPage() {
       setStatus("success")
       setForm({ name:"", email:"", subject:"", message:"", website:"" })
     } catch {
-      setErrMsg("Erreur réseau. Vérifie ta connexion.")
+      setErrMsg("Erreur réseau. Vérifiez votre connexion.")
       setStatus("error")
     }
   }
@@ -146,7 +146,7 @@ export default function ContactPage() {
       `}</style>
 
       {/* NAV */}
-      <nav className="nav-page" style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,height:64,background:"rgba(8,8,8,0.93)",backdropFilter:"blur(24px)",borderBottom:"1px solid rgba(201,168,76,0.12)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 48px" }}>
+      <nav className="nav-page qf-entete" style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,height:64,background:"rgba(8,8,8,0.93)",backdropFilter:"blur(24px)",borderBottom:"1px solid rgba(201,168,76,0.12)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 48px" }}>
         <Link href="/" style={{ textDecoration:"none" }}>
           <span style={{ fontFamily:"Fraunces,serif",fontSize:20,color:G,fontWeight:700 }}>QRowg</span>
         </Link>
@@ -169,7 +169,7 @@ export default function ContactPage() {
             Une question ?<br /><span style={{color:G}}>Parlons-en.</span>
           </h1>
           <p style={{ color:MUT,fontSize:17,lineHeight:1.7,margin:0 }} className="au2">
-            Nous répondons généralement sous 24h.
+            Nous répondons généralement sous 24 heures.
           </p>
         </div>
       </section>
@@ -192,7 +192,7 @@ export default function ContactPage() {
                     Message envoyé !
                   </h2>
                   <p style={{ color:MUT,fontSize:15,lineHeight:1.7,margin:"0 0 28px" }}>
-                    Merci pour ton message. Nous reviendrons vers toi sous 24h.
+                    Merci pour ton message. Nous reviendrons vers toi sous 24 heures.
                   </p>
                   <button onClick={()=>setStatus("idle")} style={{
                     background:"transparent",border:"1px solid rgba(201,168,76,0.3)",
@@ -211,8 +211,8 @@ export default function ContactPage() {
 
                   <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16 }} className="name-email">
                     <style>{`@media(max-width:500px){.name-email{grid-template-columns:1fr !important;}}`}</style>
-                    <InputField id="name"    label="Ton nom"          value={form.name}    onChange={set("name")}    error={errors.name}    placeholder="Jean Dupont" />
-                    <InputField id="email"   label="Ton email"        type="email"         value={form.email}   onChange={set("email")}   error={errors.email}   placeholder="jean@exemple.fr" />
+                    <InputField id="name"    label="Votre nom"          value={form.name}    onChange={set("name")}    error={errors.name}    placeholder="Jean Dupont" />
+                    <InputField id="email"   label="Votre e-mail"        type="email"         value={form.email}   onChange={set("email")}   error={errors.email}   placeholder="jean@exemple.fr" />
                   </div>
 
                   {/* Sujet select */}
@@ -233,7 +233,7 @@ export default function ContactPage() {
                     {errors.subject && <span style={{color:ERR,fontSize:12}}>{errors.subject}</span>}
                   </div>
 
-                  <InputField id="message" label="Ton message" type="textarea" value={form.message} onChange={set("message")} error={errors.message} placeholder="Décris ta question ou ton besoin..." />
+                  <InputField id="message" label="Votre message" type="textarea" value={form.message} onChange={set("message")} error={errors.message} placeholder="Décrivez votre question ou votre besoin…" />
 
                   {/* Compteur message */}
                   <div style={{ display:"flex",justifyContent:"flex-end",marginTop:-12 }}>
@@ -345,7 +345,7 @@ export default function ContactPage() {
               {/* CTA */}
               <div style={{ background:"linear-gradient(145deg,rgba(201,168,76,0.08),rgba(201,168,76,0.03))",border:BOR,borderRadius:14,padding:"22px 20px",textAlign:"center" }}>
                 <p style={{color:INK,fontSize:14,fontWeight:600,margin:"0 0 8px"}}>Pas encore sur QRowg ?</p>
-                <p style={{color:MUT.replace("0.8","0.65"),fontSize:12.5,margin:"0 0 16px",lineHeight:1.5}}>Crée ta page gratuitement en 5 minutes.</p>
+                <p style={{color:MUT.replace("0.8","0.65"),fontSize:12.5,margin:"0 0 16px",lineHeight:1.5}}>Créez votre page gratuitement en 5 minutes.</p>
                 <Link href={creerUrl()} style={{
                   display:"block",textAlign:"center",
                   background:"linear-gradient(90deg,#C9A84C,#b8953f)",

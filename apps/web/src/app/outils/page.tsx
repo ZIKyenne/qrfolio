@@ -4,6 +4,7 @@ import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import { creerUrl } from "../creer/entry"
+import { ogFor } from "@/lib/seoMeta"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -11,10 +12,9 @@ const URL = `${APP}/outils`
 
 export const metadata: Metadata = {
   title: "Outils QR code gratuits — créer et vérifier",
-  description: "Quatre outils gratuits pour vos QR codes : le générateur, le générateur WiFi, le testeur avant impression et le calculateur de taille. Sans compte, sans filigrane, dans le navigateur.",
+  description: "Quatre outils QR code gratuits : générateur, générateur Wi-Fi, testeur avant impression et calculateur de taille. Sans compte, dans le navigateur.",
   alternates: { canonical: URL },
-  openGraph: { title: "Outils QR code gratuits | QRowg", description: "Générer, tester et dimensionner un QR code. Quatre outils gratuits, sans compte.", url: URL, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Outils QR code gratuits | QRowg", description: "Générer, tester et dimensionner un QR code — gratuitement." },
+  ...ogFor({ url: URL, title: "Outils QR code gratuits | QRowg", description: "Générer, tester et dimensionner un QR code. Quatre outils gratuits, sans compte." }),
 }
 
 // Chaque outil dit ce qu'il fait ET quand on s'en sert : sans ça, la page n'est
@@ -30,7 +30,7 @@ const OUTILS = [
   {
     href: "/generateur-qr-code-wifi",
     emoji: "📶",
-    nom: "Générateur de QR code WiFi",
+    nom: "Générateur de QR code Wi-Fi",
     quoi: "Un code qui connecte au réseau sans dicter le mot de passe. Nom du réseau, sécurité, mot de passe.",
     quand: "Pour une salle d'attente, un gîte, un bar.",
   },
@@ -77,7 +77,7 @@ export default function OutilsPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(crumbLd) }} />
       <Particles behind />
 
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(9px,2.6vw,14px)" }}>
           <Link href="/guides" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Guides</Link>

@@ -262,7 +262,7 @@ const STATUS_CFG: Record<string, { label: string; dot: string; badge: string; te
 // -- Statuts QR Code
 const QR_STATUS_CFG: Record<string, { label: string; dot: string; badge: string; text: string; desc: string }> = {
   active:   { label: "Actif",     dot: "var(--success)", badge: "rgba(57,255,143,0.12)",  text: "var(--success)", desc: "Redirection normale" },
-  draft:    { label: "Brouillon", dot: "#A8A190", badge: "rgba(138,132,120,0.12)", text: "#A8A190", desc: "Visible dans le dashboard uniquement" },
+  draft:    { label: "Brouillon", dot: "#A8A190", badge: "rgba(138,132,120,0.12)", text: "#A8A190", desc: "Visible dans le tableau de bord uniquement" },
   paused:   { label: "En pause",  dot: "#F97316", badge: "rgba(249,115,22,0.12)",  text: "#F97316", desc: "Page indisponible affichee" },
   archived: { label: "Archivé",   dot: "#6B7280", badge: "rgba(107,114,128,0.12)", text: "#6B7280", desc: "Masque et bloque" },
   expired:  { label: "Expire",    dot: "var(--danger)", badge: "rgba(255,107,107,0.12)", text: "var(--danger)", desc: "Accès expire" },
@@ -597,7 +597,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   const [expOptsOpen, setExpOptsOpen] = useState(false) // options export techniques repliées sur mobile
   const [sceneSelOpen, setSceneSelOpen] = useState(false) // sélecteur d'aperçu replié sur mobile
   const [expMoreOpen, setExpMoreOpen] = useState(false) // actions secondaires export repliées sur mobile
-  const [printDetailsOpen, setPrintDetailsOpen] = useState(false) // liste détaillée Print Studio repliée sur mobile
+  const [printDetailsOpen, setPrintDetailsOpen] = useState(false) // liste détaillée Atelier d'impression repliée sur mobile
   const isMobile = useIsMobile(859) // mobile : on désencombre le panneau export
   const [qrPng,      setQrPng]      = useState<string>("") // PNG du QR composé dans les scènes
   const [diagFg,     setDiagFg]     = useState("")
@@ -1987,8 +1987,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
 
   }
 
-  // -- Ouvrir le Print Studio (GUIDÉ, gratuit) — entrée unique, pré-chargé avec ce QR ---------------
-  // Convergence : l'ancien éditeur libre Fabric est remplacé par le nouveau Print Studio guidé
+  // -- Ouvrir l'atelier d'impression (GUIDÉ, gratuit) — entrée unique, pré-chargé avec ce QR ---------------
+  // Convergence : l'ancien éditeur libre Fabric est remplacé par le nouveau Atelier d'impression guidé
   // (cf. docs/PRINT-STUDIO-CONVERGENCE.md). On passe le short_code pour présélectionner le QR.
   const openEditor = () => {
     if (!active) return
@@ -2444,8 +2444,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       )}
 
       {/* -- Modale UPGRADE (conversion) ---------------------------------------- */}
-      {/* L'ancien éditeur libre Fabric a été retiré (convergence) : « Ouvrir QR Print Studio »
-          redirige vers le Print Studio guidé /dashboard/print-studio (cf. docs/PRINT-STUDIO-CONVERGENCE.md). */}
+      {/* L'ancien éditeur libre Fabric a été retiré (convergence) : « Ouvrir l'atelier d'impression »
+          redirige vers l'atelier d'impression guidé /dashboard/print-studio (cf. docs/PRINT-STUDIO-CONVERGENCE.md). */}
 
       {upsell && (() => {
         const isBiz = upsell.plan === "business"
@@ -2455,7 +2455,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         const benefits = isBiz
           ? ["Tous les presets premium ET luxe", "Modules & coins luxe", "Export PDF, SVG et WEBP", "Correction d'erreur maximale", "Logo central + branding complet"]
           : isStarter
-          ? ["QR Print Studio (imprimables)", "QR Studio (personnalisation)", "5 pages · 850 vues/mois", "Sans branding QRowg", "Domaine personnalisé"]
+          ? ["atelier d'impression", "QR Studio (personnalisation)", "5 pages · 850 vues/mois", "Sans branding QRowg", "Domaine personnalisé"]
           : ["Tous les presets premium", "Modules avances (pixel, neon...)", "Coins avances (diamond...)", "Export SVG et WEBP", "Correction d'erreur elevee (H)"]
         return (
           <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.85)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:4300, padding:24 }}
@@ -2615,7 +2615,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               recherche suffit) pour desencombrer. Toujours presents sur desktop. */}
           {!isMobile && (
           <div style={{ display:"flex", gap:5 }}>
-            <select value={filterSt} onChange={e => setFilterSt(e.target.value)} className="da-select"
+            <select aria-label="Filtrer par statut" value={filterSt} onChange={e => setFilterSt(e.target.value)} className="da-select"
               style={{ flex:1, padding:"6px 8px", fontSize:10 }}>
               <option value="all">Tous</option>
               <option value="active">Actif</option>
@@ -2624,7 +2624,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               <option value="archived">Archive</option>
               <option value="expired">Expire</option>
             </select>
-            <select value={sortKey} onChange={e => setSortKey(e.target.value)} className="da-select"
+            <select aria-label="Trier les QR" value={sortKey} onChange={e => setSortKey(e.target.value)} className="da-select"
               style={{ flex:1, padding:"6px 8px", fontSize:10 }}>
               <option value="date-desc">Date rec.</option>
               <option value="date-asc">Date anc.</option>
@@ -2649,7 +2649,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 </>
               ) : (
                 <>
-                  <p style={{ fontSize:12, margin:"0 0 3px", color:"#F5F0E8", fontWeight:600 }}>Aucun resultat</p>
+                  <p style={{ fontSize:12, margin:"0 0 3px", color:"#F5F0E8", fontWeight:600 }}>Aucun résultat</p>
                   <p style={{ fontSize:10, margin:0, lineHeight:1.5 }}>Aucun QR ne correspond<br/>a vos filtres</p>
                 </>
               )}
@@ -3051,7 +3051,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                     <div style={{ width:7, height:7, borderRadius:"50%", background:getDestStatusColor(destOverride) }}/>
                     <p style={{ color:"#A8A190", fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.2, margin:0 }}>
-                      Destination {destOverride ? "* Modifiee" : "* Page par defaut"}
+                      Destination {destOverride ? "* Modifiée" : "* Page par defaut"}
                     </p>
                   </div>
                   <div style={{ display:"flex", gap:4 }}>
@@ -3339,7 +3339,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               </>
             ) : (
               <div style={{ textAlign:"center" as const }}>
-                <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:600, margin:"0 0 6px" }}>Aucun QR selectionne</p>
+                <p style={{ color:"#F5F0E8", fontSize:14, fontWeight:600, margin:"0 0 6px" }}>Aucun QR sélectionné</p>
                 <p style={{ color:MUTED, fontSize:12, margin:0, lineHeight:1.6 }}>Choisissez un QR dans la liste<br/>pour le personnaliser</p>
               </div>
             )}
@@ -3732,7 +3732,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                         </p>
                         <p style={{ color:MUTED, fontSize:10, margin:"0 0 10px" }}>PNG, SVG, WEBP -- max 2 Mo</p>
                         <span className="qb-pill" style={{ fontSize:12.5, padding:"7px 15px" }}>Parcourir</span>
-                        <input ref={logoInputRef} type="file" accept="image/*" style={{ display:"none" }}
+                        <input ref={logoInputRef} type="file" aria-label="Importer un logo" accept="image/*" style={{ display:"none" }}
                           onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = "" }}/>
                       </div>
                     ) : (
@@ -3763,7 +3763,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                             {styleConf.logoSize ?? 18}%
                           </span>
                         </div>
-                        <input type="range" min={10} max={30} step={1} value={styleConf.logoSize ?? 18}
+                        <input type="range" min={10} max={30} step={1} aria-label="Taille du logo" value={styleConf.logoSize ?? 18}
                           onChange={e => setStyleConf(p => ({ ...p, logoSize: Number(e.target.value) }))}
                           style={{ width:"100%", accentColor: (styleConf.logoSize ?? 18) > 25 ? "var(--danger)" : G, cursor:"pointer" }}/>
                         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:4 }}>
@@ -3826,7 +3826,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                           <p style={{ color:MUTED, fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:1.5, margin:0 }}>Padding</p>
                           <span style={{ color:G, fontSize:11, fontWeight:700 }}>{styleConf.logoPadding ?? 4}px</span>
                         </div>
-                        <input type="range" min={0} max={12} step={1} value={styleConf.logoPadding ?? 4}
+                        <input type="range" min={0} max={12} step={1} aria-label="Marge autour du logo" value={styleConf.logoPadding ?? 4}
                           onChange={e => setStyleConf(p => ({ ...p, logoPadding: Number(e.target.value) }))}
                           style={{ width:"100%", accentColor:G, cursor:"pointer" }}/>
                       </div>
@@ -3900,14 +3900,14 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
           </div>
         )}
 
-        {/* -- Imprimables : entree vers QR Print Studio + explicatif ---------- */}
+        {/* -- Imprimables : entree vers Atelier d'impression + explicatif ---------- */}
         {activeTab === "supports" && active && (
           <div className="qr-scroll" style={{ display:"flex", flexDirection:"column", flex:1, overflow:"auto", padding:"18px 16px", gap:14 }}>
-            {/* CTA « Ouvrir QR Print Studio » — carte bronze à tuile dorée (DA §09) : plus d'aplat plein
+            {/* CTA « Ouvrir l"atelier d'impression » — carte bronze à tuile dorée (DA §09) : plus d"aplat plein
                 (le seul bouton plein doré de la zone reste « Télécharger »). */}
             <button type="button" onClick={openEditor} className="da-suppcta">
               <span aria-hidden="true" style={{ position:"absolute", left:0, top:0, right:0, height:1, background:"linear-gradient(90deg, transparent, rgba(232,200,119,.5), transparent)" }} />
-              {/* Tuile dorée pleine + glyphe imprimante (dit « Print Studio », là où une flèche ne représentait rien) */}
+              {/* Tuile dorée pleine + glyphe imprimante (dit « Atelier d'impression », là où une flèche ne représentait rien) */}
               <span aria-hidden="true" style={{ position:"relative", display:"inline-flex", alignItems:"center", justifyContent:"center", width:34, height:34, flexShrink:0, borderRadius:10, background:"linear-gradient(135deg, #e8c877, #c9a24d)", boxShadow:"0 8px 18px -10px rgba(201,162,77,.9)" }}>
                 <span style={{ position:"relative", display:"inline-block", width:18, height:18 }}>
                   <span style={{ position:"absolute", left:4, top:0, width:10, height:4.5, border:"1.6px solid #1a1408", borderBottom:"none", borderRadius:"1px 1px 0 0" }}/>
@@ -3917,7 +3917,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                 </span>
               </span>
               <span style={{ display:"flex", flexDirection:"column", gap:3, minWidth:0 }}>
-                <span style={{ fontSize:14, fontWeight:700, color:"#e8c877", letterSpacing:"-.01em" }}>Ouvrir QR Print Studio</span>
+                <span style={{ fontSize:14, fontWeight:700, color:"#e8c877", letterSpacing:"-.01em" }}>Ouvrir l'atelier d'impression</span>
                 <span style={{ fontSize:11.5, color:"#8a8177", lineHeight:1.4 }}>Six formats prêts à imprimer, déjà calés sur votre QR.</span>
               </span>
               <span aria-hidden="true" className="da-suppchev" />
@@ -3967,7 +3967,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
               {([
                 ["🎯","Création guidée en 30 s","Votre métier → votre objectif → un design pro généré automatiquement."],
                 ["🖼️","Modèles premium","Affiches, flyers, cartes, stickers, cartes de table — formats A4, carré, story, carte."],
-                ["📶","Supports métier","Wifi, carte de fidélité, menu, avis, réservation, abonnés…"],
+                ["📶","Supports métier","Wi-Fi, carte de fidélité, menu, avis, réservation, abonnés…"],
                 ["🎨","Éditeur libre","Déplacez, redimensionnez, ajoutez textes, formes, photos, icônes."],
                 ["✨","Réglages avancés","Dégradés, motifs, ombres colorées, contour de texte, transformer, aligner…"],
                 ["📸","Photos & logos","Banque d'images intégrée + vos propres visuels."],
@@ -4140,7 +4140,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
                     <span style={{ color:MUTED, fontSize:11 }}>Marge</span>
                     <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <input type="range" min={0} max={30} value={expMargin}
+                      <input type="range" min={0} max={30} aria-label="Marge blanche à l'export" value={expMargin}
                         onChange={e => setExpMargin(Number(e.target.value))}
                         style={{ width:80, accentColor:G, cursor:"pointer" }}/>
                       <span style={{ color:G, fontSize:11, fontWeight:700, width:28, textAlign:"right" as const }}>{expMargin}px</span>
@@ -4258,7 +4258,11 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
       </div>
 
 
-      <style>{`[data-qr-container] canvas, [data-qr-container] svg { width:100% !important; height:100% !important; display:block; } @media (max-width: 859px) { .qr-grid { display:flex !important; flex-direction:column !important; min-height:0 !important; overflow:visible !important; } .qr-col-preview { order:1 !important; width:100% !important; overflow:visible !important; } .qr-col-settings { order:2 !important; width:100% !important; overflow:visible !important; border-left:none !important; border-top:1px solid rgba(255,255,255,0.06) !important; } .qr-col-list { order:3 !important; width:100% !important; overflow:visible !important; border-right:none !important; border-top:1px solid rgba(255,255,255,0.06) !important; } .qr-scroll { flex:none !important; height:auto !important; max-height:none !important; overflow:visible !important; } } button { transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; } button:active { transform: scale(0.97); } input:focus, select:focus, textarea:focus { border-color: color-mix(in srgb, var(--accent) 55%, transparent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important; } .qr-scroll::-webkit-scrollbar { width:8px; height:8px; } .qr-scroll::-webkit-scrollbar-track { background:transparent; } .qr-scroll::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--accent) 18%, transparent); border-radius:8px; } .qr-scroll::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb, var(--accent) 35%, transparent); }`}</style>
+      {/* Ces règles étaient globales : `button:active` et `input:focus !important`
+          s'appliquaient à TOUT le tableau de bord dès que cet écran était monté,
+          et le `!important` battait les styles des autres pages. Elles sont
+          désormais bornées à .qr-grid, la grille de cet écran. */}
+      <style>{`[data-qr-container] canvas, [data-qr-container] svg { width:100% !important; height:100% !important; display:block; } @media (max-width: 859px) { .qr-grid { display:flex !important; flex-direction:column !important; min-height:0 !important; overflow:visible !important; } .qr-col-preview { order:1 !important; width:100% !important; overflow:visible !important; } .qr-col-settings { order:2 !important; width:100% !important; overflow:visible !important; border-left:none !important; border-top:1px solid rgba(255,255,255,0.06) !important; } .qr-col-list { order:3 !important; width:100% !important; overflow:visible !important; border-right:none !important; border-top:1px solid rgba(255,255,255,0.06) !important; } .qr-scroll { flex:none !important; height:auto !important; max-height:none !important; overflow:visible !important; } } .qr-grid button { transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; } .qr-grid button:active { transform: scale(0.97); } .qr-grid input:focus, .qr-grid select:focus, .qr-grid textarea:focus { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); } .qr-scroll::-webkit-scrollbar { width:8px; height:8px; } .qr-scroll::-webkit-scrollbar-track { background:transparent; } .qr-scroll::-webkit-scrollbar-thumb { background:color-mix(in srgb, var(--accent) 18%, transparent); border-radius:8px; } .qr-scroll::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb, var(--accent) 35%, transparent); }`}</style>
     </div>
   )
 }

@@ -5,16 +5,16 @@ import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
 import { VERTICALS, VERTICAL_ORDER } from "./verticals"
 import { creerUrl } from "../creer/entry"
+import { ogFor } from "@/lib/seoMeta"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
 
 export const metadata: Metadata = {
   title: "QR codes par usage : restaurant, menu, avis Google…",
-  description: "Créez le QR code adapté à votre besoin : restaurant, menu numérique, avis Google, WiFi, événement, carte de visite. Dynamique, modifiable, prêt à imprimer.",
+  description: "Créez le QR code adapté à votre besoin : restaurant, menu numérique, avis Google, Wi-Fi, événement, carte de visite. Dynamique, modifiable, prêt à imprimer.",
   alternates: { canonical: `${APP}/qr-code` },
-  openGraph: { title: "QR codes par usage : restaurant, menu, avis Google… | QRowg", description: "Le QR code adapté à chaque besoin : restaurant, menu, avis Google, WiFi, événement, carte de visite.", url: `${APP}/qr-code`, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "QR codes par usage : restaurant, menu, avis Google… | QRowg", description: "Créez le QR code adapté à votre besoin : restaurant, menu numérique, avis Google, WiFi, événement, carte de visite. Dynamique, modifiable, prêt à imprimer." },
+  ...ogFor({ url: `${APP}/qr-code`, title: "QR codes par usage : restaurant, menu, avis Google… | QRowg", description: "Le QR code adapté à chaque besoin : restaurant, menu, avis Google, Wi-Fi, événement, carte de visite." }),
 }
 
 export default function QrCodeHub() {
@@ -30,7 +30,7 @@ export default function QrCodeHub() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(listLd) }} />
       <Particles behind />
 
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(9px,2.6vw,14px)" }}>
           <Link href="/auth/login" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Connexion</Link>

@@ -2,6 +2,7 @@
 import { pdfViewerViewModel } from "../../models/pdfViewer"
 import { EditorCtaShell } from "../../primitives/BlockCtaLink"
 import type { EditorAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 export function EditorPdfViewer({ content, ctx }: EditorAdapterProps) {
   const { title, description, cover, pages, fileSize, ctaLabel, showDownload, trackTarget } = pdfViewerViewModel(content)
@@ -11,7 +12,7 @@ export function EditorPdfViewer({ content, ctx }: EditorAdapterProps) {
   return (
     <div style={{ padding: "10px 16px", ...surfaceStyle }}>
       <div style={{ background: "rgba(78,205,196,0.06)", border: "1.5px solid rgba(78,205,196,0.2)", borderRadius: 14, padding: "16px" }}>
-        {cover && <div style={{ borderRadius: 10, overflow: "hidden", marginBottom: 12 }}><img src={cover} alt="" style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block" }} /></div>}
+        {cover && <div style={{ borderRadius: 10, overflow: "hidden", marginBottom: 12 }}><SmartImage src={cover} alt="" width={560} height={180} sizes="(max-width: 640px) 100vw, 560px" style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block" }} /></div>}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: hasUrl ? 12 : 0 }}>
           {!cover && <div style={{ width: 44, height: 52, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>📄</div>}
           <div style={{ flex: 1 }}>

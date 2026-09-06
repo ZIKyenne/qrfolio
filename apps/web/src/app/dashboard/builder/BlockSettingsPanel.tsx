@@ -41,7 +41,9 @@ export interface BlockSettingsPanelProps {
   onRequestClose?: () => void
   onOpenLibrary?: () => void
   onOpenOutline?: () => void
-  /** Confirmation (défaut : window.confirm). Retour truthy = confirmé. */
+  /** Confirmation, fournie par l'éditeur (useConfirm). Sans elle, le panneau
+   *  s'abstient plutôt que d'ouvrir une boîte native : une suppression n'est
+   *  jamais faite « par défaut ». */
   confirm?: (message: string) => boolean | Promise<boolean>
   /** Panneau legacy injecté (EditPanel) — évite toute duplication et toute perte de champ. */
   renderLegacyContent?: (block: Block) => ReactNode
@@ -73,8 +75,10 @@ export function BlockSettingsPanel(props: BlockSettingsPanelProps) {
 
   const doConfirm = useCallback(async (msg: string) => {
     if (props.confirm) return props.confirm(msg)
-    if (typeof window !== "undefined") return window.confirm(msg)
-    return true
+    // Aucun moyen de demander : on ne fait rien. `window.confirm` bloquait le fil
+    // d'exécution, ignorait la charte et s'ouvrait derrière la feuille sur iOS.
+    console.warn("[BlockSettingsPanel] confirm absent — action annulée :", msg)
+    return false
   }, [props])
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -109,7 +113,10 @@ export function BlockSettingsPanel(props: BlockSettingsPanelProps) {
     toggleVisible: props.onToggleVisible, toggleLock: props.onToggleLock, toggleDraft: props.onToggleDraft,
     copyStyle: props.onCopyStyle,
     reset: props.onResetBlock ? async () => { if (await doConfirm("Réinitialiser ce bloc ? Les réglages reviennent au défaut (annulable avec Ctrl+Z).")) props.onResetBlock!() } : undefined,
-    delete: props.onDelete ? async () => { if (await doConfirm("Supprimer ce bloc ? (annulable avec Ctrl+Z)")) props.onDelete!() } : undefined,
+    // Supprimer ne demande rien : l'éditeur affiche « Bloc supprimé — Annuler ».
+    // Ce panneau était le seul des quatre chemins de suppression à ouvrir une
+    // fenêtre ; la même action se comportait donc de deux façons.
+    delete: props.onDelete,
   }
 
   const renderBody = () => {

@@ -14,7 +14,7 @@ export function PublicAudioPlayer({ content, ctx }: PublicAdapterProps) {
       <div style={{ background: "rgba(167,139,250,0.06)", border: "1.5px solid rgba(167,139,250,0.22)", borderRadius: 15, padding: "15px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 13 }}>
           {cover
-            ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={cover} alt="" width={60} height={60} style={{ width: 60, height: 60, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
+            ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={cover} alt="" width={60} height={60} sizes="60px" style={{ width: 60, height: 60, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
             : <div style={{ width: 60, height: 60, borderRadius: 11, background: "rgba(167,139,250,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>🎧</div>}
           <div style={{ minWidth: 0 }}>
             <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</p>

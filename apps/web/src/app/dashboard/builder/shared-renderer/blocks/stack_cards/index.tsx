@@ -7,6 +7,7 @@ import { extractIndexed } from "../../models/repeaterExtract"
 import { safeImageUrl, alignOf } from "../../models/layoutStyle"
 import { LayoutSurface, SmartCta, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 type Card = { image: string; title: string; text: string; label: string; href: string; badge: string }
 
@@ -33,9 +34,9 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
           const banner = media === "Bandeau" && it.image
           const inner = (
             <>
-              {banner && <img src={it.image} alt="" loading="lazy" decoding="async" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: "100%", height: Math.round(120 * u.scale), objectFit: "cover", display: "block" }} />}
+              {banner && <SmartImage src={it.image} alt="" width={640} height={120} sizes="(max-width: 640px) 100vw, 640px" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: "100%", height: Math.round(120 * u.scale), objectFit: "cover", display: "block" }} />}
               <div style={{ display: "flex", gap: Math.round(11 * u.scale), alignItems: "center", padding: `${Math.round(12 * u.scale)}px ${Math.round(13 * u.scale)}px` }}>
-                {!banner && it.image && <img src={it.image} alt="" loading="lazy" decoding="async" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: Math.round(54 * u.scale), height: Math.round(54 * u.scale), borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />}
+                {!banner && it.image && <SmartImage src={it.image} alt="" width={54} height={54} sizes="54px" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: Math.round(54 * u.scale), height: Math.round(54 * u.scale), borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {it.badge && <span style={{ display: "inline-block", background: `${u.G}22`, color: u.G, border: `1px solid ${u.G}44`, borderRadius: 20, padding: `${Math.round(2 * u.scale)}px ${Math.round(9 * u.scale)}px`, fontSize: Math.round(10 * u.scale), fontWeight: 700, marginBottom: Math.round(5 * u.scale), fontFamily: u.FONT_B }}>{it.badge}</span>}
                   {it.title && <p style={{ color: u.TEXT, fontSize: Math.round(14 * u.scale), fontWeight: 700, margin: 0, fontFamily: u.FONT_D }}>{it.title}</p>}

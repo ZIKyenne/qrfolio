@@ -6,6 +6,7 @@ import { extractIndexed } from "../../models/repeaterExtract"
 import { safeColor, clampInt, safeImageUrl } from "../../models/layoutStyle"
 import { LayoutSurface, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 type Ico = { emoji: string; image: string; label: string }
 
@@ -36,7 +37,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
               display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
             }}>
               {it.image
-                ? <img src={it.image} alt="" loading="lazy" decoding="async" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: "72%", height: "72%", objectFit: "contain" }} />
+                ? <SmartImage src={it.image} alt="" width={96} height={96} sizes="96px" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: "72%", height: "72%", objectFit: "contain" }} />
                 : <span style={{ fontSize: Math.round(box * 0.5) }}>{it.emoji || "•"}</span>}
             </div>
             {it.label && <p style={{ color: u.MUTED, fontSize: Math.round(10.5 * u.scale), margin: `${Math.round(6 * u.scale)}px 0 0`, lineHeight: 1.3, fontFamily: u.FONT_B }}>{it.label}</p>}

@@ -6,6 +6,7 @@ import { serializeJsonLd } from "@/lib/jsonLd"
 import { creerUrl } from "../../creer/entry"
 import TailleClient from "./TailleClient"
 import { SUPPORTS, calculerTaille, modulesDeLaVersion, versionPourContenu } from "./taille"
+import { ogFor } from "@/lib/seoMeta"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.9)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
@@ -13,10 +14,9 @@ const URL = `${APP}/outils/taille-qr-code`
 
 export const metadata: Metadata = {
   title: "Quelle taille imprimer un QR code — calculateur",
-  description: "Calculez le côté minimal de votre QR code selon le support et la distance de lecture : carte de visite, menu, vitrine, affiche, véhicule. Gratuit, sans compte, résultat immédiat.",
+  description: "Calculez le côté minimal de votre QR code selon le support et la distance de lecture : carte, menu, vitrine, affiche, véhicule. Gratuit et immédiat.",
   alternates: { canonical: URL },
-  openGraph: { title: "Calculateur de taille de QR code | QRowg", description: "Le côté minimal de votre QR code selon le support et la distance de lecture.", url: URL, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Calculateur de taille de QR code | QRowg", description: "Quelle taille imprimer un QR code, selon le support et la distance." },
+  ...ogFor({ url: URL, title: "Calculateur de taille de QR code | QRowg", description: "Le côté minimal de votre QR code selon le support et la distance de lecture." }),
 }
 
 const FAQ = [
@@ -62,7 +62,7 @@ export default function TaillePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(crumbLd) }} />
       <Particles behind />
 
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(9px,2.6vw,14px)" }}>
           <Link href="/outils" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Outils</Link>

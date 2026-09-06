@@ -4,7 +4,9 @@ import { notFound } from "next/navigation"
 import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
 import { serializeJsonLd } from "@/lib/jsonLd"
-import { GUIDES, GUIDE_SLUGS, getGuide, GUIDES_UPDATED } from "../guides"
+import { ogFor } from "@/lib/seoMeta"
+import { enFrancais } from "@/lib/datesContenu"
+import { GUIDES, GUIDE_SLUGS, getGuide, reviseLe, imageGuide } from "../guides"
 import { VERTICALS } from "../../qr-code/verticals"
 import { creerUrl } from "../../creer/entry"
 
@@ -24,8 +26,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: g.metaTitle,
     description: g.metaDescription,
     alternates: { canonical: url },
-    openGraph: { title: g.metaTitle, description: g.metaDescription, url, siteName: "QRowg", type: "article" },
-    twitter: { card: "summary_large_image", title: g.metaTitle, description: g.metaDescription },
+    ...ogFor({
+      url, title: g.metaTitle, description: g.metaDescription, type: "article",
+      image: imageGuide(g.slug, APP),
+      publishedTime: reviseLe(g.slug), modifiedTime: reviseLe(g.slug),
+    }),
   }
 }
 
@@ -45,7 +50,10 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   const articleLd = {
     "@context": "https://schema.org", "@type": "Article",
     headline: g.h1, description: g.metaDescription,
-    datePublished: GUIDES_UPDATED, dateModified: GUIDES_UPDATED,
+    // Sans `image`, Google refuse le rich result Article. Elle est générée par
+    // opengraph-image.tsx de ce même dossier : jamais un 404.
+    image: [imageGuide(g.slug, APP)],
+    datePublished: reviseLe(g.slug), dateModified: reviseLe(g.slug),
     author: { "@type": "Organization", name: "QRowg", url: APP },
     publisher: { "@type": "Organization", name: "QRowg", url: APP },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
@@ -57,7 +65,9 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Accueil", item: APP },
       { "@type": "ListItem", position: 2, name: "Guides", item: `${APP}/guides` },
-      { "@type": "ListItem", position: 3, name: g.category, item: url },
+      // Le fil d'Ariane répétait la CATÉGORIE en dernière marche : « Accueil ›
+      // Guides › Impression », sans jamais nommer la page où l'on se trouve.
+      { "@type": "ListItem", position: 3, name: g.h1, item: url },
     ],
   }
 
@@ -68,7 +78,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(crumbLd) }} />
       <Particles behind />
 
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <Link href="/generateur-qr-code" style={{ background: "rgba(201,168,76,0.1)", border: `1px solid ${BOR}`, color: G, textDecoration: "none", fontSize: 13.5, fontWeight: 700, padding: "9px 16px", borderRadius: 10 }}>Générateur gratuit</Link>
       </header>
@@ -84,7 +94,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         <p style={{ color: G, fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", margin: 0 }}>{g.emoji} {g.category}</p>
         <h1 style={{ color: INK, fontSize: "clamp(28px,5vw,42px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.12, margin: "12px 0 14px", textWrap: "balance" }}>{g.h1}</h1>
         <p style={{ color: MUT, fontSize: "clamp(15px,2.2vw,17px)", lineHeight: 1.6, margin: "0 0 8px" }}>{g.lede}</p>
-        <p style={{ color: "#6E685E", fontSize: 12, margin: "0 0 24px" }}>Mis à jour le {new Date(GUIDES_UPDATED).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</p>
+        <p style={{ color: "#6E685E", fontSize: 12, margin: "0 0 24px" }}>Mis à jour le {enFrancais(reviseLe(g.slug))}</p>
 
         {/* En bref (réponse directe — GEO / featured snippet) */}
         <div style={{ ...cardCss, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)", marginBottom: 32 }}>

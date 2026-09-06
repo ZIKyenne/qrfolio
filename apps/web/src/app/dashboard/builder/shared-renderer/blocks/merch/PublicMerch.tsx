@@ -2,6 +2,7 @@
 import { merchViewModel } from "../../models/merch"
 import { PublicCtaLink } from "../../primitives/BlockCtaLink"
 import type { PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 export function PublicMerch({ content, ctx }: PublicAdapterProps) {
   const { items, title, description, ctaLabel, link } = merchViewModel(content)
@@ -15,7 +16,7 @@ export function PublicMerch({ content, ctx }: PublicAdapterProps) {
         {items.map((p, i) => (
           <div key={i} style={{ background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.15)", borderRadius: 11, overflow: "hidden" }}>
             {p.img
-              ? <img onError={e => { e.currentTarget.style.display = 'none' }} loading="lazy" decoding="async" src={p.img} alt="" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
+              ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={p.img} alt="" width={220} height={220} sizes="(max-width: 640px) 33vw, 220px" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
               : <div style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>👕</div>}
             <div style={{ padding: "7px 9px" }}>
               <p style={{ color: TEXT, fontSize: 11, fontWeight: 700, margin: "0 0 1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: FONT_B }}>{p.name}</p>

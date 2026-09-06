@@ -6,6 +6,7 @@ import { extHref } from "../../../types"
 import { alignOf, safeImageUrl, textOnSurface, textOn } from "../../models/layoutStyle"
 import { LayoutSurface, SmartCta, SurfaceHeading } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 const WIDTHS: Record<string, string> = { "Petite": "34%", "Moyenne": "44%", "Grande": "56%" }
 
@@ -23,7 +24,7 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
       <div style={{ display: "flex", flexDirection: right ? "row-reverse" : "row", alignItems: "center", gap: Math.round(14 * u.scale) }}>
         {img && (
           <div style={{ flex: `0 0 ${w}`, maxWidth: w }}>
-            <img src={img} alt={String(c.title || "")} loading="lazy" decoding="async"
+            <SmartImage src={img} alt={String(c.title || "")} width={640} height={640} sizes="(max-width: 640px) 100vw, 640px"
               onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
               style={{ width: "100%", aspectRatio: String(c.image_shape || "") === "Carrée" ? "1 / 1" : undefined, display: "block", borderRadius: 12, objectFit: "cover" }} />
           </div>

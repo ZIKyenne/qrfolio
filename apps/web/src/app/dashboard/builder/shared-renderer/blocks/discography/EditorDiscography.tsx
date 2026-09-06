@@ -16,7 +16,7 @@ export function EditorDiscography({ content, ctx }: EditorAdapterProps) {
           : items.map((a, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {a.cover.src
-                ? <EditorSharedImage model={a.cover} style={{ width: 52, height: 52, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                ? <EditorSharedImage model={a.cover} width={52} height={52} sizes="52px" style={{ width: 52, height: 52, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
                 : <div style={{ width: 52, height: 52, borderRadius: 8, background: "rgba(29,185,84,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>💿</div>}
               <div style={{ flex: 1 }}>
                 <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{a.title}</p>

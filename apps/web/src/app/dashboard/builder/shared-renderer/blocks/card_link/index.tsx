@@ -6,6 +6,7 @@ import { extHref } from "../../../types"
 import { safeImageUrl, alignOf, safeColor } from "../../models/layoutStyle"
 import { LayoutSurface, SmartCta } from "../../primitives/LayoutSurface"
 import { editorCtx, publicCtx, type UnifiedCtx, type EditorAdapterProps, type PublicAdapterProps } from "../../renderTypes"
+import SmartImage from "@/components/SmartImage"
 
 function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }) {
   const img = safeImageUrl(c.image)
@@ -15,9 +16,9 @@ function View({ content: c, u }: { content: Record<string, any>; u: UnifiedCtx }
   const cover = String(c.layout || "Vignette") === "Couverture"
   const inner = (
     <>
-      {cover && img && <img src={img} alt="" loading="lazy" decoding="async" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: "100%", height: Math.round(140 * u.scale), objectFit: "cover", display: "block" }} />}
+      {cover && img && <SmartImage src={img} alt="" width={640} height={140} sizes="(max-width: 640px) 100vw, 640px" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: "100%", height: Math.round(140 * u.scale), objectFit: "cover", display: "block" }} />}
       <div style={{ display: "flex", alignItems: "center", gap: Math.round(12 * u.scale), padding: `${Math.round(14 * u.scale)}px ${Math.round(14 * u.scale)}px`, textAlign: align }}>
-        {!cover && img && <img src={img} alt="" loading="lazy" decoding="async" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: Math.round(56 * u.scale), height: Math.round(56 * u.scale), borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />}
+        {!cover && img && <SmartImage src={img} alt="" width={56} height={56} sizes="56px" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none" }} style={{ width: Math.round(56 * u.scale), height: Math.round(56 * u.scale), borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />}
         {!cover && !img && c.emoji && <span style={{ fontSize: Math.round(28 * u.scale), flexShrink: 0 }}>{c.emoji}</span>}
         <div style={{ flex: 1, minWidth: 0 }}>
           {c.eyebrow && <p style={{ color: accent, fontSize: Math.round(10 * u.scale), fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", margin: `0 0 ${Math.round(3 * u.scale)}px`, fontFamily: u.FONT_B }}>{c.eyebrow}</p>}

@@ -11,10 +11,14 @@ import type { Block } from "./types"
 const blk = (over: Partial<Block> = {}): Block => ({ id: "b", type: "heading", content: {}, visible: true, ...over })
 
 describe("navigation & sheet", () => {
-  it("5 onglets max, ids uniques", () => {
-    expect(MOBILE_BOTTOM_NAV.length).toBe(5)
+  // 6 depuis l'ajout de « Style » : sans lui, le thème, les modèles de page et le
+  // QR n'avaient aucune porte sur téléphone. 6 est le plafond — à 320 px de large
+  // chaque onglet garde 53 px, au-dessus du minimum de 44 px.
+  it("6 onglets au plus, ids uniques", () => {
+    expect(MOBILE_BOTTOM_NAV.length).toBeLessThanOrEqual(6)
+    expect(320 / MOBILE_BOTTOM_NAV.length).toBeGreaterThanOrEqual(44)
     const ids = MOBILE_BOTTOM_NAV.map(n => n.id)
-    expect(new Set(ids).size).toBe(5)
+    expect(new Set(ids).size).toBe(MOBILE_BOTTOM_NAV.length)
   })
   it("preview n'ouvre pas de sheet", () => {
     expect(opensSheet("preview")).toBe(false)

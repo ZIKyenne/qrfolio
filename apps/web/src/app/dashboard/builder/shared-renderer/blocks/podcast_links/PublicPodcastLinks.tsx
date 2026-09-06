@@ -12,7 +12,7 @@ export function PublicPodcastLinks({ content, ctx }: PublicAdapterProps) {
     <div style={{ padding: "10px 24px 14px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 13 }}>
         {cover.src
-          ? <PublicSharedImage model={cover} width={54} height={54} style={{ width: 54, height: 54, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
+          ? <PublicSharedImage model={cover} width={54} height={54} sizes="54px" style={{ width: 54, height: 54, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
           : <div style={{ width: 54, height: 54, borderRadius: 11, background: "rgba(177,80,226,0.15)", border: "1px solid rgba(177,80,226,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 27, flexShrink: 0 }}>🎙️</div>}
         <div>
           <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{name}</p>

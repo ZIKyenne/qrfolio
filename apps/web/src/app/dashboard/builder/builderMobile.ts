@@ -1,24 +1,28 @@
 // builderMobile.ts — Modèle PUR du Builder mobile (mission C05, Vague 5). Aucun React/Supabase, ne
-// modifie aucun bloc. Modélise la navigation (5 onglets), la bottom sheet unique (3 snaps), les
+// modifie aucun bloc. Modélise la navigation (6 onglets), la bottom sheet unique (3 snaps), les
 // comportements après ajout/sélection, le clavier virtuel, les safe areas, la hiérarchie de retour
 // arrière et les actions contextuelles. Déterministe, testé. Réutilise blockContextActions (C03).
 
 import { blockContextActions, type BlockActionId } from "./builderUx"
 import type { Block } from "./types"
 
-export type MobileBuilderTab = "add" | "structure" | "edit" | "preview" | "publish"
+// « style » ouvre le thème et les modèles de page : montée par-dessus la barre
+// du haut, la coquille mobile laissait ces deux réglages — et le QR, et le nom
+// de la page — hors d'atteinte.
+export type MobileBuilderTab = "add" | "structure" | "edit" | "style" | "preview" | "publish"
 export type MobileSnap = "compact" | "medium" | "expanded"
 
 export type MobileSheetState =
   | { open: false }
   | { open: true; tab: MobileBuilderTab; snap: MobileSnap }
 
-// ── Bottom navigation (max 5, §6) ────────────────────────────────────────────
+// ── Bottom navigation (max 6, §6) ────────────────────────────────────────────
 export interface MobileNavItem { id: MobileBuilderTab; label: string; icon: string }
 export const MOBILE_BOTTOM_NAV: MobileNavItem[] = [
   { id: "add", label: "Ajouter", icon: "➕" },
   { id: "structure", label: "Structure", icon: "🗂️" },
   { id: "edit", label: "Modifier", icon: "✏️" },
+  { id: "style", label: "Style", icon: "🎨" },
   { id: "preview", label: "Aperçu", icon: "👁️" },
   { id: "publish", label: "Publier", icon: "🚀" },
 ]

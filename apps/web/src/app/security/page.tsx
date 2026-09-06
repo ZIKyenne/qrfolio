@@ -7,17 +7,18 @@ import { serializeJsonLd } from "@/lib/jsonLd"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 import { creerUrl } from "../creer/entry"
+import { ogFor } from "@/lib/seoMeta"
+import { REVISIONS, enFrancais } from "@/lib/datesContenu"
 
 const G = "#C9A84C", INK = "#F5F0E8", MUT = "rgba(138,132,120,0.92)", BG = "#080808", BOR = "rgba(201,168,76,0.18)"
 const URL = `${APP}/security`
-const UPDATED = "2026-08-12"
+const UPDATED = REVISIONS.security
 
 export const metadata: Metadata = {
   title: "Sécurité & confidentialité",
   description: "Comment QRowg protège vos données : chiffrement, isolation par utilisateur (RLS), paiements Stripe, hébergement en Europe, export et suppression de vos données.",
   alternates: { canonical: URL },
-  openGraph: { title: "Sécurité & confidentialité | QRowg", description: "Comment QRowg protège vos données : chiffrement, isolation par utilisateur (RLS), paiements Stripe, hébergement en Europe, export et suppression de vos données.", url: URL, siteName: "QRowg", type: "website" },
-  twitter: { card: "summary_large_image", title: "Sécurité & confidentialité | QRowg", description: "Comment QRowg protège vos données : chiffrement, isolation par utilisateur (RLS), paiements Stripe, hébergement en Europe, export et suppression de vos données." },
+  ...ogFor({ url: URL, title: "Sécurité & confidentialité | QRowg", description: "Comment QRowg protège vos données : chiffrement, isolation par utilisateur (RLS), paiements Stripe, hébergement en Europe, export et suppression de vos données." }),
 }
 
 // Contenu 100% factuel, vérifiable dans le code/l'infra. Aucune certification revendiquée.
@@ -70,7 +71,7 @@ export default function SecurityPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(orgLd) }} />
       <Particles behind />
 
-      <header style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <header className="qf-entete" style={{ position: "relative", zIndex: 1, maxWidth: 1080, margin: "0 auto", padding: "18px clamp(13px,4vw,22px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <Link href="/" aria-label="QRowg — accueil" style={{ textDecoration: "none" }}><QrowgLogo size={22} /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(9px,2.6vw,14px)" }}>
           <Link href="/auth/login" style={{ color: MUT, textDecoration: "none", fontSize: "clamp(11.5px,3.2vw,13px)", fontWeight: 600, whiteSpace: "nowrap" }}>Connexion</Link>
@@ -121,7 +122,7 @@ export default function SecurityPage() {
           </p>
         </section>
 
-        <p style={{ color: "#6E685E", fontSize: 12, textAlign: "center", margin: "28px 0 0" }}>Dernière mise à jour : {new Date(UPDATED).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</p>
+        <p style={{ color: "#6E685E", fontSize: 12, textAlign: "center", margin: "28px 0 0" }}>Dernière mise à jour : {enFrancais(UPDATED)}</p>
       </main>
 
       <footer style={{ position: "relative", zIndex: 1, borderTop: `1px solid ${BOR}`, padding: "24px 22px", textAlign: "center", color: MUT, fontSize: 12.5 }}>

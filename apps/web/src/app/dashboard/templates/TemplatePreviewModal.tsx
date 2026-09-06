@@ -6,6 +6,7 @@ import { type Block, type PageTheme } from "../builder/types"
 import { BLOCK_DEFS } from "../builder/blockDefs"
 import { resolvePublicBlock } from "../builder/shared-renderer/publicRegistry"
 import { useIsMobile } from "@/lib/useIsMobile"
+import { useDialogue } from "@/components/ui/useDialogue"
 
 const NOISE_SVG_URL = "url('data:image/svg+xml,%3Csvg viewBox=%270 0 200 200%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E')"
 
@@ -1620,7 +1621,7 @@ export function BlockPreview({ block, theme, dayMode }: { block: Block; theme: P
         <div style={{ padding: "10px 16px", ...s }}>
           {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            {(engList.length===0 ? ["✅ Réponse sous 24h","✅ Satisfaction garantie","✅ Sans engagement"] : engList).map((eng: string, i: number) => (
+            {(engList.length===0 ? ["✅ Réponse sous 24 heures","✅ Satisfaction garantie","✅ Sans engagement"] : engList).map((eng: string, i: number) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "rgba(57,255,143,0.05)", border: "1px solid rgba(57,255,143,0.15)", borderRadius: 10 }}>
                 <p style={{ color: text, fontSize: 13, margin: 0, lineHeight: 1.4 }}>{eng}</p>
               </div>
@@ -1904,7 +1905,7 @@ export function BlockPreview({ block, theme, dayMode }: { block: Block; theme: P
         <div style={{ padding: "10px 16px", ...s }}>
           {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {(svcs.length===0 ? [["♿","Accès PMR"],["📶","WiFi gratuit"],["🚗","Parking"],["💳","CB acceptée"]] : svcs).map(([icon,label],i) => (
+            {(svcs.length===0 ? [["♿","Accès PMR"],["📶","Wi-Fi gratuit"],["🚗","Parking"],["💳","CB acceptée"]] : svcs).map(([icon,label],i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, background: "rgba(66,133,244,0.06)", border: "1px solid rgba(66,133,244,0.15)", borderRadius: 10, padding: "10px 12px" }}>
                 <span style={{ fontSize: 20, flexShrink: 0 }}>{icon}</span>
                 <span style={{ color: text, fontSize: 11, fontWeight: 600 }}>{label}</span>
@@ -2586,19 +2587,10 @@ export default function TemplatePreviewModal({
 }: TemplatePreviewModalProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile(768) // mobile : aperçu + panneau empilés et scrollables
+  // Rôle, Échap, piège de focus, restitution du focus, verrou du défilement :
+  // cette fenêtre n'avait que l'Échap et le verrou.
+  const { ref: dlg, props: dlgProps } = useDialogue(true, onClose, { label: `Aperçu du modèle ${template?.name ?? ""}`.trim() })
 
-  // Fermer avec Escape
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose() }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [onClose])
-
-  // Empêcher le scroll de la page derrière
-  useEffect(() => {
-    document.body.style.overflow = "hidden"
-    return () => { document.body.style.overflow = "" }
-  }, [])
 
   // Convertir les blocs du template en Block[] pour BlockPreview
   const previewBlocks: Block[] = blocks.map((b, i) => ({
@@ -2639,7 +2631,7 @@ export default function TemplatePreviewModal({
       }}>
 
       {/* Conteneur central — stop propagation */}
-      <div onClick={e => e.stopPropagation()} style={{
+      <div ref={dlg} {...dlgProps} onClick={e => e.stopPropagation()} style={{
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
         gap: isMobile ? 16 : 24,
@@ -2730,7 +2722,7 @@ export default function TemplatePreviewModal({
                   {(canUse ? previewBlocks : previewBlocks.slice(0, 2)).map((block, i) => (
                     <BlockPreview key={i} block={block} theme={theme} dayMode={false} />
                   ))}
-                  {!canUse && (<div style={{ margin: "8px 16px 0", padding: "24px 16px", borderRadius: 14, background: theme.primary + "0A", border: "1px solid " + theme.primary + "25", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}><div style={{ width: 40, height: 40, borderRadius: "50%", background: theme.primary + "18", border: "1px solid " + theme.primary + "40", display: "flex", alignItems: "center", justifyContent: "center" }}><Lock size={16} color={theme.primary} /></div><p style={{ color: theme.text, fontSize: 13, fontWeight: 700, margin: 0 }}>Apercu limite</p><p style={{ color: theme.muted, fontSize: 11, margin: 0, lineHeight: 1.5 }}>{previewBlocks.length > 2 ? "+" + (previewBlocks.length - 2) + " blocs reserves au plan superieur" : "Reserve a un plan superieur"}</p></div>)}<div style={{ height: 40 }} />
+                  {!canUse && (<div style={{ margin: "8px 16px 0", padding: "24px 16px", borderRadius: 14, background: theme.primary + "0A", border: "1px solid " + theme.primary + "25", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}><div style={{ width: 40, height: 40, borderRadius: "50%", background: theme.primary + "18", border: "1px solid " + theme.primary + "40", display: "flex", alignItems: "center", justifyContent: "center" }}><Lock size={16} color={theme.primary} /></div><p style={{ color: theme.text, fontSize: 13, fontWeight: 700, margin: 0 }}>Aperçu limite</p><p style={{ color: theme.muted, fontSize: 11, margin: 0, lineHeight: 1.5 }}>{previewBlocks.length > 2 ? "+" + (previewBlocks.length - 2) + " blocs reserves au plan superieur" : "Reserve a un plan superieur"}</p></div>)}<div style={{ height: 40 }} />
                 </div>
               </div>
             </div>
@@ -2793,7 +2785,7 @@ export default function TemplatePreviewModal({
 
           {/* Liste des blocs */}
           <div>
-            <p style={{ color: MUTED, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", margin: "0 0 10px" }}>Blocs du template</p>
+            <p style={{ color: MUTED, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", margin: "0 0 10px" }}>Blocs du modèle</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 220, overflowY: "auto", scrollbarWidth: "none" }}>
             {(canUse ? blocks : blocks.slice(0, 3)).map((block, i) => {
                 const def = BLOCK_DEFS[block.type]
@@ -2874,7 +2866,7 @@ export default function TemplatePreviewModal({
                   {isCreating
                     ? <><span style={{ width: 12, height: 12, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", animation: "mo-spin 0.8s linear infinite" }} /> <span>Création...</span></>
                     : canUse
-                      ? <><span>Utiliser ce template</span> <ArrowRight className="da-ic da-ic-arrow" size={14} /></>
+                      ? <><span>Utiliser ce modèle</span> <ArrowRight className="da-ic da-ic-arrow" size={14} /></>
                       : <><Lock size={12} /> <span>Plan {PLAN_LABELS[template.plan]} requis</span></>
                   }
                 </button>

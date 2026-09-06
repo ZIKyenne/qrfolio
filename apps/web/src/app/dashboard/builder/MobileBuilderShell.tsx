@@ -40,6 +40,18 @@ export interface MobileBuilderShellProps {
   onDuplicate: (id: string) => void; onDelete: (id: string) => void
   onToggleVisible: (id: string) => void; onToggleLock: (id: string) => void; onToggleDraft: (id: string) => void
   onMove: (id: string, dir: -1 | 1) => void; onReset: (id: string) => void
+  /** Confirmation, fournie par l'éditeur (useConfirm). La boîte native du
+   *  navigateur bloquait le fil d'exécution, ignorait la charte et, sur iOS,
+   *  s'ouvrait derrière la feuille de réglages. */
+  confirm: (message: string) => Promise<boolean>
+  /** Renommer la page (en-tête). Absent = nom en lecture seule. */
+  onRename?: (nom: string) => void
+  /** Contenu de l'onglet « Style » : le thème, et les modèles de page. Ces deux
+   *  réglages n'avaient aucune porte sur téléphone. */
+  renderTheme?: () => React.ReactNode
+  renderTemplates?: () => React.ReactNode
+  /** Le QR de la page, montré dans l'onglet « Publier ». */
+  renderQr?: () => React.ReactNode
   pageStatus: string; publishing?: boolean; publishError?: string; onPublish?: () => void; publicUrl?: string
   /** Slot canvas (aperçu réel des blocs). */
   renderCanvas: () => ReactNode
@@ -121,7 +133,7 @@ export function MobileBuilderShell(p: MobileBuilderShellProps) {
     return p.blocks.filter(b => (BLOCK_DEFS[b.type]?.label ?? b.type).toLowerCase().includes(q) || b.type.includes(q))
   }, [p.blocks, structureQuery])
 
-  const sheetTitle: Record<MobileBuilderTab, string> = { add: "Ajouter un bloc", structure: "Structure de la page", edit: "Réglages du bloc", preview: "Aperçu", publish: "Publier la page" }
+  const sheetTitle: Record<MobileBuilderTab, string> = { add: "Ajouter un bloc", structure: "Structure de la page", edit: "Réglages du bloc", style: "Style de la page", preview: "Aperçu", publish: "Publier la page" }
 
   return (
     <div data-testid="mobile-shell" data-preview={preview ? "1" : "0"} data-keyboard={keyboardOpen ? "1" : "0"}
@@ -131,7 +143,8 @@ export function MobileBuilderShell(p: MobileBuilderShellProps) {
       {!preview && (
         <MobileBuilderHeader
           pageName={p.pageName} saving={p.saving} saved={p.saved} saveError={p.saveError} saveErrorMsg={p.saveErrorMsg} hasUnsaved={p.hasUnsaved}
-          canUndo={p.canUndo} canRedo={p.canRedo} onBack={handleBack} onUndo={p.onUndo} onRedo={p.onRedo} onSave={p.onSave} onRetry={p.onRetry} />
+          canUndo={p.canUndo} canRedo={p.canRedo} onBack={handleBack} onUndo={p.onUndo} onRedo={p.onRedo} onSave={p.onSave} onRetry={p.onRetry}
+          onRename={p.onRename} />
       )}
 
       {/* CANVAS (plein largeur, pas de frame téléphone dans un téléphone) */}
@@ -185,7 +198,7 @@ export function MobileBuilderShell(p: MobileBuilderShellProps) {
             onResetBlock={() => selected && p.onReset(selected.id)}
             onRequestClose={closeSheet}
             onOpenLibrary={() => setSheet(openSheet("add"))}
-            confirm={(m) => (typeof window !== "undefined" ? window.confirm(m) : true)}
+            confirm={p.confirm}
             renderLegacyContent={p.renderLegacyContent}
             renderLegacyDesign={p.renderLegacyDesign} />
         )}
@@ -221,6 +234,20 @@ export function MobileBuilderShell(p: MobileBuilderShellProps) {
           </div>
         )}
 
+        {effectiveSheet.open && effectiveSheet.tab === "style" && (
+          <div style={{ padding: "0 14px 18px", display: "flex", flexDirection: "column", gap: 16 }}>
+            {p.renderTheme
+              ? p.renderTheme()
+              : <p style={{ margin: 0, fontSize: 12.5, color: MUTED }}>Le thème n'est pas disponible ici.</p>}
+            {p.renderTemplates && (
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 14 }}>
+                <p style={{ margin: "0 0 8px", fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: MUTED }}>Partir d'un modèle</p>
+                {p.renderTemplates()}
+              </div>
+            )}
+          </div>
+        )}
+
         {effectiveSheet.open && effectiveSheet.tab === "publish" && (
           <div style={{ padding: "0 14px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, background: p.pageStatus === "published" ? "color-mix(in srgb, var(--success) 10%, transparent)" : "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -236,6 +263,8 @@ export function MobileBuilderShell(p: MobileBuilderShellProps) {
               {p.publishing ? "Publication…" : p.pageStatus === "published" ? "Mettre à jour la page" : "Publier maintenant"}
             </button>
             {p.publishError && <p data-testid="publish-error" style={{ margin: 0, fontSize: 12, color: "var(--danger)" }}>{p.publishError}</p>}
+            {/* Le QR de la page : sur téléphone, il n'avait aucune porte. */}
+            {p.renderQr && <div style={{ paddingTop: 4 }}>{p.renderQr()}</div>}
             {p.publicUrl && <a href={p.publicUrl} target="_blank" rel="noopener noreferrer" style={{ textAlign: "center", fontSize: 13, color: "var(--accent)", minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>Ouvrir la page ↗</a>}
           </div>
         )}

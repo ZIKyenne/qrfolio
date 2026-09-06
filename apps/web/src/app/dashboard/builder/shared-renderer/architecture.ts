@@ -114,6 +114,11 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   // clair), valeur coupee d'un cote et repliee de l'autre. Une seule source desormais.
   "logo_wall", "partners", "certifications", "business_certifications",
   "info_table", "legal_info",
+  // ── Vague 10 — presentation et encadres (6 blocs) ──
+  // founder_message inventait un message dans l'apercu ; quote_block et company
+  // n'appliquaient pas la meme regle de vide des deux cotes ; expertise ecrivait
+  // « NaN% » dans la largeur de sa barre quand le niveau manquait.
+  "quote_block", "info_box", "founder_message", "company", "journey", "expertise",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

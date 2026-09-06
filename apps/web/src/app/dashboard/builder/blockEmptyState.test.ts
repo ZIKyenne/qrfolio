@@ -53,6 +53,10 @@ const KEY: Record<string, (v: string) => Record<string, any>> = {
   partners: v => ({ logo1_name: v }),
   certifications: v => ({ cert_1_name: v }),
   legal_info: v => ({ siret: v }),
+  // Vague 10.
+  company: v => ({ company_name: v }),
+  journey: v => ({ line_1: v }),
+  expertise: v => ({ s1_name: v }),
 }
 
 describe("hasPublishableContent — toutes les familles listées sont couvertes", () => {

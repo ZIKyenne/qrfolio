@@ -59,9 +59,15 @@ const DETECTORS: Record<string, (c: Record<string, any>) => boolean> = {
   participants_count:      c => hasMeaningfulText(c.count),
   scan_counter:            c => hasMeaningfulText(c.count),   // un libellé seul ne compte rien
   featured_product:        c => hasMeaningfulText(c.name) || hasMeaningfulText(c.image),
-  quote_block:             c => hasMeaningfulText(c.quote) || hasMeaningfulText(c.author),
-  founder_message:         c => hasMeaningfulText(c.message) || hasMeaningfulText(c.name),
+  // Vague 10 : ces deux regles disaient « ou », et la page publiait alors une
+  // citation vide suivie de son auteur, ou deux guillemets vides sous un nom de
+  // fondateur. Ce qui porte le bloc, c'est le texte — pas la signature.
+  quote_block:             c => hasMeaningfulText(c.quote),
+  founder_message:         c => hasMeaningfulText(c.message),
   info_box:                c => hasMeaningfulText(c.message) || hasMeaningfulText(c.title),
+  company:                 c => hasMeaningfulText(c.company_name) || hasMeaningfulText(c.logo_url),
+  journey:                 c => [1, 2, 3, 4].some(i => hasMeaningfulText(c[`line_${i}`])),
+  expertise:               c => anyIndexed(c, i => c[`s${i}_name`]),
   google_reviews_block:    c => anyIndexed(c, i => c[`r${i}_name`]) || hasMeaningfulText(c.avg_rating),
   event_access:            c => hasMeaningfulText(c.embed_url) || hasMeaningfulText(c.address)
                               || hasMeaningfulText(c.transport1_label) || hasMeaningfulText(c.transport2_label) || hasMeaningfulText(c.transport3_label),

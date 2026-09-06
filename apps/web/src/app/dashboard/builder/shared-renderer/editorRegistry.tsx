@@ -63,6 +63,12 @@ import { EditorCertifications } from "./blocks/certifications"
 import { EditorBusinessCertifications } from "./blocks/business_certifications"
 import { EditorInfoTable } from "./blocks/info_table"
 import { EditorLegalInfo } from "./blocks/legal_info"
+import { EditorQuoteBlock } from "./blocks/quote_block"
+import { EditorInfoBox } from "./blocks/info_box"
+import { EditorFounderMessage } from "./blocks/founder_message"
+import { EditorCompany } from "./blocks/company"
+import { EditorJourney } from "./blocks/journey"
+import { EditorExpertise } from "./blocks/expertise"
 import { EditorFreeSection } from "./blocks/free_section"
 import { EditorImageText } from "./blocks/image_text"
 import { EditorSplitPanel } from "./blocks/split_panel"
@@ -194,6 +200,13 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   business_certifications: EditorBusinessCertifications,
   info_table: EditorInfoTable,
   legal_info: EditorLegalInfo,
+  // Vague 10 — presentation et encadres.
+  quote_block: EditorQuoteBlock,
+  info_box: EditorInfoBox,
+  founder_message: EditorFounderMessage,
+  company: EditorCompany,
+  journey: EditorJourney,
+  expertise: EditorExpertise,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

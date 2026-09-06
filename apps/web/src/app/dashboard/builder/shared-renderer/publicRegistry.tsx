@@ -112,6 +112,14 @@ const PublicBusinessCertifications = dynamic(() => import("./blocks/business_cer
 const PublicInfoTable = dynamic(() => import("./blocks/info_table").then(m => m.PublicInfoTable))
 const PublicLegalInfo = dynamic(() => import("./blocks/legal_info").then(m => m.PublicLegalInfo))
 
+// Vague 10 — presentation et encadres.
+const PublicQuoteBlock = dynamic(() => import("./blocks/quote_block").then(m => m.PublicQuoteBlock))
+const PublicInfoBox = dynamic(() => import("./blocks/info_box").then(m => m.PublicInfoBox))
+const PublicFounderMessage = dynamic(() => import("./blocks/founder_message").then(m => m.PublicFounderMessage))
+const PublicCompany = dynamic(() => import("./blocks/company").then(m => m.PublicCompany))
+const PublicJourney = dynamic(() => import("./blocks/journey").then(m => m.PublicJourney))
+const PublicExpertise = dynamic(() => import("./blocks/expertise").then(m => m.PublicExpertise))
+
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
   values: PublicValues,
@@ -206,6 +214,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   business_certifications: PublicBusinessCertifications,
   info_table: PublicInfoTable,
   legal_info: PublicLegalInfo,
+  quote_block: PublicQuoteBlock,
+  info_box: PublicInfoBox,
+  founder_message: PublicFounderMessage,
+  company: PublicCompany,
+  journey: PublicJourney,
+  expertise: PublicExpertise,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

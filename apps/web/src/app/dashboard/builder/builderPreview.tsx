@@ -1834,7 +1834,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                 <p style={{ color: primary, fontSize: 11, margin: 0 }}>{c.role}</p>
               </div>
             </div>
-            <p style={{ color: muted, fontSize: 12, lineHeight: 1.7, margin: c.signature ? "0 0 10px" : "0", fontStyle: "italic" }}>"{c.message||"Bienvenue ! Notre mission est de vous offrir le meilleur service possible."}"</p>
+            <p style={{ color: muted, fontSize: 12, lineHeight: 1.7, margin: c.signature ? "0 0 10px" : "0", fontStyle: "italic" }}>"{c.message}"</p>
             {c.signature && <p style={{ color: primary, fontSize: 14, fontFamily: "Georgia, serif", margin: 0, fontStyle: "italic" }}>{c.signature}</p>}
           </div>
         </div>

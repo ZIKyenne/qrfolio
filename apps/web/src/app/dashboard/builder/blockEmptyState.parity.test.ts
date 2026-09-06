@@ -64,6 +64,9 @@ describe("état vide éditeur — aucune donnée de démonstration trompeuse ne 
     "Jean Dupont", "Fondateur & CEO",         // founder_message
     "La qualité n est jamais un accident",    // quote_block
     "Information importante à retenir",       // info_box
+    // Relevé du 6 septembre (vague 10) : l'aperçu de founder_message affichait ce
+    // message d'accueil inventé tant que le commerçant n'avait rien écrit.
+    "Notre mission est de vous offrir",       // founder_message
   ]
   for (const demo of FORBIDDEN_DEMO) {
     it(`ne contient plus le contenu de démo « ${demo} »`, () => {

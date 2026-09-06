@@ -161,8 +161,8 @@ describe("B09.13 — sécurité", () => {
 
 // ── Méta : rien n'est activé ─────────────────────────────────────────────────
 describe("B09.13 — aucune activation", () => {
-  it("toujours exactement 93 blocs shared actifs", () => {
-    expect(SHARED_RENDERER_BLOCKS.size).toBe(93)
+  it("toujours exactement 99 blocs shared actifs", () => {
+    expect(SHARED_RENDERER_BLOCKS.size).toBe(99)
   })
   it("les 6 formulaires restent LEGACY (hors flag)", () => {
     for (const t of ["contact_form", "quote_form", "reservation_form", "booking_request", "event_register", "rsvp"]) {

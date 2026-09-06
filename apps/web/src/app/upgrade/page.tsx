@@ -299,8 +299,14 @@ export default function UpgradePage() {
           <p style={{ color: MUTED, fontSize: 13, margin: "0 0 6px" }}>
             Des questions ? <a href="mailto:hello@qrowg.com" style={{ color: G, textDecoration: "none" }}>Contactez-nous</a>
           </p>
+          {/* « Remboursement 14 jours » a été retiré : les CGU disent l'inverse
+              (« Aucun remboursement prorata ») et aucune logique de remboursement
+              n'existe. Un client qui l'aurait demandé n'avait aucun moyen de
+              l'obtenir. Les trois arguments restants sont, eux, tenus par le code :
+              Stripe encaisse, la résiliation est en un clic dans Paramètres, et
+              l'abonnement n'a pas de durée minimale. */}
           <p style={{ color: "#8A8478", fontSize: 12, margin: 0 }}>
-            Paiement sécurisé par Stripe · Annulation à tout moment · Remboursement 14 jours · Sans engagement
+            Paiement sécurisé par Stripe · Annulation à tout moment · Sans engagement
           </p>
         </div>
       </div>

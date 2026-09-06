@@ -81,6 +81,35 @@ describe("les prix affichés ne mentent pas", () => {
     }
   })
 
+  // Dernier P0 de la revue du 4 septembre. /upgrade annonçait « Remboursement
+  // 14 jours » en bas de la grille tarifaire ; les CGU disent « Aucun remboursement
+  // prorata », et aucune logique de remboursement n'existe nulle part dans le code.
+  // Un client qui l'aurait demandé n'avait aucun moyen de l'obtenir.
+  it("aucune page ne promet un remboursement que les CGU refusent", () => {
+    const cgu = sansCommentaires(readFileSync(join(src, "app/terms/page.tsx"), "utf-8"))
+    const cguLePromet = /rembours\w*\s+(sous|dans|de|en)\s+\d+\s*jours?/i.test(cgu)
+
+    const promesses: string[] = []
+    for (const f of PAGES_PUBLIQUES.flatMap(d => fichiersDe(d))) {
+      if (f.endsWith("terms/page.tsx")) continue          // les CGU disent la règle
+      const t = sansCommentaires(readFileSync(f, "utf-8"))
+      for (const m of t.matchAll(/[Rr]embours\w*[^.<\n]{0,40}/g)) {
+        promesses.push(`${f.replace(src + "/", "")} : « ${m[0].trim()} »`)
+      }
+    }
+    // Tant que les CGU ne décrivent aucune procédure de remboursement, aucune page
+    // ne doit en promettre un. Le jour où elles la décriront, ce test s'ouvrira seul.
+    expect(cguLePromet ? [] : promesses).toEqual([])
+  })
+
+  it("les trois arguments restants de /upgrade sont, eux, tenus par le code", () => {
+    const upgrade = sansCommentaires(readFileSync(join(src, "app/upgrade/page.tsx"), "utf-8"))
+    expect(upgrade).toContain("Paiement sécurisé par Stripe · Annulation à tout moment · Sans engagement")
+    // « Annulation à tout moment » : le bouton existe vraiment dans Paramètres.
+    const cgu = readFileSync(join(src, "app/terms/page.tsx"), "utf-8")
+    expect(cgu).toContain("résilier à tout moment depuis Paramètres")
+  })
+
   it("les libellés de plan utilisés dans le texte sont ceux de lib/plans", () => {
     expect(PLANS.pro.label).toBe("Établissement")
     expect(PLANS.business.label).toBe("Multi-sites")

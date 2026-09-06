@@ -812,7 +812,8 @@ export default function HomeClient() {
       <SectionSeam delay={3} />
 
       {/* QR DYNAMIQUE — fusionné : concept déjà couvert (hero, key-points, fonctionnalités, FAQ).
-          Section retirée pour réduire la redondance (Pb 10). Réactivable : <QRDynamicSection /> */}
+          Section retirée pour réduire la redondance (Pb 10). Le composant est conservé
+          dans homeSectionsRetirees.tsx, sous le nom QRDynamicSection. */}
 
       {/* ANALYTICS */}
       <AnalyticsSection />

@@ -78,7 +78,10 @@ describe("les sections mises de côté ne pèsent plus rien", () => {
       for (const n of readdirSync(d).sort()) {
         const p = join(d, n)
         if (statSync(p).isDirectory()) marcher(p)
-        else if (/\.tsx?$/.test(n) && !/\.test\./.test(n) && readFileSync(p, "utf8").includes("homeSectionsRetirees")) {
+        // Un vrai import, pas une simple mention : un commentaire qui dit où le
+        // composant a été rangé ne le remet pas dans le bundle.
+        else if (/\.tsx?$/.test(n) && !/\.test\./.test(n)
+          && /(?:^|\n)\s*import[^\n]*homeSectionsRetirees|import\(\s*["'][^"']*homeSectionsRetirees/.test(readFileSync(p, "utf8"))) {
           importateurs.push(p.replace(APP, ""))
         }
       }

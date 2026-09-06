@@ -25,6 +25,19 @@ const files = []
 
 const problems = []
 
+/**
+ * Retire les commentaires avant de chercher des balises JSX.
+ *  - blocs /* … *\/ (y compris la forme JSX {/* … *\/})
+ *  - lignes commençant par // (on n'attrape PAS un // en milieu de ligne : une
+ *    adresse « https://… » dans une chaîne n'est pas un commentaire).
+ * On remplace par des espaces pour ne pas décaler les lignes.
+ */
+function sansCommentaires(src) {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/^[ \t]*\/\/.*$/gm, (m) => " ".repeat(m.length))
+}
+
 // Construit l'ensemble des identifiants "liés" (importés / déclarés / déstructurés) du fichier.
 function collectBound(src) {
   const bound = new Set(["Fragment"])
@@ -73,10 +86,15 @@ for (const fp of files) {
 
   // 2) composants JSX utilisés mais non liés.  <Nom  où le caractère avant '<'
   //    n'est pas alphanum/_/'>' (exclut les génériques useRef<HTMLX>, Record<...>…)
+  //
+  //    On lit le code SANS ses commentaires : un `{/* Réactivable : <Xxx /> */}`
+  //    ne rend rien et ne peut donc rien casser au runtime. Le 6 septembre, ce
+  //    faux positif a bloqué deux déploiements de production d'affilée — sur un
+  //    contrôle dont le but affiché est justement « ZÉRO faux positif ».
   const usages = new Set()
   const jsxRe = /(^|[^A-Za-z0-9_>])<([A-Z][A-Za-z0-9_]*)[\s/>]/g
   let jm
-  while ((jm = jsxRe.exec(src))) usages.add(jm[2])
+  while ((jm = jsxRe.exec(sansCommentaires(src)))) usages.add(jm[2])
   if (!usages.size) continue
 
   const bound = collectBound(src)

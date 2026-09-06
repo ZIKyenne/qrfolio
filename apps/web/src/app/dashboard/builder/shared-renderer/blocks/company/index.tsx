@@ -25,6 +25,8 @@ function Vue({ u, c }: { u: UnifiedCtx; c: Record<string, any> }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           {f.name && <p style={{ color: u.TEXT, fontSize: sz(u, 15), fontWeight: 700, margin: "0 0 1px", fontFamily: u.FONT_D }}>{f.name}</p>}
           {f.sousTitre && <p style={{ color: u.MUTED, fontSize: sz(u, 11), margin: 0 }}>{f.sousTitre}</p>}
+          {/* « Site web » etait reglable et affiche nulle part. */}
+          {f.site && <p style={{ color: u.G, fontSize: sz(u, 11), margin: "2px 0 0", overflowWrap: "anywhere" }}>{f.site.replace(/^https?:\/\//i, "")}</p>}
         </div>
       </div>
     </div>

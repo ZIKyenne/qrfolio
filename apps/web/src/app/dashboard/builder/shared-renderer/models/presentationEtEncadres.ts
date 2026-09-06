@@ -58,7 +58,7 @@ export function messageFondateur(c: Record<string, any> | null | undefined): Mes
 }
 
 // ── Fiche entreprise ────────────────────────────────────────────────────────
-export type FicheEntreprise = { logo: string; name: string; sousTitre: string }
+export type FicheEntreprise = { logo: string; name: string; sousTitre: string; site: string }
 export function ficheEntreprise(c: Record<string, any> | null | undefined): FicheEntreprise | null {
   const src = c || {}
   const name = txt(src.company_name), logo = txt(src.logo_url)
@@ -70,6 +70,8 @@ export function ficheEntreprise(c: Record<string, any> | null | undefined): Fich
   return {
     logo, name,
     sousTitre: [txt(src.sector), annee && `Depuis ${annee}`, effectif].filter(Boolean).join(" · "),
+    // « Site web » etait propose et affiche nulle part non plus.
+    site: txt(src.website),
   }
 }
 

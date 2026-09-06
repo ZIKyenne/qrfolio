@@ -701,6 +701,9 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         {/* La description (« Consultation de 30 min », « Sur rendez-vous uniquement »…)
             était réglable, affichée dans l'aperçu, et n'arrivait jamais au visiteur. */}
         {c.description && <p style={{ color: MUTED, fontSize: 13, margin: "6px 0 0", textAlign: "center", fontFamily: FONT_B }}>{c.description}</p>}
+        {/* « Plateforme » (Google Calendar, Microsoft Bookings…) etait reglable et
+            affichee nulle part : le commercant la choisissait, rien ne changeait. */}
+        {c.platform && <p style={{ color: MUTED, fontSize: 11, margin: "4px 0 0", textAlign: "center", fontFamily: FONT_B }}>via {c.platform}</p>}
       </div>
     ) : null
     case "download_file": return c.url ? (
@@ -1655,6 +1658,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <span style={{ fontSize: 17 }}>🍽️</span>
           <span style={{ color: "#EF4444", fontSize: 14, fontWeight: 700, fontFamily: FONT_B }}>{c.label || "Réserver une table"}</span>
         </a>
+        {c.platform && <p style={{ color: MUTED, fontSize: 11, margin: "4px 0 0", textAlign: "center", fontFamily: FONT_B }}>via {c.platform}</p>}
       </div>
     ) : null
     case "donation": {
@@ -2150,6 +2154,8 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
       const platforms = [[c.spotify_url, "💾 Pré-save Spotify", "#1DB954", "#000"], [c.apple_url, "🍎 Apple Music", "#FC3C44", "#fff"]].filter(([u]) => u)
       return (c.release_name || platforms.length > 0) ? (
         <div style={{ padding: "10px 24px 14px" }}>
+          {/* « Titre » etait reglable et affiche nulle part. */}
+          {c.title && <p style={{ color: MUTED, fontSize: 11, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 9px", textAlign: "center", fontFamily: FONT_B }}>{c.title}</p>}
           <div style={{ background: "linear-gradient(135deg,rgba(29,185,84,0.1),rgba(29,185,84,0.05))", border: "1.5px solid rgba(29,185,84,0.3)", borderRadius: 16, padding: "17px", textAlign: "center" }}>
             {c.cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={110} height={110} style={{ width: 110, height: 110, borderRadius: 13, objectFit: "cover", margin: "0 auto 13px", display: "block", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }} /> : <div style={{ width: 110, height: 110, borderRadius: 13, background: "rgba(29,185,84,0.15)", margin: "0 auto 13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44 }}>💾</div>}
             {c.release_name && <p style={{ color: TEXT, fontSize: 17, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.release_name}</p>}

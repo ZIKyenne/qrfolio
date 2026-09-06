@@ -59,6 +59,21 @@ export type WebhookOutcome =
 // alimentait profiles.dyn_*, avait ses propres paliers « Pro » et « Business » à
 // d'autres prix : deux grilles homonymes que personne ne pouvait distinguer.
 // Le quota de QR modifiables vient maintenant du plan principal.
+// Ce que vaut le plan selon le statut Stripe de l'abonnement.
+//  - active / trialing / past_due (période de grâce) : le plan du prix ;
+//  - canceled / unpaid / incomplete_expired : retour au gratuit — avant, ces
+//    statuts n'existaient pas dans l'enum Postgres : l'upsert échouait (500) et
+//    le plan payant restait acquis à un abonné qui ne payait plus ;
+//  - incomplete / paused : on ne touche pas au plan (null = inchangé).
+export const STATUTS_ACTIFS = ["active", "trialing", "past_due"] as const
+export const STATUTS_REVOQUES = ["canceled", "unpaid", "incomplete_expired"] as const
+
+export function planSelonStatut(status: string, planDuPrix: string | null): string | null {
+  if ((STATUTS_REVOQUES as readonly string[]).includes(status)) return "free"
+  if ((STATUTS_ACTIFS as readonly string[]).includes(status)) return planDuPrix
+  return null
+}
+
 export function resolveStripeEvent(
   event: Stripe.Event,
   resolvePlan: (priceId?: string | null) => string | null = planFromPriceId,
@@ -100,7 +115,7 @@ export function resolveStripeEvent(
       const priceId = sub.items.data[0]?.price.id
       // Prix inconnu (absent de la config) -> plan = null : on NE rétrograde PAS
       // l'abonné (une vraie annulation passe par subscription.deleted).
-      const plan = resolvePlan(priceId)
+      const plan = planSelonStatut(sub.status, resolvePlan(priceId))
       const periode = periodeAbonnement(sub)
       return {
         type: "subscription_updated",

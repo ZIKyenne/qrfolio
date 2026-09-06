@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef, useCallback } from "react"
+import { useConfirm } from "@/components/ui/Confirm"
 import { createClient } from "@/lib/supabase/client"
 import { PLAN_LIST, PLAN_ORDER, fmtPrice } from "@/lib/plans"
 import Particles from "@/components/Particles"
@@ -20,6 +21,8 @@ import {
 } from "lucide-react"
 import NextStepCard from "@/components/NextStepCard"
 import { useToast } from "@/components/Toast"
+import { erreurLisible } from "@/lib/erreurLisible"
+import { cycleDe, echeance, type LigneAbonnement } from "@/lib/cycleAbonnement"
 
 // -- Types --------------------------------------------------------------------
 type Profile = {
@@ -243,6 +246,7 @@ export default function ProfilePage() {
   const [refFilter, setRefFilter]       = useState("all")
   const [showShareMenu, setShowShareMenu] = useState(false)
   const toast = useToast()
+  const confirm = useConfirm()
   const [cropMode, setCropMode]         = useState(false)
   const [cropSrc, setCropSrc]           = useState<string|null>(null)
   const [deletingAvatar, setDeletingAvatar] = useState(false)
@@ -257,8 +261,10 @@ export default function ProfilePage() {
   const ACTIVITY_PAGE_SIZE = 10
   // Subscription state (simule depuis le plan Supabase, enrichi si Stripe webhook)
   const [subStatus,   setSubStatus]   = useState<"active"|"trialing"|"canceled"|"past_due"|"free">("free")
-  const [subRenewal,  setSubRenewal]  = useState<string|null>(null)
-  const [subCycle,    setSubCycle]    = useState<"monthly"|"annual">("monthly")
+  // La ligne d'abonnement (Stripe → webhook → table subscriptions) : le cycle et
+  // l'échéance s'en déduisent, ils ne se choisissent pas ici.
+  const [abonnement,  setAbonnement]  = useState<LigneAbonnement | null>(null)
+  const [portalLoading, setPortalLoading] = useState(false)
   const [domains,       setDomains]       = useState<DomainRecord[]>([])
   const [domainsLoading,setDomainsLoading]= useState(true)
   const [prefs,         setPrefs]         = useState<UserPreferences>(DEFAULT_PREFS)
@@ -320,6 +326,7 @@ export default function ProfilePage() {
         { data: pages },
         { data: allPagesData },
         { data: qrData },
+        { data: abo },
       ] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).single(),
         supabase.from("referrals").select("id,status,reward_months,created_at,referred_id").eq("referrer_id", user.id).order("created_at", { ascending: false }),
@@ -327,7 +334,9 @@ export default function ProfilePage() {
         supabase.from("pages").select("id,title,slug,status,total_views,unique_views,updated_at,created_at").eq("user_id", user.id).order("updated_at", { ascending: false }).limit(5),
         supabase.from("pages").select("id,title,slug,status,total_views,unique_views,updated_at,created_at").eq("user_id", user.id),
         supabase.from("qr_codes").select("id,short_code,total_scans,status,pages(title)").eq("user_id", user.id).order("total_scans", { ascending: false }),
+        supabase.from("subscriptions").select("current_period_start,current_period_end,cancel_at_period_end,status").eq("user_id", user.id).maybeSingle(),
       ])
+      setAbonnement((abo as LigneAbonnement | null) ?? null)
 
       if (prof) {
         setProfile(prof)
@@ -524,6 +533,8 @@ export default function ProfilePage() {
 
   // -- Fonctions domaines ----------------------------------------
   async function deleteDomain(id: string) {
+    const dm = domains.find(d => d.id === id)
+    if (!(await confirm({ title: "Supprimer ce domaine ?", message: `${dm?.domain ?? "Ce domaine"} cessera immédiatement de mener à votre page.`, confirmLabel: "Supprimer", danger: true }))) return
     setDeletingDomain(id)
     try {
       const res = await fetch("/api/domains", {
@@ -596,7 +607,7 @@ export default function ProfilePage() {
     const sb = createClient()
     try {
       const { error } = await sb.auth.updateUser({ password: newPwd })
-      if (error) { showToast("Erreur : " + error.message, "err") }
+      if (error) { showToast(erreurLisible(error, "Le mot de passe n'a pas pu être changé."), "err") }
       else { showToast("Mot de passe mis a jour !"); setShowPwdChange(false); setNewPwd(""); setNewPwdConfirm("") }
     } catch { showToast("Erreur", "err") }
     setPwdLoading(false)
@@ -688,7 +699,7 @@ export default function ProfilePage() {
   // Ouvre le crop preview
   function handleAvatarFile(file: File) {
     if (!file.type.startsWith("image/")) { showToast("Format non supporte (PNG, JPG, WEBP)", "err"); return }
-    if (file.size > 5 * 1024 * 1024) { showToast("ImageIcon trop lourde (max 5 Mo)", "err"); return }
+    if (file.size > 5 * 1024 * 1024) { showToast("Image trop lourde (max 5 Mo)", "err"); return }
     const reader = new FileReader()
     reader.onload = e => { setCropSrc(e.target?.result as string); setCropMode(true) }
     reader.readAsDataURL(file)
@@ -2257,7 +2268,7 @@ export default function ProfilePage() {
                       ) : (
                         <>
                           <p style={{ color:"#F5F0E8", fontSize:18, fontWeight:800, margin:0, fontFamily:"Fraunces, serif", lineHeight:1 }}>
-                            {subCycle==="annual" ? planCfg.price_annual : planCfg.price_monthly}.
+                            {cycleDe(abonnement)==="annual" ? planCfg.price_annual : planCfg.price_monthly}.
                           </p>
                           <p style={{ color:MUTED, fontSize:9, margin:"2px 0 0" }}>/ mois</p>
                         </>
@@ -2265,25 +2276,22 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Cycle toggle */}
-                  {planCfg.price_monthly !== "0" && (
-                    <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:12, paddingTop:12, borderTop:"1px solid rgba(255,255,255,0.06)" }}>
-                      <p style={{ color:MUTED, fontSize:10, margin:0 }}>Cycle de facturation :</p>
-                      <div style={{ display:"flex", gap:5 }}>
-                        {(["monthly","annual"] as const).map(c => (
-                          <button key={c} type="button" onClick={() => setSubCycle(c)}
-                            style={{ padding:"3px 10px", background:subCycle===c?"color-mix(in srgb, var(--accent) 12%, transparent)":"transparent", border:`1px solid ${subCycle===c?"color-mix(in srgb, var(--accent) 30%, transparent)":"rgba(255,255,255,0.08)"}`, borderRadius:6, color:subCycle===c?G:MUTED, fontSize:10, fontWeight:subCycle===c?700:400, cursor:"pointer" }}>
-                            {c==="monthly"?"Mensuel":"Annuel -20%"}
-                          </button>
-                        ))}
-                      </div>
-                      {subRenewal && (
-                        <p style={{ color:MUTED, fontSize:10, margin:"0 0 0 auto" }}>
-                          Renouvellement : {new Date(subRenewal).toLocaleDateString("fr-FR", { day:"numeric", month:"long" })}
+                  {/* Cycle et échéance : lus, pas choisis. Le changement passe par le portail Stripe. */}
+                  {planCfg.price_monthly !== "0" && (() => {
+                    const cycle = cycleDe(abonnement)
+                    const ech = echeance(abonnement)
+                    return (
+                      <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap", gap:8, marginTop:12, paddingTop:12, borderTop:"1px solid rgba(255,255,255,0.06)" }}>
+                        <p style={{ color:MUTED, fontSize:11, margin:0 }}>
+                          Facturation : <strong style={{ color:"#F5F0E8" }}>{cycle==="annual" ? "annuelle" : cycle==="monthly" ? "mensuelle" : "—"}</strong>
+                          {cycle==="monthly" && planCfg.price_annual && <span> · l'annuel revient à {planCfg.price_annual}/mois</span>}
                         </p>
-                      )}
-                    </div>
-                  )}
+                        {ech && (
+                          <p style={{ color:MUTED, fontSize:11, margin:"0 0 0 auto" }}>{ech.libelle} {ech.date}</p>
+                        )}
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 {/* Features incluses */}
@@ -2332,16 +2340,20 @@ export default function ProfilePage() {
                   )}
                   {currentPlan !== "free" && (
                     <button type="button"
+                      disabled={portalLoading}
                       onClick={async () => {
+                        if (portalLoading) return
+                        setPortalLoading(true)
                         try {
                           const res = await fetch("/api/stripe/portal", { method: "POST" })
                           const data = await res.json()
-                          if (data.url) window.location.href = data.url
-                          else showToast(data.error || "Portail de facturation indisponible pour le moment.", "err")
+                          if (data.url) { window.location.href = data.url; return }
+                          showToast(data.error || "Portail de facturation indisponible pour le moment.", "err")
                         } catch { showToast("Impossible d'ouvrir le portail de facturation.", "err") }
+                        setPortalLoading(false)
                       }}
-                      className="da-btn-ghost da-btn-ghost--sm" style={{ flex:currentPlan==="business"?1:"0 0 auto", justifyContent:"center" }}>
-                      <CreditCard size={13}/> Gerer la facturation
+                      className="da-btn-ghost da-btn-ghost--sm" style={{ flex:currentPlan==="business"?1:"0 0 auto", justifyContent:"center", opacity: portalLoading ? 0.7 : 1 }}>
+                      <CreditCard size={13}/> {portalLoading ? "Ouverture…" : "Gérer la facturation, le cycle et la carte"}
                     </button>
                   )}
                 </div>
@@ -2996,8 +3008,9 @@ export default function ProfilePage() {
                             <button type="button"
                               onClick={() => setPrimaryDomain(dm.id)}
                               disabled={settingPrimary === dm.id}
-                              title="Definir comme principal"
-                              style={{ width:26, height:26, background:"color-mix(in srgb, var(--accent) 8%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:G }}>
+                              title="Définir comme principal"
+                              aria-label={`Définir ${dm.domain} comme domaine principal`}
+                              style={{ width:40, height:40, background:"color-mix(in srgb, var(--accent) 8%, transparent)", border:"1px solid color-mix(in srgb, var(--accent) 20%, transparent)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:G }}>
                               {settingPrimary===dm.id
                                 ? <div style={{ width:11, height:11, border:`1.5px solid color-mix(in srgb, var(--accent) 19%, transparent)`, borderTopColor:G, borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/>
                                 : <CheckCircle size={12}/>}
@@ -3005,14 +3018,16 @@ export default function ProfilePage() {
                           )}
                           <a href="/dashboard/domains"
                             title="Configurer DNS"
-                            style={{ width:26, height:26, background:"rgba(201,162,77,0.06)", border:"1px solid rgba(201,162,77,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--accent)", textDecoration:"none" }}>
+                            aria-label={`Configurer le DNS de ${dm.domain}`}
+                            style={{ width:40, height:40, background:"rgba(201,162,77,0.06)", border:"1px solid rgba(201,162,77,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--accent)", textDecoration:"none" }}>
                             <Settings size={11}/>
                           </a>
                           <button type="button"
                             onClick={() => deleteDomain(dm.id)}
                             disabled={deletingDomain === dm.id}
                             title="Supprimer"
-                            style={{ width:26, height:26, background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)" }}>
+                            aria-label={`Supprimer ${dm.domain}`}
+                            style={{ width:40, height:40, background:"rgba(255,107,107,0.06)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)" }}>
                             {deletingDomain===dm.id
                               ? <div style={{ width:11, height:11, border:"1.5px solid rgba(255,107,107,0.3)", borderTopColor:"var(--danger)", borderRadius:"50%", animation:"mo-spin 0.7s linear infinite" }}/>
                               : <Trash2 size={11}/>}

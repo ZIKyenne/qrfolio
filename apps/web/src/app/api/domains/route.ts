@@ -7,6 +7,7 @@ import { randomBytes } from "crypto"
 import { serverError } from "@/lib/apiError"
 import dns from "dns/promises"
 import { normalizeDomain, isValidDomain } from "@/lib/domain"
+import { PLANS } from "@/lib/plans"
 
 const VERCEL_TOKEN      = process.env.VERCEL_TOKEN ?? ""
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID ?? ""
@@ -82,7 +83,12 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
-  const { domain, page_id, action } = await req.json()
+  const body = await req.json().catch(() => ({}))
+  const { page_id, action } = body
+  // Un seul point de normalisation : `Mon-Site.FR ` et `mon-site.fr` sont le même
+  // domaine, pour la vérification comme pour le choix du principal.
+  const domain = typeof body.domain === "string" ? normalizeDomain(body.domain) : ""
+  if (domain && !isValidDomain(domain)) return NextResponse.json({ error: "Format de domaine invalide" }, { status: 400 })
 
   // ── Action: vérifier DNS ──────────────────────────────────────────────────
   if (action === "verify") {
@@ -90,7 +96,7 @@ export async function POST(req: NextRequest) {
 
     const { data: existing } = await supabase
       .from("domain_verifications")
-      .select("txt_record, id")
+      .select("txt_record, id, page_id")
       .eq("domain", domain)
       .eq("user_id", user.id)
       .single()
@@ -135,12 +141,15 @@ export async function POST(req: NextRequest) {
       })
       .eq("id", existing.id)
 
-    // Mettre à jour pages.custom_domain
-    if (vercel.ok) {
+    // Mettre à jour pages.custom_domain — sur la page rattachée à la vérification
+    // (`existing.id` était l'identifiant de la vérification, pas d'une page :
+    // custom_domain n'était jamais renseigné).
+    const pageCible = page_id || existing.page_id
+    if (vercel.ok && pageCible) {
       await supabase
         .from("pages")
         .update({ custom_domain: domain })
-        .eq("id", page_id || existing.id)
+        .eq("id", pageCible)
         .eq("user_id", user.id)
     }
 
@@ -158,27 +167,14 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .eq("verified", true)
 
-    // is_primary est verrouillé en base hors service role : client admin, filtré
-    // par user_id. On pose le nouveau principal AVANT d'effacer les autres, pour
-    // ne jamais laisser un compte sans principal si l'étape suivante échoue.
+    // is_primary est verrouillé en base hors service role, et un index unique
+    // partiel interdit deux principaux : les deux écritures (retirer l'ancien,
+    // poser le nouveau) passent par UNE fonction transactionnelle, appelée avec
+    // la clé de service (migration 20260905130000).
     const admin = createAdminClient()
-    const { data: pose, error: pe } = await admin
-      .from("domain_verifications")
-      .update({ is_primary: true })
-      .eq("domain", domain)
-      .eq("user_id", user.id)
-      .eq("verified", true)
-      .select("id")
+    const { data: pose, error: pe } = await admin.rpc("definir_domaine_principal", { p_user: user.id, p_domain: domain })
     if (pe) return NextResponse.json({ error: "Impossible de définir ce domaine comme principal." }, { status: 500 })
-    if (!pose?.length) return NextResponse.json({ error: "Ce domaine n'est pas un domaine vérifié de votre compte." }, { status: 404 })
-
-    // 2. Retirer is_primary des autres
-    const { error: re } = await admin
-      .from("domain_verifications")
-      .update({ is_primary: false })
-      .eq("user_id", user.id)
-      .neq("domain", domain)
-    if (re) return NextResponse.json({ error: "Impossible de mettre à jour les autres domaines." }, { status: 500 })
+    if (pose !== true) return NextResponse.json({ error: "Ce domaine n'est pas un domaine vérifié de votre compte." }, { status: 404 })
 
     // 4. Créer des redirections 301 automatiques:
     //    tous les autres domaines vérifiés → domaine principal
@@ -233,7 +229,7 @@ export async function POST(req: NextRequest) {
 
   if (maxDomains === 0) {
     return NextResponse.json({
-      error: "Les domaines personnalisés nécessitent un plan Pro ou Business",
+      error: `Les domaines personnalisés sont inclus à partir du plan ${PLANS.pro.label}.`,
       upgrade_required: true,
     }, { status: 403 })
   }
@@ -245,18 +241,15 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
     if ((count ?? 0) >= maxDomains) {
       return NextResponse.json({
-        error: `Limite atteinte (${maxDomains} domaine${maxDomains > 1 ? "s" : ""} max sur votre plan). Passez au plan Business pour des domaines illimités.`,
+        error: `Limite atteinte (${maxDomains} domaine${maxDomains > 1 ? "s" : ""} max sur votre plan). Le plan ${PLANS.business.label} n'a pas de limite.`,
         upgrade_required: true,
         limit: maxDomains,
       }, { status: 403 })
     }
   }
 
-  // Normaliser + valider le domaine (helper partage @/lib/domain)
-  const cleanDomain = normalizeDomain(domain)
-  if (!isValidDomain(cleanDomain)) {
-    return NextResponse.json({ error: "Format de domaine invalide" }, { status: 400 })
-  }
+  // Déjà normalisé et validé en tête de route.
+  const cleanDomain = domain
 
   // Vérifier que la page appartient à l'user
   const { data: page } = await supabase
@@ -320,11 +313,12 @@ export async function DELETE(req: NextRequest) {
     .eq("id", existing.page_id)
     .eq("user_id", user.id)
 
-  await supabase
+  const { error: de } = await supabase
     .from("domain_verifications")
     .delete()
     .eq("id", id)
     .eq("user_id", user.id)
+  if (de) return NextResponse.json({ error: "Le domaine n'a pas pu être supprimé." }, { status: 500 })
 
   return NextResponse.json({ ok: true })
 }

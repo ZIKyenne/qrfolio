@@ -13,23 +13,21 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/server"
 import { noterRefus, type Tache } from "@/lib/journalCron"
+import { timingSafeEqual } from "node:crypto"
 
-/** Le secret présenté, quel que soit le chemin utilisé par l'appelant. */
-async function secretPresente(req: NextRequest): Promise<string[]> {
-  const donnes: string[] = []
+/** Le secret présenté : en-tête Authorization uniquement (c'est ce que Vercel
+ *  Cron envoie). Il était aussi accepté en query string — donc dans les journaux
+ *  d'accès et l'historique — et dans le corps. */
+function secretPresente(req: NextRequest): string | null {
   const auth = req.headers.get("authorization")
-  if (auth?.startsWith("Bearer ")) donnes.push(auth.slice(7))
-  const q = req.nextUrl.searchParams.get("secret")
-  if (q) donnes.push(q)
-  // Compat : certains appels historiques posaient le secret dans le corps. Vercel
-  // Cron, lui, n'envoie qu'un GET sans corps — d'où le catch.
-  if (req.method !== "GET") {
-    try {
-      const body = await req.json()
-      if (body?.secret) donnes.push(String(body.secret))
-    } catch { /* pas de corps JSON : normal */ }
-  }
-  return donnes
+  return auth?.startsWith("Bearer ") ? auth.slice(7) : null
+}
+
+/** Comparaison à temps constant : `includes` s'arrêtait au premier octet différent. */
+export function secretsEgaux(donne: string, attendu: string): boolean {
+  const a = Buffer.from(donne, "utf8"), b = Buffer.from(attendu, "utf8")
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
 }
 
 /**
@@ -44,14 +42,14 @@ export async function gardeCron(
   opts: { resendRequis?: boolean } = {},
 ): Promise<NextResponse | null> {
   const attendu = process.env.CRON_SECRET ?? ""
-  const donnes = await secretPresente(req)
+  const donne = secretPresente(req)
 
   if (attendu === "") {
     await tracer(tache, "CRON_SECRET absent des variables d'environnement")
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
-  if (!donnes.includes(attendu)) {
-    await tracer(tache, donnes.length ? "secret invalide" : "appel sans secret")
+  if (donne === null || !secretsEgaux(donne, attendu)) {
+    await tracer(tache, donne !== null ? "secret invalide" : "appel sans secret")
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
   if (opts.resendRequis && !process.env.RESEND_API_KEY) {

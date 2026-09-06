@@ -81,3 +81,29 @@ describe("la vérification d'un nom d'utilisateur passe par le serveur", () => {
     expect(page).not.toMatch(/from\("profiles"\)[\s\S]{0,120}\.eq\("username"/)
   })
 })
+
+// /api/subdomain lisait profiles avec le client de session, qui ne voit que SA
+// ligne : tout nom pris par un autre compte était annoncé « disponible », puis
+// le POST retombait sur 23505 (500).
+describe("la disponibilité d'un sous-domaine est testée avec la clé de service", () => {
+  const route = readFileSync(join(__dirname, "../api/subdomain/route.ts"), "utf8")
+  const get = route.slice(route.indexOf("export async function GET"), route.indexOf("export async function POST"))
+  const post = route.slice(route.indexOf("export async function POST"), route.indexOf("export async function DELETE"))
+
+  it("GET : session, débit borné, lecture par createAdminClient, jamais l'identifiant du tiers", () => {
+    expect(get).toContain('if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })')
+    expect(get).toContain('rateLimit("subdomain:" + ipOf(req)')
+    expect(get).toContain("createAdminClient()")
+    expect(get).not.toContain('.select("id, username")')
+  })
+
+  it("POST : unicité par la clé de service, écriture par la session, 23505 → 409", () => {
+    expect(post).toContain("createAdminClient()")
+    expect(post).toContain('error?.code === "23505"')
+    expect(post).toContain("status: 409")
+    // L'écriture reste sous RLS : jamais l'admin pour l'update de profiles.
+    const update = post.slice(post.indexOf('.update({ username: clean })') - 120, post.indexOf('.update({ username: clean })'))
+    expect(update).toContain("await supabase")
+    expect(update).not.toContain("createAdminClient")
+  })
+})

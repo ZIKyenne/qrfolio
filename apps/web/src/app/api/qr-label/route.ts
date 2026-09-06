@@ -14,10 +14,15 @@ export async function POST(req: NextRequest) {
   const clean = typeof label === "string" ? label.trim().slice(0, 60) || null : null
 
   // `label` hors types Supabase générés (migration récente) -> cast any.
-  const { error } = await (supabase.from("qr_codes") as any)
+  // `.select("id")` : une mise à jour refusée par la RLS ne renvoie PAS d'erreur,
+  // elle ne touche aucune ligne. Sans cette lecture, on répondait ok à tort.
+  const { data, error } = await (supabase.from("qr_codes") as any)
     .update({ label: clean, updated_at: new Date().toISOString() })
     .eq("id", qr_id)
+    .eq("user_id", user.id)
+    .select("id")
   if (error) return NextResponse.json({ error: "Modification impossible" }, { status: 500 })
+  if (!data?.length) return NextResponse.json({ error: "QR introuvable" }, { status: 404 })
 
   return NextResponse.json({ ok: true, label: clean })
 }

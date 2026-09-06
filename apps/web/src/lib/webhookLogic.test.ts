@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest"
-import { resolveStripeEvent, metaUser, periodeAbonnement, abonnementDeFacture } from "./webhookLogic"
+import { resolveStripeEvent, metaUser, periodeAbonnement, abonnementDeFacture, planSelonStatut } from "./webhookLogic"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import type Stripe from "stripe"
 
 // Fabriques d'événements minimaux (cast : on ne teste que les champs lus).
@@ -220,5 +222,29 @@ describe("les champs que Stripe a deplaces en 2025", () => {
 describe("resolveStripeEvent — événement non géré", () => {
   it("noop", () => {
     expect(resolveStripeEvent({ type: "customer.created", data: { object: {} } } as any).type).toBe("noop")
+  })
+})
+
+// Trois statuts Stripe (incomplete, incomplete_expired, unpaid) étaient absents de
+// l'enum Postgres : l'upsert échouait et le plan payant restait acquis.
+describe("planSelonStatut", () => {
+  it("un abonnement impayé ou expiré rétrograde au gratuit", () => {
+    for (const st of ["unpaid", "incomplete_expired", "canceled"]) expect(planSelonStatut(st, "pro")).toBe("free")
+  })
+  it("actif, en essai ou en retard de paiement (grâce) garde le plan du prix", () => {
+    for (const st of ["active", "trialing", "past_due"]) expect(planSelonStatut(st, "business")).toBe("business")
+  })
+  it("incomplet ou en pause : le plan n'est pas touché", () => {
+    expect(planSelonStatut("incomplete", "pro")).toBeNull()
+    expect(planSelonStatut("paused", "pro")).toBeNull()
+  })
+  it("l'événement subscription.updated en statut unpaid porte plan = free", () => {
+    const o = resolveStripeEvent(subUpdated({ userId: "u1" }, "price_pro", "unpaid"), asPro)
+    expect(o.type).toBe("subscription_updated")
+    if (o.type === "subscription_updated") { expect(o.plan).toBe("free"); expect(o.status).toBe("unpaid") }
+  })
+  it("la migration ajoute les trois statuts à l'enum", () => {
+    const sql = readFileSync(join(__dirname, "../../../../supabase/migrations/20260905110000_statuts_stripe.sql"), "utf8")
+    for (const st of ["incomplete", "incomplete_expired", "unpaid"]) expect(sql).toContain(`add value if not exists '${st}'`)
   })
 })

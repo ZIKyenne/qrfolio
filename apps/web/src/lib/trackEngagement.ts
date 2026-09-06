@@ -51,7 +51,7 @@ export function trackDwell(pageId: string, entries: { ref: string; value: number
 export function queueTap(pageId: string, ref: string, x: number, y: number) {
   if (typeof window === "undefined" || !pageId) return
   if (!(x >= 0 && x <= 1 && y >= 0 && y <= 1)) return
-  if (tapBuffer.length >= 300) return   // garde-fou : jamais plus de 300 taps en file
+  if (tapBuffer.length >= 60) return    // garde-fou : 60 taps suffisent à une carte de chaleur, le serveur en accepte 80 lignes par lot
   tapBuffer.push({ page_id: pageId, kind: "tap", ref: ref || "-", x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000 })
   bindFlushOnce()
   if (flushTimer) clearTimeout(flushTimer)

@@ -1,6 +1,8 @@
   "use client"
 
   import { useState, useRef, useEffect, useCallback, useMemo, Component, memo } from "react"
+  import { Modal } from "@/components/ui/Modal"
+  import { GENERATION_IA_ACTIVE } from "@/lib/generationIa"
   import {
     X, ChevronUp, ChevronDown, Trash2,
     Eye, Plus, Settings, Check, Search, Copy, EyeOff,
@@ -183,18 +185,19 @@ import { BLOCK_DEFS } from "./blockDefs"
     const [aiGenLoading, setAiGenLoading] = useState(false)
     const [aiGenError, setAiGenError] = useState<string | null>(null)
     const [aiGenSoon, setAiGenSoon] = useState(false) // true = IA pas encore activee (ton info, pas erreur)
+    const [aiGenUpgrade, setAiGenUpgrade] = useState(false) // true = plan insuffisant : on propose les offres
 
     async function generateWithAI() {
       const description = aiGenPrompt.trim()
       if (description.length < 5) { setAiGenError("Décrivez votre activité en quelques mots."); return }
-      setAiGenLoading(true); setAiGenError(null); setAiGenSoon(false)
+      setAiGenLoading(true); setAiGenError(null); setAiGenSoon(false); setAiGenUpgrade(false)
       try {
         const res = await fetch("/api/generate-page", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ description }),
         })
         const data = await res.json().catch(() => ({}))
-        if (!res.ok) { setAiGenSoon(!!data?.soon); setAiGenError(data?.error || "La génération a échoué."); return }
+        if (!res.ok) { setAiGenSoon(!!data?.soon); setAiGenUpgrade(!!data?.upgrade); setAiGenError(data?.error || "La génération a échoué."); return }
         if (!data?.template?.blocks?.length) { setAiGenError("Aucun contenu généré. Réessayez."); return }
         applyPageTemplate(data.template as PageTemplate) // applique + ferme la modale
       } catch {
@@ -1055,6 +1058,9 @@ import { BLOCK_DEFS } from "./blockDefs"
         setMultiSelection([])
         setSelectedId(blockId)
         setRightTab("edit")
+        // Téléphone : le panneau de réglages vit sur un autre onglet que la page.
+        // Sans cette bascule, taper un bloc ne faisait rien de visible.
+        if (isMobile) setMobileTab("panel")
       }
     }
 
@@ -1369,7 +1375,7 @@ import { BLOCK_DEFS } from "./blockDefs"
             onUndo={() => { const p = undoRedo.undo(); if (p) applySnapshot(p) }}
             onRedo={() => { const n = undoRedo.redo(); if (n) applySnapshot(n) }}
             onSave={saveNow} onRetry={() => saveCtrlRef.current?.retry()}
-            onBack={() => { try { window.location.assign("/dashboard") } catch { /* noop */ } }}
+            onBack={() => { try { window.location.assign(guest ? "/dashboard/templates" : "/dashboard") } catch { /* noop */ } }}
             blocks={blocks} selectedId={selectedId} onSelect={setSelectedId}
             favorites={favorites} recents={recentBlocks} onToggleFavorite={toggleFav}
             onAddBlock={(t) => addBlock(t)}
@@ -1392,13 +1398,16 @@ import { BLOCK_DEFS } from "./blockDefs"
 
         {/* TOPBAR (masquee en mode Apercu plein ecran sur mobile) */}
         <div style={{ height: 50, background: "#0D0D0D", borderBottom: "1px solid rgba(201,168,76,0.12)", display: (preview && isMobile) ? "none" : "flex", alignItems: "center", padding: isMobile ? "0 9px" : "0 14px", gap: isMobile ? 6 : 10, flexShrink: 0, zIndex: 20 }}>
-          <a href="/dashboard" aria-label="Retour au tableau de bord"
+          <a href={guest ? "/dashboard/templates" : "/dashboard"} aria-label={guest ? "Retour aux modèles" : "Retour au tableau de bord"}
             style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0, textDecoration: "none", color: G, fontFamily: "Fraunces, serif", fontSize: 16, fontWeight: 700, textTransform: "lowercase", whiteSpace: "nowrap", ...(isMobile ? { width: 44, height: 44, fontSize: 19 } : {}) }}>
             {isMobile ? "←" : "← QRowg"}
           </a>
           {!isMobile && <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />}
           {/* Le nom se coupait au milieu d'un mot, sans point de suspension : on lui
               laisse la place restante et on l'ellipse proprement. */}
+          {/* L'éditeur n'avait aucun h1 : le nom de la page en est un, visuellement
+              discret (le champ reste le contrôle ; le titre est lu par les lecteurs d'écran). */}
+          <h1 style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", margin: 0 }}>{pageName || "Page sans titre"} — éditeur</h1>
           <input value={pageName} onChange={e => { const v = e.target.value; setPageName(v); undoRedo.push({ blocks: blocksKbRef.current, theme: themeRef.current, name: v }, "pagename") }}
             aria-label="Nom de la page"
             // 18 px de haut sur téléphone : on tape à côté et on ouvre autre chose.
@@ -1549,10 +1558,12 @@ import { BLOCK_DEFS } from "./blockDefs"
                 : undefined}>
               {pageStatus==="published" ? <><Check size={13} /> Publié</> : <span>Publier</span>}
             </button>
+            {/* Fenêtre « Publier » : la primitive Modal apporte le défilement (le
+                contenu fait ~900 px, il se coupait en bas sur 700-768 px de haut),
+                le rôle dialog, Échap et le piège de focus. */}
             {showPublishPopup && (
-              <>
-                <div onClick={() => setShowPublishPopup(false)} style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }} />
-                <div style={{ position: "absolute", top: "calc(100% + 12px)", right: 0, background: "#0F0F0F", border: "1px solid rgba(201,168,76,0.3)", borderRadius: 20, padding: "24px", zIndex: 200, boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,168,76,0.1)", width: 320 }}>
+              <Modal open onClose={() => setShowPublishPopup(false)} maxWidth={360}>
+                <div>
                   {/* Header */}
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                     <div style={{ width: 42, height: 42, borderRadius: 12, background: pageStatus==="published" ? "rgba(57,255,143,0.12)" : "rgba(201,168,76,0.12)", border: `1px solid ${pageStatus==="published" ? "rgba(57,255,143,0.3)" : "rgba(201,168,76,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1696,7 +1707,7 @@ import { BLOCK_DEFS } from "./blockDefs"
                     </div>
                   )}
                 </div>
-              </>
+              </Modal>
             )}
           </div>
         </div>
@@ -1714,7 +1725,7 @@ import { BLOCK_DEFS } from "./blockDefs"
               </div>
             )}
             {/* Bouton collapse/expand */}
-            <button onClick={toggleBlocks} title={blocksCollapsed ? "Ouvrir" : "Réduire"}
+            <button onClick={toggleBlocks} aria-label={blocksCollapsed ? "Déployer la bibliothèque de blocs" : "Replier la bibliothèque de blocs"} title={blocksCollapsed ? "Ouvrir" : "Réduire"}
               style={{ position: "absolute", top: 8, right: 8, zIndex: 20, width: 22, height: 22, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, color: MUTED, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>
               {blocksCollapsed ? "›" : "‹"}
             </button>
@@ -1734,7 +1745,7 @@ import { BLOCK_DEFS } from "./blockDefs"
             {/* Mode réduit: icône loupe */}
             {blocksCollapsed && (
               <div style={{ padding: "10px 0", display: "flex", justifyContent: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", flexShrink: 0 }}>
-                <button onClick={toggleBlocks} style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", padding: 4 }}>
+                <button onClick={toggleBlocks} aria-label="Replier la bibliothèque de blocs" style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", padding: 4 }}>
                   <Search size={16} />
                 </button>
               </div>
@@ -1840,7 +1851,7 @@ import { BLOCK_DEFS } from "./blockDefs"
                             <div style={{ width: 26, height: 26, borderRadius: 6, background: def.color+"12", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>{def.icon}</div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <p style={{ margin: 0, fontSize: 10, fontWeight: 600, color: "inherit", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hlText(def.label, search)}</p>
-                              <p style={{ margin: 0, fontSize: 10.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hlText(def.description, search)}</p>
+                              <p style={{ margin: 0, fontSize: 12, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hlText(def.description, search)}</p>
                             </div>
                           </button>
                         ))}
@@ -2540,7 +2551,12 @@ import { BLOCK_DEFS } from "./blockDefs"
                 {!selectedBlock
                   ? <div style={{ textAlign: "center", padding: "50px 14px" }}>
                       <Settings size={28} color={MUTED} style={{ margin: "0 auto 8px", opacity: 0.2, display: "block" }} />
-                      <p style={{ color: MUTED, fontSize: 12, margin: 0, lineHeight: 1.7 }}>Clique sur un bloc dans le canvas pour l&apos;éditer</p>
+                      <p style={{ color: MUTED, fontSize: 12, margin: 0, lineHeight: 1.7 }}>{isMobile ? "Touchez un bloc de la page pour le modifier" : "Cliquez sur un bloc de la page pour le modifier"}</p>
+                      {isMobile && (
+                        <button type="button" onClick={() => setMobileTab("canvas")} className="da-btn-neutral da-btn-neutral--sm" style={{ marginTop: 14 }}>
+                          Voir la page
+                        </button>
+                      )}
                     </div>
                   : <>
                       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -2916,8 +2932,10 @@ import { BLOCK_DEFS } from "./blockDefs"
                 </div>
                 <button onClick={() => setShowTemplates(false)} aria-label="Fermer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: MUTED, cursor: "pointer", width: 30, height: 30, fontSize: 16 }}>×</button>
               </div>
-              {/* Génération par IA — décris ton activité, l'IA construit la page */}
-              <div style={{ padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(120deg,rgba(201,168,76,0.09),rgba(57,255,143,0.05))" }}>
+              {/* Génération par IA — décris ton activité, l'IA construit la page.
+                  Absent tant que la clé serveur n'existe pas : on ne fait pas rédiger
+                  quelqu'un pour lui répondre « bientôt ». */}
+              {GENERATION_IA_ACTIVE && <div style={{ padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(120deg,rgba(201,168,76,0.09),rgba(57,255,143,0.05))" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                   <span style={{ fontSize: 17 }}>🪄</span>
                   <p style={{ margin: 0, color: "#F5F0E8", fontSize: 13.5, fontWeight: 800 }}>Générer ma page avec l&apos;IA</p>
@@ -2939,11 +2957,14 @@ import { BLOCK_DEFS } from "./blockDefs"
                       : <><Sparkles size={14} /> Générer ma page</>}
                   </button>
                 </div>
-                {aiGenError && (aiGenSoon
-                  ? <div style={{ margin: "9px 0 0", padding: "9px 11px", borderRadius: 9, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.28)", color: "#E8D9A8", fontSize: 11.5, lineHeight: 1.45, display: "flex", gap: 7 }}><span style={{ flexShrink: 0 }}>⏳</span><span>{aiGenError}</span></div>
+                {aiGenError && (aiGenSoon || aiGenUpgrade
+                  ? <div style={{ margin: "9px 0 0", padding: "9px 11px", borderRadius: 9, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.28)", color: "#E8D9A8", fontSize: 11.5, lineHeight: 1.45, display: "flex", gap: 7 }}><span style={{ flexShrink: 0 }}>{aiGenUpgrade ? "✨" : "⏳"}</span><span>{aiGenError}</span></div>
                   : <p style={{ margin: "7px 0 0", color: "#F87171", fontSize: 10.5 }}>{aiGenError}</p>)}
+                {aiGenError && aiGenUpgrade && (
+                  <a href="/upgrade?reason=ia" className="da-btn-primary da-btn-primary--sm" style={{ marginTop: 8, display: "inline-flex" }}>Voir les offres</a>
+                )}
                 {aiGenLoading && <p style={{ margin: "7px 0 0", color: MUTED, fontSize: 10 }}>L&apos;IA rédige votre page… (quelques secondes)</p>}
-              </div>
+              </div>}
               <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
                 {/* Colonne métiers */}
                 <div style={{ width: 190, flexShrink: 0, borderRight: "1px solid rgba(255,255,255,0.07)", overflowY: "auto", padding: 8 }} className="iphone-scroll">

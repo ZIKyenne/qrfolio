@@ -5,6 +5,11 @@ import { NextRequest, NextResponse } from "next/server"
 const APP_DOMAIN     = process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") ?? "qrowg.com"
 const QROWG_HOSTS  = new Set(["qrowg.com", "www.qrowg.com", "localhost"])
 
+// Extension de fichier en fin de chemin (2 à 5 caractères alphanumériques).
+export function estFichierStatique(pathname: string): boolean {
+  return /\.[a-z0-9]{2,5}$/i.test(pathname)
+}
+
 export async function middleware(req: NextRequest) {
   const hostname = (req.headers.get("host") ?? "").replace(/:\d+$/, "")
   const pathname  = req.nextUrl.pathname
@@ -16,7 +21,10 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/dashboard/") ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/favicon") ||
-    pathname.includes(".")
+    // Fichiers statiques seulement : une vraie extension en fin de chemin.
+    // `includes(".")` laissait client.com/foo.bar servir le contenu de qrowg.com
+    // sous l'hôte du client, sans passer par la résolution du domaine.
+    estFichierStatique(pathname)
   ) {
     return NextResponse.next()
   }

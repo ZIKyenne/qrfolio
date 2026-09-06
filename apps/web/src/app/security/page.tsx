@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { phraseHebergement } from "@/lib/editeur"
 import Link from "next/link"
 import Particles from "@/components/Particles"
 import QrowgLogo from "@/components/QrowgLogo"
@@ -29,7 +30,7 @@ const SECTIONS: { icon: string; h: string; points: string[] }[] = [
   { icon: "🧱", h: "Isolation des données (RLS)", points: [
     "Chaque table est protégée par Row Level Security au niveau de la base : un compte ne peut lire ou modifier que ses propres données.",
     "Cette isolation est appliquée par la base elle-même, pas seulement par l'application — la règle tient même en cas d'erreur applicative.",
-    "Des migrations de durcissement dédiées ferment régulièrement les accès trop larges (ex. inserts publics d'analytics/leads).",
+    "Les fonctions de base sensibles (quotas, compteurs, domaines) s’exécutent avec des droits limités et ne sont pas appelables directement par un navigateur.",
   ] },
   { icon: "🔑", h: "Authentification & mots de passe", points: [
     "Vos mots de passe ne sont jamais stockés en clair : ils sont hachés.",
@@ -43,8 +44,8 @@ const SECTIONS: { icon: string; h: string; points: string[] }[] = [
   ] },
   { icon: "🗄️", h: "Vos données vous appartiennent", points: [
     "Export de vos données et suppression de votre compte disponibles depuis votre espace compte.",
-    "Hébergement des données en Europe.",
-    "Sauvegardes automatiques de la base de données.",
+    phraseHebergement(),
+    "Les statistiques d’audience sont supprimées automatiquement après la durée indiquée dans la politique de confidentialité.",
   ] },
   { icon: "🛡️", h: "Anti-abus & redirections QR", points: [
     "Limitation de débit (rate-limiting) sur les points sensibles pour prévenir les abus.",

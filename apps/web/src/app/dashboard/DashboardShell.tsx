@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client"
 import { ToastProvider } from "@/components/Toast"
 import { ConfirmProvider } from "@/components/ui/Confirm"
 import MobileNav from "@/components/MobileNav"
+import { SessionShellContext } from "./sessionShell"
 import { accessibleOwnerIds } from "@/lib/team"
 import { pageLimit } from "@/lib/plans"
 
@@ -199,25 +200,27 @@ const GUEST_CREATE_ACTIONS = [
   { href: "/dashboard/qr-link", icon: Link2, label: "QR vers un lien", sub: "Site web, WiFi, téléphone — sans compte" },
 ]
 
-export default function DashboardShell({ children, initialSignedIn }: { children: React.ReactNode; initialSignedIn: boolean }) {
+export default function DashboardShell({ children, initialSignedIn, initialCollapsed = false }: { children: React.ReactNode; initialSignedIn: boolean; initialCollapsed?: boolean }) {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("qrfolio_sidebar") === "collapsed"
-    }
-    return false
-  })
+  // La préférence « barre repliée » arrive du SERVEUR (cookie lu dans layout.tsx),
+  // donc identique des deux côtés de l'hydratation : plus de barre qui se rétracte
+  // après coup. localStorage reste la copie de secours (cookie perdu).
+  const [collapsed, setCollapsed] = useState(initialCollapsed)
   const [user, setUser] = useState<any>(null)
   // « invité » = session absente. La valeur initiale vient du SERVEUR (cookie de
   // session lu dans layout.tsx) : le HTML rendu porte donc déjà le bon menu, et un
   // visiteur ne voit jamais clignoter des entrées de compte auxquelles il n'a pas
   // accès. `getUser()` confirme ensuite — c'est lui qui fait foi.
   const [signedIn, setSignedIn] = useState<boolean>(initialSignedIn)
+  const [sessionConfirmee, setSessionConfirmee] = useState(false) // getUser() a répondu
   const guest = !signedIn
   const [profile, setProfile] = useState<any>(null)
   const [mounted, setMounted] = useState(false)
   const [accent, setAccent] = useState(DEFAULT_ACCENT) // couleur d'accent de l'utilisateur
-  const [isMobile, setIsMobile] = useState(false) // < 860px : menu replié d'office
+  // < 860px : menu replié d'office. Le serveur ne connaît pas l'écran (false) ;
+  // ce qui est visible AVANT le JavaScript est décidé par les media queries
+  // .qf-sidebar / .qf-mobile-nav plus bas, jamais par cette valeur.
+  const [isMobile, setIsMobile] = useState(false)
   const [unreadLeads, setUnreadLeads] = useState(0) // messages non lus (badge nav)
   const [qrActive, setQrActive] = useState<number | null>(null) // QR actifs (jauge de quota du pied de page)
   const [createOpen, setCreateOpen] = useState(false) // sheet "Créer" (bouton central mobile)
@@ -259,6 +262,7 @@ export default function DashboardShell({ children, initialSignedIn }: { children
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
       setSignedIn(!!data.user)
+      setSessionConfirmee(true)
       if (data.user) {
         setUser(data.user)
         supabase.from("profiles").select("*").eq("id", data.user.id).single()
@@ -316,7 +320,9 @@ export default function DashboardShell({ children, initialSignedIn }: { children
   useEffect(() => {
     // Ne pas persister un repli piloté par le mode Focus (préférence utilisateur préservée).
     if (mounted && !isMobile && !focusActive.current) {
-      localStorage.setItem("qrfolio_sidebar", collapsed ? "collapsed" : "expanded")
+      const v = collapsed ? "collapsed" : "expanded"
+      localStorage.setItem("qrfolio_sidebar", v)
+      document.cookie = `qrfolio_sidebar=${v}; path=/; max-age=31536000; samesite=lax`
     }
   }, [collapsed, mounted, isMobile])
 
@@ -337,8 +343,9 @@ export default function DashboardShell({ children, initialSignedIn }: { children
         "linear-gradient(90deg, rgba(201,168,76,0.022) 1px, transparent 1px) 0 0 / 24px 24px," +
         "#070707",
     }}>
-      {/* SIDEBAR (masquée sur mobile : remplacée par la barre du bas) */}
-      <div style={{
+      {/* SIDEBAR (masquée sur mobile : remplacée par la barre du bas). La classe
+          porte la media query qui la cache dès le HTML serveur, avant tout JS. */}
+      <div className="qf-sidebar" style={{
         width: W, minWidth: W, background: "#0A0A0A",
         borderRight: "1px solid rgba(201,168,76,0.1)",
         display: isMobile ? "none" : "flex", flexDirection: "column",
@@ -376,8 +383,8 @@ export default function DashboardShell({ children, initialSignedIn }: { children
             )}
           </Link>
           {/* Bouton toggle */}
-          <button onClick={() => setCollapsed(p => !p)}
-            style={{ width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: "pointer", color: MUTED, flexShrink: 0, transition: "all 0.2s" }}
+          <button onClick={() => setCollapsed(p => !p)} aria-label={collapsed ? "Déployer le menu" : "Replier le menu"} aria-expanded={!collapsed}
+            style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: "pointer", color: MUTED, flexShrink: 0, transition: "all 0.2s" }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(201,168,76,0.1)"; e.currentTarget.style.color = G; e.currentTarget.style.borderColor = "rgba(201,168,76,0.3)" }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = MUTED; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)" }}>
             <ChevronRight size={13} style={{ transform: collapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.25s" }} />
@@ -396,7 +403,7 @@ export default function DashboardShell({ children, initialSignedIn }: { children
                 const active = isActive(href, exact)
                 return (
                   <div key={href} style={{ position: "relative" }} className="sidebar-item">
-                    <Link href={href} style={{ textDecoration: "none" }}>
+                    <Link href={href} style={{ textDecoration: "none" }} aria-label={collapsed ? label : undefined} aria-current={active ? "page" : undefined}>
                       <div style={{
                         position: "relative",
                         display: "flex", alignItems: "center", gap: 11,
@@ -452,7 +459,7 @@ export default function DashboardShell({ children, initialSignedIn }: { children
               sens — il n'a même pas de plan. On lui dit plutôt ce qu'un compte apporte. */}
           {guest && (
             <div className="sidebar-item" style={{ position: "relative" }}>
-              <Link href="/auth/signup" style={{ textDecoration: "none" }}>
+              <Link href="/auth/signup" style={{ textDecoration: "none" }} aria-label={collapsed ? "Créer mon compte" : undefined}>
                 <div style={{
                   display: "flex", flexDirection: collapsed ? "row" : "column",
                   alignItems: collapsed ? "center" : "stretch", justifyContent: "center", gap: 6,
@@ -494,7 +501,7 @@ export default function DashboardShell({ children, initialSignedIn }: { children
             const pct = planLimit && qrActive != null ? Math.min(100, Math.round((qrActive / planLimit) * 100)) : 0
             return (
               <div style={{ position: "relative" }} className="sidebar-item">
-                <Link href="/upgrade" style={{ textDecoration: "none" }}>
+                <Link href="/upgrade" style={{ textDecoration: "none" }} aria-label={collapsed ? "Voir les offres" : undefined}>
                   <div style={{
                     display: "flex", flexDirection: collapsed ? "row" : "column", alignItems: collapsed ? "center" : "stretch", gap: 8,
                     padding: collapsed ? "10px 0" : "12px 13px",
@@ -550,7 +557,7 @@ export default function DashboardShell({ children, initialSignedIn }: { children
           {/* Ligne compte (DA §10) : avatar + nom + e-mail (au lieu du plan, redondant avec la carte). */}
           {user && (
             <div style={{ position: "relative" }} className="sidebar-item">
-              <Link href="/dashboard/profile" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10,
+              <Link href="/dashboard/profile" aria-label={collapsed ? "Mon profil" : undefined} style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10,
                 padding: collapsed ? "8px 0" : "8px 9px",
                 justifyContent: collapsed ? "center" : "flex-start",
                 borderRadius: 10, overflow: "hidden", cursor: "pointer", transition: "background 0.2s" }}
@@ -588,8 +595,10 @@ export default function DashboardShell({ children, initialSignedIn }: { children
       </div>
 
       {/* MAIN CONTENT */}
-      <main style={{ flex: 1, overflow: "auto", minWidth: 0, paddingBottom: (isMobile && !hideMobileNav) ? "calc(84px + env(safe-area-inset-bottom))" : 0 }}>
-        <ToastProvider><ConfirmProvider>{children}</ConfirmProvider></ToastProvider>
+      <main className={hideMobileNav ? undefined : "qf-main-nav"} style={{ flex: 1, overflow: "auto", minWidth: 0 }}>
+        <SessionShellContext.Provider value={{ signedIn, confirmee: sessionConfirmee }}>
+          <ToastProvider><ConfirmProvider>{children}</ConfirmProvider></ToastProvider>
+        </SessionShellContext.Provider>
       </main>
 
       {/* Sheet "Créer" (bouton central de la barre mobile) */}
@@ -617,8 +626,10 @@ export default function DashboardShell({ children, initialSignedIn }: { children
 
       {/* BARRE DE NAVIGATION MOBILE — « Liquid Nav » (components/MobileNav).
           Le bouton central « Créer » ouvre le même sheet qu'avant (onCreate). */}
-      {isMobile && !hideMobileNav && (
-        <MobileNav onCreate={() => setCreateOpen(true)} unread={unreadLeads} guest={guest} />
+      {!hideMobileNav && (
+        <div className="qf-mobile-nav">
+          <MobileNav onCreate={() => setCreateOpen(true)} unread={unreadLeads} guest={guest} />
+        </div>
       )}
 
       <style>{`

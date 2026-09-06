@@ -8,7 +8,13 @@ import { scryptSync, randomBytes, timingSafeEqual } from "crypto"
 const KEYLEN = 32
 
 // Produit "saltHex:hashHex" à stocker. À appeler côté serveur (POST/PATCH).
+// scrypt coûte cher et bloque le thread : un mot de passe non borné (des Mo)
+// suffirait à geler une instance. La borne est appliquée ICI, des deux côtés.
+export const LONGUEUR_MAX_MDP_LIEN = 128
+export const mdpLienTropLong = (pw: string): boolean => pw.length > LONGUEUR_MAX_MDP_LIEN
+
 export function hashLinkPassword(pw: string): string {
+  if (mdpLienTropLong(pw)) throw new RangeError(`Mot de passe trop long (max ${LONGUEUR_MAX_MDP_LIEN} caractères).`)
   const salt = randomBytes(16)
   const hash = scryptSync(pw, salt, KEYLEN)
   return `${salt.toString("hex")}:${hash.toString("hex")}`
@@ -16,7 +22,7 @@ export function hashLinkPassword(pw: string): string {
 
 // Vérifie un mot de passe saisi contre le hash stocké. Comparaison à temps constant.
 export function verifyLinkPassword(pw: string, stored?: string | null): boolean {
-  if (!stored || !pw) return false
+  if (!stored || !pw || mdpLienTropLong(pw)) return false
   const [saltHex, hashHex] = stored.split(":")
   if (!saltHex || !hashHex) return false
   let salt: Buffer, expected: Buffer

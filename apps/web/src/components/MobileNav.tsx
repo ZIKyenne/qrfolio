@@ -21,7 +21,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactElement } from 'react'
 
 type IconC = () => ReactElement
-type Tab = { key: string; label: string; href?: string; icon: IconC; create?: boolean }
+// `more` : l'onglet ouvre la feuille « Plus » ; `routes` : chemins qui le rendent actif.
+type Tab = { key: string; label: string; href?: string; icon: IconC; create?: boolean; more?: boolean; routes?: string[] }
 
 const svgBase: CSSProperties = { width: '100%', height: '100%', display: 'block' }
 
@@ -59,7 +60,31 @@ const Icon = {
       <path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4" />
     </svg>
   ),
+  more: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={svgBase}>
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1.6" />
+      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" />
+      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" />
+    </svg>
+  ),
 }
+
+// Tout ce qui existe dans la barre latérale PC et n'a pas d'onglet : Messages,
+// Médias, Équipe, Domaines, Redirections, Paramètres… n'avaient AUCUNE entrée sur
+// téléphone. La feuille « Plus » les liste toutes (le badge Messages y compris).
+export const MORE_ITEMS: { href: string; label: string; sub: string }[] = [
+  { href: '/dashboard/leads', label: 'Messages', sub: 'Demandes reçues depuis vos pages' },
+  { href: '/dashboard/templates', label: 'Modèles', sub: '48 modèles par métier' },
+  { href: '/dashboard/assets', label: 'Médias', sub: 'Photos et fichiers réutilisables' },
+  { href: '/dashboard/print-studio', label: 'Print Studio', sub: 'Supports à imprimer' },
+  { href: '/dashboard/qr-link', label: 'QR vers un lien', sub: 'Site, WiFi, téléphone' },
+  { href: '/dashboard/team', label: 'Équipe', sub: 'Inviter des collaborateurs' },
+  { href: '/dashboard/domains', label: 'Domaines', sub: 'Votre propre adresse' },
+  { href: '/dashboard/redirects', label: 'Redirections', sub: 'Anciennes adresses' },
+  { href: '/dashboard/profile', label: 'Profil', sub: 'Identité, abonnement' },
+  { href: '/dashboard/settings', label: 'Paramètres', sub: 'Notifications, mot de passe, compte' },
+]
 
 // Routes réelles du projet (cf. dashboard/layout.tsx). "Créer" = sheet, pas de href.
 const FULL_TABS: Tab[] = [
@@ -67,7 +92,7 @@ const FULL_TABS: Tab[] = [
   { key: 'pages', label: 'Mes pages', href: '/dashboard/qr-codes', icon: Icon.qr },
   { key: 'create', label: 'Créer', icon: Icon.plus, create: true },
   { key: 'stats', label: 'Stats', href: '/dashboard/analytics', icon: Icon.stats },
-  { key: 'profile', label: 'Profil', href: '/dashboard/profile', icon: Icon.user },
+  { key: 'more', label: 'Plus', icon: Icon.more, more: true, routes: MORE_ITEMS.map(m => m.href) },
 ]
 
 // Sans compte, quatre des cinq onglets ci-dessus mènent à la page de connexion
@@ -92,10 +117,10 @@ export default function MobileNav({ onCreate, unread = 0, guest = false }: { onC
     // match le plus long, sur les onglets AYANT une route (Créer exclu)
     let best = 0
     let bestLen = -1
+    const hitOn = (h: string) => pathname === h || pathname.startsWith(h + '/')
     TABS.forEach((t, i) => {
-      if (!t.href) return
-      const hit = pathname === t.href || pathname.startsWith(t.href + '/')
-      if (hit && t.href.length > bestLen) { best = i; bestLen = t.href.length }
+      const routes = t.href ? [t.href] : (t.routes ?? [])
+      for (const h of routes) if (hitOn(h) && h.length > bestLen) { best = i; bestLen = h.length }
     })
     return best
   }, [pathname, TABS])
@@ -103,6 +128,16 @@ export default function MobileNav({ onCreate, unread = 0, guest = false }: { onC
   const prev = useRef(active)
   const [moving, setMoving] = useState(0)
   const [burst, setBurst] = useState(0)
+  const [moreOpen, setMoreOpen] = useState(false)
+
+  // La feuille « Plus » se ferme à la navigation et à Échap.
+  useEffect(() => { setMoreOpen(false) }, [pathname])
+  useEffect(() => {
+    if (!moreOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMoreOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [moreOpen])
 
   useEffect(() => {
     if (prev.current === active) return
@@ -215,7 +250,9 @@ export default function MobileNav({ onCreate, unread = 0, guest = false }: { onC
           </div>
 
           {/* onglets */}
-          <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', alignItems: 'end', paddingBottom: 7 }}>
+          {/* `repeat(${n})` : l'invité a 4 onglets ; avec 5 colonnes fixes, la bulle
+              (calculée sur n) ne tombait plus sous l'icône. */}
+          <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: `repeat(${n}, 1fr)`, alignItems: 'end', paddingBottom: 7 }}>
             {TABS.map((tab, i) => {
               const isActive = i === active
               const TabIcon = tab.icon
@@ -235,7 +272,7 @@ export default function MobileNav({ onCreate, unread = 0, guest = false }: { onC
                 <>
                   <span style={iconWrap}>
                     <TabIcon />
-                    {tab.href === '/dashboard' && unread > 0 && (
+                    {(tab.href === '/dashboard' || tab.more) && unread > 0 && (
                       <span style={{ position: 'absolute', top: -5, right: -7, minWidth: 14, height: 14, padding: '0 3px', borderRadius: 7, background: '#EF4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>{unread > 99 ? '99+' : unread}</span>
                     )}
                   </span>
@@ -250,6 +287,13 @@ export default function MobileNav({ onCreate, unread = 0, guest = false }: { onC
                   </button>
                 )
               }
+              if (tab.more) {
+                return (
+                  <button key={tab.key} type="button" onClick={() => setMoreOpen(o => !o)} aria-label={unread > 0 ? `Plus — ${unread} message${unread > 1 ? 's' : ''} non lu${unread > 1 ? 's' : ''}` : 'Plus'} aria-expanded={moreOpen} aria-haspopup="dialog" aria-current={isActive ? 'page' : undefined} style={cellStyle}>
+                    {inner}
+                  </button>
+                )
+              }
               return (
                 <Link key={tab.key} href={tab.href!} aria-current={isActive ? 'page' : undefined} style={cellStyle}>
                   {inner}
@@ -259,6 +303,32 @@ export default function MobileNav({ onCreate, unread = 0, guest = false }: { onC
           </div>
         </div>
       </div>
+
+      {/* Feuille « Plus » */}
+      {moreOpen && (
+        <div onClick={() => setMoreOpen(false)} style={{ pointerEvents: 'auto', position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'flex-end' }}>
+          <div role="dialog" aria-modal="true" aria-label="Toutes les sections" onClick={e => e.stopPropagation()}
+            style={{ width: '100%', maxHeight: '78dvh', overflowY: 'auto', background: '#141210', borderTopLeftRadius: 22, borderTopRightRadius: 22, border: `1px solid color-mix(in srgb, ${GOLD} 16%, transparent)`, borderBottom: 'none', padding: '10px 14px calc(16px + env(safe-area-inset-bottom))', boxShadow: '0 -16px 44px rgba(0,0,0,0.55)', animation: 'sheetUp .24s var(--mo-ease-standard, ease)' }}>
+            <div style={{ width: 40, height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.18)', margin: '0 auto 12px' }} />
+            <p style={{ margin: '0 4px 6px', color: '#F5F0E8', fontSize: 15, fontWeight: 800 }}>Toutes les sections</p>
+            {MORE_ITEMS.map((it, i) => {
+              const courant = pathname === it.href || pathname.startsWith(it.href + '/')
+              const badge = it.href === '/dashboard/leads' && unread > 0
+              return (
+                <Link key={it.href} href={it.href} aria-current={courant ? 'page' : undefined} onClick={() => setMoreOpen(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 52, padding: '8px 6px', textDecoration: 'none', borderTop: i ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, minWidth: 0 }}>
+                    <span style={{ color: courant ? GOLD : '#F5F0E8', fontSize: 15, fontWeight: 700 }}>{it.label}</span>
+                    <span style={{ color: MUTED, fontSize: 12.5, lineHeight: 1.35 }}>{it.sub}</span>
+                  </span>
+                  {badge && <span style={{ minWidth: 22, height: 22, padding: '0 7px', borderRadius: 11, background: '#EF4444', color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{unread > 99 ? '99+' : unread}</span>}
+                  <span aria-hidden style={{ color: MUTED, fontSize: 18, flexShrink: 0 }}>›</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </nav>
   )
 }

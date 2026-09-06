@@ -52,6 +52,11 @@ const nextConfig = {
   // Verification TypeScript active au build : bloque les regressions de types ET les
   // imports casses (qui crashaient au runtime). Le code typecheck a 0 erreur (2026-07-07).
   typescript: { ignoreBuildErrors: false },
+  // Le navigateur ne peut pas savoir si la clé Anthropic existe côté serveur. On
+  // lui transmet UN BOOLÉEN au build : sans clé, l'éditeur ne monte même pas le
+  // bloc « Générer ma page avec l'IA » (au lieu de laisser rédiger, attendre,
+  // puis répondre « arrive très bientôt »). Voir src/lib/generationIa.ts.
+  env: { NEXT_PUBLIC_GENERATION_IA: process.env.ANTHROPIC_API_KEY ? "1" : "0" },
   // (Clé `eslint` retirée : non supportée par Next 16 — ESLint n'est pas câblé au build.
   //  La sécurité de type est assurée par `typescript.ignoreBuildErrors: false` ci-dessus.)
   // Optimisation d'images : autorise l'optimisation Next des assets Supabase Storage

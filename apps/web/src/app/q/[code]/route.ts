@@ -127,9 +127,12 @@ function noticeResponse(icon: string, title: string, message: string, appUrl: st
   })
 }
 
-// Page de saisie du mot de passe (sécurité du lien, Pro+). Formulaire GET vers la même URL
-// (?pw=…) : à la validation, le redirect vérifie et résout. `wrong` = tentative précédente erronée.
-function passwordPromptHtml(appUrl: string, wrong: boolean): string {
+// Page de saisie du mot de passe (sécurité du lien, Pro+). Formulaire POST vers la
+// même URL : le mot de passe ne passe plus dans l'adresse (historique du
+// navigateur, journaux du serveur). `etat` : "" | "wrong" | "trop" (trop d'essais).
+function passwordPromptHtml(appUrl: string, etat: "" | "wrong" | "trop"): string {
+  const wrong = etat === "wrong"
+  const trop = etat === "trop"
   return `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -155,7 +158,8 @@ button{width:100%;height:50px;border:none;border-radius:12px;background:#C9A84C;
   <h1>Mot de passe requis</h1>
   <p>Ce lien est protégé. Saisissez le mot de passe pour continuer.</p>
   ${wrong ? '<p class="err">Mot de passe incorrect. Réessayez.</p>' : ""}
-  <form method="get" autocomplete="off">
+  ${trop ? '<p class="err">Trop d’essais. Patientez quelques minutes avant de réessayer.</p>' : ""}
+  <form method="post" autocomplete="off">
     <input type="password" name="pw" placeholder="Mot de passe" autofocus aria-label="Mot de passe" />
     <button type="submit">Déverrouiller</button>
   </form>
@@ -239,7 +243,25 @@ h1{font-size:20px;font-weight:700;margin-bottom:18px}.txt{font-size:16px;line-he
 <body><div class="card"><h1>${title}</h1>${inner}<a class="link" href="${appUrl}">Créé avec QRowg →</a></div></body></html>`
 }
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ code: string }> }) {
+  return resoudre(req, ctx, null)
+}
+
+// Le mot de passe d'un lien protégé arrive par POST (jamais dans l'URL).
+export async function POST(req: NextRequest, ctx: { params: Promise<{ code: string }> }) {
+  let pw = ""
+  try {
+    const form = await req.formData()
+    pw = String(form.get("pw") ?? "")
+  } catch { pw = "" }
+  return resoudre(req, ctx, pw)
+}
+
+// Tentatives de mot de passe par code et par adresse : 5 par quart d'heure.
+const ESSAIS_PW_MAX = 5
+const ESSAIS_PW_FENETRE_MS = 15 * 60_000
+
+async function resoudre(req: NextRequest, { params }: { params: Promise<{ code: string }> }, pwFourni: string | null) {
   const { code } = await params
   if (!code) return redirectNoStore(new URL("/", req.url))
 
@@ -282,9 +304,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
         // peut alors PAS être une redirection vers un autre site (cf. relaisHtml).
         let viaFormulaire = false
         if (inst.password_hash) {
-          const pw = req.nextUrl.searchParams.get("pw") || ""
+          const pw = pwFourni ?? ""
+          if (pw.length === 0) return htmlNoStore(passwordPromptHtml(appUrl, ""), 401)
+          // Anti-force-brute AVANT toute vérification (la comparaison scrypt coûte cher).
+          if (pw.length > 128 || !(await rateLimit(`pw:${code}:${ipOf(req)}`, ESSAIS_PW_MAX, ESSAIS_PW_FENETRE_MS))) {
+            return htmlNoStore(passwordPromptHtml(appUrl, "trop"), 429)
+          }
           if (!verifyLinkPassword(pw, inst.password_hash)) {
-            return htmlNoStore(passwordPromptHtml(appUrl, pw.length > 0), 401)
+            return htmlNoStore(passwordPromptHtml(appUrl, "wrong"), 401)
           }
           viaFormulaire = true
         }

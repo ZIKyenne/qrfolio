@@ -132,7 +132,7 @@ export async function PATCH(req: NextRequest) {
   const newHistory = [current.dest_override ?? null, ...history.filter((_: any, i: number) => i !== index)]
     .filter(Boolean).slice(0, 10)
 
-  await supabase
+  const { data: touche, error: restoreErr } = await supabase
     .from("qr_codes")
     .update({
       dest_override: restored.type === "page" && restored.value === current.page_id ? null : restored,
@@ -141,6 +141,8 @@ export async function PATCH(req: NextRequest) {
     })
     .eq("id", qr_id)
     .eq("user_id", user.id)
+    .select("id")
+  if (restoreErr || !touche?.length) return NextResponse.json({ error: "Restauration impossible" }, { status: restoreErr ? 500 : 404 })
 
   return NextResponse.json({ ok: true, restored })
 }

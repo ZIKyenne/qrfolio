@@ -50,3 +50,21 @@ describe("la porte des harness", () => {
     }
   })
 })
+
+describe("les écrans internes hors /e2e-harness passent par la même porte", () => {
+  it("/dashboard/ui-demo (revue des primitives UI) n'est plus public en production", () => {
+    const src = readFileSync(join(ici, "../dashboard/ui-demo/page.tsx"), "utf8")
+    expect(src).toContain("if (!harnessAutorise()) notFound()")
+    expect(src).not.toContain('"use client"')
+  })
+})
+
+describe("un visiteur sans compte ne déclenche pas d'appel protégé", () => {
+  it("QR vers un lien attend une session avant /api/qr-instant", () => {
+    const src = readFileSync(join(ici, "../dashboard/qr-link/page.tsx"), "utf8")
+    const i = src.indexOf('fetch("/api/qr-instant").then')
+    expect(i).toBeGreaterThan(-1)
+    expect(src.slice(i - 200, i)).toContain("if (!signedIn) return")
+    expect(readFileSync(join(ici, "../dashboard/DashboardShell.tsx"), "utf8")).toContain("<SessionShellContext.Provider value={{ signedIn, confirmee: sessionConfirmee }}>")
+  })
+})

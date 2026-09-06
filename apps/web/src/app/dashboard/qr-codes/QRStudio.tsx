@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useIsMobile } from "@/lib/useIsMobile"
 import { onEnterSpace } from "@/lib/a11y"
 import { useToast } from "@/components/Toast"
+import { erreurLisible } from "@/lib/erreurLisible"
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { PLAN_RANK, canPrintStudio, minPlanFor } from "@/lib/plans"
@@ -693,14 +694,21 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
     setArchivingId(null); setMenuId(null)
   }
 
+  // La ligne ne quitte l'écran qu'après confirmation de la base : sinon un QR
+  // « supprimé » revenait au rechargement et son support imprimé restait actif.
   async function deleteQR(id: string) {
     setDeletingId(id)
-    const sb = createClient()
-    await sb.from("qr_codes").delete().eq("id", id)
-    const rest = qrCodes.filter(q => q.id !== id)
-    setQRCodes(rest)
-    if (activeId === id) setActiveId(rest[0]?.id ?? null)
-    setDeletingId(null); setConfirmId(null); setMenuId(null)
+    try {
+      const sb = createClient()
+      const { data, error } = await sb.from("qr_codes").delete().eq("id", id).select("id")
+      if (error || !data?.length) { toast.error("Suppression impossible. " + (error ? erreurLisible(error) : "Ce QR n'a pas été trouvé.")); return }
+      const rest = qrCodes.filter(q => q.id !== id)
+      setQRCodes(rest)
+      if (activeId === id) setActiveId(rest[0]?.id ?? null)
+      toast.success("QR supprimé")
+    } finally {
+      setDeletingId(null); setConfirmId(null); setMenuId(null)
+    }
   }
 
   function copyQRLink(id: string, url: string) {
@@ -3084,8 +3092,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       </code>
                     </div>
                     {destOverride && (
-                      <button type="button" onClick={removeDest} disabled={destLoading}
-                        style={{ width:20, height:20, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)", flexShrink:0 }}>
+                      <button type="button" onClick={removeDest} disabled={destLoading} aria-label="Retirer la destination personnalisée"
+                        style={{ width:40, height:40, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)", flexShrink:0 }}>
                         <X size={10}/>
                       </button>
                     )}
@@ -3736,8 +3744,8 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                           <p style={{ color:"#F5F0E8", fontSize:12, fontWeight:600, margin:"0 0 2px" }}>Logo actif</p>
                           <p style={{ color:MUTED, fontSize:10, margin:0 }}>ECC forcé H -- scannabilité optimale</p>
                         </div>
-                        <button type="button" onClick={removeLogo}
-                          style={{ width:30, height:30, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)", flexShrink:0 }}>
+                        <button type="button" onClick={removeLogo} aria-label="Retirer le logo"
+                          style={{ width:40, height:40, background:"rgba(255,107,107,0.1)", border:"1px solid rgba(255,107,107,0.2)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--danger)", flexShrink:0 }}>
                           <Trash2 size={13}/>
                         </button>
                       </div>

@@ -57,7 +57,10 @@ export default function TermsPage() {
       <div className="ls">
         <h2>4. Résiliation</h2>
         <p>Vous pouvez résilier à tout moment depuis Paramètres. La résiliation prend effet à la fin de la période en cours. Aucun remboursement prorata.</p>
-        <p>Votre compte passe en Free. Vos données sont conservées 30 jours avant suppression.</p>
+        {/* L'ancien texte annonçait un plan « Free » et une purge à 30 jours : ni l'un
+            ni l'autre n'existe. On décrit ce qui se passe vraiment (webhook Stripe →
+            plan gratuit, quotas du gratuit). */}
+        <p>À l’échéance, votre compte passe au plan {PLANS.free.label}. Rien n’est supprimé : vos pages, QR codes et statistiques restent dans votre compte. Ce qui dépasse les limites du plan {PLANS.free.label} ({PLANS.free.limits.pages} page active, {PLANS.free.limits.qr} QR autonomes dont {PLANS.free.limits.dyn} modifiable) est mis en pause, et vous choisissez ce que vous gardez actif. Vous pouvez supprimer votre compte à tout moment depuis Paramètres (suppression immédiate et définitive).</p>
       </div>
       <div className="ls">
         <h2>5. Propriété intellectuelle</h2>

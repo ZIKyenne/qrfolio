@@ -35,3 +35,33 @@ describe("mentions légales", () => {
     expect(siretValide("1234")).toBe(false)
   })
 })
+
+describe("une seule phrase d'hébergement, sans zone géographique tant qu'elle n'est pas vérifiée", () => {
+  it("phraseHebergement ne promet une région que si elle est renseignée", async () => {
+    const { phraseHebergement, HEBERGEMENT } = await import("./editeur")
+    const p = phraseHebergement()
+    expect(p).toContain("Supabase")
+    expect(p).toContain("Vercel")
+    if (HEBERGEMENT.region === null) {
+      expect(p).not.toMatch(/Europe|Union européenne|région/)
+    } else {
+      expect(p).toContain(HEBERGEMENT.region)
+    }
+  })
+
+  it("Sécurité, Confidentialité et le guide RGPD la reprennent, et n'inventent plus", () => {
+    const lire = (p: string) => readFileSync(join(__dirname, p), "utf8")
+    const securite = lire("../app/security/page.tsx")
+    const confidentialite = lire("../app/privacy/page.tsx")
+    const guide = lire("../app/guides/guides.ts")
+    for (const src of [securite, confidentialite, guide]) expect(src).toContain("phraseHebergement()")
+    expect(securite).not.toContain("Sauvegardes automatiques")
+    expect(securite).not.toContain("migrations de durcissement")
+    expect(securite).not.toContain("Hébergement des données en Europe")
+    expect(guide).not.toContain("chiffrés au stockage")
+    expect(guide).not.toContain('Dans l\'Union européenne.')
+    // La liste du guide est celle de la politique : ville, navigateur, empreinte hachée.
+    expect(guide).toContain("le pays et la ville approximatifs")
+    expect(guide).toContain("empreinte hachée")
+  })
+})

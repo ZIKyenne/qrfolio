@@ -12,8 +12,9 @@ import { serverError } from "@/lib/apiError"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { qrLimit, dynLimit, canDynSecurite } from "@/lib/plans"
 import { countInstantQrs, countDynamicQrs } from "@/lib/quota"
-import { hashLinkPassword } from "@/lib/linkPassword"
+import { hashLinkPassword, mdpLienTropLong, LONGUEUR_MAX_MDP_LIEN } from "@/lib/linkPassword"
 import { uniqueShortCode } from "@/lib/shortCode"
+import { objetBorne } from "@/lib/bornes"
 
 const KINDS = new Set(["link", "wifi", "text", "contact", "phone", "call", "email", "sms"])
 // Types éligibles au DYNAMIQUE (redirigé + expirable). WiFi et Contact restent STATIQUES : ils
@@ -82,8 +83,10 @@ export async function POST(req: NextRequest) {
   }
 
   const label = typeof body?.label === "string" ? body.label.trim().slice(0, 80) || null : null
-  const inputs = body?.inputs && typeof body.inputs === "object" ? body.inputs : {}
-  const style = body?.style && typeof body.style === "object" ? body.style : {}
+  // 16 Ko chacun : un QR n'a pas besoin de plus, et rien n'empêchait d'en stocker des Mo.
+  const inputs = objetBorne(body?.inputs, 16_000) ?? (body?.inputs ? null : {})
+  const style = objetBorne(body?.style, 16_000) ?? (body?.style ? null : {})
+  if (!inputs || !style) return NextResponse.json({ error: "Contenu trop volumineux (16 Ko maximum)." }, { status: 413 })
 
   // ── QR MODIFIABLE : le QR encode /q/<code>, la destination se change après impression. ──
   // dest_url = cible/contenu résolu par /q/[code] : lien→URL, appel→tel:, email→mailto:,
@@ -169,6 +172,7 @@ export async function PATCH(req: NextRequest) {
     // Mot de passe : chaîne non vide -> hash ; vide/null -> retire le mot de passe.
     if ("password" in body) {
       const pw = typeof body.password === "string" ? body.password : ""
+      if (mdpLienTropLong(pw)) return NextResponse.json({ error: `Mot de passe trop long (${LONGUEUR_MAX_MDP_LIEN} caractères maximum).` }, { status: 400 })
       patch.password_hash = pw ? hashLinkPassword(pw) : null
     }
 

@@ -10,6 +10,7 @@
 import { NextResponse } from "next/server"
 import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server"
 import { dernierPassage, type Passage } from "@/lib/journalCron"
+import { estAdministrateur } from "@/lib/admin"
 
 export const runtime = "nodejs"
 
@@ -17,6 +18,9 @@ export async function GET() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+  // Réservé aux administrateurs (ADMIN_EMAILS) : le journal décrit l'infrastructure,
+  // pas le compte de la personne connectée.
+  if (!estAdministrateur(user.email)) return NextResponse.json({ disponible: false, passages: {} }, { status: 403 })
 
   try {
     const { data, error } = await createAdminClient()

@@ -32,15 +32,7 @@ export async function submitLead(input: LeadInput): Promise<boolean> {
     // Le propriétaire est prévenu par /api/leads lui-même, après l'insertion :
     // aucun appel public pour ça (l'ancienne route était un relais ouvert).
 
-    // Accusé de réception au visiteur si son email est fourni (fire-and-forget)
-    if (input.email) {
-      fetch("/api/emails/lead-confirmation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pageId: input.pageId, type: input.type || "form", email: input.email, name: input.name }),
-      }).catch(() => {})
-    }
-
+    // L'accusé de réception au visiteur part aussi de /api/leads : rien à appeler ici.
     return true
   } catch {
     return false

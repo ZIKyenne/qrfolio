@@ -922,3 +922,15 @@ img, video, canvas { max-width: 100%; }
   /* Un bouton d'appel à l'action ne se coupe pas en deux lignes. */
   .nav-page a[href*="creer"] { white-space: nowrap; padding-left: 14px !important; padding-right: 14px !important; }
 }
+
+/* === Coquille du tableau de bord : ce que l'on voit AVANT le JavaScript ===
+   Le serveur ne connaît pas la largeur de l'écran. Ces règles vivent ici, dans
+   la feuille chargée en <head>, et non dans un <style> en fin de composant qui
+   peut arriver après la première peinture. Voir DashboardShell.tsx. */
+@media (max-width: 859px) {
+  .qf-sidebar { display: none !important; }
+  .qf-main-nav { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+}
+@media (min-width: 860px) {
+  .qf-mobile-nav { display: none; }
+}

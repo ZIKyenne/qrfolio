@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Users, Check, AlertTriangle, Loader2 } from "lucide-react"
+import { erreurLisible, MessageUtilisateur } from "@/lib/erreurLisible"
 
 const GOLD = "#C9A84C"
 
@@ -17,10 +18,10 @@ export default function AcceptInvitePage() {
       .then(async r => {
         const d = await r.json().catch(() => ({}))
         if (r.status === 401) { setStatus("auth"); return }
-        if (!r.ok) throw new Error(d.error || "Erreur")
+        if (!r.ok) throw new MessageUtilisateur(d.error || "Cette invitation n'a pas pu être acceptée.")
         setStatus("ok")
       })
-      .catch(e => { setStatus("error"); setMsg((e as Error).message || "Erreur") })
+      .catch(e => { setStatus("error"); setMsg(erreurLisible(e, "Cette invitation n'a pas pu être acceptée.")) })
   }, [])
 
   const wrap: React.CSSProperties = { minHeight: "70vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "DM Sans, sans-serif" }

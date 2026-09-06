@@ -3,6 +3,9 @@
 // génératifs (ChatGPT, Gemini, Claude). Source unique alimentant route + hub + sitemap + JSON-LD.
 // HONNÊTE : aucun chiffre inventé ; décrit le comportement réel de QRowg.
 
+import { PLANS } from "@/lib/plans"
+import { phraseHebergement } from "@/lib/editeur"
+
 export type GuideSection = {
   h2: string
   body?: string[]
@@ -73,7 +76,7 @@ export const GUIDES: Record<string, Guide> = {
       { h2: "Statique ou dynamique ?", body: ["Pour un QR que vous imprimerez et pourriez vouloir modifier ensuite (ou mesurer), préférez un QR code dynamique. Sinon, un QR statique gratuit suffit."] },
     ],
     faq: [
-      { q: "Créer un QR code est-il gratuit ?", a: "Oui pour un QR code statique : un générateur gratuit permet de le créer et de le télécharger sans compte. Le QR dynamique (modifiable, avec statistiques) nécessite un abonnement." },
+      { q: "Créer un QR code est-il gratuit ?", a: `Oui pour un QR code statique : un générateur gratuit permet de le créer et de le télécharger sans compte. Le QR dynamique (modifiable après impression, avec statistiques) est aussi accessible sans payer : le plan ${PLANS.free.label} en inclut ${PLANS.free.limits.dyn}, les plans payants davantage (${PLANS.pro.limits.dyn} en ${PLANS.pro.label}).` },
       { q: "Quel format choisir pour l'impression ?", a: "Le PNG haute résolution convient à la plupart des usages ; le SVG (vectoriel) reste net à n'importe quelle taille, idéal pour les grands formats." },
       { q: "Faut-il un logo sur le QR code ?", a: "C'est optionnel. Si vous en ajoutez un, augmentez le niveau de correction d'erreur pour que le QR reste lisible." },
     ],
@@ -319,7 +322,7 @@ export const GUIDES: Record<string, Guide> = {
     tldr: "Un QR code n'est qu'un lien : il ne collecte rien par lui-même. Ce sont la page d'arrivée et la mesure des scans qui relèvent du RGPD. Les statistiques agrégées posent peu de difficultés ; un formulaire de contact, lui, vous rend responsable des données reçues.",
     sections: [
       { h2: "Le QR code lui-même ne collecte rien", body: ["Un QR est un dessin qui encode du texte, le plus souvent une adresse. Le scanner n'envoie aucune donnée à qui que ce soit : c'est le téléphone qui lit le motif, hors ligne. Tant que la personne n'ouvre pas le lien, rien ne circule."] },
-      { h2: "Ce que mesure un QR dynamique", body: ["Un QR dynamique passe par une adresse de redirection, ce qui permet de compter les scans. Ce que QRowg enregistre à ce moment : la date, le pays approximatif, le type d'appareil et la source. Ni nom, ni adresse e-mail, ni identifiant publicitaire.", "Ces mesures restent agrégées : elles servent à savoir qu'un support fonctionne, pas à suivre une personne. C'est une différence de nature avec le pistage publicitaire, et elle compte juridiquement."] },
+      { h2: "Ce que mesure un QR dynamique", body: ["Un QR dynamique passe par une adresse de redirection, ce qui permet de compter les scans. Ce que QRowg enregistre à ce moment : la date, le pays et la ville approximatifs, le type d'appareil (mobile, tablette, ordinateur), le système et le navigateur, la source (site référent, paramètres de campagne) et, sur une page, les blocs touchés. Pour compter les visiteurs uniques sans conserver l'adresse IP, une empreinte hachée (adresse, navigateur et sel secret) est calculée : elle ne permet pas de retrouver l'adresse. Ni nom, ni adresse e-mail, ni identifiant publicitaire.", "Ces mesures restent agrégées : elles servent à savoir qu'un support fonctionne, pas à suivre une personne. C'est une différence de nature avec le pistage publicitaire, et elle compte juridiquement."] },
       { h2: "Faut-il un bandeau cookies ?", body: ["La règle française, portée par la CNIL, distingue les traceurs strictement nécessaires — ou de mesure d'audience limitée à cette seule finalité — des traceurs publicitaires, qui exigent un consentement préalable.", "Une mesure d'audience simple, sans recoupement avec d'autres sites et sans usage publicitaire, peut relever de l'exemption. Ajoutez en revanche un pixel Meta ou Google Ads sur votre page, et vous basculez dans le régime du consentement : bandeau obligatoire."] },
       { h2: "Le formulaire de contact change tout", body: ["Dès que votre page recueille un nom, un e-mail ou un téléphone, vous devenez responsable de ces données. Trois obligations concrètes : dire à quoi elles servent, ne les garder que le temps utile, et pouvoir les supprimer sur demande.", "Chez QRowg, les messages reçus sont stockés chiffrés et hébergés dans l'Union européenne. Vous pouvez les exporter et les effacer depuis votre espace."] },
       { h2: "En pratique, pour un commerce", bullets: ["Indiquez sur votre page qui vous êtes et comment vous joindre", "Si vous avez un formulaire, dites en une phrase à quoi servent les réponses", "N'ajoutez un pixel publicitaire que si vous assumez le bandeau qui va avec", "Ne demandez que ce dont vous avez besoin : un champ en moins, c'est une obligation en moins"] },
@@ -327,8 +330,8 @@ export const GUIDES: Record<string, Guide> = {
     ],
     faq: [
       { q: "Dois-je déclarer mes QR codes à la CNIL ?", a: "Non. La déclaration préalable a disparu avec le RGPD en 2018. Vous devez en revanche pouvoir démontrer votre conformité si on vous le demande." },
-      { q: "Les scans permettent-ils d'identifier une personne ?", a: "Pas dans QRowg : les mesures sont agrégées — date, pays approximatif, type d'appareil, source. Rien qui désigne quelqu'un en particulier." },
-      { q: "Où sont hébergées les données ?", a: "Dans l'Union européenne. Les messages reçus via les formulaires sont chiffrés au stockage." },
+      { q: "Les scans permettent-ils d'identifier une personne ?", a: "Pas dans QRowg : ce qui est enregistré — date, pays et ville approximatifs, appareil, navigateur, source, empreinte hachée non réversible — sert à compter, pas à désigner quelqu'un. Le détail exact figure dans la politique de confidentialité." },
+      { q: "Où sont hébergées les données ?", a: `${phraseHebergement()} Les messages reçus via les formulaires sont lisibles uniquement par le propriétaire de la page, et supprimables à tout moment.` },
       { q: "Un QR code Wi-Fi pose-t-il un problème ?", a: "Non : il encode le nom du réseau et le mot de passe directement dans le motif. Rien ne transite par un serveur, il fonctionne même hors ligne." },
     ],
     related: ["qr-code-avec-statistiques", "qr-code-dynamique-vs-statique", "duree-de-vie-qr-code"],

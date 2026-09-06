@@ -49,7 +49,8 @@ describe("barre du haut de l'éditeur sur téléphone", () => {
   it("le logo cède la place à une simple flèche", () => {
     // « ← QRowg » passait à la ligne et recouvrait la flèche de retour.
     expect(BUILDER).toContain('{isMobile ? "←" : "← QRowg"}')
-    expect(BUILDER).toContain('aria-label="Retour au tableau de bord"')
+    // Le libellé dépend de la destination : un invité retourne aux modèles (P1-2).
+    expect(BUILDER).toContain('aria-label={guest ? "Retour aux modèles" : "Retour au tableau de bord"}')
   })
 
   it("le nom de la page s'ellipse au lieu d'être coupé net, et se vise au doigt", () => {

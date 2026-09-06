@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { validerImage, validerFichier, type RaisonEnvoi, type ResultatEnvoi } from "./validationEnvoi"
 
 // Compresse une image cote client avant upload : downscale (cote max) + reencodage WebP.
 // Objectif : des pages publiques rapides et un stockage leger (une photo smartphone brute
@@ -40,14 +41,22 @@ export function useImageUpload() {
   // s'insérait pas, sans un mot. Depuis l'essai sans inscription, ce cas est la
   // norme pour un visiteur — il doit savoir que c'est le compte qui manque, pas
   // son fichier, et surtout qu'il ne sert à rien de réessayer.
-  const [lastError, setLastError] = useState<"no_account" | "failed" | null>(null)
+  //
+  // `lastError` reste exposé pour l'affichage, mais la raison est AUSSI renvoyée
+  // avec le résultat : lue depuis l'état après un await, elle avait un rendu de
+  // retard (« Erreur upload » au lieu de « Créez un compte », corrigé au 2ᵉ essai).
+  const [lastError, setLastError] = useState<RaisonEnvoi | null>(null)
 
-  async function uploadImage(file: File, path: string): Promise<string | null> {
+  // Validation AVANT l'envoi (type, taille), puis stockage. Jamais d'exception.
+  async function envoyerImage(file: File, path: string): Promise<ResultatEnvoi> {
     setUploading(true); setLastError(null)
+    const echec = (raison: RaisonEnvoi): ResultatEnvoi => { setLastError(raison); return { url: null, raison } }
     try {
+      const invalide = validerImage(file)
+      if (invalide) return echec(invalide)
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLastError("no_account"); return null }
+      if (!user) return echec("no_account")
 
       const optimized = await compressImage(file)
 
@@ -58,16 +67,24 @@ export function useImageUpload() {
         .from("page-assets")
         .upload(fileName, optimized, { upsert: true, contentType: optimized.type })
 
-      if (error) { console.error("Upload error:", error); setLastError("failed"); return null }
+      if (error) { console.error("Upload error:", error); return echec("failed") }
 
       const { data: { publicUrl } } = supabase.storage
         .from("page-assets")
         .getPublicUrl(fileName)
 
-      return publicUrl
+      return { url: publicUrl, raison: null }
+    } catch (e) {
+      console.error("Upload error:", e)
+      return echec("failed")
     } finally {
       setUploading(false)
     }
+  }
+
+  // Compatibilité : l'ancienne signature (URL ou null).
+  async function uploadImage(file: File, path: string): Promise<string | null> {
+    return (await envoyerImage(file, path)).url
   }
 
   // Liste les fichiers déjà uploadés par l'utilisateur (bibliothèque réutilisable, sans ré-upload).
@@ -90,24 +107,34 @@ export function useImageUpload() {
   }
 
   // Upload d'un fichier NON-image (PDF, doc…) : pas de compression, nom d'origine préservé (slug) pour rester lisible.
-  async function uploadFile(file: File, path = "docs"): Promise<string | null> {
+  async function envoyerFichier(file: File, path = "docs"): Promise<ResultatEnvoi> {
     setUploading(true); setLastError(null)
+    const echec = (raison: RaisonEnvoi): ResultatEnvoi => { setLastError(raison); return { url: null, raison } }
     try {
+      const invalide = validerFichier(file)
+      if (invalide) return echec(invalide)
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLastError("no_account"); return null }
+      if (!user) return echec("no_account")
       const ext = (file.name.split(".").pop() || "bin").toLowerCase()
       const base = file.name.replace(/\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "fichier"
       const fileName = `${user.id}/${path}-${base}-${Date.now()}.${ext}`
       const { error } = await supabase.storage
         .from("page-assets")
         .upload(fileName, file, { upsert: true, contentType: file.type || undefined })
-      if (error) { console.error("Upload error:", error); setLastError("failed"); return null }
+      if (error) { console.error("Upload error:", error); return echec("failed") }
       const { data: { publicUrl } } = supabase.storage.from("page-assets").getPublicUrl(fileName)
-      return publicUrl
+      return { url: publicUrl, raison: null }
+    } catch (e) {
+      console.error("Upload error:", e)
+      return echec("failed")
     } finally {
       setUploading(false)
     }
+  }
+
+  async function uploadFile(file: File, path = "docs"): Promise<string | null> {
+    return (await envoyerFichier(file, path)).url
   }
 
   // Supprime une image de la bibliothèque (storage). `name` = nom de fichier seul (sans le dossier userId).
@@ -119,5 +146,5 @@ export function useImageUpload() {
     return !error
   }
 
-  return { uploadImage, uploadFile, uploading, listAssets, deleteAsset, lastError }
+  return { uploadImage, uploadFile, envoyerImage, envoyerFichier, uploading, listAssets, deleteAsset, lastError }
 }

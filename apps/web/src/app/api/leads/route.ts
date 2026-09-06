@@ -6,7 +6,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/server"
 import { rateLimit, ipOf } from "@/lib/rateLimit"
 import { notifierProprietaireLead } from "@/lib/notifierProprietaireLead"
+import { envoyerAccuseReception } from "@/lib/accuseReceptionLead"
 import { after } from "next/server"
+import { objetBorne } from "@/lib/bornes"
 
 export async function POST(req: NextRequest) {
   if (!(await rateLimit("lead:" + ipOf(req), 15, 600_000))) {
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
     email:    typeof body.email === "string" ? body.email.slice(0, 200) || null : null,
     phone:    typeof body.phone === "string" ? body.phone.slice(0, 60) || null : null,
     message:  typeof body.message === "string" ? body.message.slice(0, 3000) || null : null,
-    data:     body.data && typeof body.data === "object" ? body.data : {},
+    data:     objetBorne(body.data, 8_000) ?? {},   // 8 Ko : les champs d'un formulaire, pas une pièce jointe
   }
   // Attribution par support (qr_source) — insert résilient : si la colonne n'existe pas
   // encore (migration non appliquée), on réessaie SANS -> la soumission ne casse jamais.
@@ -48,6 +50,9 @@ export async function POST(req: NextRequest) {
   after(async () => {
     const r = await notifierProprietaireLead({ pageId, type: base.type, name: base.name, email: base.email, phone: base.phone, message: base.message, data: base.data as Record<string, unknown> })
     if (!r.envoye && r.raison && !["opt-out", "pas de destinataire"].includes(r.raison)) console.error("[leads] notification non envoyée :", r.raison)
+    // Accusé de réception au visiteur, avec les champs bornés du lead enregistré.
+    const a = await envoyerAccuseReception({ pageId, email: base.email, name: base.name, type: base.type })
+    if (!a.envoye && a.raison && !["opt-out", "pas d'e-mail"].includes(a.raison)) console.error("[leads] accusé non envoyé :", a.raison)
   })
 
   return NextResponse.json({ ok: true })

@@ -4,28 +4,17 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { EMAIL_FROM } from "@/lib/emailFrom"
 import { escapeHtml as esc } from "@/lib/escapeHtml"
 import { emailShell, emailH1 } from "@/lib/emailLayout"
+import { rateLimit, ipOf } from "@/lib/rateLimit"
 
-// Anti-spam simple: max 3 messages par IP par heure
-const ipCache = new Map<string, { count: number; reset: number }>()
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = ipCache.get(ip)
-  if (!entry || now > entry.reset) {
-    ipCache.set(ip, { count: 1, reset: now + 3600_000 })
-    return true
-  }
-  if (entry.count >= 3) return false
-  entry.count++
-  return true
-}
+// Anti-spam : 3 messages par adresse et par heure, via le limiteur partagé
+// (Upstash quand il est configuré). L'ancienne Map locale ne valait que pour
+// UNE instance serverless : chaque cold start repartait de zéro.
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown"
-
+    const ip = ipOf(req)
     // Rate limiting
-    if (!checkRateLimit(ip)) {
+    if (!(await rateLimit("contact:" + ip, 3, 3600_000))) {
       return NextResponse.json(
         { error: "Trop de messages envoyés. Veuillez réessayer plus tard." },
         { status: 429 }

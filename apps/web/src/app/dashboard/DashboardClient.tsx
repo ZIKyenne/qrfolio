@@ -14,6 +14,7 @@ import { useToast } from "@/components/Toast"
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import PostCheckoutBanner from "@/components/PostCheckoutBanner"
+import { erreurLisible } from "@/lib/erreurLisible"
 
 type Page = { id: string; title: string; slug: string; status: string; total_views: number; created_at: string }
 type Profile = { full_name: string | null; plan: string; total_scans: number; total_pages: number; avatar_url: string | null }
@@ -117,7 +118,7 @@ export default function DashboardClient({
     const { error } = await supabase.from("pages").delete().eq("id", page.id)
     setDeleting(false)
     setPageToDelete(null)
-    if (error) { toast.error("Suppression impossible : " + error.message); return }
+    if (error) { toast.error("Suppression impossible. " + erreurLisible(error)); return }
     setPages(p => p.filter(pg => pg.id !== page.id))
     toast.success("Page supprimée")
     // Refresh profile stats
@@ -131,7 +132,7 @@ export default function DashboardClient({
     // alors que la page restait en brouillon (état mensonger).
     const { data, error } = await supabase.from("pages").update({ status: newStatus }).eq("id", page.id).select("id")
     if (error || !data || data.length === 0) {
-      toast.error("Action impossible" + (error ? " : " + error.message : ""))
+      toast.error("Action impossible. " + (error ? erreurLisible(error) : "La page n'a pas été trouvée."))
       return
     }
     setPages(p => p.map(pg => pg.id === page.id ? { ...pg, status: newStatus } : pg))

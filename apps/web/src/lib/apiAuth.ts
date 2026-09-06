@@ -6,7 +6,7 @@ import { createHash } from "node:crypto"
 import { createAdminClient } from "@/lib/supabase/server"
 import { canApi } from "@/lib/plans"
 
-export type ApiAuth = { userId: string; keyId: string }
+export type ApiAuth = { userId: string; keyId: string; plan: string | null }
 
 export async function authApiKey(req: NextRequest): Promise<ApiAuth | null> {
   const header = req.headers.get("authorization") || ""
@@ -33,5 +33,5 @@ export async function authApiKey(req: NextRequest): Promise<ApiAuth | null> {
   // Trace d'utilisation (fire-and-forget).
   admin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", data.id).then(() => {}, () => {})
 
-  return { userId: data.user_id, keyId: data.id }
+  return { userId: data.user_id, keyId: data.id, plan: ((prof as any)?.plan as string | null) ?? null }
 }

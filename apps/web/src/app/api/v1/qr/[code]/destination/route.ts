@@ -4,15 +4,22 @@ import { NextRequest, NextResponse } from "next/server"
 import { authApiKey } from "@/lib/apiAuth"
 import { createAdminClient } from "@/lib/supabase/server"
 import { rateLimit } from "@/lib/rateLimit"
+import { consommerQuotaApi, reponseQuotaDepasse, enTetesQuota } from "@/lib/quotaApi"
 import { buildDestUrl, validateDest, type DestType } from "../../../../qr-destination/qrDestination"
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const auth = await authApiKey(req)
   if (!auth) return NextResponse.json({ error: "Clé API invalide ou manquante" }, { status: 401 })
   if (!(await rateLimit("api:" + auth.keyId, 120, 60_000))) return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 })
+  // Plafond mensuel du plan (1 000 / 10 000) — compté en base, cf. lib/quotaApi.
+  const quota = await consommerQuotaApi(auth.userId, auth.plan)
+  if (!quota.autorise) return reponseQuotaDepasse(quota)
 
   const { code } = await params
-  const { type, value, label } = await req.json().catch(() => ({}))
+  const corps = await req.json().catch(() => ({}))
+  const type = typeof corps?.type === "string" ? corps.type : ""
+  const value = typeof corps?.value === "string" ? corps.value : ""
+  const label = typeof corps?.label === "string" ? corps.label.slice(0, 80) : undefined
   if (!type || !value) return NextResponse.json({ error: "type et value requis" }, { status: 400 })
 
   const err = validateDest(type as DestType, value)
@@ -57,5 +64,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
     .eq("id", qr.id)
   if (error) return NextResponse.json({ error: "Mise à jour impossible" }, { status: 500 })
 
-  return NextResponse.json({ ok: true, code, destination: newDest })
+  return NextResponse.json({ ok: true, code, destination: newDest }, { headers: enTetesQuota(quota) })
 }

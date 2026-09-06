@@ -172,7 +172,7 @@ function CropEditor({ content, set, onClose }: { content: Record<string, any>; s
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
           <Crop size={16} color={G} />
           <span style={{ color: G, fontSize: 13, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", flex: 1 }}>Recadrage</span>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", color: MUTED, display: "flex" }}><X size={17} /></button>
+          <button onClick={onClose} aria-label="Fermer" style={{ background: "transparent", border: "none", cursor: "pointer", color: MUTED, display: "flex" }}><X size={17} /></button>
         </div>
         {/* Zone draggable */}
         <div ref={boxRef} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}

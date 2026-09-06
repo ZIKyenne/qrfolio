@@ -11,6 +11,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { serverError } from "@/lib/apiError"
+import { objetBorne } from "@/lib/bornes"
 
 const ALLOWED_FORMATS = ["a4", "square", "story", "carte", "flyer", "table"] as const
 
@@ -38,6 +39,10 @@ export async function POST(req: NextRequest) {
     }
 
     const safeFormat = ALLOWED_FORMATS.includes(format as any) ? format : "a4"
+    // Le design est un objet de réglages : 64 Ko le contiennent largement.
+    if (design !== undefined && design !== null && !objetBorne(design, 64_000)) {
+      return NextResponse.json({ error: "Design trop volumineux (64 Ko maximum)." }, { status: 413 })
+    }
 
     let q = supabase
       .from("qr_codes")

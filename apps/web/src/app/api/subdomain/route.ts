@@ -1,9 +1,10 @@
 ﻿// app/api/subdomain/route.ts
 // Gestion des sous-domaines personnalisés: vérification + réservation + modification
 
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { serverError } from "@/lib/apiError"
+import { rateLimit, ipOf } from "@/lib/rateLimit"
 
 const RESERVED = new Set([
   "www","app","api","admin","dashboard","auth","login","signup","register",
@@ -36,13 +37,23 @@ export async function GET(req: NextRequest) {
 
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
+  // Session obligatoire + limite de débit : cet endpoint dit si un nom est pris,
+  // il ne doit pas servir à énumérer les comptes.
+  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+  if (!(await rateLimit("subdomain:" + ipOf(req), 30, 60_000))) {
+    return NextResponse.json({ error: "Trop de vérifications" }, { status: 429 })
+  }
 
-  // Vérifier si déjà pris (par quelqu'un d'autre)
-  const { data: existing } = await supabase
+  // Le client de session ne voit que SA ligne de profiles depuis la fermeture de
+  // la table : il répondait « disponible » pour tout nom pris par un autre compte,
+  // et le POST retombait sur 23505. Le test d'unicité passe par la clé de service,
+  // et ne renvoie qu'un booléen.
+  const { data: existing, error: lectureErr } = await createAdminClient()
     .from("profiles")
-    .select("id, username")
+    .select("id")
     .eq("username", username)
     .maybeSingle()
+  if (lectureErr) return NextResponse.json({ error: "Vérification impossible" }, { status: 500 })
 
   if (existing) {
     // Si c'est le même utilisateur → "c'est le vôtre"
@@ -67,8 +78,8 @@ export async function POST(req: NextRequest) {
   const validationError = validateUsername(clean)
   if (validationError) return NextResponse.json({ error: validationError }, { status: 400 })
 
-  // Vérifier disponibilité
-  const { data: existing } = await supabase
+  // Vérifier disponibilité (clé de service : le client de session ne voit que sa ligne)
+  const { data: existing } = await createAdminClient()
     .from("profiles")
     .select("id")
     .eq("username", clean)
@@ -77,7 +88,7 @@ export async function POST(req: NextRequest) {
 
   if (existing) return NextResponse.json({ error: "Ce sous-domaine est déjà pris" }, { status: 409 })
 
-  // Mettre à jour le username dans profiles
+  // Mettre à jour le username dans profiles (client de session : RLS = sa ligne)
   const { data, error } = await supabase
     .from("profiles")
     .update({ username: clean })
@@ -85,6 +96,8 @@ export async function POST(req: NextRequest) {
     .select("username")
     .single()
 
+  // Course entre la vérification et l'écriture : l'index unique tranche (23505).
+  if (error?.code === "23505") return NextResponse.json({ error: "Ce sous-domaine vient d'être pris" }, { status: 409 })
   if (error) return serverError("subdomain", error)
 
   return NextResponse.json({

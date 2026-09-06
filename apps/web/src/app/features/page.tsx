@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link"
 import { useState } from "react"
+import { PLANS } from "@/lib/plans"
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 import { creerUrl, creerUrlSecteur } from "../creer/entry"
@@ -371,8 +372,8 @@ export default function FeaturesPage() {
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
                 <Check text="Destination modifiable à tout moment depuis ton dashboard" />
                 <Check text="Zéro réimpression — le QR continue de fonctionner" />
-                <Check text="5 styles visuels : Classic, Gold, Neon, Sunset, Business" />
-                <Check text="Export PNG HD, SVG et PDF pour l'impression" />
+                <Check text="Couleurs, forme des points et des coins, logo au centre" />
+                <Check text={`Export PNG HD ; SVG et PDF pour l'impression dès ${PLANS.pro.label}`} />
                 <Check text="Logo intégré dans le QR code avec ton image" />
               </div>
               <div style={{marginTop:32}}><CtaInline label="Créer mon QR code" /></div>
@@ -392,11 +393,11 @@ export default function FeaturesPage() {
               <SectionHeader
                 chip="Analytics"
                 title={<>Comprends ce qui se passe <span style={{color:G}}>après chaque scan.</span></>}
-                sub="Vues, scans, appareils, sources et pages les plus performantes — en temps réel, inclus dans tous les plans."
+                sub={`Vues, scans, sources et pages les plus performantes — en temps réel. Statistiques de base incluses, détail par appareil dès ${PLANS.pro.label}.`}
               />
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
                 <Check text="Suivi des scans et vues par jour, semaine, mois" />
-                <Check text="Détail par appareil : mobile, tablette, desktop" />
+                <Check text={`Détail par appareil (mobile, tablette, ordinateur) — dès ${PLANS.pro.label}`} />
                 <Check text="Sources de trafic : direct QR, réseaux, email" />
                 <Check text="Top pages les plus visitées" />
                 <Check text="Inclus nativement — sans plugin, sans configuration" />
@@ -466,9 +467,9 @@ export default function FeaturesPage() {
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}} className="other-grid">
             <style>{`@media(max-width:700px){.other-grid{grid-template-columns:1fr !important;}}`}</style>
             {[
-              { icon:"🌐", color:"var(--action)", title:"Domaine personnalisé",   desc:"Connecte ton sous-domaine (carte.tonsite.fr). Ton image, pas la nôtre.", tag:"Pro" },
-              { icon:"✨", color:"#A78BFA", title:"Branding personnalisé",   desc:"Retire le branding QRowg. Ta page, tes couleurs, ton identité.", tag:"Pro" },
-              { icon:"👥", color:"var(--success)", title:"Collaboration équipe",     desc:"Gérez vos pages à plusieurs avec des rôles et permissions.", tag:"Business" },
+              { icon:"🌐", color:"var(--action)", title:"Domaine personnalisé",   desc:"Connecte ton sous-domaine (carte.tonsite.fr). Ton image, pas la nôtre.", tag:PLANS.pro.label },
+              { icon:"✨", color:"#A78BFA", title:"Branding personnalisé",   desc:"Retire le branding QRowg. Ta page, tes couleurs, ton identité.", tag:PLANS.pro.label },
+              { icon:"👥", color:"var(--success)", title:"Collaboration équipe",     desc:"Gérez vos pages à plusieurs avec des rôles et permissions.", tag:PLANS.business.label },
             ].map(f => (
               <div key={f.title} style={{
                 background:"rgba(255,255,255,0.02)",
@@ -488,9 +489,9 @@ export default function FeaturesPage() {
                     <h3 style={{color:INK,fontSize:16,fontWeight:700,margin:0}}>{f.title}</h3>
                     <span style={{
                       fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:4,
-                      background:f.tag==="Pro"?"rgba(201,168,76,0.12)":"rgba(167,139,250,0.12)",
-                      color:f.tag==="Pro"?G:"#A78BFA",border:"1px solid",
-                      borderColor:f.tag==="Pro"?"rgba(201,168,76,0.3)":"rgba(167,139,250,0.3)",
+                      background:f.tag===PLANS.pro.label?"rgba(201,168,76,0.12)":"rgba(167,139,250,0.12)",
+                      color:f.tag===PLANS.pro.label?G:"#A78BFA",border:"1px solid",
+                      borderColor:f.tag===PLANS.pro.label?"rgba(201,168,76,0.3)":"rgba(167,139,250,0.3)",
                     }}>{f.tag}</span>
                   </div>
                   <p style={{color:MUT,fontSize:13.5,lineHeight:1.6,margin:0}}>{f.desc}</p>

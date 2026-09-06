@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { useToast } from "@/components/Toast"
+import { useConfirm } from "@/components/ui/Confirm"
 import { Button } from "@/components/ui/Button"
 import {
   Target, Plus, Trash2, Pencil, TrendingUp, TrendingDown, CheckCircle,
@@ -153,6 +155,8 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
   const [editId,     setEditId]     = useState<string | null>(null)
   const [step,       setStep]       = useState<1 | 2>(1)
   const [deleting,   setDeleting]   = useState<string | null>(null)
+  const confirm = useConfirm()
+  const toast = useToast()
   const [saving,     setSaving]     = useState(false)
 
   // Formulaire
@@ -243,15 +247,25 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
     }
   }
 
+  // Confirmation d'abord, retrait de l'écran seulement après la réponse du serveur.
   async function deleteGoal(id: string) {
+    const g = goals.find(x => x.id === id)
+    if (!(await confirm({ title: "Supprimer cet objectif ?", message: `« ${g?.name ?? "Objectif"} » et son historique de conversions seront effacés.`, confirmLabel: "Supprimer", danger: true }))) return
     setDeleting(id)
-    await fetch("/api/goals", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    })
-    setGoals(prev => prev.filter(g => g.id !== id))
-    setDeleting(null)
+    try {
+      const res = await fetch("/api/goals", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || d.error) { toast.error(d.error || "L'objectif n'a pas pu être supprimé."); return }
+      setGoals(prev => prev.filter(g => g.id !== id))
+    } catch {
+      toast.error("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
+      setDeleting(null)
+    }
   }
 
   // KPIs globaux
@@ -330,7 +344,7 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
                 </div>
               )}
             </div>
-            <button type="button" onClick={closeForm}
+            <button type="button" onClick={closeForm} aria-label="Fermer le formulaire"
               style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", display: "flex", alignItems: "center" }}>
               <X size={16} />
             </button>
@@ -536,8 +550,8 @@ export default function GoalsDashboard({ clicks, pageViews, pages }: Props) {
                       style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", padding: 6, borderRadius: 8, display: "inline-flex" }}>
                       <Pencil size={14} />
                     </button>
-                    <button type="button" onClick={() => deleteGoal(goal.id)} disabled={deleting === goal.id} aria-label="Supprimer"
-                      style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", opacity: deleting === goal.id ? 0.5 : 1, padding: 6, borderRadius: 8, display: "inline-flex" }}>
+                    <button type="button" onClick={() => deleteGoal(goal.id)} disabled={deleting === goal.id} aria-label={`Supprimer l'objectif ${goal.name}`}
+                      style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", opacity: deleting === goal.id ? 0.5 : 1, width: 40, height: 40, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                       {deleting === goal.id ? <Loader size={14} style={{ animation: "mo-spin 0.8s linear infinite" }} /> : <Trash2 size={14} />}
                     </button>
                   </div>

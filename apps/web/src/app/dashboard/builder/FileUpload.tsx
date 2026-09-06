@@ -3,6 +3,7 @@
 import { useRef, useState } from "react"
 import { FileText, X, Upload, FolderOpen, Trash2, Plus, ExternalLink } from "lucide-react"
 import { useImageUpload } from "./useImageUpload"
+import { messageEnvoi } from "./validationEnvoi"
 import { useConfirm } from "@/components/ui/Confirm"
 
 type Props = {
@@ -24,7 +25,7 @@ const G = "#C9A84C"
 const MUTED = "#A8A190"
 
 export default function FileUpload({ value, onChange, hint }: Props) {
-  const { uploadFile, uploading, listAssets, deleteAsset, lastError } = useImageUpload()
+  const { envoyerFichier, uploading, listAssets, deleteAsset } = useImageUpload()
   const confirm = useConfirm()
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState("")
@@ -34,15 +35,18 @@ export default function FileUpload({ value, onChange, hint }: Props) {
 
   async function handleFile(file: File) {
     setError("")
-    if (file.size > 20 * 1024 * 1024) { setError("Fichier trop lourd — max 20 Mo"); return }
-    const url = await uploadFile(file, "docs")
-    if (url) onChange(url); else setError(lastError === "no_account" ? "Créez un compte (gratuit) pour joindre vos fichiers — votre page est gardée." : "Erreur d'import — réessayez")
+    // Type et taille sont vérifiés dans envoyerFichier, AVANT l'envoi ; la raison
+    // revient avec le résultat, jamais lue depuis un état périmé.
+    const r = await envoyerFichier(file, "docs")
+    if (r.url) onChange(r.url); else if (r.raison) setError(messageEnvoi(r.raison, "fichier", file.name))
   }
   async function openLibrary() { setLibOpen(true); if (libAssets === null) setLibAssets(await listAssets("file")) }
   async function refreshLibrary() { setLibAssets(await listAssets("file")) }
   async function handleLibFile(file: File) {
-    if (file.size > 20 * 1024 * 1024) { setError("Fichier trop lourd — max 20 Mo"); return }
-    setLibBusy(true); const url = await uploadFile(file, "docs"); if (url) await refreshLibrary(); else setError(lastError === "no_account" ? "Créez un compte (gratuit) pour joindre vos fichiers — votre page est gardée." : "Erreur d'import — réessayez"); setLibBusy(false)
+    setLibBusy(true)
+    const r = await envoyerFichier(file, "docs")
+    if (r.url) await refreshLibrary(); else if (r.raison) setError(messageEnvoi(r.raison, "fichier", file.name))
+    setLibBusy(false)
   }
   async function removeAsset(a: { name: string; url: string }) {
     if (!(await confirm({ title: "Supprimer ce fichier ?", message: "S'il est utilisé sur une page publiée, le lien ne fonctionnera plus.", confirmLabel: "Supprimer", danger: true }))) return

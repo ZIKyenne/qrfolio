@@ -151,3 +151,72 @@ describe("plus aucune page ne promet un essai de 7 jours", () => {
     }
   })
 })
+
+// Relevé du 4 septembre, suite : les plans s'appelaient « Pro » et « Business »
+// dans les textes alors que plans.ts les nomme « Établissement » et « Multi-sites » ;
+// les statistiques détaillées étaient « dans tous les plans » ; les guides disaient
+// que le QR dynamique « nécessite un abonnement » ; Exemples promettait « tous les
+// templates inclus » ; Fonctionnalités inventait « 5 styles visuels ».
+describe("les libellés de plans viennent de plans.ts, partout", () => {
+  const fichiers = {
+    accueil,
+    fonctionnalites: readFileSync(join(__dirname, "../app/features/page.tsx"), "utf8"),
+    exemples: readFileSync(join(__dirname, "../app/examples/page.tsx"), "utf8"),
+    offres: readFileSync(join(__dirname, "../app/upgrade/page.tsx"), "utf8"),
+  }
+
+  // Un « Pro » ou « Business » lu par l'utilisateur : dans du texte JSX (entre > et <),
+  // dans une chaîne affichée (text=, label:, tag:, plan:) — pas dans un identifiant.
+  const visible = (src: string) => [...src.matchAll(/(>[^<{\n]*\b(Pro|Business)\b[^<{\n]*<)|((text|label|tag|plan|cta|sub)\s*[:=]\s*"[^"\n]*\b(Pro|Business)\b[^"\n]*")/g)]
+    .map(m => m[0]).filter(t => !/Freelance Pro|Fraunces/.test(t))
+
+  for (const [nom, src] of Object.entries(fichiers)) {
+    it(`${nom} n'écrit plus « Pro » ni « Business » en dur`, () => {
+      expect(visible(src)).toEqual([])
+    })
+  }
+
+  it("les noms réels sont bien Établissement et Multi-sites", () => {
+    expect(PLANS.pro.label).toBe("Établissement")
+    expect(PLANS.business.label).toBe("Multi-sites")
+  })
+})
+
+describe("ce que Fonctionnalités et Exemples promettent existe", () => {
+  const fonctionnalites = readFileSync(join(__dirname, "../app/features/page.tsx"), "utf8")
+  const exemples = readFileSync(join(__dirname, "../app/examples/page.tsx"), "utf8")
+  const guides = readFileSync(join(__dirname, "../app/guides/guides.ts"), "utf8")
+
+  it("les statistiques détaillées ne sont plus « dans tous les plans »", () => {
+    expect(fonctionnalites).not.toContain("inclus dans tous les plans")
+    expect(PLANS.free.caps.dynStatsDetaillees).toBe(false)
+    expect(fonctionnalites).toContain("détail par appareil dès ${PLANS.pro.label}")
+  })
+
+  it("plus de « 5 styles visuels » inventés ; l'export SVG/PDF est daté du bon plan", () => {
+    expect(fonctionnalites).not.toContain("5 styles visuels")
+    expect(PLANS.free.caps.exportFormats).toEqual(["png"])
+    expect(fonctionnalites).toContain("SVG et PDF pour l'impression dès ${PLANS.pro.label}")
+  })
+
+  it("Exemples ne promet plus « tous les templates inclus »", () => {
+    expect(exemples).not.toContain("Tous les templates inclus")
+    expect(exemples).toContain('e.plan === "free"')
+  })
+
+  it("le guide ne dit plus que le QR dynamique nécessite un abonnement", () => {
+    expect(guides).not.toContain("nécessite un abonnement")
+    expect(PLANS.free.limits.dyn).toBeGreaterThan(0)
+    expect(guides).toContain("${PLANS.free.limits.dyn}")
+  })
+})
+
+describe("les CGU décrivent la résiliation telle qu'elle se passe", () => {
+  const cgu = readFileSync(join(__dirname, "../app/terms/page.tsx"), "utf8")
+  it("ni « Free », ni purge à 30 jours qui n'existe pas", () => {
+    expect(cgu).not.toContain("passe en Free")
+    expect(cgu).not.toContain("conservées 30 jours avant suppression")
+    expect(cgu).toContain("passe au plan {PLANS.free.label}")
+    expect(cgu).toContain("{PLANS.free.limits.pages} page active")
+  })
+})

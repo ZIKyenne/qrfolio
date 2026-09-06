@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { PLAN_RANK } from "@/lib/plans"
+import { PLAN_RANK, getPlan } from "@/lib/plans"
 import { slugifyBase } from "@/lib/slug"
 import { Sparkles, ArrowRight, Check, X, Lock, Search, Heart, Eye, Clock, Layers, SlidersHorizontal,
   UtensilsCrossed, Martini, Coffee, Laptop, Target, User, Building2, Megaphone, Music, Camera, Home, Brush, PartyPopper, Rocket, ShoppingBag, Zap, Flame, Link2 as LinkIcon } from "lucide-react"
@@ -295,6 +295,11 @@ export default function TemplatesPage() {
   }, [])
 
   function canUse(plan: string) { return PLAN_RANK[userPlan] >= PLAN_RANK[plan] }
+  // Un modèle verrouillé : on nomme le plan tel qu'il s'affiche partout ailleurs
+  // (« Établissement », pas « pro ») et on donne une issue — les offres.
+  function planRequis(plan: string) {
+    toast.info(`Ce modèle fait partie du plan ${getPlan(plan).label}.`, { action: { label: "Voir les offres", onClick: () => router.push("/upgrade?reason=template") } })
+  }
 
   // ── Recommandation (basée sur les pages existantes) ─────────────────────────
   const reco = useMemo(() => {
@@ -443,7 +448,7 @@ export default function TemplatesPage() {
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "82vh", overflowY: "auto", background: "#0E0D0A", borderTopLeftRadius: 22, borderTopRightRadius: 22, borderTop: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)", padding: "10px 18px calc(20px + env(safe-area-inset-bottom))", animation: "tplUp .28s var(--mo-ease-standard)" }}>
             <div style={{ width: 40, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.18)", margin: "0 auto 16px" }} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-              <h3 style={{ fontFamily: "Fraunces, serif", fontSize: 21, color: "#F5F0E8", fontWeight: 700, margin: 0 }}>Filtrer</h3>
+              <h2 style={{ fontFamily: "Fraunces, serif", fontSize: 21, color: "#F5F0E8", fontWeight: 700, margin: 0 }}>Filtrer</h2>
               {hasFilters && <button type="button" onClick={() => { setActiveMetier("Tous"); setActivePlan("all") }} style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Réinitialiser</button>}
             </div>
 
@@ -586,7 +591,7 @@ export default function TemplatesPage() {
                     {/* Nom + catégorie */}
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: isMobile ? 8 : 6 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <h3 style={{ color: "#F5F0E8", fontSize: isMobile ? 12.5 : 15, fontWeight: 700, margin: isMobile ? 0 : "0 0 5px", letterSpacing: "-0.2px", whiteSpace: isMobile ? "nowrap" as const : "normal", overflow: "hidden", textOverflow: "ellipsis" }}>{template.name}</h3>
+                        <h2 style={{ color: "#F5F0E8", fontSize: isMobile ? 12.5 : 15, fontWeight: 700, margin: isMobile ? 0 : "0 0 5px", letterSpacing: "-0.2px", whiteSpace: isMobile ? "nowrap" as const : "normal", overflow: "hidden", textOverflow: "ellipsis" }}>{template.name}</h2>
                         {!isMobile && <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                           <span style={{ background: template.color + "12", border: "1px solid " + template.color + "22", borderRadius: 6, padding: "1px 7px", fontSize: 9, color: template.color, fontWeight: 600 }}>{template.category}</span>
                           {tier && (
@@ -600,12 +605,12 @@ export default function TemplatesPage() {
 
                     {!isMobile && <>
                       {/* Description */}
-                      <p style={{ color: MUTED, fontSize: 11, margin: "0 0 8px", lineHeight: 1.5 }}>{template.description}</p>
+                      <p style={{ color: MUTED, fontSize: 12.5, margin: "0 0 8px", lineHeight: 1.5 }}>{template.description}</p>
 
                       {/* Highlight */}
                       {template.highlight && (
                         <div style={{ background: template.color + "08", border: "1px solid " + template.color + "15", borderRadius: 6, padding: "4px 8px", marginBottom: 10 }}>
-                          <span style={{ color: template.color, fontSize: 9, fontWeight: 600 }}>✦ {template.highlight}</span>
+                          <span style={{ color: template.color, fontSize: 12, fontWeight: 600 }}>✦ {template.highlight}</span>
                         </div>
                       )}
 
@@ -613,11 +618,11 @@ export default function TemplatesPage() {
                       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                           <Layers size={11} color={MUTED} />
-                          <span style={{ color: MUTED, fontSize: 10 }}>{blockCount} blocs</span>
+                          <span style={{ color: MUTED, fontSize: 12 }}>{blockCount} blocs</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                           <Clock size={11} color={MUTED} />
-                          <span style={{ color: MUTED, fontSize: 10 }}>≈ {SETUP_TIME[template.id] || "5 min"}</span>
+                          <span style={{ color: MUTED, fontSize: 12 }}>≈ {SETUP_TIME[template.id] || "5 min"}</span>
                         </div>
                       </div>
 
@@ -645,7 +650,7 @@ export default function TemplatesPage() {
                       </button>
 
                       {/* Utiliser — primaire or (halo/reflet) hors état verrouillé */}
-                      <button type="button" onClick={(e) => { e.stopPropagation(); if (locked) { router.push("/upgrade"); return } setNamingFor(template.id) }}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); if (locked) { router.push("/upgrade?reason=template"); return } setNamingFor(template.id) }}
                         disabled={!!creating}
                         className={locked ? undefined : "dam-primary"}
                         style={locked
@@ -719,12 +724,12 @@ export default function TemplatesPage() {
           onClose={() => setPreview(null)}
           onUse={() => {
             setPreview(null)
-            if (!canUse(previewTemplate.plan)) { toast.error(`Plan ${previewTemplate.plan} requis`); return }
+            if (!canUse(previewTemplate.plan)) { planRequis(previewTemplate.plan); return }
             setNamingFor(previewTemplate.id)
           }}
           onCustomize={() => {
             setPreview(null)
-            if (!canUse(previewTemplate.plan)) { toast.error(`Plan ${previewTemplate.plan} requis`); return }
+            if (!canUse(previewTemplate.plan)) { planRequis(previewTemplate.plan); return }
             setWizardFor(previewTemplate.id)
           }}
           canUse={canUse(previewTemplate.plan)}
@@ -738,7 +743,7 @@ export default function TemplatesPage() {
           <span style={{ fontSize: 20 }}>{selectedTemplate.emoji}</span>
           <div style={{ flex: 1, maxWidth: 400 }}>
             <p style={{ color: "#F5F0E8", fontSize: 13, fontWeight: 600, margin: 0 }}>{selectedTemplate.name}</p>
-            <p style={{ color: MUTED, fontSize: 10, margin: 0 }}>{(TEMPLATE_BLOCKS[selected] || []).length} blocs · {SETUP_TIME[selected] || "5 min"}</p>
+            <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>{(TEMPLATE_BLOCKS[selected] || []).length} blocs · {SETUP_TIME[selected] || "5 min"}</p>
           </div>
           <button type="button" onClick={() => setSelected(null)} className="da-btn-neutral da-btn-neutral--sm">
             <X className="da-ic da-ic-x" size={13} /> Annuler
@@ -871,9 +876,14 @@ export function NamingModal({ template, blockCount, onClose, onCreate, guest,
     if (!canSubmit) return
     setSubmitting(true)
     setError("")
-    const result = await onCreate(name.trim(), slug, description.trim())
-    if (result.error) {
-      setError(result.error)
+    // Si le réseau tombe, `onCreate` rejette : sans le finally, le bouton
+    // restait « en cours » pour toujours.
+    try {
+      const result = await onCreate(name.trim(), slug, description.trim())
+      if (result.error) setError(result.error)
+    } catch {
+      setError("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
       setSubmitting(false)
     }
   }
@@ -893,9 +903,9 @@ export function NamingModal({ template, blockCount, onClose, onCreate, guest,
           <div style={{ width: 44, height: 44, borderRadius: 12, background: template.color + "18", border: "1px solid " + template.color + "35", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{template.emoji}</div>
           <div style={{ flex: 1 }}>
             <p style={{ color: "#F5F0E8", fontSize: 15, fontWeight: 700, margin: 0 }}>Creer une page depuis ce template</p>
-            <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{template.name} · {template.category} · {blockCount} blocs</p>
+            <p style={{ color: MUTED, fontSize: 12.5, margin: 0 }}>{template.name} · {template.category} · {blockCount} blocs</p>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", padding: 4 }}><X size={18} /></button>
+          <button onClick={onClose} aria-label="Fermer" style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", padding: 4 }}><X size={18} /></button>
         </div>
 
         {/* Apparence repliable. Sur mobile, ces deux réglages occupaient tout l'écran

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Check, Zap, Crown, Star, ArrowLeft, Sparkles } from "lucide-react"
 import Link from "next/link"
-import { PLAN_LIST, PLAN_COMPARISON, fmtPrice } from "@/lib/plans"
+import { PLAN_LIST, PLAN_COMPARISON, PLANS as PLANS_DEF, fmtPrice } from "@/lib/plans"
 import { useAccent } from "@/lib/useAccent"
 import Particles from "@/components/Particles"
 import SubscribeButton from "@/components/SubscribeButton"
@@ -181,7 +181,7 @@ export default function UpgradePage() {
                   <div style={{ color: pc, background: pc + "18", borderRadius: 8, padding: 8 }}>{plan.icon}</div>
                   <div>
                     <p style={{ color: "#F5F0E8", fontSize: 17, fontWeight: 700, margin: 0 }}>{plan.name}</p>
-                    <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{plan.description}</p>
+                    <p style={{ color: MUTED, fontSize: 12.5, margin: 0, lineHeight: 1.45 }}>{plan.description}</p>
                   </div>
                 </div>
 
@@ -191,7 +191,7 @@ export default function UpgradePage() {
                 </div>
 
                 {annual && price !== "0" && (
-                  <p style={{ color: "var(--success)", fontSize: 11, margin: "-14px 0 16px", fontWeight: 600 }}>
+                  <p style={{ color: "var(--success)", fontSize: 12.5, margin: "-14px 0 16px", fontWeight: 600 }}>
                     Soit {(plan.rawAnnual * 12).toLocaleString("fr-FR", { maximumFractionDigits: 0 })}€/an — économisez {((plan.rawMonthly - plan.rawAnnual) * 12).toLocaleString("fr-FR", { maximumFractionDigits: 0 })}€
                   </p>
                 )}
@@ -258,7 +258,7 @@ export default function UpgradePage() {
               ))}
             </div>
             <p style={{ color: "#6E685E", fontSize: 12, margin: "20px 0 0", lineHeight: 1.5 }}>
-              Statistiques détaillées, domaine de marque et sécurité du lien à partir du plan Pro&nbsp;; création en masse en Business.
+              Statistiques détaillées, domaine de marque et sécurité du lien à partir du plan {PLANS_DEF.pro.label}&nbsp;; création en masse en {PLANS_DEF.business.label}.
             </p>
           </div>
         </div>

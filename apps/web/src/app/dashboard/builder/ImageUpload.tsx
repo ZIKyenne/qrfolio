@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react"
 import { Upload, X, Image as ImageIcon, FolderOpen, Trash2, Plus, Search, Star } from "lucide-react"
 import { useImageUpload } from "./useImageUpload"
+import { messageEnvoi } from "./validationEnvoi"
 import { useConfirm } from "@/components/ui/Confirm"
 import ImageCropModal from "./ImageCropModal"
 
@@ -15,7 +16,7 @@ type Props = {
 }
 
 export default function ImageUpload({ value, onChange, label, hint, cropAspect }: Props) {
-  const { uploadImage, uploading, listAssets, deleteAsset, lastError } = useImageUpload()
+  const { envoyerImage, uploading, listAssets, deleteAsset } = useImageUpload()
   const confirm = useConfirm()
   const inputRef = useRef<HTMLInputElement>(null)
   const libInputRef = useRef<HTMLInputElement>(null)
@@ -71,16 +72,17 @@ export default function ImageUpload({ value, onChange, label, hint, cropAspect }
     const type = blob.type || src.type
     const ext = type === "image/png" ? ".png" : ".jpg"
     const named = new File([blob], (src.name.replace(/\.[^.]+$/, "") || "image") + ext, { type })
+    // La raison arrive AVEC le résultat : plus de message d'un rendu en retard.
     if (cropDest === "lib") {
       setLibBusy(true)
-      const url = await uploadImage(named, "blocks")
-      if (url) await refreshLibrary()
-      else setError(lastError === "no_account" ? "Créez un compte (gratuit) pour ajouter vos propres photos — votre page est gardée." : "Erreur upload — réessaie")
+      const r = await envoyerImage(named, "blocks")
+      if (r.url) await refreshLibrary()
+      else if (r.raison) setError(messageEnvoi(r.raison, "photo"))
       setLibBusy(false)
     } else {
-      const url = await uploadImage(named, "blocks")
-      if (url) onChange(url)
-      else setError(lastError === "no_account" ? "Créez un compte (gratuit) pour ajouter vos propres photos — votre page est gardée." : "Erreur upload — réessaie")
+      const r = await envoyerImage(named, "blocks")
+      if (r.url) onChange(r.url)
+      else if (r.raison) setError(messageEnvoi(r.raison, "photo"))
     }
   }
 

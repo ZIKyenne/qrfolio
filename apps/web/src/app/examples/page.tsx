@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
+import { PLANS as PLANS_DEF } from "@/lib/plans"
 
 // ── Tokens ───────────────────────────────────────────────────────────────────
 import { creerUrl, creerUrlSecteur } from "../creer/entry"
@@ -11,7 +12,8 @@ const MUT = "rgba(138,132,120,0.82)"
 const BG  = "#080808"
 
 // ── Données exemples ──────────────────────────────────────────────────────────
-type Plan = "Gratuit" | "Pro" | "Business"
+// Identifiants de plans.ts : le libellé affiché est PLANS_DEF[id].label, jamais un texte à part.
+type Plan = "free" | "pro" | "business"
 type Category = "Restaurant" | "Freelance" | "Coach" | "Artiste" | "Immobilier" | "Commerce"
 
 interface Example {
@@ -32,7 +34,7 @@ const EXAMPLES: Example[] = [
     id: "brasserie-le-moulin",
     name: "Brasserie Le Moulin",
     category: "Restaurant",
-    plan: "Gratuit",
+    plan: "free",
     blocks: 6,
     accent: "#F97316",
     icon: "🍽️",
@@ -49,7 +51,7 @@ const EXAMPLES: Example[] = [
     id: "thomas-dupont-dev",
     name: "Thomas Dupont · Dev",
     category: "Freelance",
-    plan: "Pro",
+    plan: "pro",
     blocks: 7,
     accent: "var(--action)",
     icon: "💼",
@@ -66,7 +68,7 @@ const EXAMPLES: Example[] = [
     id: "coach-sarah-martin",
     name: "Sarah Martin · Coach",
     category: "Coach",
-    plan: "Pro",
+    plan: "pro",
     blocks: 8,
     accent: "var(--success)",
     icon: "🧘",
@@ -83,7 +85,7 @@ const EXAMPLES: Example[] = [
     id: "lucas-beats-artist",
     name: "Lucas Beats · Artiste",
     category: "Artiste",
-    plan: "Pro",
+    plan: "pro",
     blocks: 7,
     accent: "#A78BFA",
     icon: "🎵",
@@ -100,7 +102,7 @@ const EXAMPLES: Example[] = [
     id: "immo-paris-prestige",
     name: "Paris Prestige Immo",
     category: "Immobilier",
-    plan: "Business",
+    plan: "business",
     blocks: 6,
     accent: "#C9A84C",
     icon: "🏠",
@@ -117,7 +119,7 @@ const EXAMPLES: Example[] = [
     id: "boutique-leonie",
     name: "Boutique Léonie",
     category: "Commerce",
-    plan: "Pro",
+    plan: "pro",
     blocks: 8,
     accent: "#F43F5E",
     icon: "🛍️",
@@ -133,8 +135,8 @@ const EXAMPLES: Example[] = [
 ]
 
 const CATEGORIES: (Category | "Tous")[] = ["Tous","Restaurant","Freelance","Coach","Artiste","Immobilier","Commerce"]
-const PLANS: (Plan | "Tous")[] = ["Tous","Gratuit","Pro","Business"]
-const PLAN_COLOR: Record<Plan,string> = { Gratuit:"var(--success)", Pro:"#C9A84C", Business:"#A78BFA" }
+const PLANS: (Plan | "Tous")[] = ["Tous","free","pro","business"]
+const PLAN_COLOR: Record<Plan,string> = { free:"var(--success)", pro:"#C9A84C", business:"#A78BFA" }
 
 // ── Mini QR SVG ───────────────────────────────────────────────────────────────
 function MiniQR({ accent }: { accent: string }) {
@@ -272,7 +274,7 @@ function ExampleCard({ example }: { example: Example }) {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
           <div>
-            <h3 style={{ color: INK, fontSize: 15, fontWeight: 700, margin: "0 0 3px", lineHeight: 1.3 }}>{example.name}</h3>
+            <h2 style={{ color: INK, fontSize: 15, fontWeight: 700, margin: "0 0 3px", lineHeight: 1.3 }}>{example.name}</h2>
             <p style={{ color: MUT, fontSize: 12, margin: 0 }}>{example.tagline}</p>
           </div>
           <MiniQR accent={example.accent} />
@@ -298,7 +300,7 @@ function ExampleCard({ example }: { example: Example }) {
               background: `${PLAN_COLOR[example.plan]}14`,
               border: `1px solid ${PLAN_COLOR[example.plan]}30`,
               color: PLAN_COLOR[example.plan], letterSpacing: 1,
-            }}>{example.plan.toUpperCase()}</span>
+            }}>{PLANS_DEF[example.plan].label.toUpperCase()}</span>
           </div>
           <Link href={creerUrlSecteur(example.category)} style={{
             display: "inline-flex", alignItems: "center", gap: 5,
@@ -370,7 +372,7 @@ export default function ExamplesPage() {
             Restaurants, freelances, artistes, agents immobiliers — des pages professionnelles créées en moins de 5 minutes.
           </p>
           <p style={{ color:`${G}90`,fontSize:13,margin:0 }} className="au3">
-            {EXAMPLES.length} exemples disponibles · Tous les templates inclus
+            {EXAMPLES.length} exemples · {EXAMPLES.filter(e => e.plan === "free").length} accessibles en {PLANS_DEF.free.label}, les autres dès {PLANS_DEF.pro.label}
           </p>
         </div>
       </section>
@@ -414,7 +416,7 @@ export default function ExamplesPage() {
                       borderColor: isActive ? c : "rgba(255,255,255,0.12)",
                       background: isActive ? c : "transparent",
                     }}>
-                    {plan}
+                    {plan === "Tous" ? "Tous" : PLANS_DEF[plan].label}
                   </button>
                 )
               })}

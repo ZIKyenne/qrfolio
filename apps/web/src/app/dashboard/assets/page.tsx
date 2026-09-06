@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Images, FileText, Upload, Trash2, Link2, Check, ExternalLink, MoreHorizontal, Search, X } from "lucide-react"
 import { useImageUpload } from "../builder/useImageUpload"
+import { messageEnvoi } from "../builder/validationEnvoi"
 import { useConfirm } from "@/components/ui/Confirm"
 
 const G = "#C9A84C"
@@ -17,13 +18,14 @@ function pretty(name: string): string {
 }
 
 export default function AssetsPage() {
-  const { uploadImage, uploadFile, listAssets, deleteAsset, uploading } = useImageUpload()
+  const { envoyerImage, envoyerFichier, listAssets, deleteAsset, uploading } = useImageUpload()
   const confirm = useConfirm()
   const [tab, setTab] = useState<"image" | "file">("image")
   const [images, setImages] = useState<Asset[] | null>(null)
   const [files, setFiles] = useState<Asset[] | null>(null)
   const [copied, setCopied] = useState<string>("")
   const [busy, setBusy] = useState(false)
+  const [importErreurs, setImportErreurs] = useState<string[]>([])
   const [query, setQuery] = useState("")
   const [dragOver, setDragOver] = useState(false)
   const [menuAsset, setMenuAsset] = useState<Asset | null>(null) // vignette -> menu "..." (bottom sheet)
@@ -56,14 +58,24 @@ export default function AssetsPage() {
     clearSel(); await load(); setBusy(false)
   }
 
+  // Chaque fichier refusé (type, taille, réseau, pas de compte) est nommé : un
+  // import qui échouait ne disait rien.
   async function onUploadFiles(list: File[]) {
     if (!list.length) return
-    setBusy(true)
-    for (const file of list) {
-      if (file.type.startsWith("image/")) await uploadImage(file, "blocks")
-      else await uploadFile(file, "docs")
+    setBusy(true); setImportErreurs([])
+    const erreurs: string[] = []
+    let reussis = 0
+    try {
+      for (const file of list) {
+        const r = file.type.startsWith("image/") ? await envoyerImage(file, "blocks") : await envoyerFichier(file, "docs")
+        if (r.url) reussis++
+        else if (r.raison) erreurs.push(messageEnvoi(r.raison, file.type.startsWith("image/") ? "photo" : "fichier", file.name))
+      }
+      if (reussis) await load()
+    } finally {
+      setImportErreurs(erreurs)
+      setBusy(false)
     }
-    await load(); setBusy(false)
   }
   async function onDelete(a: Asset) {
     if (!(await confirm({ title: "Supprimer ce média ?", message: `Supprimer « ${pretty(a.name)} » ?\n\nSi ce média est utilisé sur une page publiée, il n'y apparaîtra plus.`, confirmLabel: "Supprimer", danger: true }))) return
@@ -108,6 +120,16 @@ export default function AssetsPage() {
           </label>
         </div>
       </div>
+
+      {importErreurs.length > 0 && (
+        <div role="alert" style={{ marginBottom: 16, padding: "10px 14px", borderRadius: 12, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.28)", display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, color: "#F5F0E8", fontSize: 13, fontWeight: 700 }}>{importErreurs.length > 1 ? `${importErreurs.length} fichiers n'ont pas été importés` : "Un fichier n'a pas été importé"}</p>
+            {importErreurs.map((m, i) => <p key={i} style={{ margin: "4px 0 0", color: "#E8B4B4", fontSize: 12.5, lineHeight: 1.45, overflowWrap: "anywhere" }}>{m}</p>)}
+          </div>
+          <button type="button" onClick={() => setImportErreurs([])} aria-label="Fermer" style={{ width: 40, height: 40, flexShrink: 0, background: "none", border: "none", color: MUTED, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "-8px -10px -8px 0" }}><X size={16} /></button>
+        </div>
+      )}
 
       {/* Onglets + recherche (DA dorée) */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>

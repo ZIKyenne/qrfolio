@@ -7,6 +7,8 @@
 // La revalidation ISR est réalisée par l'action serveur qui consomme persistPublishedStatus
 // (revalidatePath ne peut pas vivre dans un module pur).
 
+import { safeErrorMessage } from "./builderErrors"
+
 export type SupabaseLike = { from(table: string): any }
 
 // Date de publication : on ne RÉINITIALISE PAS la date de 1re publication (valeur SEO /
@@ -28,7 +30,7 @@ export async function persistPublishedStatus(client: SupabaseLike, pageId: strin
   const alreadyPublished = page.status === "published"
   const publishedAt = computePublishedAt(page.published_at, now)
   const { error } = await client.from("pages").update({ status: "published", published_at: publishedAt }).eq("id", pageId)
-  if (error) return { ok: false, message: error.message || "Mise à jour du statut impossible." }
+  if (error) return { ok: false, message: safeErrorMessage(error) }
   return { ok: true, publishedAt, slug: page.slug, alreadyPublished }
 }
 

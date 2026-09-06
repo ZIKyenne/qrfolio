@@ -32,6 +32,7 @@ import StatistiquesQr from "./StatistiquesQr"
 import { useFermetureModale, carteCliquable } from "@/lib/useFermetureModale"
 import { etatLien, styleSur, type InstantQr, type StatsLien } from "./instantQr"
 import { Button } from "@/components/ui/Button"
+import { useSessionShell } from "../sessionShell"
 
 const G = "#C9A84C"
 const MUTED = "#A8A190"
@@ -168,8 +169,13 @@ export default function QrLinkPage() {
 
   const [history, setHistory] = useState<QrHistEntry[]>([])
   useEffect(() => { try { const h = JSON.parse(localStorage.getItem("qrfolio_qr_history") || "[]"); if (Array.isArray(h)) setHistory(h.slice(0, 8)) } catch {} }, [])
-  // Charge les QR instantanés enregistrés (serveur).
-  useEffect(() => { fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.plan) setPlan(d.plan) }).catch(() => {}) }, [])
+  // Charge les QR instantanés enregistrés (serveur) — seulement avec une session :
+  // un visiteur sans compte n'a rien à charger, et l'appel finissait en 401.
+  const { signedIn } = useSessionShell()
+  useEffect(() => {
+    if (!signedIn) return
+    fetch("/api/qr-instant").then(r => r.json()).then(d => { if (Array.isArray(d.items)) setSaved(d.items); if (d.plan) setPlan(d.plan) }).catch(() => {})
+  }, [signedIn])
   const saveToHistory = () => setHistory(prev => {
     // Le mot de passe WiFi était écrit en clair dans localStorage à chaque
     // téléchargement — alors que le même fichier refuse explicitement de l'envoyer

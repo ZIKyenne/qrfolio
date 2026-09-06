@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import { useState, useEffect } from "react"
+import { useConfirm } from "@/components/ui/Confirm"
 import { Button } from "@/components/ui/Button"
 import {
   ArrowRight, Plus, Trash2, Pencil, ToggleLeft,
@@ -42,6 +43,7 @@ export default function RedirectsPanel({ userDomains }: Props) {
   const [editId,    setEditId]    = useState<string | null>(null)
   const [saving,    setSaving]    = useState(false)
   const [deleting,  setDeleting]  = useState<string | null>(null)
+  const confirm = useConfirm()
   const [toggling,  setToggling]  = useState<string | null>(null)
   const [error,     setError]     = useState("")
 
@@ -87,41 +89,63 @@ export default function RedirectsPanel({ userDomains }: Props) {
       ? { id: editId, to_url: fTo, redirect_type: fType, label: fLabel }
       : { from_domain: fDomain, from_path: fPath, to_url: fTo, redirect_type: fType, label: fLabel }
 
-    const res = await fetch("/api/redirects", {
-      method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-    })
-    const d = await res.json()
-    if (d.error) { setError(d.error); setSaving(false); return }
-    if (editId) {
-      setRedirects(prev => prev.map(r => r.id === editId ? d.redirect : r))
-    } else {
-      setRedirects(prev => [d.redirect, ...prev])
+    // try/finally : si le réseau tombe, le bouton ne reste pas « en cours ».
+    try {
+      const res = await fetch("/api/redirects", {
+        method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || d.error || !d.redirect) { setError(d.error || "La redirection n'a pas pu être enregistrée."); return }
+      if (editId) {
+        setRedirects(prev => prev.map(r => r.id === editId ? d.redirect : r))
+      } else {
+        setRedirects(prev => [d.redirect, ...prev])
+      }
+      resetForm()
+    } catch {
+      setError("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
+      setSaving(false)
     }
-    resetForm()
-    setSaving(false)
   }
 
   async function toggle(r: Redirect) {
     setToggling(r.id)
-    const res = await fetch("/api/redirects", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: r.id, enabled: !r.enabled }),
-    })
-    const d = await res.json()
-    if (d.redirect) setRedirects(prev => prev.map(x => x.id === r.id ? d.redirect : x))
-    setToggling(null)
+    try {
+      const res = await fetch("/api/redirects", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: r.id, enabled: !r.enabled }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || !d.redirect) { setError(d.error || "La redirection n'a pas pu être modifiée."); return }
+      setRedirects(prev => prev.map(x => x.id === r.id ? d.redirect : x))
+    } catch {
+      setError("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
+      setToggling(null)
+    }
   }
 
+  // La ligne ne disparaît QU'APRÈS confirmation du serveur.
   async function del(id: string) {
+    const r = redirects.find(x => x.id === id)
+    if (!(await confirm({ title: "Supprimer cette redirection ?", message: r ? `${r.from_domain}${r.from_path || ""} ne redirigera plus vers ${r.to_url}.` : "Elle cessera immédiatement.", confirmLabel: "Supprimer", danger: true }))) return
     setDeleting(id)
-    await fetch("/api/redirects", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    })
-    setRedirects(prev => prev.filter(r => r.id !== id))
-    setDeleting(null)
+    try {
+      const res = await fetch("/api/redirects", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || d.error) { setError(d.error || "La redirection n'a pas pu être supprimée."); return }
+      setRedirects(prev => prev.filter(r => r.id !== id))
+    } catch {
+      setError("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
+      setDeleting(null)
+    }
   }
 
   function formatDate(iso: string) {
@@ -320,8 +344,8 @@ export default function RedirectsPanel({ userDomains }: Props) {
                         style={{ width:28, height:28, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:MUTED, textDecoration:"none" }}>
                         <ExternalLink size={12}/>
                       </a>
-                      <button type="button" onClick={() => del(r.id)} disabled={deleting === r.id}
-                        style={{ width:28, height:28, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:deleting===r.id?"wait":"pointer", color:"var(--danger)", opacity:deleting===r.id?0.5:1 }}>
+                      <button type="button" onClick={() => del(r.id)} disabled={deleting === r.id} aria-label="Supprimer cette redirection"
+                        style={{ width:40, height:40, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", cursor:deleting===r.id?"wait":"pointer", color:"var(--danger)", opacity:deleting===r.id?0.5:1 }}>
                         {deleting === r.id ? <Loader size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Trash2 size={12}/>}
                       </button>
                     </div>

@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import { useState, useEffect } from "react"
+import { useConfirm } from "@/components/ui/Confirm"
 import DnsChecker from "./DnsChecker"
 import MultiBrandDomainsPanel from "./MultiBrandDomainsPanel"
 import DomainRoutesPanel from "./DomainRoutesPanel"
@@ -45,6 +46,7 @@ const MUTED = "#A8A190"
 
 export default function DomainsPage({ pages, plan }: Props) {
   const toast = useToast()
+  const confirm = useConfirm()
   const [domains,    setDomains]    = useState<DomainRecord[]>([])
   const [loading,    setLoading]    = useState(true)
   const [showForm,   setShowForm]   = useState(false)
@@ -71,18 +73,23 @@ export default function DomainsPage({ pages, plan }: Props) {
   async function addDomain() {
     if (!fDomain || !fPageId) return
     setSaving(true); setError("")
-    const res = await fetch("/api/domains", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ domain: fDomain, page_id: fPageId }),
-    })
-    const d = await res.json()
-    if (d.error) { setError(d.error); setSaving(false); return }
-    setDomains(prev => [d.domain, ...prev])
-    setExpanded(d.domain.id)
-    setShowForm(false)
-    setFDomain("")
-    setSaving(false)
+    try {
+      const res = await fetch("/api/domains", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ domain: fDomain, page_id: fPageId }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || d.error || !d.domain) { setError(d.error || "Le domaine n'a pas pu être ajouté."); return }
+      setDomains(prev => [d.domain, ...prev])
+      setExpanded(d.domain.id)
+      setShowForm(false)
+      setFDomain("")
+    } catch {
+      setError("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function verifyDomain(rec: DomainRecord) {
@@ -110,24 +117,42 @@ export default function DomainsPage({ pages, plan }: Props) {
     }
   }
 
+  // Les mises à jour ne sont appliquées à l'écran QU'APRÈS la réponse du serveur :
+  // un domaine « supprimé » qui réapparaît au rechargement est pire qu'une erreur.
   async function setPrimaryDomain(domain: string) {
-    await fetch("/api/domains", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ action: "set_primary", domain }),
-    })
-    setDomains(prev => prev.map(d => ({ ...d, is_primary: d.domain === domain })))
+    try {
+      const res = await fetch("/api/domains", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ action: "set_primary", domain }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || d.error) { toast.error(d.error || "Le domaine principal n'a pas pu être changé."); return }
+      setDomains(prev => prev.map(d => ({ ...d, is_primary: d.domain === domain })))
+      toast.success(`${domain} est maintenant le domaine principal.`)
+    } catch {
+      toast.error("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    }
   }
 
   async function deleteDomain(id: string) {
+    const rec = domains.find(d => d.id === id)
+    if (!(await confirm({ title: "Supprimer ce domaine ?", message: `${rec?.domain ?? "Ce domaine"} cessera immédiatement de mener à votre page. Vous pourrez le rajouter plus tard, mais il faudra refaire la vérification DNS.`, confirmLabel: "Supprimer", danger: true }))) return
     setDeleting(id)
-    await fetch("/api/domains", {
-      method:  "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ id }),
-    })
-    setDomains(prev => prev.filter(d => d.id !== id))
-    setDeleting(null)
+    try {
+      const res = await fetch("/api/domains", {
+        method:  "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ id }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || d.error) { toast.error(d.error || "Le domaine n'a pas pu être supprimé."); return }
+      setDomains(prev => prev.filter(d => d.id !== id))
+    } catch {
+      toast.error("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
+      setDeleting(null)
+    }
   }
 
   function copyText(text: string, key: string) {
@@ -296,12 +321,12 @@ export default function DomainsPage({ pages, plan }: Props) {
                               {showChecker === rec.id ? "Fermer" : "Vérifier DNS"}
                             </button>
                           )}
-                          <button type="button" onClick={() => deleteDomain(rec.id)} disabled={isBusy}
-                            style={{ width:28, height:28, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:isBusy?"wait":"pointer", opacity:isBusy?0.5:1 }}>
+                          <button type="button" onClick={() => deleteDomain(rec.id)} disabled={isBusy} aria-label={`Supprimer ${rec.domain}`}
+                            style={{ width:40, height:40, background:"rgba(255,100,100,0.08)", border:"1px solid rgba(255,100,100,0.15)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--danger)", cursor:isBusy?"wait":"pointer", opacity:isBusy?0.5:1 }}>
                             {deleting===rec.id ? <Loader size={12} style={{ animation:"mo-spin 0.8s linear infinite" }}/> : <Trash2 size={13}/>}
                           </button>
-                          <button type="button" onClick={() => setExpanded(isOpen ? null : rec.id)}
-                            style={{ width:28, height:28, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:MUTED, cursor:"pointer" }}>
+                          <button type="button" onClick={() => setExpanded(isOpen ? null : rec.id)} aria-label={isOpen ? "Replier" : "Voir les instructions DNS"} aria-expanded={isOpen}
+                            style={{ width:40, height:40, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", color:MUTED, cursor:"pointer" }}>
                             {isOpen ? <ChevronUp size={13}/> : <ChevronDown size={13}/>}
                           </button>
                         </div>

@@ -88,14 +88,19 @@ describe("modèles ouverts aux visiteurs", () => {
 describe("ce qui demande vraiment un compte le dit", () => {
   it("l'envoi d'images distingue « pas de compte » d'un échec réseau", () => {
     const hook = read("useImageUpload.ts")
-    expect(hook).toContain('setLastError("no_account")')
-    expect(hook).toContain('setLastError("failed")')
+    expect(hook).toContain('echec("no_account")')
+    expect(hook).toContain('echec("failed")')
     expect(hook).toContain("lastError }")
   })
 
-  it("les deux composants d'envoi affichent le bon message", () => {
+  it("les deux composants d'envoi affichent le bon message, reçu AVEC le résultat", () => {
+    // Et non lu depuis `lastError` après l'await : ce rendu-là avait un coup de retard.
+    const v = read("validationEnvoi.ts")
+    expect(v).toContain("Créez un compte (gratuit) pour ajouter vos propres photos")
+    expect(v).toContain("Créez un compte (gratuit) pour joindre vos fichiers")
     for (const f of ["ImageUpload.tsx", "FileUpload.tsx"]) {
-      expect(read(f), f).toContain('lastError === "no_account"')
+      expect(read(f), f).toContain("messageEnvoi(r.raison")
+      expect(read(f), f).not.toContain('lastError === "no_account"')
     }
   })
 
@@ -114,5 +119,14 @@ describe("HTML valide dans la bibliothèque de blocs", () => {
 
   it("l'étoile reste utilisable au clavier", () => {
     expect((BUILDER.match(/if \(e\.key === "Enter" \|\| e\.key === " "\)/g) || []).length).toBe(5)
+  })
+})
+
+describe("« ← QRowg » d'un visiteur sans compte", () => {
+  // /dashboard redirige vers la connexion : l'essai sans compte finissait sur un mur.
+  it("mène aux modèles, pas à la page de connexion (PC et téléphone)", () => {
+    expect(BUILDER).toContain('href={guest ? "/dashboard/templates" : "/dashboard"}')
+    expect(BUILDER).toContain('window.location.assign(guest ? "/dashboard/templates" : "/dashboard")')
+    expect(BUILDER).not.toMatch(/<a href="\/dashboard" aria-label="Retour au tableau de bord"/)
   })
 })

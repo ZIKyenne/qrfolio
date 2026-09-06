@@ -6,6 +6,7 @@ import { Users, Mail, Trash2, ShieldCheck, Pencil, Crown, Loader2, LogOut, Spark
 import { useToast } from "@/components/Toast"
 import { useConfirm } from "@/components/ui/Confirm"
 import { Button } from "@/components/ui/Button"
+import { erreurLisible, MessageUtilisateur } from "@/lib/erreurLisible"
 
 type Role = "owner" | "admin" | "editor" | "viewer"
 type Member = { id: string; user_id: string; role: Role; joined_at: string; profiles?: { email?: string; full_name?: string } }
@@ -49,10 +50,10 @@ export default function TeamPage() {
     try {
       const res = await fetch("/api/team")
       const d = await res.json()
-      if (!res.ok) throw new Error(d.error || "Erreur")
+      if (!res.ok) throw new MessageUtilisateur(d.error || "Impossible de charger l'équipe.")
       setData(d)
     } catch (e) {
-      toast.error((e as Error).message || "Impossible de charger l'équipe.")
+      toast.error(erreurLisible(e, "Impossible de charger l'équipe."))
     } finally {
       setLoading(false)
     }
@@ -69,21 +70,21 @@ export default function TeamPage() {
     try {
       const res = await fetch("/api/team", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, role }) })
       const d = await res.json()
-      if (!res.ok) throw new Error(d.error || "Erreur")
+      if (!res.ok) throw new MessageUtilisateur(d.error || "L'invitation n'a pas pu être envoyée.")
       toast.success("Invitation envoyée à " + email)
       setEmail("")
       load()
-    } catch (e) { toast.error((e as Error).message) } finally { setInviting(false) }
+    } catch (e) { toast.error(erreurLisible(e, "L'invitation n'a pas pu être envoyée.")) } finally { setInviting(false) }
   }
 
   const changeRole = async (memberId: string, newRole: "editor" | "admin") => {
     try {
       const res = await fetch("/api/team/member", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ memberId, role: newRole }) })
       const d = await res.json()
-      if (!res.ok) throw new Error(d.error || "Erreur")
+      if (!res.ok) throw new MessageUtilisateur(d.error || "Le rôle n'a pas pu être changé.")
       toast.success("Rôle mis à jour")
       load()
-    } catch (e) { toast.error((e as Error).message) }
+    } catch (e) { toast.error(erreurLisible(e, "Le rôle n'a pas pu être changé.")) }
   }
 
   const removeMember = async (memberId: string, label: string) => {
@@ -91,20 +92,20 @@ export default function TeamPage() {
     try {
       const res = await fetch("/api/team/member", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ memberId }) })
       const d = await res.json()
-      if (!res.ok) throw new Error(d.error || "Erreur")
+      if (!res.ok) throw new MessageUtilisateur(d.error || "Le membre n'a pas pu être retiré.")
       toast.success("Membre retiré")
       load()
-    } catch (e) { toast.error((e as Error).message) }
+    } catch (e) { toast.error(erreurLisible(e, "Le membre n'a pas pu être retiré.")) }
   }
 
   const cancelInvite = async (invitationId: string) => {
     try {
       const res = await fetch("/api/team/member", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ invitationId }) })
       const d = await res.json()
-      if (!res.ok) throw new Error(d.error || "Erreur")
+      if (!res.ok) throw new MessageUtilisateur(d.error || "L'invitation n'a pas pu être annulée.")
       toast.success("Invitation annulée")
       load()
-    } catch (e) { toast.error((e as Error).message) }
+    } catch (e) { toast.error(erreurLisible(e, "L'invitation n'a pas pu être annulée.")) }
   }
 
   const leaveTeam = async () => {
@@ -112,10 +113,10 @@ export default function TeamPage() {
     try {
       const res = await fetch("/api/team/member", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leave: true }) })
       const d = await res.json()
-      if (!res.ok) throw new Error(d.error || "Erreur")
+      if (!res.ok) throw new MessageUtilisateur(d.error || "Impossible de quitter l'équipe pour le moment.")
       toast.success("Vous avez quitté l'équipe")
       window.location.href = "/dashboard"
-    } catch (e) { toast.error((e as Error).message) }
+    } catch (e) { toast.error(erreurLisible(e, "Impossible de quitter l'équipe pour le moment.")) }
   }
 
   const card: React.CSSProperties = { background: "#0F0E0B", border: "1px solid rgba(201,168,76,0.14)", borderRadius: 16, padding: 22 }

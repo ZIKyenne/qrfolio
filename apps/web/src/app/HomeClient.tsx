@@ -648,7 +648,7 @@ function BrandProSection() {
             Votre marque.<br /><span style={{ color: G }}>Pas la nôtre.</span>
           </h2>
           <p style={{ color: "rgba(188,182,166,0.9)", fontSize: 16, lineHeight: 1.7, margin: "0 0 24px", maxWidth: 420 }}>
-            Dès un <strong style={{ color: "#E8E6E0" }}>plan payant</strong>, la mention QRowg disparaît ; à partir du plan <strong style={{ color: "#E8E6E0" }}>Pro</strong>, votre page s'affiche sur votre propre nom de domaine. Vos clients ne voient que vous.
+            Dès un <strong style={{ color: "#E8E6E0" }}>plan payant</strong>, la mention QRowg disparaît ; à partir du plan <strong style={{ color: "#E8E6E0" }}>{PLANS_DEF.pro.label}</strong>, votre page s'affiche sur votre propre nom de domaine. Vos clients ne voient que vous.
           </p>
           <button type="button" onClick={() => setOpen(true)}
             style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(201,168,76,0.1)", border: `1px solid ${G}55`, color: G, fontSize: 14, fontWeight: 700, padding: "12px 22px", borderRadius: 12, cursor: "pointer" }}>
@@ -663,7 +663,7 @@ function BrandProSection() {
           </div>
           <div style={{ display: "flex", gap: 14, marginTop: 8 }}>
             <span style={{ flex: 1, textAlign: "center", color: "rgba(188,182,166,0.7)", fontSize: 10.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Plan gratuit</span>
-            <span style={{ flex: 1, textAlign: "center", color: G, fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Plan Pro</span>
+            <span style={{ flex: 1, textAlign: "center", color: G, fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Plan {PLANS_DEF.pro.label}</span>
           </div>
         </div>
       </div>
@@ -710,8 +710,8 @@ const PLAN_LANDING_UI = {
 } as Record<string, { cta: string; href: string; badge: string | null; note: string | null }>
 
 // Bénéfices orientés résultat (Pb 12) — on vend ce que ça apporte, pas une liste de specs.
-// ⚠️ Les `ok` DOIVENT refléter lib/plans.ts (source de vérité) : retrait du branding dès Starter
-// (removeBranding), domaine personnalisé à partir de Pro. Ne pas laisser diverger.
+// ⚠️ Les `ok` DOIVENT refléter lib/plans.ts (source de vérité) : retrait du branding et
+// domaine personnalisé dès le premier plan payant (PLANS.pro). Ne pas laisser diverger.
 const LANDING_BENEFITS: Record<string, { text: string; ok: boolean }[]> = {
   free: [
     { text: "Votre page en ligne en 5 minutes", ok: true },
@@ -801,7 +801,7 @@ function PricingSection() {
         </h2>
         <p style={{ color:"rgba(188,182,166,0.8)", fontSize:16,
           maxWidth:440, margin:"0 auto", lineHeight:1.65 }}>
-          Commencez gratuitement. Passez au Pro quand vous êtes prêt.
+          Commencez gratuitement. Passez au plan {PLANS_DEF.pro.label} quand vous êtes prêt.
         </p>
 
         {/* Toggle mensuel / annuel */}
@@ -1324,7 +1324,7 @@ function TemplateCard({ tpl, i, visible }: { tpl: typeof TEMPLATE_DATA[number]; 
           background: tpl.isPro ? "rgba(167,139,250,0.15)" : "rgba(57,255,143,0.12)",
           border: `1px solid ${tpl.isPro ? "rgba(167,139,250,0.35)" : "rgba(57,255,143,0.3)"}`,
           color: tpl.isPro ? "#A78BFA" : "var(--success)",
-        }}>{tpl.isPro ? "PRO" : "GRATUIT"}</span>
+        }}>{tpl.isPro ? PLANS_DEF.pro.label.toUpperCase() : PLANS_DEF.free.label.toUpperCase()}</span>
       </div>
 
       {/* Header */}
@@ -1353,7 +1353,7 @@ function TemplateCard({ tpl, i, visible }: { tpl: typeof TEMPLATE_DATA[number]; 
 
       {/* Footer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ color: "rgba(188,182,166,0.7)", fontSize: 10.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "68%" }}>
+        <span style={{ color: "rgba(188,182,166,0.8)", fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "68%" }}>
           {tpl.includes.join(" · ")}
         </span>
         <a href="/creer" style={{

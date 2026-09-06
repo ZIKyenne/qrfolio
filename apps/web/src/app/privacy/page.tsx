@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { RETENTION_DAYS } from "@/lib/eventRetention"
+import { phraseHebergement } from "@/lib/editeur"
 import Link from "next/link"
 import { LegalLayout } from "@/components/legal-layout"
 
@@ -57,9 +58,9 @@ export default function PrivacyPage() {
       </div>
       <div className="ls">
         <h2>4. Stockage, sécurité et sous-traitants</h2>
-        <p>Les connexions sont chiffrées (TLS) et les mots de passe hachés. QRowg s’appuie sur les sous-traitants suivants, chacun lié par un contrat de traitement des données :</p>
+        <p>{phraseHebergement()} Les connexions sont chiffrées (TLS) et les mots de passe hachés. QRowg s’appuie sur les sous-traitants suivants, chacun lié par un contrat de traitement des données :</p>
         <ul>
-          <li><strong>Supabase</strong> — base de données et authentification (infrastructure AWS).</li>
+          <li><strong>Supabase</strong> — base de données, fichiers et authentification (infrastructure AWS).</li>
           <li><strong>Vercel</strong> — hébergement et diffusion de l’application, ainsi que la mesure d’audience technique du site qrowg.com (Vercel Analytics, sans cookie).</li>
           <li><strong>Stripe</strong> — paiements, certifié PCI DSS. QRowg ne stocke aucune information bancaire.</li>
           <li><strong>Resend</strong> — envoi des e-mails transactionnels (confirmation, notifications de messages, rapports).</li>

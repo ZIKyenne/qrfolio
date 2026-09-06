@@ -7,6 +7,7 @@ import { slugifyUnique } from "@/lib/slug"
 import { uniqueShortCode } from "@/lib/shortCode"
 import { normalizePageTheme } from "@/app/dashboard/builder/types"
 import { BLOCK_DEFS } from "@/app/dashboard/builder/blockDefs"
+import { texte, objetBorne, tableauBorne } from "@/lib/bornes"
 
 // Slug valide (minuscules, accents retires, non-alphanum -> "-", + suffixe
 // aleatoire) via @/lib/slug. Respecte slug_format : ^[a-z0-9_-]{2,60}$
@@ -45,8 +46,17 @@ export async function POST(req: NextRequest) {
     }
     const qrStatus = await initialQrStatus(supabaseAdmin, user.id, prof?.plan as string)
 
-    const body = await req.json()
-    const { templateId, templateName, theme, blocks, slug } = body
+    const body = await req.json().catch(() => null)
+    if (!body || typeof body !== "object") return NextResponse.json({ error: "Corps invalide" }, { status: 400 })
+    // Bornes : 200 blocs / 600 Ko, un thème de 40 Ko, un nom de 120 caractères.
+    // Avant, un corps de plusieurs Mo était inséré tel quel.
+    const templateId = texte(body.templateId, 80)
+    const templateName = texte(body.templateName, 120)
+    const theme = objetBorne(body.theme, 40_000)
+    if (body.theme !== undefined && body.theme !== null && !theme) return NextResponse.json({ error: "Thème trop volumineux." }, { status: 413 })
+    const blocks = tableauBorne(body.blocks, 200, 600_000)
+    if (body.blocks !== undefined && !blocks) return NextResponse.json({ error: "Trop de blocs, ou contenu trop volumineux (200 blocs, 600 Ko)." }, { status: 413 })
+    const slug = body.slug
 
     const RESERVED = ["dashboard","admin","auth","login","signup","pricing","templates","settings","profile","api","legal","privacy","terms","contact","features","examples","qr-codes","upgrade","new"]
 

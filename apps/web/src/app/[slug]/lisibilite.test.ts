@@ -64,3 +64,40 @@ describe("les descriptions de la page publiée se lisent", () => {
     expect(src.split("\n")[0]).toBe('"use client"')
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LE TEXTE QUE LIT LE COMMERÇANT (site public et éditeur)
+//
+// Relevé du 4 septembre : accueil 10,5 px (« Menu · Réservation · Avis Google »),
+// galerie 11 px (descriptions de modèles) et 9 px (« ✦ Catalogue produits + promo »),
+// Offres 11 px (sous-titres de plans), générateur 11,5 px, éditeur 10,5 px
+// (descriptions de blocs). Plancher : 12 px pour ces textes-là.
+// ─────────────────────────────────────────────────────────────────────────────
+describe("le texte de lecture du site et de l'éditeur ne descend plus sous 12 px", () => {
+  const app = join(ici, "..")
+  const cas: [string, string][] = [
+    ["HomeClient.tsx", "{tpl.includes.join(\" · \")}"],
+    ["dashboard/templates/page.tsx", "{template.description}</p>"],
+    ["dashboard/templates/page.tsx", "✦ {template.highlight}"],
+    ["dashboard/templates/page.tsx", "{template.name} · {template.category} · {blockCount} blocs"],
+    ["upgrade/page.tsx", "{plan.description}</p>"],
+    ["generateur-qr-code/GeneratorClient.tsx", "Logo ajouté — correction portée au maximum."],
+    ["generateur-qr-code/GeneratorClient.tsx", "{dynGuest ?"],
+    ["dashboard/builder/BuilderV4.tsx", "{hlText(def.description, search)}"],
+  ]
+  for (const [fichier, marqueur] of cas) {
+    it(`${fichier} › ${marqueur.slice(0, 40)}`, () => {
+      const src = readFileSync(join(app, fichier), "utf8")
+      const lignes = src.split("\n").filter(l => l.includes(marqueur))
+      expect(lignes.length, "marqueur introuvable").toBeGreaterThan(0)
+      for (const l of lignes) {
+        // La taille est sur la même ligne OU la ligne précédente (balise ouverte au-dessus).
+        const i = src.indexOf(l)
+        const contexte = src.slice(Math.max(0, i - 400), i + l.length)
+        const tailles = [...contexte.matchAll(/fontSize: (\d+(?:\.\d+)?)/g)].map(m => parseFloat(m[1]))
+        expect(tailles.length, "pas de fontSize").toBeGreaterThan(0)
+        expect(tailles[tailles.length - 1]).toBeGreaterThanOrEqual(12)
+      }
+    })
+  }
+})

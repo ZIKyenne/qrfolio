@@ -69,7 +69,7 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
         setMessage("C'est votre sous-domaine actuel")
       } else {
         setStatus("taken")
-        setMessage(d.reason ?? "Non disponible")
+        setMessage(d.reason ?? d.error ?? "Non disponible")
       }
     } catch {
       setStatus("invalid")
@@ -108,13 +108,15 @@ export default function SubdomainPanel({ currentUsername, onUpdated }: Props) {
     if (!(await confirm({ title: "Libérer le sous-domaine ?", message: "Il deviendra disponible pour d'autres utilisateurs.", confirmLabel: "Libérer", danger: true }))) return
     setDeleting(true)
     try {
-      await fetch("/api/subdomain", { method: "DELETE" })
+      const res = await fetch("/api/subdomain", { method: "DELETE" })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || d.error) { setStatus("invalid"); setMessage(d.error || "Le sous-domaine n'a pas pu être libéré."); return }
       setInput("")
       setStatus("idle")
       setEditing(true)
       onUpdated?.(null)
-    } catch {}
-    setDeleting(false)
+    } catch { setStatus("invalid"); setMessage("Connexion impossible. Réessayez.") }
+    finally { setDeleting(false) }
   }
 
   function copySubdomain() {

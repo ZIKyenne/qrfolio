@@ -62,9 +62,12 @@ describe("persistPublishedStatus", () => {
   })
 
   it("erreur de mise à jour Supabase → échec typé", async () => {
-    const { client } = makeClient({ page: { slug: "s", status: "draft", published_at: null }, updateErr: { message: "rls denied" } })
+    const { client } = makeClient({ page: { slug: "s", status: "draft", published_at: null }, updateErr: { code: "42501", message: 'new row violates row-level security policy for table "pages"' } })
     const res = await persistPublishedStatus(client, "11111111-1111-4111-8111-111111111111", "n")
-    expect(res).toEqual({ ok: false, message: "rls denied" })
+    // Le message est celui de la taxonomie, jamais le texte Supabase brut.
+    expect(res.ok).toBe(false)
+    expect(res.message).toBe("Vous n'avez plus accès à cette page.")
+    expect(res.message).not.toMatch(/row-level|table/)
   })
 })
 

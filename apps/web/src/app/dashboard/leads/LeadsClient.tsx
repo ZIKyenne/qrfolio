@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client"
 import { Inbox, Mail, Phone, Trash2, Check, Search } from "lucide-react"
 import Particles from "@/components/Particles"
 import { useConfirm } from "@/components/ui/Confirm"
+import { useToast } from "@/components/Toast"
+import { erreurLisible } from "@/lib/erreurLisible"
 
 const G = "var(--accent, #C9A84C)"
 const MUTED = "#A8A190"
@@ -46,6 +48,7 @@ export default function LeadsClient({ leads: initialLeads, pages, setupNeeded }:
   const [query, setQuery] = useState("")
   const supabase = createClient()
   const confirm = useConfirm()
+  const toast = useToast()
 
   const pageTitle = (id: string) => pages.find(p => p.id === id)?.title || "Page"
 
@@ -68,14 +71,22 @@ export default function LeadsClient({ leads: initialLeads, pages, setupNeeded }:
   const setStatus = async (id: string, status: string) => {
     // Passer un lead hors de "nouveau" le marque aussi comme lu (il a été traité/vu)
     const is_read = status !== "new"
+    // Optimiste, mais restauré si la base refuse.
+    const avant = leads.find(l => l.id === id)
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status, is_read: is_read || l.is_read } : l))
-    await supabase.from("leads").update({ status, ...(is_read ? { is_read: true } : {}) }).eq("id", id)
+    const { error } = await supabase.from("leads").update({ status, ...(is_read ? { is_read: true } : {}) }).eq("id", id)
+    if (error && avant) {
+      setLeads(prev => prev.map(l => l.id === id ? avant : l))
+      toast.error("Le statut n'a pas pu être enregistré. " + erreurLisible(error))
+    }
   }
   const remove = async (id: string) => {
     const lead = leads.find(l => l.id === id)
     if (!(await confirm({ title: "Supprimer ce message ?", message: `Supprimer définitivement ce message${lead?.name ? ` de ${lead.name}` : ""} ?\n\nCette action est irréversible.`, confirmLabel: "Supprimer", danger: true }))) return
+    // Le message ne disparaît qu'une fois la suppression confirmée par la base.
+    const { data, error } = await supabase.from("leads").delete().eq("id", id).select("id")
+    if (error || !data?.length) { toast.error("Suppression impossible. " + (error ? erreurLisible(error) : "Ce message n'a pas été trouvé.")); return }
     setLeads(prev => prev.filter(l => l.id !== id))
-    await supabase.from("leads").delete().eq("id", id)
   }
   const exportCsv = () => {
     const rows = [["Date", "Type", "Page", "Nom", "Email", "Téléphone", "Message", "Détails"]]

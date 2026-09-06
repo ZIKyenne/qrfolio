@@ -12,26 +12,24 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
     const body = await req.json()
-    const { frequency, enabled, email } = body as {
+    const { frequency, enabled } = body as {
       frequency: "weekly" | "monthly"
       enabled: boolean
-      email?: string
     }
 
     if (!["weekly", "monthly"].includes(frequency)) {
       return NextResponse.json({ error: "Fréquence invalide" }, { status: 400 })
     }
 
-    // Récupérer l'email du profil si non fourni
-    let targetEmail = email
-    if (!targetEmail) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("id", user.id)
-        .single()
-      targetEmail = profile?.email
-    }
+    // L'adresse est TOUJOURS celle du compte. Avant, `email` était accepté tel
+    // quel dans le corps : un rapport hebdomadaire signé QRowg pouvait être
+    // adressé à n'importe qui.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("id", user.id)
+      .single()
+    const targetEmail = profile?.email
 
     if (!targetEmail) {
       return NextResponse.json({ error: "Email introuvable" }, { status: 400 })

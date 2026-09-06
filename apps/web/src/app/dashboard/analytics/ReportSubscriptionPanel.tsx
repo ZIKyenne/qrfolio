@@ -42,8 +42,7 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
   const [subs,    setSubs]    = useState<Subscription[]>([])
   const [loading, setLoading] = useState(true)
   const [saving,  setSaving]  = useState<"weekly" | "monthly" | null>(null)
-  const [email,   setEmail]   = useState(userEmail)
-  const [editEmail, setEditEmail] = useState(false)
+  const email = userEmail
   const [saved,   setSaved]   = useState<"weekly" | "monthly" | null>(null)
 
   const isPaid = PAID_PLANS.includes(plan?.toLowerCase() ?? "")
@@ -68,7 +67,7 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
     const res = await fetch("/api/reports/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ frequency: freq, enabled, email }),
+      body: JSON.stringify({ frequency: freq, enabled }),
     })
     const data = await res.json()
 
@@ -125,24 +124,9 @@ export default function ReportSubscriptionPanel({ userEmail, plan }: Props) {
                 <Mail size={13} color={MUTED} />
                 <span style={{ color: MUTED, fontSize: 11, fontWeight: 600 }}>Envoyé à</span>
               </div>
-              {!editEmail ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ color: "#F5F0E8", fontSize: 12 }}>{email}</span>
-                  <button type="button" onClick={() => setEditEmail(true)}
-                    style={{ background: "none", border: "none", color: MUTED, fontSize: 11, cursor: "pointer", textDecoration: "underline" }}>
-                    Modifier
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  <input value={email} onChange={e => setEmail(e.target.value)} type="email"
-                    style={{ background: "#111009", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)", borderRadius: 7, color: "#F5F0E8", padding: "5px 10px", fontSize: 12, outline: "none", width: 200 }} />
-                  <button type="button" onClick={() => setEditEmail(false)}
-                    style={{ background: G, border: "none", borderRadius: 7, color: "#080808", padding: "5px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-                    OK
-                  </button>
-                </div>
-              )}
+              {/* L'adresse est celle du compte : le serveur n'en accepte aucune
+                  autre (un rapport signé QRowg ne part qu'au titulaire). */}
+              <span style={{ color: "#F5F0E8", fontSize: 12, overflowWrap: "anywhere" }}>{email}</span>
             </div>
           </div>
 

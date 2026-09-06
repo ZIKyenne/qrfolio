@@ -7,13 +7,18 @@ import { ALLOWED_TRANSITIONS, ACTION_TO_STATUS, canTransition, type QRStatus } f
 import { pageLimit } from "@/lib/plans"
 import { countActiveQrs } from "@/lib/quota"
 import { serverError } from "@/lib/apiError"
+import { texte, uuidOuNull } from "@/lib/bornes"
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
 
-  const { qr_id, action, pause_message } = await req.json()
+  const body = await req.json().catch(() => null)
+  const qr_id = uuidOuNull(body?.qr_id)
+  const action = typeof body?.action === "string" ? body.action : null
+  // pause_message arrivait sans type ni taille : n'importe quoi finissait en base.
+  const pause_message = texte(body?.pause_message, 300)
   if (!qr_id || !action) {
     return NextResponse.json({ error: "qr_id et action requis" }, { status: 400 })
   }

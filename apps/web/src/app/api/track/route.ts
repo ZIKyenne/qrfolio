@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/server"
 import { rateLimit, ipOf } from "@/lib/rateLimit"
+
+// Plafond de lignes d'événements par appel (cf. lib/trackEngagement : ≤ 60 taps
+// + un « vu » et une durée par bloc).
+const LIGNES_EVENEMENTS_MAX = 80
 import { estUnScan } from "@/lib/premierScan"
 import { previenirPremierScan } from "@/lib/premierScanEnvoi"
 import { codeDansUrl, estUnCode, sourceRetenue, appareilRetenu } from "@/lib/sourceVue"
@@ -104,7 +108,10 @@ export async function POST(req: NextRequest) {
         click_target: str(body.clickTarget, 500),
       }, qs)
     } else if (type === "events") {
-      const rows = Array.isArray(body.rows) ? body.rows.slice(0, 300) : []
+      // Inondation : 300 lignes × 60 appels/min/IP sans limite par page. Une
+      // session réelle envoie un lot par page (blocs vus, durées, quelques taps).
+      if (!(await rateLimit(`track:events:${pageId}:${ipOf(req)}`, 10, 60_000))) return NextResponse.json({ ok: true, skipped: true })
+      const rows = Array.isArray(body.rows) ? body.rows.slice(0, LIGNES_EVENEMENTS_MAX) : []
       const clean = rows
         .filter((r: any) => r && EVENT_KINDS.has(r.kind))
         .map((r: any) => {

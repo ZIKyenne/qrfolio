@@ -13,5 +13,8 @@ import DashboardShell from "./DashboardShell"
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const jar = await cookies()
   const signedIn = jar.getAll().some(c => /^sb-.+-auth-token(\.\d+)?$/.test(c.name) && !!c.value)
-  return <DashboardShell initialSignedIn={signedIn}>{children}</DashboardShell>
+  // Même logique pour la barre latérale repliée : sans ce cookie, elle se
+  // rétractait sous les yeux de l'utilisateur à chaque chargement.
+  const collapsed = jar.get("qrfolio_sidebar")?.value === "collapsed"
+  return <DashboardShell initialSignedIn={signedIn} initialCollapsed={collapsed}>{children}</DashboardShell>
 }

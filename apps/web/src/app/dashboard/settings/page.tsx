@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button"
 import { Switch } from "@/components/ui/Switch"
 import { Input } from "@/components/ui/Input"
 import { jugerPassage, INTERVALLE_H, type Passage } from "@/lib/journalCron"
+import { erreurLisible } from "@/lib/erreurLisible"
 
 // Les trois interrupteurs de notification qui dépendent d'une tâche planifiée,
 // et le nom de cette tâche dans le journal.
@@ -61,8 +62,10 @@ export default function SettingsPage() {
   const [pwdError, setPwdError] = useState("")
 
   // Notifications
-  const [notifs, setNotifs] = useState({ email_leads: true, scan_alert: true, weekly_report: true, product_updates: false, marketing: false })
+  const [notifs, setNotifs] = useState({ email_leads: true, lead_confirmation: true, scan_alert: true, weekly_report: true, product_updates: false, marketing: false })
   const [notifSaved, setNotifSaved] = useState(false)
+  const [notifSaving, setNotifSaving] = useState(false)
+  const [notifError, setNotifError] = useState("")
   // État des tâches planifiées : trois de ces interrupteurs promettent un email
   // envoyé par une tâche, et rien ne permettait de savoir si elle tournait.
   const [passages, setPassages] = useState<Record<string, Passage> | null>(null)
@@ -90,6 +93,7 @@ export default function SettingsPage() {
         // opt-in (défaut désactivé) pour product_updates/marketing.
         setNotifs({
           email_leads: p.email_leads !== false,
+          lead_confirmation: p.lead_confirmation !== false,
           scan_alert: p.scan_alert !== false,
           weekly_report: p.weekly_report !== false,
           product_updates: p.product_updates === true,
@@ -108,7 +112,7 @@ export default function SettingsPage() {
     setPwdError(""); setPwdSaving(true)
     const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ password: newPwd })
-    if (error) { setPwdError(error.message); setPwdSaving(false); return }
+    if (error) { setPwdError(erreurLisible(error, "Le mot de passe n'a pas pu être changé.")); setPwdSaving(false); return }
     setCurrentPwd(""); setNewPwd(""); setConfirmPwd("")
     setPwdSaving(false); setPwdSaved(true); setTimeout(() => setPwdSaved(false), 3000)
   }
@@ -121,25 +125,36 @@ export default function SettingsPage() {
 
   async function saveNotifications() {
     // Chaque préférence est persistée ET lue par un envoi qui existe vraiment :
-    // email_leads par /api/emails/new-lead (appelé par le formulaire public),
+    // email_leads et lead_confirmation par /api/leads (après l'insertion du lead),
     // scan_alert par lib/premierScanEnvoi (appelé par /api/track au premier scan),
     // weekly_report par /api/emails/weekly (tâche planifiée du lundi).
     // product_updates et marketing sont stockées pour de futures campagnes : aucun
     // envoi ne part aujourd'hui, l'interrupteur ne promet donc rien qu'on trahisse.
-    if (profile) {
+    if (!profile || notifSaving) return
+    setNotifSaving(true); setNotifError("")
+    try {
       const supabase = createClient()
-      const { data: cur } = await supabase.from("profiles").select("preferences").eq("id", profile.id).single()
+      const { data: cur, error: lectureErr } = await supabase.from("profiles").select("preferences").eq("id", profile.id).single()
+      if (lectureErr) { setNotifError("Impossible de relire vos préférences. " + erreurLisible(lectureErr)); return }
       const prefs = {
         ...((cur as any)?.preferences || {}),
         email_leads: notifs.email_leads,
+        lead_confirmation: notifs.lead_confirmation,
         scan_alert: notifs.scan_alert,
         weekly_report: notifs.weekly_report,
         product_updates: notifs.product_updates,
         marketing: notifs.marketing,
       }
-      await supabase.from("profiles").update({ preferences: prefs }).eq("id", profile.id)
+      // « Préférences enregistrées ! » ne s'affiche QUE si l'écriture a réussi ET
+      // touché une ligne (RLS : une mise à jour refusée ne renvoie pas d'erreur).
+      const { data, error } = await supabase.from("profiles").update({ preferences: prefs }).eq("id", profile.id).select("id")
+      if (error || !data?.length) { setNotifError("Les préférences n'ont pas été enregistrées. " + (error ? erreurLisible(error) : "Reconnectez-vous puis réessayez.")); return }
+      setNotifSaved(true); setTimeout(() => setNotifSaved(false), 2000)
+    } catch {
+      setNotifError("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
+      setNotifSaving(false)
     }
-    setNotifSaved(true); setTimeout(() => setNotifSaved(false), 2000)
   }
 
   async function exportData() {
@@ -302,6 +317,8 @@ export default function SettingsPage() {
           <div style={{ display: "flex", flexDirection: "column" }}>
             <Toggle value={notifs.email_leads} onChange={v => setNotifs(n => ({ ...n, email_leads: v }))}
               label="Nouveaux messages" description="Recevez un e-mail à chaque demande (devis, réservation, inscription, RSVP...)" />
+            <Toggle value={notifs.lead_confirmation} onChange={v => setNotifs(n => ({ ...n, lead_confirmation: v }))}
+              label="Accusé de réception au visiteur" description="Le visiteur qui laisse son adresse reçoit « nous avons bien reçu votre demande », signé de votre page" />
             <Toggle value={notifs.scan_alert} onChange={v => setNotifs(n => ({ ...n, scan_alert: v }))}
               label="Alertes de scans" description="Recevez un e-mail au tout premier scan de chacune de vos pages" />
             <Toggle value={notifs.weekly_report} onChange={v => setNotifs(n => ({ ...n, weekly_report: v }))}
@@ -311,10 +328,11 @@ export default function SettingsPage() {
             <Toggle value={notifs.marketing} onChange={v => setNotifs(n => ({ ...n, marketing: v }))}
               label="Offres et promotions" description="Réductions et offres spéciales" />
             <div style={{ paddingTop: 14 }}>
-              <Button variant="secondary" size="sm" onClick={saveNotifications}
+              <Button variant="secondary" size="sm" onClick={saveNotifications} disabled={notifSaving}
                 leftIcon={notifSaved ? <Check size={12} /> : <Save size={12} />}>
-                {notifSaved ? "Préférences enregistrées !" : "Sauvegarder les préférences"}
+                {notifSaving ? "Enregistrement…" : notifSaved ? "Préférences enregistrées !" : "Sauvegarder les préférences"}
               </Button>
+              {notifError && <p role="alert" style={{ color: "var(--danger)", fontSize: 12.5, margin: "10px 0 0", lineHeight: 1.5 }}>{notifError}</p>}
             </div>
 
             {/* Les envois automatiques, et la preuve qu'ils tournent. Sans cette

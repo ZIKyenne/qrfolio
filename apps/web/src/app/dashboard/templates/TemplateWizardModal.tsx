@@ -146,9 +146,14 @@ export default function TemplateWizardModal({
     if (!pageName.trim()) { setError("Donnez un nom à votre page."); return }
     setBusy(true)
     const finalBlocks = finalizeBlocks(applied, decisions)
-    const res = await onCreate({ name: pageName.trim(), slug: slug.trim() || slugifyBase(pageName), blocks: finalBlocks })
-    setBusy(false)
-    if (res?.error) setError(res.error)
+    try {
+      const res = await onCreate({ name: pageName.trim(), slug: slug.trim() || slugifyBase(pageName), blocks: finalBlocks })
+      if (res?.error) setError(res.error)
+    } catch {
+      setError("Connexion impossible. Vérifiez votre réseau et réessayez.")
+    } finally {
+      setBusy(false)
+    }
   }
 
   const answeredCount = seen.size

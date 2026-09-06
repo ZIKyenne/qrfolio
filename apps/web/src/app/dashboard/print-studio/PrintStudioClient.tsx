@@ -5,6 +5,7 @@
 // Consomme les modules purs : catalog / mockup / states / tokens.
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useIsMobile } from "@/lib/useIsMobile"
 import Link from "next/link"
 import { ArrowLeft, Lock, Unlock, Eye, EyeOff, ChevronUp, Check, X, Download, ShieldCheck, AlertTriangle, ChevronDown, Copy, Layers, Undo2, Redo2, Plus, MoreVertical,
   Star, Heart, Phone, Mail, MapPin, Wifi, Clock, Gift, Coffee, Globe, Sparkles, Camera, Music, Tag, Zap,
@@ -180,17 +181,6 @@ const PRESETS: Preset[] = [
   { id: "edito", label: "Édito", style: "inkedit", layout: "diagonale", accent: "auto", bgFinish: "quadrillage", frame: "aucun", titleCase: "upper", titleWeight: "normal", qrBadge: "carre", eCorner: "vif", eAccent: "trait", eAlign: "left" },
 ]
 
-// Détection responsive (sans dupliquer le métier, §16) : bascule le shell en mode mobile ≤ bp.
-function useIsMobile(bp = 1024) {
-  const [m, setM] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia(`(max-width:${bp}px)`)
-    const on = () => setM(mq.matches); on()
-    mq.addEventListener("change", on)
-    return () => mq.removeEventListener("change", on)
-  }, [bp])
-  return m
-}
 
 // UX clavier mobile (§11) : hauteur du clavier virtuel (visualViewport) + champ texte focalisé.
 // Actif seulement sur mobile pour ne pas perturber le desktop (pas de scroll auto au focus).
@@ -262,7 +252,7 @@ function useHauteurMesuree(actif: boolean) {
 const textInputProps = { autoCorrect: "off", autoCapitalize: "sentences", spellCheck: false, enterKeyHint: "done" as const }
 
 export default function PrintStudioClient({ canAccess }: { canAccess: boolean }) {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile(1024)
   const { kb, typing } = useKeyboard(isMobile)   // clavier virtuel : hauteur + saisie en cours (§11)
   const { hauteurEcran, largeurEcran } = useHauteurEcran(isMobile)
   const mesureEntete = useHauteurMesuree(isMobile)

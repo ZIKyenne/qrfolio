@@ -12,6 +12,20 @@
 // Un test refuse tout crochet dans page.tsx. Il ne reste qu'à remplir ici.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Hébergement — UNE phrase, reprise par /security, /privacy, /legal et le
+// guide RGPD. Trois descriptions différentes coexistaient (« en Europe »,
+// « Union européenne », « infrastructure AWS ») sans que la région du projet
+// Supabase ait été vérifiée. Tant que `region` est null, aucune page ne promet
+// une zone géographique.
+export const HEBERGEMENT: { region: string | null } = {
+  region: null, // ex. « Union européenne (AWS eu-west-3, Paris) » — à lire dans Supabase › Settings › General
+}
+
+export function phraseHebergement(): string {
+  const base = "Vos données sont hébergées chez Supabase (base de données, fichiers et authentification, sur l’infrastructure AWS) et Vercel (application)"
+  return HEBERGEMENT.region ? `${base}, dans la région ${HEBERGEMENT.region}.` : `${base}.`
+}
+
 export type Editeur = {
   raisonSociale: string | null
   formeJuridique: string | null   // « SAS », « SASU », « Micro-entreprise »…

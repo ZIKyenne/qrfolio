@@ -6,11 +6,14 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { MAX_PAGES, countPages, initialQrStatus } from "@/lib/quota"
 import { slugifyBase } from "@/lib/slug"
+import { uniqueShortCode } from "@/lib/shortCode"
 
-function randCode(len = 8): string {
+// Suffixe de slug : aléa cryptographique (l ancien tirage était prédictible).
+function randCode(len = 5): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+  const bytes = new Uint8Array(len); crypto.getRandomValues(bytes)
   let s = ""
-  for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)]
+  for (let i = 0; i < len; i++) s += chars[bytes[i] % chars.length]
   return s
 }
 
@@ -65,6 +68,9 @@ export async function POST(req: NextRequest) {
       setIfPresent(p, "slug", `${slugifyBase(page.slug ?? "page", 50) || "page"}-${randCode(5)}`)
       setIfPresent(p, "status", "draft")
       setIfPresent(p, "total_views", 0)
+      // Un domaine personnalisé ne se copie pas : deux pages sur le même domaine.
+      setIfPresent(p, "custom_domain", null)
+      setIfPresent(p, "published_at", null)
 
       const { data: insertedPage, error: e2 } = await supabase
         .from("pages")
@@ -85,7 +91,7 @@ export async function POST(req: NextRequest) {
   delete q.updated_at
   // colonnes que l'on sait presentes (utilisees ailleurs dans le code)
   q.page_id    = newPageId
-  q.short_code = randCode(8)
+  q.short_code = await uniqueShortCode(supabase)   // unique dans qr_codes ET instant_qrs, aléa crypto
   // reinitialisations conditionnelles (uniquement si la colonne existe)
   setIfPresent(q, "total_scans", 0)
   setIfPresent(q, "last_scan_at", null)

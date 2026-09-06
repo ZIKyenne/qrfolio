@@ -53,6 +53,7 @@ export type PlanCaps = {
   dynDomaineMarque: boolean   // lien court à la marque du commerçant
   dynSecuriteLien: boolean    // mot de passe, expiration programmée, pause manuelle
   dynEnMasse: boolean         // création en masse par import CSV
+  apiAppelsMois: number | null // appels API publics par mois calendaire (null = pas d'accès)
 }
 
 export interface Plan {
@@ -80,7 +81,7 @@ export const PLANS: Record<PlanId, Plan> = {
     badge: null,
     limits: { pages: 1, views: null, qr: 3, dyn: 1, team: null },
     caps: { printStudio: false, qrStudioAdvanced: false, ai: false, removeBranding: false, pageIntro: false, exportFormats: ["png"],
-            dynStatsDetaillees: false, dynDomaineMarque: false, dynSecuriteLien: false, dynEnMasse: false },
+            dynStatsDetaillees: false, dynDomaineMarque: false, dynSecuriteLien: false, dynEnMasse: false, apiAppelsMois: null },
     features: ["1 page", "Vues illimitées", "3 QR autonomes, dont 1 modifiable", "Branding QRowg visible", "Analytics de base"],
     perks: [
       { text: "1 page publiée", included: true },
@@ -105,7 +106,7 @@ export const PLANS: Record<PlanId, Plan> = {
     badge: "LE PLUS CHOISI",
     limits: { pages: 10, views: null, qr: 30, dyn: 20, team: null },
     caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"],
-            dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: false },
+            dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: false, apiAppelsMois: 1000 },
     features: ["10 pages", "Vues illimitées", "30 QR, dont 20 modifiables après impression", "Sans branding", "QR Print Studio complet", "Domaine personnalisé", "Statistiques détaillées"],
     perks: [
       { text: "10 pages — de quoi couvrir un commerce entier", included: true },
@@ -121,7 +122,7 @@ export const PLANS: Record<PlanId, Plan> = {
       { text: "Tous les modèles", included: true },
       { text: "Génération IA + rapports", included: true },
       { text: "Export PNG / JPG / PDF HD / SVG", included: true },
-      { text: "Accès API · 1 000 appels / mois", included: true },
+      { text: "Accès API · 1 000 appels / mois", included: true }, // = caps.apiAppelsMois (testé)
       { text: "Support prioritaire", included: true },
     ],
   },
@@ -135,7 +136,7 @@ export const PLANS: Record<PlanId, Plan> = {
     badge: null,
     limits: { pages: null, views: null, qr: null, dyn: null, team: 5 },
     caps: { printStudio: true, qrStudioAdvanced: true, ai: true, removeBranding: true, pageIntro: true, exportFormats: ["png", "jpg", "pdf", "svg"],
-            dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: true },
+            dynStatsDetaillees: true, dynDomaineMarque: true, dynSecuriteLien: true, dynEnMasse: true, apiAppelsMois: 10000 },
     features: ["Jusqu'à 5 établissements", "Pages et QR illimités", "Import CSV en masse", "Équipe · 5 membres", "Marque blanche", "API"],
     perks: [
       { text: "Pages illimitées", included: true },
@@ -147,7 +148,7 @@ export const PLANS: Record<PlanId, Plan> = {
       { text: "Statistiques détaillées + export", included: true },
       { text: "QR Studio et Print Studio complets", included: true },
       { text: "Génération IA illimitée + rapports", included: true },
-      { text: "Accès API · 10 000 appels / mois", included: true },
+      { text: "Accès API · 10 000 appels / mois", included: true }, // = caps.apiAppelsMois (testé)
       { text: "Support prioritaire", included: true },
     ],
   },
@@ -192,6 +193,8 @@ export const canDynSecurite = (id?: string | null): boolean => getPlan(id).caps.
 export const canDynMasse = (id?: string | null): boolean => getPlan(id).caps.dynEnMasse
 // Accès à l'API publique (clés qrk_ + endpoints /v1) : réservé Pro et Business.
 export const canApi = (id?: string | null): boolean => PLAN_RANK[getPlan(id).id] >= PLAN_RANK.pro
+// Plafond mensuel d'appels API du plan (null = pas d'accès API).
+export const apiQuotaMensuel = (id?: string | null): number | null => getPlan(id).caps.apiAppelsMois
 export const canExport = (id: string | null | undefined, fmt: ExportFormat): boolean => getPlan(id).caps.exportFormats.includes(fmt)
 // Plan minimum requis pour une capacité (pour les messages d'upsell)
 export const minPlanFor = (cap: "printStudio" | "qrStudioAdvanced" | "ai" | "dynStatsDetaillees" | "dynDomaineMarque" | "dynSecuriteLien" | "dynEnMasse"): PlanId => {

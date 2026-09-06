@@ -259,7 +259,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
           {logo ? (
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 44, height: 44, borderRadius: 10, background: "#fff", overflow: "hidden", flexShrink: 0, border: `1px solid ${BOR}` }}><img src={logo} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
-              <span style={{ flex: 1, color: MUT, fontSize: 11.5, lineHeight: 1.4 }}>Logo ajouté — correction portée au maximum.</span>
+              <span style={{ flex: 1, color: MUT, fontSize: 12.5, lineHeight: 1.4 }}>Logo ajouté — correction portée au maximum.</span>
               <button type="button" onClick={() => setLogo(null)} aria-label="Retirer le logo" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, width: 38, height: 38, color: "#FF6B6B", cursor: "pointer" }}><X size={16} /></button>
             </div>
           ) : (
@@ -323,7 +323,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
             <button type="button" onClick={() => createAndDownload("svg")} disabled={!ready || busy !== null || blocked} style={{ minHeight: 50, padding: "0 18px", borderRadius: 12, border: `1px solid ${BOR}`, background: "rgba(255,255,255,0.04)", color: INK, fontSize: 14, fontWeight: 700, cursor: (ready && !blocked) ? "pointer" : "default", opacity: blocked ? 0.5 : 1 }}>{busy === "svg" ? "…" : "SVG"}</button>
           )}
         </div>
-        <p style={{ color: "#6E685E", fontSize: 11.5, textAlign: "center", margin: 0 }}>{dynGuest ? "Sans compte · votre page est gardée dans ce navigateur, le compte n'est demandé qu'à la publication." : isDyn ? "Enregistré dans votre compte · le QR pointe vers un lien traçable." : authed ? "Enregistré dans votre compte · haute résolution, prêt à imprimer." : "Téléchargement direct · aucun compte requis · haute résolution, prêt à imprimer."}</p>
+        <p style={{ color: "#8A8478", fontSize: 12.5, textAlign: "center", margin: 0, lineHeight: 1.45 }}>{dynGuest ? "Sans compte · votre page est gardée dans ce navigateur, le compte n'est demandé qu'à la publication." : isDyn ? "Enregistré dans votre compte · le QR pointe vers un lien traçable." : authed ? "Enregistré dans votre compte · haute résolution, prêt à imprimer." : "Téléchargement direct · aucun compte requis · haute résolution, prêt à imprimer."}</p>
 
         {/* ── Après le téléchargement ────────────────────────────────────────────
             Jusqu'ici, obtenir son fichier ne menait nulle part : une coche pendant

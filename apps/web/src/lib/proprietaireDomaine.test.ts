@@ -60,3 +60,32 @@ describe("la migration", () => {
     expect(sql).toContain("domaine_verifie_par(new.user_id, v_hote)")
   })
 })
+
+// P1-32 · set_primary n'était pas transactionnel (et l'index unique partiel sur
+// is_primary faisait échouer « poser le nouveau avant d'effacer l'ancien ») ;
+// pages.custom_domain était mis à jour avec l'identifiant de la VÉRIFICATION.
+describe("domaine principal et page rattachée", () => {
+  const route = readFileSync(join(__dirname, "../app/api/domains/route.ts"), "utf8")
+  const sql = readFileSync(join(__dirname, "../../../../supabase/migrations/20260905130000_domaine_principal.sql"), "utf8")
+
+  it("le changement de principal passe par une fonction transactionnelle réservée au service", () => {
+    expect(route).toContain('admin.rpc("definir_domaine_principal", { p_user: user.id, p_domain: domain })')
+    expect(route).not.toContain('.update({ is_primary: true })')
+    expect(sql).toContain("security definer")
+    expect(sql).toContain("revoke all on function public.definir_domaine_principal(uuid, text) from public, anon, authenticated")
+    // l'ancien principal est retiré AVANT que le nouveau soit posé, dans la même transaction
+    expect(sql.indexOf("set is_primary = false")).toBeLessThan(sql.indexOf("set is_primary = true"))
+  })
+
+  it("custom_domain cible la page de la vérification, pas la vérification elle-même", () => {
+    expect(route).toContain('.select("txt_record, id, page_id")')
+    expect(route).toContain("const pageCible = page_id || existing.page_id")
+    expect(route).not.toContain('.eq("id", page_id || existing.id)')
+  })
+
+  it("le domaine est normalisé et validé une fois, en tête de route", () => {
+    const post = route.slice(route.indexOf("export async function POST"))
+    expect(post).toContain('const domain = typeof body.domain === "string" ? normalizeDomain(body.domain) : ""')
+    expect(post.indexOf("isValidDomain(domain)")).toBeLessThan(post.indexOf('if (action === "verify")'))
+  })
+})

@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server"
+import { identiteRenseignee } from "@/lib/editeur"
 import { VERTICAL_ORDER } from "./qr-code/verticals"
 import { GUIDE_ORDER } from "./guides/guides"
 import { jugerPage } from "@/lib/indexation"
@@ -21,7 +22,9 @@ export default async function sitemap() {
     { url: `${baseUrl}/examples`, lastModified: CONTENT_REVISED, changeFrequency: "weekly",  priority: 0.7 },
     { url: `${baseUrl}/upgrade`,  lastModified: CONTENT_REVISED, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/contact`,  lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.4 },
-    { url: `${baseUrl}/legal`,    lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.2 },
+    // /legal n'entre au sitemap que lorsque l'identité de l'éditeur est renseignée
+    // (lib/editeur.ts) : sinon la page est en noindex, et la lister serait contradictoire.
+    ...(identiteRenseignee() ? [{ url: `${baseUrl}/legal`, lastModified: CONTENT_REVISED, changeFrequency: "yearly" as const, priority: 0.2 }] : []),
     { url: `${baseUrl}/security`, lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.4 },
     { url: `${baseUrl}/terms`,    lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.2 },
     { url: `${baseUrl}/privacy`,  lastModified: CONTENT_REVISED, changeFrequency: "yearly",  priority: 0.2 },

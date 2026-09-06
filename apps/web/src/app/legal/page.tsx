@@ -1,12 +1,18 @@
 import type { Metadata } from "next"
 import { LegalLayout } from "@/components/legal-layout"
+import { EDITEUR, identiteRenseignee } from "@/lib/editeur"
 
 const APP = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
+const COMPLETE = identiteRenseignee()
 
 export const metadata: Metadata = {
   title: "Mentions légales",
   description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact.",
   alternates: { canonical: `${APP}/legal` },
+  // Tant que l'identité de l'éditeur n'est pas renseignée (lib/editeur.ts), la
+  // page ne doit pas être indexée : Google ne doit pas servir une page de
+  // mentions légales qui n'en contient pas.
+  ...(COMPLETE ? {} : { robots: { index: false, follow: true } }),
   openGraph: { title: "Mentions légales | QRowg", description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact.", url: `${APP}/legal`, siteName: "QRowg", type: "website" },
   twitter: { card: "summary_large_image", title: "Mentions légales | QRowg", description: "Mentions légales de QRowg : éditeur du service, hébergeur, propriété intellectuelle et coordonnées de contact." },
 }
@@ -16,13 +22,23 @@ export default function LegalPage() {
     <LegalLayout title="Mentions légales" updated="15 juin 2026">
       <div className="ls">
         <h2>Éditeur du site</h2>
-        <p>
-          <strong>Raison sociale :</strong> <span className="lph">[ Nom société ]</span><br />
-          <strong>Forme juridique :</strong> <span className="lph">[ SAS / SASU / Auto-entrepreneur ]</span><br />
-          <strong>SIRET :</strong> <span className="lph">[ Numéro SIRET ]</span><br />
-          <strong>Siège social :</strong> <span className="lph">[ Adresse complète ]</span><br />
-          <strong>Directeur de la publication :</strong> <span className="lph">[ Nom Prénom ]</span>
-        </p>
+        {COMPLETE ? (
+          <p>
+            <strong>Raison sociale :</strong> {EDITEUR.raisonSociale}<br />
+            <strong>Forme juridique :</strong> {EDITEUR.formeJuridique}
+            {EDITEUR.capital ? <> au capital de {EDITEUR.capital}</> : null}<br />
+            <strong>SIRET :</strong> {EDITEUR.siret}
+            {EDITEUR.rcs ? <><br /><strong>RCS :</strong> {EDITEUR.rcs}</> : null}
+            {EDITEUR.tva ? <><br /><strong>TVA intracommunautaire :</strong> {EDITEUR.tva}</> : null}<br />
+            <strong>Siège social :</strong> {EDITEUR.siege}<br />
+            <strong>Directeur de la publication :</strong> {EDITEUR.directeurPublication}
+          </p>
+        ) : (
+          <p>
+            Ces informations sont en cours de mise à jour. Pour toute question sur
+            l'éditeur du service, écrivez à <a href="mailto:contact@qrowg.com">contact@qrowg.com</a>.
+          </p>
+        )}
       </div>
       <div className="ls">
         <h2>Contact</h2>

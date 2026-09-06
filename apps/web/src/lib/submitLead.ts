@@ -29,16 +29,8 @@ export async function submitLead(input: LeadInput): Promise<boolean> {
     })
     if (!res.ok) return false
 
-    // Notifie le propriétaire par email (fire-and-forget, l'email est résolu côté serveur)
-    fetch("/api/emails/new-lead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pageId: input.pageId, type: input.type || "form",
-        name: input.name, email: input.email, phone: input.phone,
-        message: input.message, data: input.data || {},
-      }),
-    }).catch(() => {})
+    // Le propriétaire est prévenu par /api/leads lui-même, après l'insertion :
+    // aucun appel public pour ça (l'ancienne route était un relais ouvert).
 
     // Accusé de réception au visiteur si son email est fourni (fire-and-forget)
     if (input.email) {

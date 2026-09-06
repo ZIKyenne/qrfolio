@@ -1,0 +1,27 @@
+{
+  "format": "reel",
+  "fps": 30,
+  "scrim": 0.82,
+  "progress": true,
+  "maxDuration": 36,
+  "brand": { "handle": "@qrowg", "logo": true },
+  "motion": { "effect": "tunnel", "palette": "or", "density": 1500, "speed": 1.05, "seed": 12 },
+  "scenes": [
+    { "dur": 4.0, "align": "center", "titleSize": 104, "kicker": "QROWG",
+      "title": "« Vous l'avez\nen 40 ? »", "motion": { "effect": "tunnel" } },
+    { "dur": 4.0, "title": "Personne ne sait.", "sub": "La réponse est au fond de la réserve.",
+      "motion": { "effect": "glitch", "speed": 1.2 } },
+    { "dur": 4.0, "title": "Trois minutes.", "sub": "Le temps qu'il commande ailleurs.",
+      "motion": { "effect": "shatter" } },
+    { "dur": 4.2, "title": "Un QR en rayon.", "sub": "Le stock à l'écran, tout de suite.",
+      "motion": { "effect": "scan", "speed": 1.3 } },
+    { "dur": 4.2, "title": "Tailles. Coloris. Ce qui reste.",
+      "motion": { "effect": "focus" } },
+    { "dur": 4.2, "title": "Tu reçois. Tu publies.", "sub": "L'étiquette en rayon ne bouge pas.",
+      "motion": { "effect": "publish" } },
+    { "dur": 4.0, "kicker": "PREUVE", "title": "Zéro réimpression.", "sub": "Le même support toute la saison.",
+      "motion": { "effect": "stats" } },
+    { "dur": 3.6, "align": "center", "title": "Crée ta page stock en 2 min", "cta": "qrowg.com",
+      "motion": { "effect": "portal" } }
+  ]
+}

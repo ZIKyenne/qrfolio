@@ -1,0 +1,28 @@
+{
+ "carousels": [
+  {
+   "slug": "qr-code-stock-disponible-magasin-boutique",
+   "sector": "commerce",
+   "url": "https://qrowg.com/qr-code/boutique?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260905-commerce",
+   "slides": [
+    {"kind":"cover","tag":"Commerce","title":"« Vous l'avez en [[40]] ? » Personne ne sait.","body":"Le stock est en réserve. Le client, lui, est déjà sur son téléphone."},
+    {"kind":"body","kicker":"Le problème","title":"Il commande [[ailleurs]] pendant que tu cherches","body":"Trois minutes au fond de la réserve, et la vente est passée chez un autre."},
+    {"kind":"qr","kicker":"En direct","title":"Un QR en rayon. Le [[stock]] à l'écran.","body":"Tailles, coloris, ce qu'il reste : il le voit sans attendre personne."},
+    {"kind":"body","kicker":"Le geste","title":"Tu reçois. Tu [[publies]].","body":"La page se met à jour, l'étiquette collée en rayon ne bouge pas."},
+    {"kind":"metric","kicker":"Preuve","number":"0","title":"réimpression quand le [[stock]] change","body":"Le même support tient toute la saison."},
+    {"kind":"cta","title":"Crée ta page stock en 2 [[minutes]]","body":"Étiquettes prêtes à imprimer, page à ta marque.","cta":"qrowg.com","qr":true}
+   ]
+  }
+ ],
+ "pins": [
+  {"slug":"qr-code-retours-garantie-ticket-caisse-boutique","layout":1,"tag":"Commerce",
+   "title":"Le ticket qui explique le [[retour]].","subtitle":"Délai, conditions, formulaire : tout tient dans un scan.","qr":true,
+   "url":"https://qrowg.com/qr-code/boutique?utm_source=pinterest&utm_medium=pin&utm_campaign=20260905-commerce"},
+  {"slug":"qr-code-carte-sandwichs-du-midi-boulangerie","layout":2,"tag":"Boulangerie",
+   "title":"À midi, la file veut savoir ce qu'il [[reste]].","subtitle":"La carte des sandwichs, à jour à 11 h 30.","qr":true,
+   "url":"https://qrowg.com/qr-code/artisan?utm_source=pinterest&utm_medium=pin&utm_campaign=20260905-commerce"},
+  {"slug":"qr-code-carte-bieres-pression-du-moment-bar","layout":3,"sector":"bar","tag":"Bar & brasserie",
+   "title":"Les pressions changent. L'[[ardoise]], jamais.","subtitle":"Ce qui coule ce soir, modifié en dix secondes.","qr":true,
+   "url":"https://qrowg.com/qr-code/restaurant?utm_source=pinterest&utm_medium=pin&utm_campaign=20260905-commerce"}
+ ]
+}

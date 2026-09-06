@@ -1118,15 +1118,25 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
   async function hardDeleteQR(qrId: string) {
     setQrStatusLoading(qrId)
     try {
-      await fetch("/api/qr-status", {
+      const res = await fetch("/api/qr-status", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ qr_id: qrId }),
       })
-      const rest = qrCodes.filter(q => q.id !== qrId)
-      setQRCodes(rest)
-      if (activeId === qrId) setActiveId(rest[0]?.id ?? null)
-    } catch {}
+      // La réponse n'était pas lue : l'élément disparaissait de l'écran même
+      // quand le serveur avait refusé, et revenait au rechargement.
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok || d?.ok === false) {
+        toast.error(d?.error || "Suppression impossible. Réessayez.")
+      } else {
+        const rest = qrCodes.filter(q => q.id !== qrId)
+        setQRCodes(rest)
+        if (activeId === qrId) setActiveId(rest[0]?.id ?? null)
+        toast.success("QR supprimé")
+      }
+    } catch {
+      toast.error("Connexion impossible. Réessayez.")
+    }
     setQrStatusLoading(null)
     setConfirmAction(null)
   }
@@ -2517,6 +2527,37 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
         </Modal>
       )}
 
+      {/* -- Pause / archive / suppression depuis le menu « ⋯ » -------------------
+          Mesuré le 4 septembre : le menu posait `confirmAction`… que rien ne
+          rendait. « Mettre en pause », « Archiver » et « Supprimer » ne faisaient
+          strictement rien. Voici la modale qui manquait. */}
+      {confirmAction !== null && (() => {
+        const { action, qrId, label } = confirmAction
+        const qr = qrCodes.find(q => q.id === qrId)
+        const nom = qr?.pages?.title || qr?.short_code || "ce QR"
+        const destructif = action === "delete"
+        const texte = action === "pause"
+          ? `« ${nom} » cessera de rediriger : un scan affichera une page « en pause » jusqu'à sa réactivation. Le code imprimé reste valable.`
+          : action === "archive"
+          ? `« ${nom} » quittera la liste active et cessera de rediriger. Vous pourrez le restaurer depuis les archives.`
+          : `« ${nom} » sera supprimé définitivement, avec toutes ses statistiques. Le code imprimé ne mènera plus nulle part.`
+        const verbe = action === "pause" ? "Mettre en pause" : action === "archive" ? "Archiver" : "Supprimer définitivement"
+        const occupe = qrStatusLoading === qrId
+        return (
+          <Modal open onClose={() => setConfirmAction(null)} title={label}
+            footer={<>
+              <Button variant="ghost" onClick={() => setConfirmAction(null)} disabled={occupe}>Annuler</Button>
+              <Button variant={destructif ? "danger" : "primary"} loading={occupe}
+                leftIcon={destructif ? <Trash2 size={13} /> : <Archive size={13} />}
+                onClick={() => destructif ? hardDeleteQR(qrId) : changeQRStatus(qrId, action)}>
+                {verbe}
+              </Button>
+            </>}>
+            {texte}
+          </Modal>
+        )
+      })()}
+
       {/* Avertissement score de scannabilité critique avant export */}
       {expWarnOpen && (
         <Modal open onClose={() => setExpWarnOpen(false)} title="Scannabilité critique"
@@ -2660,7 +2701,7 @@ export default function QRStudio({ qrCodes: initialQRCodes, userPlan, appUrl }: 
                       ...(qs === "active" ? [{ icon: <Archive size={11}/>, label: "Mettre en pause", action: () => requestAction(qr.id, "pause", "Mettre en pause"), color: "#F97316", disabled: false }] : []),
                       ...(qs === "paused" || qs === "draft" ? [{ icon: <Check size={11}/>, label: "Activer", action: () => changeQRStatus(qr.id, "activate"), color: "var(--success)", disabled: false }] : []),
                       ...(qs !== "archived" ? [{ icon: <Archive size={11}/>, label: "Archiver", action: () => requestAction(qr.id, "archive", "Archiver ce QR"), color: "#6B7280", disabled: false }] : [{ icon: <RotateCcw size={11}/>, label: "Restaurer", action: () => changeQRStatus(qr.id, "restore"), color: "var(--action)", disabled: false }]),
-                      { icon: <Trash2 size={11}/>,   label: "Supprimer definitif", action: () => requestAction(qr.id, "delete", "Supprimer definitivement ce QR ?"), color: "var(--danger)", disabled: qs !== "archived" },
+                      { icon: <Trash2 size={11}/>,   label: "Supprimer définitivement", action: () => requestAction(qr.id, "delete", "Supprimer définitivement ce QR ?"), color: "var(--danger)", disabled: qs !== "archived" },
                     ]).map((item, i) => (
                       <button key={i} type="button" onClick={item.disabled ? undefined : item.action} disabled={item.disabled}
                         style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"8px 10px", background:"none", border:"none", color:item.disabled ? "rgba(138,132,120,0.4)" : item.color, fontSize:11, cursor:item.disabled ? "not-allowed" : "pointer", borderRadius:7, textAlign:"left" as const }}>

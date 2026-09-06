@@ -1,0 +1,111 @@
+{
+  "total": 15,
+  "avec_alerte": 0,
+  "details": [
+    {
+      "fichier": "qr-code-carte-bieres-pression-du-moment-bar.png",
+      "fond_sombre_pct": 90.2,
+      "or_pct": 4.3,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=pinterest&utm_medium=pin&utm_campaign=20260905-commerce",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-carte-sandwichs-du-midi-boulangerie.png",
+      "fond_sombre_pct": 90.5,
+      "or_pct": 4.4,
+      "qr": "https://qrowg.com/qr-code/artisan?utm_source=pinterest&utm_medium=pin&utm_campaign=20260905-commerce",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-retours-garantie-ticket-caisse-boutique.png",
+      "fond_sombre_pct": 89.2,
+      "or_pct": 5.4,
+      "qr": "https://qrowg.com/qr-code/boutique?utm_source=pinterest&utm_medium=pin&utm_campaign=20260905-commerce",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-stock-disponible-magasin-boutique-01.png",
+      "fond_sombre_pct": 93.5,
+      "or_pct": 0.6,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-stock-disponible-magasin-boutique-02.png",
+      "fond_sombre_pct": 92.8,
+      "or_pct": 1.2,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-stock-disponible-magasin-boutique-03.png",
+      "fond_sombre_pct": 85.9,
+      "or_pct": 8.9,
+      "qr": "https://qrowg.com/qr-code/boutique?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260905-commerce",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-stock-disponible-magasin-boutique-04.png",
+      "fond_sombre_pct": 95.4,
+      "or_pct": 1.3,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-stock-disponible-magasin-boutique-05.png",
+      "fond_sombre_pct": 94.0,
+      "or_pct": 2.2,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-stock-disponible-magasin-boutique-06.png",
+      "fond_sombre_pct": 84.2,
+      "or_pct": 9.9,
+      "qr": "https://qrowg.com/qr-code/boutique?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260905-commerce",
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-stock-disponible-magasin-boutique-01.png",
+      "fond_sombre_pct": 93.5,
+      "or_pct": 0.6,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-stock-disponible-magasin-boutique-02.png",
+      "fond_sombre_pct": 92.8,
+      "or_pct": 1.2,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-stock-disponible-magasin-boutique-03.png",
+      "fond_sombre_pct": 85.9,
+      "or_pct": 8.9,
+      "qr": "https://qrowg.com/qr-code/boutique?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260905-commerce",
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-stock-disponible-magasin-boutique-04.png",
+      "fond_sombre_pct": 95.4,
+      "or_pct": 1.3,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-stock-disponible-magasin-boutique-05.png",
+      "fond_sombre_pct": 94.0,
+      "or_pct": 2.2,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-stock-disponible-magasin-boutique-06.png",
+      "fond_sombre_pct": 84.2,
+      "or_pct": 9.9,
+      "qr": "https://qrowg.com/qr-code/boutique?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260905-commerce",
+      "alertes": []
+    }
+  ]
+}

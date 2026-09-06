@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/server"
 import { rateLimit, ipOf } from "@/lib/rateLimit"
+import { notifierProprietaireLead } from "@/lib/notifierProprietaireLead"
+import { after } from "next/server"
 
 export async function POST(req: NextRequest) {
   if (!(await rateLimit("lead:" + ipOf(req), 15, 600_000))) {
@@ -40,6 +42,13 @@ export async function POST(req: NextRequest) {
   let { error } = await admin.from("leads").insert((qs ? { ...base, qr_source: qs } : base) as any)
   if (error && qs) ({ error } = await admin.from("leads").insert(base))
   if (error) return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 })
+
+  // Le propriétaire est prévenu ICI, après l'insertion réussie et avec les champs
+  // bornés — plus par une route publique que n'importe qui pouvait appeler.
+  after(async () => {
+    const r = await notifierProprietaireLead({ pageId, type: base.type, name: base.name, email: base.email, phone: base.phone, message: base.message, data: base.data as Record<string, unknown> })
+    if (!r.envoye && r.raison && !["opt-out", "pas de destinataire"].includes(r.raison)) console.error("[leads] notification non envoyée :", r.raison)
+  })
 
   return NextResponse.json({ ok: true })
 }

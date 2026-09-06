@@ -5,6 +5,7 @@ import DnsChecker from "./DnsChecker"
 import MultiBrandDomainsPanel from "./MultiBrandDomainsPanel"
 import DomainRoutesPanel from "./DomainRoutesPanel"
 import { Button } from "@/components/ui/Button"
+import { useToast } from "@/components/Toast"
 import {
   Globe, Plus, Trash2, CheckCircle, Clock, AlertCircle,
   Copy, ExternalLink, Loader, ChevronDown, ChevronUp, X, RefreshCw
@@ -43,6 +44,7 @@ const G     = "var(--accent)"
 const MUTED = "#A8A190"
 
 export default function DomainsPage({ pages, plan }: Props) {
+  const toast = useToast()
   const [domains,    setDomains]    = useState<DomainRecord[]>([])
   const [loading,    setLoading]    = useState(true)
   const [showForm,   setShowForm]   = useState(false)
@@ -85,18 +87,27 @@ export default function DomainsPage({ pages, plan }: Props) {
 
   async function verifyDomain(rec: DomainRecord) {
     setVerifying(rec.id)
-    const res = await fetch("/api/domains", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ action: "verify", domain: rec.domain, page_id: rec.page_id }),
-    })
-    const d = await res.json()
-    if (d.verified) {
-      setDomains(prev => prev.map(r =>
-        r.id === rec.id ? { ...r, verified: true, vercel_status: d.vercel_ok ? "active" : "error", vercel_error: d.vercel_error } : r
-      ))
+    try {
+      const res = await fetch("/api/domains", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ action: "verify", domain: rec.domain, page_id: rec.page_id }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (d.verified) {
+        setDomains(prev => prev.map(r =>
+          r.id === rec.id ? { ...r, verified: true, vercel_status: d.vercel_ok ? "active" : "error", vercel_error: d.vercel_error } : r
+        ))
+        if (d.vercel_ok) toast.success(`${rec.domain} est actif.`)
+        else toast.error(`DNS validé, mais le rattachement a échoué : ${d.vercel_error || "réessayez dans quelques minutes"}.`)
+      } else {
+        toast.error(d.error || "Le DNS ne pointe pas encore vers QRowg. Réessayez dans quelques minutes.")
+      }
+    } catch {
+      toast.error("Connexion impossible. Réessayez.")
+    } finally {
+      setVerifying(null)
     }
-    setVerifying(null)
   }
 
   async function setPrimaryDomain(domain: string) {
@@ -279,7 +290,7 @@ export default function DomainsPage({ pages, plan }: Props) {
                             </a>
                           )}
                           {!rec.verified && (
-                            <button type="button" onClick={() => setShowChecker(showChecker === rec.id ? null : rec.id)}
+                            <button type="button" onClick={() => { const ouvre = showChecker !== rec.id; setShowChecker(ouvre ? rec.id : null); if (ouvre) setExpanded(rec.id) }}
                               style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", background: showChecker===rec.id ? "color-mix(in srgb, var(--accent) 20%, transparent)" : "color-mix(in srgb, var(--accent) 10%, transparent)", border:`1px solid color-mix(in srgb, var(--accent) 25%, transparent)`, borderRadius:8, color:G, fontSize:11, fontWeight:700, cursor:"pointer" }}>
                               <RefreshCw size={12}/>
                               {showChecker === rec.id ? "Fermer" : "Vérifier DNS"}
@@ -303,10 +314,12 @@ export default function DomainsPage({ pages, plan }: Props) {
                         <DnsChecker
                           domain={rec.domain}
                           onVerified={() => {
-                            setDomains(prev => prev.map(r =>
-                              r.id === rec.id ? { ...r, verified: true, vercel_status: "active" } : r
-                            ))
+                            // Mesuré le 4 septembre : on marquait « actif » côté
+                            // client sans jamais enregistrer le domaine sur Vercel.
+                            // verifyDomain fait les deux (persistance + addToVercel)
+                            // et rapporte l'état réel renvoyé par le serveur.
                             setShowChecker(null)
+                            void verifyDomain(rec)
                           }}
                         />
                       )}

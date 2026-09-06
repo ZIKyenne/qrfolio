@@ -189,8 +189,14 @@ describe("accessibilité aux moteurs", () => {
   })
 
   it("aucune page indexable ne se met en noindex", () => {
-    const cachees = INDEXABLES.filter(f => /index:\s*false/.test(read(f)))
+    // Exception assumée : /legal se met en noindex UNIQUEMENT tant que l'identité
+    // de l'éditeur n'est pas renseignée (lib/editeur.ts) — un noindex conditionnel,
+    // vérifié à part dans lib/editeur.test.ts.
+    const cachees = INDEXABLES
+      .filter(f => f !== "legal/page.tsx")
+      .filter(f => /index:\s*false/.test(read(f)))
     expect(cachees).toEqual([])
+    expect(read("legal/page.tsx")).toContain("COMPLETE ? {} : { robots: { index: false")
   })
 })
 

@@ -1,0 +1,48 @@
+<!doctype html><meta charset="utf-8"><title>Bios du jour — QRowg 05/09/2026</title>
+<style>
+:root{--noir:#080A08;--panneau:#101310;--or:#D4AF45;--ivoire:#F4F1E8;--gris:#A7A69F}
+body{background:var(--noir);color:var(--ivoire);font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;margin:auto;padding:32px;max-width:820px}
+h1{font-size:26px;margin:0}
+h1 small{display:block;font-size:13px;color:var(--gris);font-weight:400;letter-spacing:.12em;text-transform:uppercase;margin-top:8px}
+h2{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:34px 0 10px;border-top:1px solid #262a26;padding-top:22px}
+.card{background:var(--panneau);border:1px solid #262a26;border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.t{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);margin-bottom:8px}
+[contenteditable]{outline:none;white-space:pre-wrap}
+[contenteditable]:focus{background:#151814;border-radius:6px}
+button{background:transparent;border:1px solid var(--or);color:var(--or);border-radius:999px;padding:6px 16px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-top:12px}
+button:hover{background:var(--or);color:var(--noir)}
+button.ok{background:var(--or);color:var(--noir)}
+.n{float:right;font-size:11px;color:var(--gris);letter-spacing:.08em}
+</style>
+<h1>Bios du jour — QRowg<small>Samedi 5 septembre 2026 · 2 variantes par réseau</small></h1>
+
+<h2>Instagram <span class="n">≤ 150 caractères</span></h2>
+<div class="card"><div class="t">Variante A · 138</div><div contenteditable>QRowg — un support imprimé, une page qui change.
+Menu, stock, horaires : modifie sans réimprimer. Chaque scan est mesuré.
+qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+<div class="card"><div class="t">Variante B · 132</div><div contenteditable>Ton affiche est déjà collée. Tu peux encore tout changer.
+QR dynamique + page à ta marque + supports à imprimer.
+qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+
+<h2>TikTok <span class="n">≤ 80 caractères</span></h2>
+<div class="card"><div class="t">Variante A · 74</div><div contenteditable>Un QR imprimé. Une page qui change tous les jours. qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+<div class="card"><div class="t">Variante B · 77</div><div contenteditable>Le support ne bouge pas. La page, si. Astuces commerce — qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+
+<h2>Pinterest <span class="n">≤ 160 caractères</span></h2>
+<div class="card"><div class="t">Variante A · 152</div><div contenteditable>Idées d'organisation pour commerces : menus, stocks, horaires et checklists derrière un QR. La page se met à jour, l'affiche reste la même. qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+<div class="card"><div class="t">Variante B · 147</div><div contenteditable>Modèles prêts à imprimer pour boutique, boulangerie, bar et restaurant. Un QR, une page qui change sans réimprimer, des scans mesurés. qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+
+<h2>LinkedIn <span class="n">≤ 220 caractères</span></h2>
+<div class="card"><div class="t">Variante A · 207</div><div contenteditable>QRowg transforme un support imprimé — vitrine, table, étiquette, flyer — en page pro personnalisable et mesurable. Modifiez le contenu, gardez le même QR, suivez chaque scan. Essai gratuit : qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+<div class="card"><div class="t">Variante B · 199</div><div contenteditable>Le phygital sans réimpression : une page à votre marque derrière chaque QR, modifiable en dix secondes, avec l'analytique des scans. Pour commerces, restaurants et artisans. qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+
+<h2>X <span class="n">≤ 160 caractères</span></h2>
+<div class="card"><div class="t">Variante A · 139</div><div contenteditable>Un QR imprimé, une page qu'on change sans réimprimer. Commerces, restos, artisans. Chaque scan est mesuré. qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+<div class="card"><div class="t">Variante B · 128</div><div contenteditable>Le papier ne se met pas à jour. Ta page, si. QR dynamique + analytics pour commerce local. qrowg.com</div><button onclick="cp(this)">Copier</button></div>
+
+<script>
+function cp(b){const z=b.parentElement.querySelectorAll('[contenteditable]');
+const t=[...z].map(e=>e.innerText).join('\n');
+navigator.clipboard.writeText(t).then(()=>{const o=b.textContent;b.textContent='Copié';b.classList.add('ok');
+setTimeout(()=>{b.textContent=o;b.classList.remove('ok')},1400)})}
+</script>

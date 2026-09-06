@@ -61,12 +61,17 @@ describe("rapport hebdomadaire", () => {
 })
 
 describe("nouveaux messages", () => {
-  it("la route lit la préférence", () => {
-    expect(lire("../api/emails/new-lead/route.ts")).toContain("email_leads")
+  it("l'envoi lit la préférence", () => {
+    expect(lire("../../lib/notifierProprietaireLead.ts")).toContain("email_leads")
   })
 
-  it("et le formulaire public l'appelle", () => {
-    expect(lire("../../lib/submitLead.ts")).toContain("/api/emails/new-lead")
+  it("et la route /api/leads le déclenche elle-même, côté serveur", () => {
+    // Avant, le navigateur devait appeler /api/emails/new-lead après le
+    // formulaire : un onglet fermé trop vite, et l'email ne partait jamais.
+    const route = lire("../api/leads/route.ts")
+    expect(route).toContain("notifierProprietaireLead")
+    expect(route).toContain("after(")
+    expect(lire("../../lib/submitLead.ts")).not.toContain("/api/emails/new-lead")
     expect(lire("../[slug]/PublicPageClient.tsx")).toContain("submitLead")
   })
 })

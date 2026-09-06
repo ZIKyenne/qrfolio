@@ -387,8 +387,9 @@ export default function SettingsPage() {
           <style>{``}</style>
         </Section>
 
-        {/* Danger zone — isolee en fin de page, davantage d'espace (#05) */}
-        <div style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 16, overflow: "hidden", marginTop: 16 }}>
+        {/* Danger zone — isolee en fin de page, davantage d'espace (#05).
+            L ancre #danger est la cible du lien depuis Profil › Sécurité. */}
+        <div id="danger" style={{ scrollMarginTop: 24, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 16, overflow: "hidden", marginTop: 16 }}>
           <div style={{ padding: "18px 24px", borderBottom: "1px solid rgba(239,68,68,0.1)", display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ color: "#EF4444", background: "rgba(239,68,68,0.1)", borderRadius: 8, padding: 8 }}><AlertTriangle size={16} /></div>
             <div>

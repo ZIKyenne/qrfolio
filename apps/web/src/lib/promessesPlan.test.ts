@@ -12,6 +12,44 @@ import { PLANS, PLAN_COMPARISON, getPlan } from "./plans"
 // Depuis la fusion des deux abonnements, le gratuit donne 3 QR autonomes dont
 // 1 modifiable après impression, sans essai ni expiration.
 const accueil = readFileSync(join(__dirname, "../app/HomeClient.tsx"), "utf8")
+const contact = readFileSync(join(__dirname, "../app/contact/page.tsx"), "utf8")
+const generateur = readFileSync(join(__dirname, "../app/generateur-qr-code/GeneratorClient.tsx"), "utf8")
+
+// Relevé du 4 septembre : trois textes mentaient encore, hors du périmètre de ce
+// test. Il les couvre désormais.
+describe("les promesses fausses relevées le 4 septembre ne reviennent pas", () => {
+  it("l'accueil n'annonce ni « vues par mois » ni quota de vues avec alerte", () => {
+    expect(accueil).not.toMatch(/\d+ vues par mois/)
+    expect(accueil).not.toMatch(/quota de vues/)
+    expect(accueil).not.toMatch(/prévenons par email à 80/)
+  })
+  it("l'accueil lit le plan gratuit dans plans.ts, pas dans une phrase figée", () => {
+    expect(accueil).toContain("${PLANS_DEF.free.limits.pages} page")
+    expect(accueil).toContain("${PLANS_DEF.free.limits.qr} QR codes")
+  })
+  it("Contact ne connaît plus « Free », « 200 vues/mois » ni « 2 QR dynamiques/mois »", () => {
+    expect(contact).not.toMatch(/plan Free/)
+    expect(contact).not.toMatch(/vues\/mois/)
+    expect(contact).not.toMatch(/dynamiques\/mois/)
+    expect(contact).toContain("${PLANS.free.limits.qr} QR codes")
+  })
+  it("les noms de plans viennent de plans.ts sur l'accueil (plus de « Pro » / « Business » en dur)", () => {
+    expect(accueil).not.toMatch(/dès le plan Pro\)/)
+    expect(accueil).not.toContain('cta: "Choisir Pro"')
+    expect(accueil).not.toContain('cta: "Choisir Business"')
+  })
+  it("les générateurs n'exigent plus un « compte gratuit » qu'ils n'exigent pas", () => {
+    for (const f of ["generateur-qr-code", "generateur-qr-code-wifi"]) {
+      const page = readFileSync(join(__dirname, `../app/${f}/page.tsx`), "utf8")
+      expect(page, f).not.toMatch(/[Cc]ompte gratuit/)
+      expect(page, f).toMatch(/[Ss]ans compte/)
+    }
+  })
+  it("le générateur ne ressuscite pas un essai « 30 j (2/mois) »", () => {
+    expect(generateur).not.toMatch(/30 ?j/)
+    expect(generateur).not.toMatch(/2\/mois/)
+  })
+})
 
 describe("le plan gratuit annonce partout ce que la source de vérité contient", () => {
   const free = getPlan("free")

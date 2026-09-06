@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { RETENTION_DAYS } from "@/lib/eventRetention"
 import Link from "next/link"
 import { LegalLayout } from "@/components/legal-layout"
 
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalLayout title="Politique de confidentialité" updated="15 juin 2026">
+    <LegalLayout title="Politique de confidentialité" updated="4 septembre 2026">
       <div className="ls">
         <p>QRowg accorde une importance primordiale à la protection de vos données personnelles. Cette politique décrit comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre service.</p>
       </div>
@@ -24,10 +25,18 @@ export default function PrivacyPage() {
         <p>Lors de votre inscription, nous collectons votre adresse e-mail et, si vous choisissez de la renseigner, votre nom ou pseudonyme.</p>
         <h3>Données d’usage</h3>
         <p>Nous collectons des données relatives à votre utilisation du service : pages créées, QR codes générés, configurations appliquées.</p>
-        <h3>Données analytics</h3>
-        <p>Lorsqu’un visiteur scanne votre QR code, nous enregistrons : l’horodatage, le type d’appareil, le pays d’origine et la source de trafic. Aucune donnée personnelle identifiable sur vos visiteurs n’est collectée.</p>
+        <h3>Données de mesure d’audience (visiteurs de vos pages)</h3>
+        <p>Lorsqu’un visiteur scanne votre QR code ou consulte votre page, nous enregistrons, pour vous fournir vos statistiques :</p>
+        <ul>
+          <li>l’horodatage, le type d’appareil (mobile, tablette, ordinateur), le système et le navigateur ;</li>
+          <li>le pays et la ville approximative, déduits de l’adresse IP au moment de la visite ;</li>
+          <li>la source de trafic : site référent et paramètres de campagne (utm) présents dans l’adresse ;</li>
+          <li>sur la page elle-même : les blocs cliqués, la position approximative des appuis et le temps passé par bloc, rattachés à un <strong>identifiant de session</strong> aléatoire valable le temps de la visite ;</li>
+          <li>une <strong>empreinte pseudonymisée</strong> du visiteur (hachage SHA-256 de l’adresse IP, du navigateur et d’un sel secret), qui sert uniquement à compter les visiteurs uniques. L’adresse IP elle-même n’est pas stockée en clair et ne peut pas être reconstituée à partir de l’empreinte.</li>
+        </ul>
+        <p>Ces données sont pseudonymisées : elles ne comportent ni nom, ni adresse e-mail, ni identifiant de compte du visiteur. Elles constituent néanmoins des données à caractère personnel au sens du RGPD, et sont traitées à ce titre (base légale : intérêt légitime du titulaire de la page à mesurer l’usage de son support).</p>
         <h3>Données techniques</h3>
-        <p>Votre adresse IP est utilisée de façon <strong>transitoire</strong> pour la sécurité et la limitation des abus (rate-limit) ; elle n’est <strong>pas conservée</strong> dans nos statistiques. Nous enregistrons le type d’appareil et des journaux d’accès techniques.</p>
+        <p>Votre adresse IP est en outre utilisée de façon <strong>transitoire</strong> pour la sécurité et la limitation des abus (rate-limit), sans être conservée à cette fin. Des journaux d’accès techniques sont tenus par notre hébergeur pour une durée courte.</p>
       </div>
       <div className="ls">
         <h2>2. Cookies</h2>
@@ -47,13 +56,19 @@ export default function PrivacyPage() {
         <p>Nous ne vendons jamais vos données à des tiers.</p>
       </div>
       <div className="ls">
-        <h2>4. Stockage et sécurité</h2>
-        <p>Vos données sont stockées sur des serveurs sécurisés opérés par Supabase (infrastructure AWS). Les connexions sont chiffrées via TLS. Les mots de passe sont hachés.</p>
-        <p>Les données de paiement sont traitées exclusivement par Stripe, certifié PCI DSS. QRowg ne stocke aucune information bancaire.</p>
+        <h2>4. Stockage, sécurité et sous-traitants</h2>
+        <p>Les connexions sont chiffrées (TLS) et les mots de passe hachés. QRowg s’appuie sur les sous-traitants suivants, chacun lié par un contrat de traitement des données :</p>
+        <ul>
+          <li><strong>Supabase</strong> — base de données et authentification (infrastructure AWS).</li>
+          <li><strong>Vercel</strong> — hébergement et diffusion de l’application, ainsi que la mesure d’audience technique du site qrowg.com (Vercel Analytics, sans cookie).</li>
+          <li><strong>Stripe</strong> — paiements, certifié PCI DSS. QRowg ne stocke aucune information bancaire.</li>
+          <li><strong>Resend</strong> — envoi des e-mails transactionnels (confirmation, notifications de messages, rapports).</li>
+        </ul>
       </div>
       <div className="ls">
         <h2>5. Conservation</h2>
-        <p>Vos données sont conservées tant que votre compte est actif. En cas de suppression, elles sont effacées sous 30 jours, sauf obligations légales (données de facturation conservées 10 ans).</p>
+        <p>Vos données de compte sont conservées tant que votre compte est actif. La suppression du compte, depuis vos Paramètres, efface immédiatement vos pages, QR codes, messages et statistiques, et résilie votre abonnement ; seules les pièces de facturation sont conservées par Stripe pendant la durée légale (10 ans).</p>
+        <p>Les données de mesure d’audience de vos pages sont conservées <strong>{RETENTION_DAYS} jours</strong> (environ 13 mois, pour permettre la comparaison d’une année sur l’autre), puis supprimées automatiquement.</p>
       </div>
       <div className="ls">
         <h2>6. Vos droits (RGPD)</h2>

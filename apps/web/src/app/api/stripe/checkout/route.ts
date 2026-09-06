@@ -27,14 +27,15 @@ export async function POST(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qrowg.com"
 
     // Annuel si demandé ET si un prix annuel est configuré, sinon mensuel
-    const priceId = (annual && ANNUAL_PRICE_IDS[plan]) ? ANNUAL_PRICE_IDS[plan] : PRICE_IDS[plan]
+    const planSur = typeof plan === "string" && Object.hasOwn(PRICE_IDS, plan) ? plan : ""
+    const priceId = planSur ? ((annual && ANNUAL_PRICE_IDS[planSur]) ? ANNUAL_PRICE_IDS[planSur] : PRICE_IDS[planSur]) : ""
     if (!priceId) {
       // Deux échecs très différents se cachaient derrière « Plan invalide ».
       //  · un plan qui n'existe pas : la requête est fautive ;
       //  · un plan qui existe mais dont l'identifiant de prix n'est pas configuré :
       //    c'est une variable d'environnement manquante côté Vercel, et le client,
       //    lui, n'y peut rien. Il ne doit pas croire qu'il a mal cliqué.
-      const planConnu = Object.prototype.hasOwnProperty.call(PRICE_IDS, plan)
+      const planConnu = !!planSur
       if (planConnu) {
         console.error("[stripe] tarif non configuré pour le plan", plan, "— vérifier NEXT_PUBLIC_STRIPE_*_PRICE_ID")
         return NextResponse.json(
@@ -45,6 +46,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Plan invalide" }, { status: 400 })
     }
     const billing = (annual && ANNUAL_PRICE_IDS[plan]) ? "annual" : "monthly"
+
+    // Un abonné qui relançait un checkout obtenait un DEUXIÈME abonnement Stripe :
+    // l'upsert du webhook (une ligne par compte) écrasait le premier, qui restait
+    // facturé et invisible. Un changement de plan passe par le portail Stripe,
+    // pas par une nouvelle caisse.
+    const { data: profil } = await supabase
+      .from("profiles").select("stripe_customer_id").eq("id", userId).maybeSingle()
+    const customerId = profil?.stripe_customer_id ?? null
+    if (customerId) {
+      const encours = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 })
+      const active = encours.data.find(s => ["active", "trialing", "past_due", "unpaid", "incomplete", "paused"].includes(s.status))
+      if (active) {
+        return NextResponse.json(
+          { error: "Vous avez déjà un abonnement en cours. Pour en changer, passez par « Gérer la facturation ».", portal: true },
+          { status: 409 },
+        )
+      }
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -57,6 +76,10 @@ export async function POST(req: NextRequest) {
         metadata: { userId, plan, priceId, billing },
       },
       allow_promotion_codes: true,
+      // Même client Stripe d'une souscription à l'autre : historique, moyens de
+      // paiement et portail au même endroit. Sans identifiant connu, on fixe au
+      // moins l'e-mail pour que le client créé porte le bon.
+      ...(customerId ? { customer: customerId } : { customer_email: user.email ?? undefined }),
     })
 
     return NextResponse.json({ url: session.url })

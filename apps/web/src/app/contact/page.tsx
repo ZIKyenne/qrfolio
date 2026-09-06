@@ -3,6 +3,7 @@ import Link from "next/link"
 import { useState, FormEvent } from "react"
 
 import { creerUrl } from "../creer/entry"
+import { PLANS } from "@/lib/plans"
 
 const G   = "#C9A84C"
 const INK = "#F5F0E8"
@@ -70,15 +71,15 @@ const SUBJECTS = [
 const FAQ = [
   {
     q: "Puis-je utiliser QRowg gratuitement ?",
-    a: "Oui. Le plan Free donne accès à 3 pages, 200 vues/mois, 1 QR statique permanent et 2 QR dynamiques/mois — sans carte bancaire.",
+    a: `Oui. Le plan ${PLANS.free.label} donne accès à ${PLANS.free.limits.pages} page, des vues illimitées et ${PLANS.free.limits.qr} QR codes — dont ${PLANS.free.limits.dyn} modifiable après impression — sans carte bancaire.`,
   },
   {
     q: "Puis-je connecter mon propre domaine ?",
-    a: "Oui, à partir du plan Pro. Tu connectes ton sous-domaine (carte.tonsite.fr) en quelques clics.",
+    a: `Oui, dès le plan ${PLANS.pro.label} : votre domaine ou sous-domaine (carte.votresite.fr) mène directement à votre page, en quelques clics.`,
   },
   {
     q: "Comment fonctionne le QR dynamique ?",
-    a: "Le QR code reste identique à l'impression. Tu modifies ta page ou destination à tout moment depuis ton dashboard — sans réimprimer.",
+    a: "Le QR code reste identique à l'impression. Vous modifiez votre page ou sa destination à tout moment depuis votre tableau de bord — sans réimprimer.",
   },
 ]
 

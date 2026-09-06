@@ -4,6 +4,7 @@
 import { createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { escapeHtml } from "@/lib/escapeHtml"
+import { candidats, proprietaire } from "@/lib/proprietaireDomaine"
 
 export async function GET(req: NextRequest) {
   const rawDomain = req.nextUrl.searchParams.get("domain")
@@ -14,6 +15,20 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createAdminClient()
     const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? "https://qrowg.com"
+
+    // ── Étape -2 : à qui appartient ce domaine ? ─────────────────────────────
+    // Tout ce qui suit (redirections, routes, page) est filtré par ce
+    // propriétaire VÉRIFIÉ. Sans propriétaire, rien n'est résolu : un domaine
+    // inconnu n'est ni redirigé ni servi (plus de redirection ouverte).
+    const { data: verifs } = await supabase
+      .from("domain_verifications")
+      .select("user_id, domain, verified")
+      .in("domain", candidats(domain))
+      .eq("verified", true)
+    const owner = proprietaire(domain, verifs ?? [])
+    if (!owner) {
+      return new NextResponse(notFoundHtml(domain, appUrl), { status: 404, headers: { "content-type": "text/html; charset=utf-8" } })
+    }
 
     // ── Étape -1: domaine secondaire → redirection vers principal ──────────────
     // Si ce domaine n'est pas principal et qu'un principal existe, rediriger
@@ -51,6 +66,7 @@ export async function GET(req: NextRequest) {
     const { data: redirect } = await supabase
       .from("domain_redirects")
       .select("to_url, redirect_type, id")
+      .eq("user_id", owner.user_id)
       .eq("from_domain", domain)
       .eq("from_path", path)
       .eq("enabled", true)
@@ -76,6 +92,7 @@ export async function GET(req: NextRequest) {
       const { data: wildcardRedir } = await supabase
         .from("domain_redirects")
         .select("to_url, redirect_type")
+        .eq("user_id", owner.user_id)
         .eq("from_domain", domain)
         .eq("from_path", "/")
         .eq("enabled", true)
@@ -114,6 +131,7 @@ export async function GET(req: NextRequest) {
     const { data: routes } = await supabase
       .from("domain_routes")
       .select("subdomain, page_id, priority, pages(slug)")
+      .eq("user_id", owner.user_id)
       .eq("root_domain", root)
       .eq("enabled", true)
       .order("priority", { ascending: false })
@@ -129,6 +147,7 @@ export async function GET(req: NextRequest) {
     const { data: verif } = await supabase
       .from("domain_verifications")
       .select("page_id, pages(slug)")
+      .eq("user_id", owner.user_id)
       .eq("domain", domain)
       .eq("verified", true)
       .maybeSingle()

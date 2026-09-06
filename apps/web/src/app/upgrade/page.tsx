@@ -62,8 +62,20 @@ export default function UpgradePage() {
         body: JSON.stringify({ plan: plan.id, annual, userId: user.id }),
       })
       const data = await res.json()
-      if (data.url) window.location.href = data.url
+      if (data.url) { window.location.href = data.url; return }
+      // Déjà abonné : le serveur refuse une seconde caisse et renvoie vers le
+      // portail Stripe, où l'on change de plan sans créer un doublon.
+      if (data.portal) { await ouvrirPortail(); return }
+      setLoading(null)
     } catch { setLoading(null) }
+  }
+
+  async function ouvrirPortail() {
+    try {
+      const r = await fetch("/api/stripe/portal", { method: "POST" })
+      const d = await r.json()
+      if (d.url) window.location.href = d.url
+    } catch {}
   }
 
   // Renvoie l'URL de paiement Stripe ; le SubscribeButton redirige lui-même en fin
@@ -78,6 +90,7 @@ export default function UpgradePage() {
       body: JSON.stringify({ plan: plan.id, annual, userId: user.id }),
     })
     const data = await res.json()
+    if (data.portal) { await ouvrirPortail(); return }
     if (!data.url) throw new Error(data.error || "Le paiement n'a pas pu démarrer. Réessayez.")
     return data.url as string
   }

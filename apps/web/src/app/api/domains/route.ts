@@ -1,7 +1,7 @@
 ﻿// app/api/domains/route.ts
 // CRUD domaines + vérification DNS + ajout Vercel
 
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { randomBytes } from "crypto"
 import { serverError } from "@/lib/apiError"
@@ -108,10 +108,16 @@ export async function POST(req: NextRequest) {
     // Revendiquer le domaine (verified=true) AVANT tout appel externe. L'index
     // unique partiel `(domain) where verified` rejette (23505) si un AUTRE compte
     // l'a déjà vérifié → anti-squatting, message propre plutôt qu'une erreur 500.
-    const { error: claimErr } = await supabase
+    // L'état d'une vérification (verified, is_primary…) est verrouillé en base
+    // pour tout rôle sauf le service role (migration 20260904120000) : le
+    // serveur, qui vient de contrôler le DNS, écrit avec le client admin — en
+    // gardant le filtre user_id, puisque l'admin ne passe pas par la RLS.
+    const admin = createAdminClient()
+    const { error: claimErr } = await admin
       .from("domain_verifications")
       .update({ verified: true, verified_at: new Date().toISOString() })
       .eq("id", existing.id)
+      .eq("user_id", user.id)
     if (claimErr) {
       if (claimErr.code === "23505") {
         return NextResponse.json({ error: "Ce domaine est déjà vérifié par un autre compte." }, { status: 409 })
@@ -152,19 +158,27 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .eq("verified", true)
 
-    // 2. Retirer is_primary partout
-    await supabase
-      .from("domain_verifications")
-      .update({ is_primary: false })
-      .eq("user_id", user.id)
-
-    // 3. Définir le nouveau principal
-    const { error: pe } = await supabase
+    // is_primary est verrouillé en base hors service role : client admin, filtré
+    // par user_id. On pose le nouveau principal AVANT d'effacer les autres, pour
+    // ne jamais laisser un compte sans principal si l'étape suivante échoue.
+    const admin = createAdminClient()
+    const { data: pose, error: pe } = await admin
       .from("domain_verifications")
       .update({ is_primary: true })
       .eq("domain", domain)
       .eq("user_id", user.id)
-    if (pe) return NextResponse.json({ error: pe.message }, { status: 500 })
+      .eq("verified", true)
+      .select("id")
+    if (pe) return NextResponse.json({ error: "Impossible de définir ce domaine comme principal." }, { status: 500 })
+    if (!pose?.length) return NextResponse.json({ error: "Ce domaine n'est pas un domaine vérifié de votre compte." }, { status: 404 })
+
+    // 2. Retirer is_primary des autres
+    const { error: re } = await admin
+      .from("domain_verifications")
+      .update({ is_primary: false })
+      .eq("user_id", user.id)
+      .neq("domain", domain)
+    if (re) return NextResponse.json({ error: "Impossible de mettre à jour les autres domaines." }, { status: 500 })
 
     // 4. Créer des redirections 301 automatiques:
     //    tous les autres domaines vérifiés → domaine principal

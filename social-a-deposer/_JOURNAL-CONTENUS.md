@@ -48,19 +48,24 @@
 | Bar / cave | Vins au verre qui tournent | 04/09 |
 | Boulangerie | Invendus du soir / anti-gaspi | 04/09 |
 | Marché / producteur | Panier de la semaine | 04/09 |
+| Commerce / boutique | Stock disponible en magasin (carrousel + reel) | 05/09 |
+| Commerce / boutique | Retours & garantie sur le ticket de caisse | 05/09 |
+| Boulangerie | Carte des sandwichs du midi | 05/09 |
+| Bar / brasserie | Bières pression du moment | 05/09 |
 
 ## Angles NEUFS disponibles (piocher ici en priorité)
 - Restaurant : carte enfants · plat à emporter du soir · anniversaire / privatisation ·
   fiche « d'où vient ce plat » (producteurs) · le service du midi en 20 minutes chrono ·
   la carte des softs et sans-alcool.
 - Bar : carte des cocktails saisonnière · quiz / jeu de table ·
-  happy hour qui change selon l'heure · la carte des bières pression du moment.
+  happy hour qui change selon l'heure · la carte des softs maison · le programme du dimanche sport.
 - Boulangerie : commande de galette / bûche selon la saison · liste d'allergènes ·
-  la carte des sandwichs du midi.
+  la commande de gâteau d'anniversaire · les horaires de fournée.
 - Food truck : le camion privatisé pour un événement · la carte de la semaine par thème.
 - Marché / producteur : la recette du produit de saison · le calendrier des marchés du mois.
-- Commerce : retours & garantie · inscription newsletter en caisse · parrainage ·
-  la notice du produit sans papier · le stock disponible en magasin.
+- Commerce : inscription newsletter en caisse · parrainage · la notice du produit sans papier ·
+  la carte cadeau dématérialisée · le mode d'emploi de l'article en cabine ·
+  les horaires exceptionnels affichés en vitrine.
 - Transverse : « ton QR imprimé en 2024 marche encore » (QR dynamique) ·
   le plafond souple (la page ne se coupe pas) · QR statique vs dynamique en 20 s ·
   ce que ton support papier ne te dit pas (mesure) · un support, une page, un chiffre.
@@ -90,8 +95,11 @@
 > Contrôle qualité : **16 visuels, 0 alerte**. Vidéo 30,6 s à publier à la main.
 > Dépôt fait, **5 posts mis en file** : carrousel IG (19 h 20 UTC), carrousel photo TikTok
 > (18 h 56), et les 3 épingles du test de placement (12 h 46 Productivité au travail,
-> 13 h 30 Templates gratuits, 14 h 14 QR code restaurant = témoin). **File à 5/10.**
-> Lecture du test : **11/09**.
+> 13 h 30 Templates gratuits, 14 h 14 QR code restaurant = témoin).
+> Puis les **4 épingles neuves** ont été mises en file à leur tour, volontairement sur les
+> tableaux « QR code X » (restaurant ×2, boutique commerce ×2) pour ne pas polluer les
+> tableaux historiques du test : **file à 9/10**, 4 tableaux distincts sur la journée.
+> Le stock est vide (statut `en-file` partout). Lecture du test : **11/09**.
 
 > Note 03/09 : pas de vidéo (jeudi). Dépôt automatique bloqué par le proxy → dépôt manuel via QRowg-Depot.cmd, puis **7 posts mis en file** (IG carrousel, TikTok carrousel photo, 5 épingles Pinterest sur 4 tableaux). File à 13 posts programmés.
 
@@ -123,3 +131,30 @@
 - « Les vins au verre tournent. Le support, non. »
 - « Les invendus du soir, annoncés à 18 h. »
 - « Le panier de la semaine, réservé avant l'étal. »
+- « "Vous l'avez en 40 ?" Personne ne sait. »
+- « Le ticket qui explique le retour. »
+- « À midi, la file veut savoir ce qu'il reste. »
+- « Les pressions changent. L'ardoise, jamais. »
+
+| 05/09 | commerce / boutique (100 % inédit) | qr-code-stock-disponible-magasin-boutique (carrousel IG + TikTok + reel 32,2 s), qr-code-retours-garantie-ticket-caisse-boutique, qr-code-carte-sandwichs-du-midi-boulangerie, qr-code-carte-bieres-pression-du-moment-bar | Pinterest, IG, TikTok, X |
+
+> **Note 05/09 — file Buffer trouvée VIDE (0/10)** : les 9 posts du 04/09 sont tous partis.
+> Secteur du jour : commerce / boutique, zéro doublon (4 angles neufs, 3 gabarits d'épingle
+> distincts : layouts 1, 2 et 3). Contrôle qualité : **15 visuels, 0 alerte**.
+> Vidéo Motion 32,2 s, 8 scènes, 8 moteurs différents, palette `or` stable, scrim 0,82 —
+> à publier à la main.
+> **Dépôt fait** (15 PNG via QRowg-Depot.cmd), puis **5 posts mis en file** :
+> carrousel Instagram (20 h 40 UTC), carrousel photo TikTok (15 h 39), et 3 épingles
+> Pinterest sur 3 tableaux distincts — QR code boutique commerce (14 h 40),
+> QR code food truck (16 h 11), QR code restaurant (17 h 27). **File à 5/10**,
+> aucune erreur. Le stock repasse à vide (`en-file` partout).
+> Placement volontairement sur les tableaux « QR code X » : le test lancé le 03/09 se
+> lit le **11/09**, on ne touche pas aux tableaux historiques d'ici là.
+> **Apprentissage Buffer.** Pinterest : *toutes* les épingles publiées depuis le 02/09 sont
+> à **0 impression**, y compris les 3 épingles du test de placement (04/09) — tableaux
+> historiques ET témoin. Lecture officielle du test le 11/09, mais à J+1 le signal pointe
+> déjà vers la cause n°2 du diagnostic (compte / domaine non revendiqué), pas vers le
+> placement. TikTok, à l'inverse, distribue vraiment : carrousel photo du 04/09 à
+> **273 vues, 58,95 min de visionnage, 12,91 s en moyenne** — contre 3,88 s le 03/09.
+> Le temps de visionnage a triplé. C'est le seul canal où le contenu est vu :
+> priorité TikTok, volume Pinterest volontairement réduit à **3 épingles** au lieu de 5.

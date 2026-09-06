@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { stripe } from "@/lib/stripe"
+import { resilierToutChezStripe } from "@/lib/resiliationStripe"
 
 export async function POST(req: NextRequest) {
   // 1. Authentifier le demandeur (session cookie) — jamais un id passe par le client.
@@ -29,19 +31,32 @@ export async function POST(req: NextRequest) {
   )
   const uid = user.id
 
-  // 3. Lever les contraintes qui bloqueraient la suppression du profil :
+  // 3. Arrêter la facturation AVANT de supprimer quoi que ce soit. Sans cela le
+  //    client continuait d'être prélevé après la disparition de son compte. Si
+  //    Stripe échoue, on refuse la suppression : un compte qui reste vaut mieux
+  //    qu'un compte fantôme qui paie.
+  const { data: profil } = await admin.from("profiles").select("stripe_customer_id").eq("id", uid).maybeSingle()
+  try {
+    const r = await resilierToutChezStripe(stripe, profil?.stripe_customer_id ?? null)
+    if (r.annules.length) console.log(`[account/delete] ${r.annules.length} abonnement(s) Stripe annule(s) pour ${uid}`)
+  } catch (e) {
+    console.error("[account/delete] annulation Stripe impossible :", e instanceof Error ? e.message : e)
+    return NextResponse.json({ error: "Impossible d'annuler votre abonnement pour le moment. Votre compte n'a pas été supprimé — réessayez dans quelques minutes ou contactez le support." }, { status: 502 })
+  }
+
+  // 4. Lever les contraintes qui bloqueraient la suppression du profil :
   //    - profiles.referred_by (NO ACTION) : detacher les filleuls parraines.
   //    - teams.owner_id (RESTRICT) : supprimer les equipes possedees.
   await admin.from("profiles").update({ referred_by: null }).eq("referred_by", uid)
   await admin.from("teams").delete().eq("owner_id", uid)
 
-  // 4. Supprimer l'utilisateur auth -> cascade sur profiles et toutes les donnees liees.
+  // 5. Supprimer l'utilisateur auth -> cascade sur profiles et toutes les donnees liees.
   const { error } = await admin.auth.admin.deleteUser(uid)
   if (error) {
     return NextResponse.json({ error: "La suppression a échoué. Réessayez ou contactez le support." }, { status: 500 })
   }
 
-  // 5. Invalider la session locale (cookies) apres coup.
+  // 6. Invalider la session locale (cookies) apres coup.
   try { await supabase.auth.signOut() } catch {}
 
   return NextResponse.json({ ok: true })

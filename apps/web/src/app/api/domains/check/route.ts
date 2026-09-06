@@ -1,7 +1,7 @@
 ﻿// app/api/domains/check/route.ts
 // Vérification DNS complète: TXT ownership + CNAME + A record + accessibilité HTTP
 
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import dns from "dns/promises"
 import { isPublicHttpUrl } from "@/lib/safeUrl"
@@ -272,11 +272,15 @@ export async function GET(req: NextRequest) {
 
   // Si TXT ok → activer automatiquement dans Supabase
   if (canVerify && !rec.verified) {
-    await supabase
+    // État verrouillé en base hors service role (migration 20260904120000) :
+    // client admin, filtré par user_id. On ne prétend pas « active » côté Vercel
+    // ici — c'est l'action verify de /api/domains qui rattache le domaine et le dit.
+    const { error } = await createAdminClient()
       .from("domain_verifications")
-      .update({ verified: true, verified_at: new Date().toISOString(), vercel_status: "active" })
+      .update({ verified: true, verified_at: new Date().toISOString() })
       .eq("domain", domain)
       .eq("user_id", user.id)
+    if (error) console.error("[domains/check] verification non persistee :", error.message)
   }
 
   return NextResponse.json({ domain, allOk, checks, canVerify } satisfies CheckResult)

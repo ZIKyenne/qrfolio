@@ -233,8 +233,6 @@ export default function ProfilePage() {
   const [confirmRevoke,    setConfirmRevoke]    = useState<string|null>(null)   // modal confirmation
   const [apiCallsCount,    setApiCallsCount]    = useState<number>(0)
   const API_CALLS_LIMIT: Record<string,number> = { free:0, starter:0, pro:1000, business:10000 }
-  const [showDanger, setShowDanger]     = useState(false)
-  const [dangerConfirm, setDangerConfirm] = useState("")
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [form, setForm]                 = useState({ full_name: "", username: "", bio: "", website: "" })
   const [formOriginal, setFormOriginal] = useState({ full_name: "", username: "", bio: "", website: "" })
@@ -2192,34 +2190,19 @@ export default function ProfilePage() {
           </SectionCard>
           )}
 
-          {/* -- Zone Danger ------------------------------------------- */}
+          {/* -- Zone Danger -------------------------------------------
+              Ce bloc dupliquait celui de Paramètres, avec un bouton final sans
+              onClick : on tapait SUPPRIMER, rien ne se passait. Une seule maison
+              pour la sécurité du compte — Paramètres, où la suppression est
+              réelle et confirmée par e-mail. */}
           {ptab === "securite" && (
           <SectionCard title="Zone danger" icon={AlertTriangle} color="var(--danger)">
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              <div style={{ padding:"12px 14px", background:"rgba(255,107,107,0.04)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:9 }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:showDanger?12:0 }}>
-                  <div>
-                    <p style={{ color:"var(--danger)", fontSize:12, fontWeight:700, margin:0 }}>Supprimer mon compte</p>
-                    <p style={{ color:MUTED, fontSize:10, margin:"2px 0 0" }}>Action irreversible -- toutes les donnees seront perdues</p>
-                  </div>
-                  <button type="button" onClick={() => setShowDanger(!showDanger)}
-                    className={showDanger ? "da-btn-neutral da-btn-neutral--sm" : "da-btn-danger da-btn-danger--sm"}>
-                    {showDanger ? "Annuler" : "Supprimer"}
-                  </button>
-                </div>
-                {showDanger && (
-                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                    <p style={{ color:"var(--danger)", fontSize:11, margin:0 }}>Tape <strong>SUPPRIMER</strong> pour confirmer :</p>
-                    <input value={dangerConfirm} onChange={e => setDangerConfirm(e.target.value)}
-                      placeholder="SUPPRIMER"
-                      style={{ width:"100%", background:"#0F0E0B", border:"1px solid rgba(255,107,107,0.3)", borderRadius:8, padding:"9px 12px", color:"#F5F0E8", fontSize:12, outline:"none", boxSizing:"border-box" as const }}/>
-                    <button type="button" disabled={dangerConfirm !== "SUPPRIMER"}
-                      style={{ padding:"9px", background:dangerConfirm==="SUPPRIMER"?"rgba(255,107,107,0.2)":"rgba(255,255,255,0.03)", border:"1px solid rgba(255,107,107,0.3)", borderRadius:8, color:dangerConfirm==="SUPPRIMER"?"var(--danger)":MUTED, fontSize:12, fontWeight:700, cursor:dangerConfirm==="SUPPRIMER"?"pointer":"not-allowed" }}>
-                      Confirmer la suppression
-                    </button>
-                  </div>
-                )}
+            <div style={{ padding:"12px 14px", background:"rgba(255,107,107,0.04)", border:"1px solid rgba(255,107,107,0.15)", borderRadius:9, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
+              <div>
+                <p style={{ color:"var(--danger)", fontSize:13, fontWeight:700, margin:0 }}>Supprimer mon compte</p>
+                <p style={{ color:MUTED, fontSize:12.5, margin:"2px 0 0" }}>Action irréversible — toutes les données seront perdues. La suppression se fait depuis les Paramètres, avec une confirmation par e-mail.</p>
               </div>
+              <a href="/dashboard/settings#danger" className="da-btn-danger da-btn-danger--sm" style={{ textDecoration:"none" }}>Aller aux Paramètres</a>
             </div>
           </SectionCard>
           )}

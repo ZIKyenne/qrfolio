@@ -119,7 +119,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
 
   // Enregistre le QR dans le compte (POST /api/qr-instant → consomme le quota) PUIS le
   // télécharge. Dynamique → le QR encode /q/<code> renvoyé par le serveur (traçable,
-  // modifiable, essai 30 j) ; statique → contenu brut. Erreur 403 = quota atteint (upsell).
+  // modifiable, inclus dans le plan) ; statique → contenu brut. Erreur 403 = quota atteint (upsell).
   async function createAndDownload(ext: "png" | "svg") {
     if (!ready || busy) return
     // QR dynamique = compte requis (il faut un lien serveur /q/<code>). Sans compte, on
@@ -302,7 +302,7 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
             </span>
             <span style={{ minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6, color: INK, fontSize: 13, fontWeight: 700 }}><Zap size={14} color={G} /> QR dynamique</span>
-              <span style={{ display: "block", color: MUT, fontSize: 11.5, lineHeight: 1.4, marginTop: 2 }}>{authed ? "Modifiable après impression + suivi des scans. Gratuit 30 j (2/mois)." : "Modifiable après impression + suivi des scans. Sans compte, commencez par composer votre page."}</span>
+              <span style={{ display: "block", color: MUT, fontSize: 13, lineHeight: 1.4, marginTop: 2 }}>{authed ? `Modifiable après impression + suivi des scans. ${dynLimit(plan) === null ? "Illimité" : `${dynLimit(plan)} inclus`} dans votre plan.` : "Modifiable après impression + suivi des scans. Sans compte, commencez par composer votre page."}</span>
             </span>
           </button>
         )}
@@ -351,8 +351,8 @@ export default function GeneratorClient({ defaultType = "link", authed = false }
             prend le relais : les deux diraient la même chose. */}
         {!justDownloaded && (
         <div style={{ ...card, borderColor: "rgba(201,168,76,0.3)", background: "rgba(201,168,76,0.06)" }}>
-          <p style={{ color: INK, fontSize: 13.5, fontWeight: 800, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 7 }}><Zap size={16} color={G} /> {dynGuest ? "QR dynamique — sans compte, autrement" : isDyn ? "QR dynamique — 30 jours gratuits" : qrType === "link" ? "Besoin de le modifier après impression ?" : "QR statique — pour toujours"}</p>
-          <p style={{ color: MUT, fontSize: 12, margin: 0, lineHeight: 1.5 }}>{dynGuest
+          <p style={{ color: INK, fontSize: 13.5, fontWeight: 800, margin: "0 0 4px", display: "flex", alignItems: "center", gap: 7 }}><Zap size={16} color={G} /> {dynGuest ? "QR dynamique — sans compte, autrement" : isDyn ? "QR dynamique — inclus dans votre plan" : qrType === "link" ? "Besoin de le modifier après impression ?" : "QR statique — pour toujours"}</p>
+          <p style={{ color: MUT, fontSize: 13, margin: 0, lineHeight: 1.5 }}>{dynGuest
             ? <>Un QR dynamique pointe vers une adresse qui lui appartient : elle doit être créée quelque part, donc dans un compte. Sans compte, une <strong style={{ color: MUT }}>page modifiable</strong> rend le même service — le QR imprimé ne change jamais, son contenu, si.</>
             : isDyn
             ? <>Ce QR pointera vers un lien <strong style={{ color: MUT }}>traçable et modifiable après impression</strong>, sans expiration. Le nombre est compris dans <Link href="/upgrade" style={{ color: G, textDecoration: "none", fontWeight: 700 }}>votre plan</Link>.</>

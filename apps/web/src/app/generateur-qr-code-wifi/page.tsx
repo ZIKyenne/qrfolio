@@ -14,7 +14,7 @@ const URL = `${APP}/generateur-qr-code-wifi`
 
 export const metadata: Metadata = {
   title: "Générateur de QR code WiFi gratuit",
-  description: "Créez un QR code WiFi gratuit : vos invités se connectent en un scan, sans taper le mot de passe. Fonctionne hors ligne, PNG/SVG à imprimer. Compte gratuit.",
+  description: "Créez un QR code WiFi gratuit : vos invités se connectent en un scan, sans taper le mot de passe. Fonctionne hors ligne, PNG/SVG à imprimer. Sans compte.",
   alternates: { canonical: URL },
   openGraph: { title: "Générateur de QR code WiFi gratuit | QRowg", description: "Créez un QR code WiFi gratuit : connexion automatique en un scan, sans mot de passe à taper. À imprimer.", url: URL, siteName: "QRowg", type: "website" },
   twitter: { card: "summary_large_image", title: "Générateur de QR code WiFi gratuit | QRowg", description: "Connexion WiFi en un scan, sans taper le mot de passe. Gratuit, à imprimer." },
@@ -25,7 +25,7 @@ const FAQ = [
   { q: "Est-ce compatible iPhone et Android ?", a: "Oui. Les appareils récents iOS et Android proposent de rejoindre le réseau automatiquement dès le scan, sans application à installer." },
   { q: "Le mot de passe est-il visible dans le QR code ?", a: "Le QR contient le mot de passe, comme une affichette classique. Pour un lieu public, créez un réseau invité dédié plutôt que d'exposer votre WiFi principal." },
   { q: "Quel type de sécurité choisir ?", a: "WPA/WPA2 pour la plupart des box récentes, WEP pour les anciens équipements, ou « Ouvert » pour un réseau sans mot de passe." },
-  { q: "Le générateur de QR code WiFi est-il gratuit ?", a: "Oui. Avec un compte gratuit, vous créez et téléchargez votre QR code WiFi en PNG ou SVG haute résolution, sans filigrane." },
+  { q: "Le générateur de QR code WiFi est-il gratuit ?", a: "Oui. Sans compte, vous créez et téléchargez votre QR code WiFi en PNG ou SVG haute résolution, sans filigrane." },
 ]
 const STEPS = [
   "Entrez le nom du réseau (SSID) et le mot de passe.",

@@ -104,6 +104,14 @@ const PublicCompareTwo = dynamic(() => import("./blocks/compare_two").then(m => 
 const PublicProgressBars = dynamic(() => import("./blocks/progress_bars").then(m => m.PublicProgressBars))
 const PublicHighlightBox = dynamic(() => import("./blocks/highlight_box").then(m => m.PublicHighlightBox))
 
+// Vague 9 — logos, certifications et tableaux.
+const PublicLogoWall = dynamic(() => import("./blocks/logo_wall").then(m => m.PublicLogoWall))
+const PublicPartners = dynamic(() => import("./blocks/partners").then(m => m.PublicPartners))
+const PublicCertifications = dynamic(() => import("./blocks/certifications").then(m => m.PublicCertifications))
+const PublicBusinessCertifications = dynamic(() => import("./blocks/business_certifications").then(m => m.PublicBusinessCertifications))
+const PublicInfoTable = dynamic(() => import("./blocks/info_table").then(m => m.PublicInfoTable))
+const PublicLegalInfo = dynamic(() => import("./blocks/legal_info").then(m => m.PublicLegalInfo))
+
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
   values: PublicValues,
@@ -192,6 +200,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   compare_two: PublicCompareTwo,
   progress_bars: PublicProgressBars,
   highlight_box: PublicHighlightBox,
+  logo_wall: PublicLogoWall,
+  partners: PublicPartners,
+  certifications: PublicCertifications,
+  business_certifications: PublicBusinessCertifications,
+  info_table: PublicInfoTable,
+  legal_info: PublicLegalInfo,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

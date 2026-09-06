@@ -33,6 +33,13 @@ const DETECTORS: Record<string, (c: Record<string, any>) => boolean> = {
   merch:                   c => anyIndexed(c, i => c[`name${i}`]),
   trust_badge:             c => anyIndexed(c, i => c[`b${i}_label`]),
   info_table:              c => anyIndexed(c, i => c[`r${i}_label`]),
+  // ── Vague 9 (renderer partagé) : ces quatre-là rendaient `null` en public sans
+  // que la doctrine ne le déclare. L'aperçu remplissait donc la grille de cases
+  // « Logo » factices, ou affichait un cadre vide, pour un bloc qui ne publiait rien.
+  logo_wall:               c => anyIndexed(c, i => c[`logo${i}_name`]),
+  partners:                c => anyIndexed(c, i => c[`logo${i}_name`]),
+  certifications:          c => anyIndexed(c, i => c[`cert_${i}_name`]),
+  legal_info:              c => ["company_name", "siret", "tva", "address", "capital", "rcs", "email"].some(k => hasMeaningfulText(c[k])),
   engagements:            c => anyIndexed(c, i => c[`e${i}`]),
   stats_block:             c => anyIndexed(c, i => c[`s${i}_value`]),
   grid_section:            c => anyIndexed(c, i => c[`c${i}_title`]),

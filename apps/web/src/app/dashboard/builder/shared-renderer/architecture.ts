@@ -108,6 +108,12 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   "anchor_nav", "anchor_target", "toggle_content", "back_to_top",
   "steps_horizontal", "stat_hero", "badge_row", "icon_row",
   "compare_two", "progress_bars", "highlight_box",
+  // ── Vague 9 — logos, certifications et tableaux (6 blocs) ──
+  // Ils etaient ecrits deux fois et avaient diverge : coche visible seulement dans
+  // l'apercu, cases « Logo » factices, filets figes en blanc (invisibles sur theme
+  // clair), valeur coupee d'un cote et repliee de l'autre. Une seule source desormais.
+  "logo_wall", "partners", "certifications", "business_certifications",
+  "info_table", "legal_info",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

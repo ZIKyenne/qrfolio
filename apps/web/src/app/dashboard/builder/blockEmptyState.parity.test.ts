@@ -2,6 +2,10 @@ import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { EMPTY_STATE_BLOCK_TYPES } from "./blockEmptyState"
+import { SHARED_RENDERER_BLOCKS } from "./shared-renderer/architecture"
+import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
+import { renderToStaticMarkup } from "react-dom/server"
+import { createElement } from "react"
 
 // Garde anti-régression de l'ÉTAT VIDE (mission B05).
 // L'aperçu éditeur ne doit plus afficher de fausses données comme si elles seraient
@@ -12,8 +16,23 @@ import { EMPTY_STATE_BLOCK_TYPES } from "./blockEmptyState"
 const src = readFileSync(fileURLToPath(new URL("./builderPreview.tsx", import.meta.url)), "utf8")
 
 describe("état vide éditeur — chaque bloc concerné a une garde explicite", () => {
+  // Deux chemins valides, un seul résultat exigé : l'aperçu d'un bloc vide doit
+  // montrer une invite, jamais du faux contenu.
+  //  • bloc legacy → la garde `hasPublishableContent("type"` dans builderPreview.tsx ;
+  //  • bloc migré vers le renderer partagé → son adapter éditeur rend l'invite.
+  //    Ici on ne se contente pas de lire le source : on rend le bloc à vide.
+  const theme: any = { bg: "#080808", primary: "#C9A84C", text: "#F5F0E8", muted: "#A8A190", fontBody: "DM Sans" }
+  const ctx: any = { theme, primary: theme.primary, text: theme.text, muted: theme.muted, accent: "#39FF8F", surfaceStyle: {}, canEdit: false, edit: () => () => {} }
+
   for (const type of EMPTY_STATE_BLOCK_TYPES) {
-    it(`${type} : gardé par hasPublishableContent`, () => {
+    it(`${type} : l'aperçu d'un bloc vide affiche une invite`, () => {
+      if (SHARED_RENDERER_BLOCKS.has(type)) {
+        const Adapter = resolveEditorBlock(type)
+        expect(Adapter, `${type} est activé dans le renderer partagé mais n'a pas d'adapter éditeur`).toBeTruthy()
+        const html = renderToStaticMarkup(createElement(Adapter as any, { content: {}, ctx }))
+        expect(html.includes('role="note"'), `${type} : l'adapter partagé ne rend pas d'état vide`).toBe(true)
+        return
+      }
       expect(src.includes(`hasPublishableContent("${type}"`), `${type} n'a pas de garde d'état vide dans builderPreview.tsx`).toBe(true)
     })
   }

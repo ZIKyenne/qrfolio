@@ -57,6 +57,12 @@ import { EditorDiscography } from "./blocks/discography/EditorDiscography"
 import { EditorPodcastLinks } from "./blocks/podcast_links/EditorPodcastLinks"
 import { EditorProductCatalog } from "./blocks/product_catalog/EditorProductCatalog"
 // Vague LAYOUT — blocs « Création libre » (une vue partagée, deux adapters d'une ligne).
+import { EditorLogoWall } from "./blocks/logo_wall"
+import { EditorPartners } from "./blocks/partners"
+import { EditorCertifications } from "./blocks/certifications"
+import { EditorBusinessCertifications } from "./blocks/business_certifications"
+import { EditorInfoTable } from "./blocks/info_table"
+import { EditorLegalInfo } from "./blocks/legal_info"
 import { EditorFreeSection } from "./blocks/free_section"
 import { EditorImageText } from "./blocks/image_text"
 import { EditorSplitPanel } from "./blocks/split_panel"
@@ -181,6 +187,13 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   compare_two: EditorCompareTwo,
   progress_bars: EditorProgressBars,
   highlight_box: EditorHighlightBox,
+  // Vague 9 — logos, certifications et tableaux.
+  logo_wall: EditorLogoWall,
+  partners: EditorPartners,
+  certifications: EditorCertifications,
+  business_certifications: EditorBusinessCertifications,
+  info_table: EditorInfoTable,
+  legal_info: EditorLegalInfo,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

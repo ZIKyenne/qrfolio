@@ -47,6 +47,12 @@ const KEY: Record<string, (v: string) => Record<string, any>> = {
   info_box: v => ({ message: v }),
   google_reviews_block: v => ({ r1_name: v }),
   event_access: v => ({ address: v }),
+  // Vague 9 du renderer partage : quatre blocs qui disparaissaient en ligne sans
+  // que la doctrine ne le declare.
+  logo_wall: v => ({ logo1_name: v }),
+  partners: v => ({ logo1_name: v }),
+  certifications: v => ({ cert_1_name: v }),
+  legal_info: v => ({ siret: v }),
 }
 
 describe("hasPublishableContent — toutes les familles listées sont couvertes", () => {

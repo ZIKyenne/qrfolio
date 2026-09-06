@@ -37,16 +37,50 @@ describe("mentions légales", () => {
 })
 
 describe("une seule phrase d'hébergement, sans zone géographique tant qu'elle n'est pas vérifiée", () => {
-  it("phraseHebergement ne promet une région que si elle est renseignée", async () => {
+  it("phraseHebergement ne promet une zone que si elle est renseignée", async () => {
     const { phraseHebergement, HEBERGEMENT } = await import("./editeur")
     const p = phraseHebergement()
     expect(p).toContain("Supabase")
     expect(p).toContain("Vercel")
-    if (HEBERGEMENT.region === null) {
-      expect(p).not.toMatch(/Europe|Union européenne|région/)
-    } else {
-      expect(p).toContain(HEBERGEMENT.region)
+    for (const zone of [HEBERGEMENT.donnees, HEBERGEMENT.application]) {
+      if (zone) expect(p).toContain(zone)
     }
+    if (!HEBERGEMENT.donnees && !HEBERGEMENT.application) {
+      expect(p).not.toMatch(/Europe|Union européenne|États-Unis|région|située/)
+    }
+  })
+
+  it("les données et l'application sont nommées SÉPARÉMENT", async () => {
+    // Relevé le 6 septembre : la base est en eu-west-1 (Irlande), les fonctions
+    // Vercel en iad1 (Washington). L'ancienne forme de la phrase ne savait dire
+    // qu'une seule région et aurait appliqué celle des données à l'application —
+    // une affirmation fausse sur une page qui parle de RGPD.
+    const { phraseHebergement, HEBERGEMENT } = await import("./editeur")
+    expect(HEBERGEMENT).toHaveProperty("donnees")
+    expect(HEBERGEMENT).toHaveProperty("application")
+    expect(HEBERGEMENT).not.toHaveProperty("region")
+    const p = phraseHebergement()
+    if (HEBERGEMENT.donnees && HEBERGEMENT.application && HEBERGEMENT.donnees !== HEBERGEMENT.application) {
+      // Les deux zones doivent apparaître, et la phrase doit dire laquelle est laquelle.
+      expect(p).toMatch(/base de données est située/)
+      expect(p).toMatch(/application est servie depuis/)
+      expect(p.indexOf(HEBERGEMENT.donnees)).toBeLessThan(p.indexOf(HEBERGEMENT.application))
+    }
+  })
+
+  it("chaque zone renseignée nomme une région vérifiable, pas un continent vague", async () => {
+    // « en Europe » sans région ne veut rien dire pour quelqu'un qui doit
+    // répondre à une question RGPD. On exige le code de région du fournisseur —
+    // et les deux fournisseurs ne l'écrivent pas pareil : AWS dit « eu-west-1 »,
+    // Vercel dit « iad1 ». Une première version de ce test n'acceptait que la
+    // forme AWS et refusait donc la région réelle de l'application.
+    const CODE_REGION = /\b([a-z]{2}-[a-z]+-\d|[a-z]{3}\d)\b/
+    const { HEBERGEMENT } = await import("./editeur")
+    for (const [nom, zone] of Object.entries(HEBERGEMENT)) {
+      if (!zone) continue
+      expect(zone, `${nom} doit nommer une région (ex. eu-west-1, iad1)`).toMatch(CODE_REGION)
+    }
+    expect(CODE_REGION.test("en Europe"), "un continent n'est pas une région").toBe(false)
   })
 
   it("Sécurité, Confidentialité et le guide RGPD la reprennent, et n'inventent plus", () => {

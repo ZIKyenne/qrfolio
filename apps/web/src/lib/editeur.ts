@@ -12,18 +12,34 @@
 // Un test refuse tout crochet dans page.tsx. Il ne reste qu'à remplir ici.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Hébergement — UNE phrase, reprise par /security, /privacy, /legal et le
-// guide RGPD. Trois descriptions différentes coexistaient (« en Europe »,
-// « Union européenne », « infrastructure AWS ») sans que la région du projet
-// Supabase ait été vérifiée. Tant que `region` est null, aucune page ne promet
-// une zone géographique.
-export const HEBERGEMENT: { region: string | null } = {
-  region: null, // ex. « Union européenne (AWS eu-west-3, Paris) » — à lire dans Supabase › Settings › General
+// ── Hébergement — UNE phrase, reprise par /security, /privacy et le guide RGPD.
+// Trois descriptions différentes coexistaient (« en Europe », « Union
+// européenne », « infrastructure AWS ») sans qu'aucune région ait été vérifiée.
+// Tant qu'un champ est null, aucune page ne promet la zone correspondante.
+//
+// Relevé le 6 septembre, directement dans les deux comptes :
+//  · la base de données Supabase est en eu-west-1 (Irlande) ;
+//  · les fonctions Vercel tournent en iad1 (Washington, États-Unis) — c'est la
+//    région par défaut du plan Hobby.
+//
+// Les deux sont donc DIFFÉRENTES, et l'ancienne forme de cette phrase ne savait
+// dire qu'une seule région : elle aurait appliqué celle des données à
+// l'application, ce qui aurait été faux sur une page qui parle de RGPD. Les deux
+// sont désormais nommées séparément. Si l'application doit rejoindre l'Union
+// européenne, la région des fonctions se change dans Vercel › Settings ›
+// Functions (cdg1 = Paris) ; il suffira alors de corriger la ligne ci-dessous.
+export const HEBERGEMENT: { donnees: string | null; application: string | null } = {
+  donnees: "l’Union européenne (AWS eu-west-1, Irlande)",
+  application: "les États-Unis (Vercel iad1, Washington)",
 }
 
 export function phraseHebergement(): string {
   const base = "Vos données sont hébergées chez Supabase (base de données, fichiers et authentification, sur l’infrastructure AWS) et Vercel (application)"
-  return HEBERGEMENT.region ? `${base}, dans la région ${HEBERGEMENT.region}.` : `${base}.`
+  const d = HEBERGEMENT.donnees, a = HEBERGEMENT.application
+  if (d && a) return `${base}. La base de données est située dans ${d} ; l’application est servie depuis ${a}.`
+  if (d) return `${base}. La base de données est située dans ${d}.`
+  if (a) return `${base}. L’application est servie depuis ${a}.`
+  return `${base}.`
 }
 
 export type Editeur = {

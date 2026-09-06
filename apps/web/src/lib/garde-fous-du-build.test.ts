@@ -12,12 +12,16 @@ import { join } from "node:path"
 const WEB = join(__dirname, "../..")
 
 describe("le garde-fou anti-crash du build", () => {
+  // 30 s, et non les 5 s par défaut : ce test lance un vrai sous-processus qui
+  // balaye tout le dépôt, pendant que 200 autres fichiers de tests tournent en
+  // parallèle. Il a mis 0,9 s seul et dépassé 5 s sous charge — précisément le
+  // genre de test qui échoue « au hasard » sur une machine chargée.
   it("passe sur le dépôt tel qu'il est", () => {
     // Il sort en code 1 et écrit sur stderr quand il trouve quelque chose :
     // execFileSync lève alors, et le message d'erreur porte la liste.
     const sortie = execFileSync("node", ["scripts/check-jsx-imports.mjs"], { cwd: WEB, encoding: "utf8" })
     expect(sortie).toContain("✅")
-  })
+  }, 30_000)
 
   it("ne compte pas une balise écrite dans un commentaire", () => {
     // `{/* Réactivable : <QRDynamicSection /> */}` ne rend rien et ne peut rien

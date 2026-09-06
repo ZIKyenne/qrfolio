@@ -58,12 +58,19 @@ export function messageFondateur(c: Record<string, any> | null | undefined): Mes
 }
 
 // ── Fiche entreprise ────────────────────────────────────────────────────────
-export type FicheEntreprise = { logo: string; name: string; sector: string; year: string }
+export type FicheEntreprise = { logo: string; name: string; sousTitre: string }
 export function ficheEntreprise(c: Record<string, any> | null | undefined): FicheEntreprise | null {
   const src = c || {}
   const name = txt(src.company_name), logo = txt(src.logo_url)
   if (!name && !logo) return null
-  return { logo, name, sector: txt(src.sector), year: txt(src.founded_year) }
+  // « Effectif » etait un reglage propose et lu par personne : le commercant le
+  // remplissait, rien ne s'affichait. Il rejoint la ligne de sous-titre.
+  const annee = txt(src.founded_year)
+  const effectif = txt(src.team_size)
+  return {
+    logo, name,
+    sousTitre: [txt(src.sector), annee && `Depuis ${annee}`, effectif].filter(Boolean).join(" · "),
+  }
 }
 
 // ── Parcours : quatre lignes libres, un emoji en tete ────────────────────────

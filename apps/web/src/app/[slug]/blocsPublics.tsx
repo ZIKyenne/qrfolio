@@ -9,6 +9,7 @@
 import { useEffect, useState, useRef, Component } from "react"
 import SmartImage from "@/components/SmartImage"
 import { altGalerie } from "@/lib/texteAlternatif"
+import { adresseEmailValide } from "@/lib/destinataireLead"
 import { trackLinkClick } from "@/lib/trackLinkClick"
 import { submitLead } from "@/lib/submitLead"
 import { contactFormFields } from "@/lib/leadForms"
@@ -594,9 +595,12 @@ export function LeadFormPublic({ block, pageId, ownerEmail, leadType, title, des
     fields.forEach(f => { if (vals[f.key]) data[f.label] = vals[f.key] })
     const ok = await submitLead({ pageId, blockId: block.id, type: leadType, name: vals.name, email: vals.email, phone: vals.phone, message: vals.message || vals.project || subject, data })
     if (ok) { setStatus("done"); return }
-    if (ownerEmail) {
+    // Repli si l'enregistrement echoue : on ouvre le courrier du visiteur vers
+    // l'adresse choisie par le commercant sur ce bloc, a defaut celle du compte.
+    const dest = adresseEmailValide((block.content as any)?.email_dest) || ownerEmail
+    if (dest) {
       const body = encodeURIComponent(fields.map(f => `${f.label}: ${vals[f.key] || ""}`).join("\n"))
-      window.location.href = `mailto:${ownerEmail}?subject=${encodeURIComponent(subject)}&body=${body}`
+      window.location.href = `mailto:${dest}?subject=${encodeURIComponent(subject)}&body=${body}`
       setStatus("done")
     } else setStatus("error")
   }

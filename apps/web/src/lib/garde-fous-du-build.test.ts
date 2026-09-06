@@ -37,3 +37,35 @@ describe("le garde-fou anti-crash du build", () => {
     expect(src).toContain("/^[ \\t]*\\/\\/.*$/gm")
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Le releve du 6 septembre a trouve un DEUXIEME faux positif dans ce meme
+// script : la liste des identifiants declares mangeait la virgule de fin, donc
+// un identifiant sur deux echappait au recensement. Dans « [a, Ed, Pub, x] »,
+// Ed etait vu, Pub non — et le controle annoncait « <Pub/> jamais importe ».
+// Ces deux tests figent les formes de declaration que le script doit reconnaitre.
+describe("le recensement des identifiants ne saute pas un element sur deux", () => {
+  const collecte = (src: string) => {
+    const bound = new Set<string>()
+    const destr = /[{,[]\s*([A-Z][\w$]*)\s*(?=[,}\]=])/g
+    let m: RegExpExecArray | null
+    while ((m = destr.exec(src))) bound.add(m[1])
+    return bound
+  }
+
+  it("une destructuration de tableau lie TOUS ses elements", () => {
+    const b = collecte("for (const [type, Ed, Pub, contenu] of paires) {")
+    expect([...b].sort()).toEqual(["Ed", "Pub"])
+  })
+  it("une destructuration d'objet aussi, y compris le dernier", () => {
+    const b = collecte("const { Alpha, Beta, Gamma } = mod")
+    expect([...b].sort()).toEqual(["Alpha", "Beta", "Gamma"])
+  })
+  it("un seul element entre crochets est lie", () => {
+    expect([...collecte("const [Seul] = useChose()")]).toEqual(["Seul"])
+  })
+  it("le script reel reconnait la meme chose", () => {
+    const script = readFileSync(join(WEB, "scripts/check-jsx-imports.mjs"), "utf8")
+    expect(script, "le delimiteur de fin doit rester en anticipation").toContain("(?=[,}\\]=])")
+  })
+})

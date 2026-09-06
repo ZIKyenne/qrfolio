@@ -128,6 +128,10 @@ const PublicPromoCode = dynamic(() => import("./blocks/promo_code").then(m => m.
 const PublicTicketsLeft = dynamic(() => import("./blocks/tickets_left").then(m => m.PublicTicketsLeft))
 const PublicLimitedOffer = dynamic(() => import("./blocks/limited_offer").then(m => m.PublicLimitedOffer))
 
+// Vague 12 — formules et tarifs.
+const PublicPacks = dynamic(() => import("./blocks/packs").then(m => m.PublicPacks))
+const PublicServicesPricing = dynamic(() => import("./blocks/services_pricing").then(m => m.PublicServicesPricing))
+
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
   values: PublicValues,
@@ -234,6 +238,8 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   promo_code: PublicPromoCode,
   tickets_left: PublicTicketsLeft,
   limited_offer: PublicLimitedOffer,
+  packs: PublicPacks,
+  services_pricing: PublicServicesPricing,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

@@ -147,10 +147,11 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
       }
       case "cta_button": {
         const { style: bs, className: ctaCls } = ctaButtonStyle(c.style, { G: primary, accent, text })
+        const pleine = c.full_width !== "no"
         return (
-          <div style={{ padding: "10px 16px", ...s }}>
+          <div style={{ padding: "10px 16px", textAlign: pleine ? undefined : "center", ...s }}>
             {ctaCls && <style>{CTA_ANIM_CSS}</style>}
-            <div className={ctaCls} style={{ ...bs, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 12, padding: "13px 18px", fontSize: 14, fontWeight: 700 }}>
+            <div className={ctaCls} style={{ ...bs, display: pleine ? "flex" : "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, borderRadius: 12, padding: "13px 18px", fontSize: 14, fontWeight: 700 }}>
               {c.icon && <span>{c.icon}</span>}<InlineEditable as="span" editable={canEdit} value={c.label} placeholder="Bouton" onCommit={edit("label")} />
             </div>
           </div>

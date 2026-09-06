@@ -14,7 +14,6 @@ function Vue({ u, c }: { u: UnifiedCtx; c: Record<string, any> }) {
   const cote = sz(u, 44)
   const logo = sharedImageModel(f.logo, { alt: f.name })
   const styleL = { width: cote, height: cote, borderRadius: sz(u, 10), objectFit: "cover" as const, flexShrink: 0 }
-  const sousTitre = [f.sector, f.year && `Depuis ${f.year}`].filter(Boolean).join(" · ")
   return (
     <div style={{ padding: pagePad(u, 8, 12), fontFamily: u.FONT_B }}>
       <div style={{ display: "flex", gap: sz(u, 12), alignItems: "center", background: u.FILL, border: `1px solid ${u.LINE}`, borderRadius: sz(u, 13), padding: `${sz(u, 12)}px ${sz(u, 13)}px` }}>
@@ -25,7 +24,7 @@ function Vue({ u, c }: { u: UnifiedCtx; c: Record<string, any> }) {
           : <div aria-hidden style={{ ...styleL, background: `${u.G}15`, border: `1px solid ${u.G}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: sz(u, 21) }}>🏢</div>}
         <div style={{ flex: 1, minWidth: 0 }}>
           {f.name && <p style={{ color: u.TEXT, fontSize: sz(u, 15), fontWeight: 700, margin: "0 0 1px", fontFamily: u.FONT_D }}>{f.name}</p>}
-          {sousTitre && <p style={{ color: u.MUTED, fontSize: sz(u, 11), margin: 0 }}>{sousTitre}</p>}
+          {f.sousTitre && <p style={{ color: u.MUTED, fontSize: sz(u, 11), margin: 0 }}>{f.sousTitre}</p>}
         </div>
       </div>
     </div>

@@ -61,8 +61,17 @@ function collectBound(src) {
   // déclarations
   const decl = /(?:const|let|var|function|class|type|interface|enum)\s+([A-Z][\w$]*)/g
   while ((m = decl.exec(src))) bound.add(m[1])
-  // déstructuration / rename : { X }, , X ,  ou  icon: Icon
-  const destr = /[{,]\s*([A-Z][\w$]*)\s*[,}=]/g
+  // déstructuration / rename : { X }, [ X ], , X ,  ou  icon: Icon
+  //
+  // Le délimiteur de fin est lu en ANTICIPATION (?=…) et non consommé. Avec
+  // l'ancienne écriture, la virgule finale de « , Ed, » était mangée et ne
+  // pouvait plus servir de délimiteur de début à « Pub » : dans « [a, Ed, Pub,
+  // x] », un identifiant sur deux échappait au recensement, et le contrôle
+  // annonçait un composant « jamais importé » qui l'était pourtant. Exactement
+  // le faux positif que ce script promet de ne jamais produire — et qui a
+  // bloqué deux déploiements de production le 6 septembre.
+  // Les crochets sont acceptés aussi : `const [Foo] = useX()` lie bien Foo.
+  const destr = /[{,[]\s*([A-Z][\w$]*)\s*(?=[,}\]=])/g
   while ((m = destr.exec(src))) bound.add(m[1])
   const rename = /:\s*([A-Z][\w$]*)\b/g
   while ((m = rename.exec(src))) bound.add(m[1])

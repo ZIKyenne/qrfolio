@@ -125,6 +125,9 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   // page ne publiait pas. Un compteur sans chiffre ne s'affiche plus nulle part.
   "scan_counter", "sales_counter", "participants_count",
   "promo_code", "tickets_left", "limited_offer",
+  // ── Vague 12 — formules et tarifs (2 blocs) ──
+  // packs declarait un lien par formule que les deux renderers jetaient.
+  "packs", "services_pricing",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

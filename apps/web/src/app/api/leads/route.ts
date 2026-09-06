@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   // Le propriétaire est prévenu ICI, après l'insertion réussie et avec les champs
   // bornés — plus par une route publique que n'importe qui pouvait appeler.
   after(async () => {
-    const r = await notifierProprietaireLead({ pageId, type: base.type, name: base.name, email: base.email, phone: base.phone, message: base.message, data: base.data as Record<string, unknown> })
+    const r = await notifierProprietaireLead({ pageId, blockId: base.block_id, type: base.type, name: base.name, email: base.email, phone: base.phone, message: base.message, data: base.data as Record<string, unknown> })
     if (!r.envoye && r.raison && !["opt-out", "pas de destinataire"].includes(r.raison)) console.error("[leads] notification non envoyée :", r.raison)
     // Accusé de réception au visiteur, avec les champs bornés du lead enregistré.
     const a = await envoyerAccuseReception({ pageId, email: base.email, name: base.name, type: base.type })

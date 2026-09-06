@@ -112,4 +112,7 @@ export const BLOCS_ACTIFS_ATTENDUS: readonly string[] = [
   "promo_code",
   "tickets_left",
   "limited_offer",
+  // Vague 12 — formules et tarifs.
+  "packs",
+  "services_pricing",
 ]

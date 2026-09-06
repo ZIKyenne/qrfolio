@@ -15,6 +15,7 @@ import { createAdminClient } from "@/lib/supabase/server"
 import { EMAIL_FROM } from "@/lib/emailFrom"
 import { escapeHtml as esc } from "@/lib/escapeHtml"
 import { emailShell, emailH1, emailButton } from "@/lib/emailLayout"
+import { destinataireDuBloc } from "@/lib/destinataireLead"
 
 const TYPE_LABELS: Record<string, string> = {
   quote: "Demande de devis", reservation: "Réservation", booking: "Réservation événement",
@@ -24,6 +25,8 @@ const TYPE_LABELS: Record<string, string> = {
 
 export type LeadPourEmail = {
   pageId: string
+  /** Bloc a l'origine du message : sert a lire l'adresse choisie par le commercant. */
+  blockId?: string | null
   type?: string | null
   name?: string | null
   email?: string | null
@@ -42,18 +45,18 @@ export function bornerLead(l: LeadPourEmail): LeadPourEmail {
       data[k.slice(0, 60)] = typeof v === "string" ? v.slice(0, 500) : v == null ? "" : String(v).slice(0, 500)
     }
   }
-  return { pageId: l.pageId, type: s(l.type, 40), name: s(l.name, 200), email: s(l.email, 200), phone: s(l.phone, 60), message: s(l.message, 3000), data }
+  return { pageId: l.pageId, blockId: s(l.blockId, 80), type: s(l.type, 40), name: s(l.name, 200), email: s(l.email, 200), phone: s(l.phone, 60), message: s(l.message, 3000), data }
 }
 
 export async function notifierProprietaireLead(brut: LeadPourEmail): Promise<{ envoye: boolean; raison?: string; id?: string }> {
-  const { pageId, type, name, email, phone, message, data } = bornerLead(brut)
+  const { pageId, blockId, type, name, email, phone, message, data } = bornerLead(brut)
   try {
     const admin = createAdminClient()
 
     // Propriétaire de la page + préférences
     const { data: page } = await admin
       .from("pages")
-      .select("title, user_id")
+      .select("title, user_id, blocks")
       .eq("id", pageId)
       .single()
     if (!page) return { envoye: false, raison: "page introuvable" }
@@ -64,7 +67,9 @@ export async function notifierProprietaireLead(brut: LeadPourEmail): Promise<{ e
       .eq("id", page.user_id)
       .single()
 
-    const to = profile?.email
+    // L'adresse saisie sur le bloc prime sur celle du compte : c'est ce que le
+    // commercant a explicitement demande. A defaut, l'adresse du compte.
+    const to = destinataireDuBloc((page as any).blocks, blockId) ?? profile?.email
     if (!to) return { envoye: false, raison: "pas de destinataire" }
     // Respecte l'opt-out si défini
     if (profile?.preferences?.email_leads === false) return { envoye: false, raison: "opt-out" }

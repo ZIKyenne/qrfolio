@@ -63,6 +63,7 @@ export function useImageUpload() {
       const ext = (optimized.name.split(".").pop() || "webp").toLowerCase()
       const fileName = `${user.id}/${path}-${Date.now()}.${ext}`
 
+      if (fileName.includes('..')) throw new Error('Invalid file path')
       const { error } = await supabase.storage
         .from("page-assets")
         .upload(fileName, optimized, { upsert: true, contentType: optimized.type })
@@ -119,6 +120,7 @@ export function useImageUpload() {
       const ext = (file.name.split(".").pop() || "bin").toLowerCase()
       const base = file.name.replace(/\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "fichier"
       const fileName = `${user.id}/${path}-${base}-${Date.now()}.${ext}`
+      if (fileName.includes('..')) throw new Error('Invalid file path')
       const { error } = await supabase.storage
         .from("page-assets")
         .upload(fileName, file, { upsert: true, contentType: file.type || undefined })
@@ -142,7 +144,9 @@ export function useImageUpload() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return false
-    const { error } = await supabase.storage.from("page-assets").remove([`${user.id}/${name}`])
+    const filePath = `${user.id}/${name}`
+    if (filePath.includes('..')) throw new Error('Invalid file path')
+    const { error } = await supabase.storage.from("page-assets").remove([filePath])
     return !error
   }
 

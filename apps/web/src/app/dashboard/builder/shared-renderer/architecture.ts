@@ -128,6 +128,11 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   // ── Vague 12 — formules et tarifs (2 blocs) ──
   // packs declarait un lien par formule que les deux renderers jetaient.
   "packs", "services_pricing",
+  // ── Vague 13 — contact et action (5 blocs) ──
+  // Les blocs les plus courants d'une page scannee : appeler, trouver l'adresse,
+  // obtenir l'itineraire, cliquer. Chaque bloc migre est aussi un bloc de moins
+  // qui fait descendre le module legacy chez le visiteur.
+  "call_button", "directions_button", "google_maps", "quick_contact", "cta_button",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

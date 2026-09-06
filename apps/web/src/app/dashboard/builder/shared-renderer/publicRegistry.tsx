@@ -132,6 +132,13 @@ const PublicLimitedOffer = dynamic(() => import("./blocks/limited_offer").then(m
 const PublicPacks = dynamic(() => import("./blocks/packs").then(m => m.PublicPacks))
 const PublicServicesPricing = dynamic(() => import("./blocks/services_pricing").then(m => m.PublicServicesPricing))
 
+// Vague 13 — contact et action.
+const PublicCallButton = dynamic(() => import("./blocks/call_button").then(m => m.PublicCallButton))
+const PublicDirectionsButton = dynamic(() => import("./blocks/directions_button").then(m => m.PublicDirectionsButton))
+const PublicGoogleMaps = dynamic(() => import("./blocks/google_maps").then(m => m.PublicGoogleMaps))
+const PublicQuickContact = dynamic(() => import("./blocks/quick_contact").then(m => m.PublicQuickContact))
+const PublicCtaButton = dynamic(() => import("./blocks/cta_button").then(m => m.PublicCtaButton))
+
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
   values: PublicValues,
@@ -240,6 +247,11 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   limited_offer: PublicLimitedOffer,
   packs: PublicPacks,
   services_pricing: PublicServicesPricing,
+  call_button: PublicCallButton,
+  directions_button: PublicDirectionsButton,
+  google_maps: PublicGoogleMaps,
+  quick_contact: PublicQuickContact,
+  cta_button: PublicCtaButton,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

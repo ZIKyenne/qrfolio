@@ -77,6 +77,11 @@ import { EditorTicketsLeft } from "./blocks/tickets_left"
 import { EditorLimitedOffer } from "./blocks/limited_offer"
 import { EditorPacks } from "./blocks/packs"
 import { EditorServicesPricing } from "./blocks/services_pricing"
+import { EditorCallButton } from "./blocks/call_button"
+import { EditorDirectionsButton } from "./blocks/directions_button"
+import { EditorGoogleMaps } from "./blocks/google_maps"
+import { EditorQuickContact } from "./blocks/quick_contact"
+import { EditorCtaButton } from "./blocks/cta_button"
 import { EditorFreeSection } from "./blocks/free_section"
 import { EditorImageText } from "./blocks/image_text"
 import { EditorSplitPanel } from "./blocks/split_panel"
@@ -225,6 +230,12 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   // Vague 12 — formules et tarifs.
   packs: EditorPacks,
   services_pricing: EditorServicesPricing,
+  // Vague 13 — contact et action.
+  call_button: EditorCallButton,
+  directions_button: EditorDirectionsButton,
+  google_maps: EditorGoogleMaps,
+  quick_contact: EditorQuickContact,
+  cta_button: EditorCtaButton,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

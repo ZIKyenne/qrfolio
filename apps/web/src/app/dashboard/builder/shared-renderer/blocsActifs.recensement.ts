@@ -115,4 +115,10 @@ export const BLOCS_ACTIFS_ATTENDUS: readonly string[] = [
   // Vague 12 — formules et tarifs.
   "packs",
   "services_pricing",
+  // Vague 13 — contact et action.
+  "call_button",
+  "directions_button",
+  "google_maps",
+  "quick_contact",
+  "cta_button",
 ]

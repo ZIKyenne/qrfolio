@@ -277,7 +277,10 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
       case "gallery": {
         const imgs = [c.img1,c.img2,c.img3,c.img4,c.img5,c.img6,c.img7,c.img8,c.img9,c.img10,c.img11,c.img12].filter(Boolean)
         const layout = c.layout || "grid"
-        const cols = parseInt(c.columns||"3")
+        // L'apercu est un ecran de telephone : c'est le nombre de colonnes MOBILE
+        // qu'il doit montrer. Il affichait celui du bureau, donc une grille plus
+        // dense que celle du visiteur.
+        const cols = parseInt(c.columns_mobile || c.columns || "3")
         const title = c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 8px" }}>{c.title}</p>
         if (imgs.length>0 && layout==="masonry") return (
           <div style={{ padding: "10px 14px", ...s }}>
@@ -550,7 +553,12 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           </div>
         </div>
       )
-      case "vcard": return (
+      // Sans nom, telephone ni e-mail, la page publiee ne rend rien : la fiche de
+      // contact n'aurait aucune donnee a enregistrer. L'apercu dessinait quand
+      // meme la carte, avec un avatar et un bouton qui ne serviraient jamais.
+      case "vcard": return !hasPublishableContent("vcard", c)
+        ? <div style={{ padding: "10px 16px", ...s }}>{emptyHint("👤", "Ajoutez un nom, un téléphone ou un e-mail", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        : (
         <div style={{ padding: "4px 16px 10px", ...s }}>
           <div style={{ background: primary+"08", border: `1.5px solid ${primary}25`, borderRadius: 12, padding: "12px 14px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -576,7 +584,9 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         return (
           <div style={{ padding: "8px 16px", ...s }}>
             <div style={{ border: "1px dashed rgba(201,168,76,0.3)", borderRadius: 12, padding: "8px 10px", background: "rgba(201,168,76,0.04)" }}>
-              <p style={{ color: muted, fontSize: 9, margin: "0 0 7px", textTransform: "uppercase", letterSpacing: 1 }}>📌 Barre fixe · bas de l'écran (mobile)</p>
+              {/* « Position » est reglable (haut / bas) : l'apercu annoncait toujours
+                  « bas de l'ecran », meme quand la barre etait reglee en haut. */}
+              <p style={{ color: muted, fontSize: 9, margin: "0 0 7px", textTransform: "uppercase", letterSpacing: 1 }}>📌 Barre fixe · {c.position === "top" ? "haut" : "bas"} de l&apos;écran (mobile)</p>
               <div style={{ display: "flex", gap: 6, justifyContent: "space-around", background: c.bar_style==="gold" ? `linear-gradient(90deg,${primary},${primary}cc)` : "rgba(10,10,10,0.9)", borderRadius: 12, padding: "8px 6px" }}>
                 {(acts.length ? acts : [stickyActionHref("call"), stickyActionHref("whatsapp"), stickyActionHref("directions")]).slice(0,5).map((a, i) => (
                   <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
@@ -1390,6 +1400,11 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
       case "media_before_after": return (
         <div style={{ padding: "10px 16px", ...s }}>
           {c.title && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 10px", textAlign: "center" }}>{c.title}</p>}
+                    {/* Le mode « curseur » etait reglable et servi au visiteur ; l'apercu
+              montrait toujours les deux images cote a cote, sans le dire. */}
+          {c.mode === "slider" && c.before_img && c.after_img && (
+            <p style={{ color: muted, fontSize: 9, margin: "0 0 6px", textAlign: "center", textTransform: "uppercase", letterSpacing: 1 }}>↔ Curseur glissant en ligne</p>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <div style={{ borderRadius: 10, overflow: "hidden" }}>
               {c.before_img

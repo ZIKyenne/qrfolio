@@ -73,6 +73,8 @@ const DETECTORS: Record<string, (c: Record<string, any>) => boolean> = {
   // « Offre limitée » pour des blocs que la page ne publiait pas.
   tickets_left:            c => hasMeaningfulText(c.count),
   limited_offer:           c => hasMeaningfulText(c.title) || hasMeaningfulText(c.description),
+  // La fiche de contact ne s'enregistre que s'il y a quelque chose a enregistrer.
+  vcard:                   c => hasMeaningfulText(c.name) || hasMeaningfulText(c.phone) || hasMeaningfulText(c.email),
   google_reviews_block:    c => anyIndexed(c, i => c[`r${i}_name`]) || hasMeaningfulText(c.avg_rating),
   event_access:            c => hasMeaningfulText(c.embed_url) || hasMeaningfulText(c.address)
                               || hasMeaningfulText(c.transport1_label) || hasMeaningfulText(c.transport2_label) || hasMeaningfulText(c.transport3_label),

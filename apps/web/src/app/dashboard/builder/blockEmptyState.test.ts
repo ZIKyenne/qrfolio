@@ -60,6 +60,7 @@ const KEY: Record<string, (v: string) => Record<string, any>> = {
   // Vague 11.
   tickets_left: v => ({ count: v }),
   limited_offer: v => ({ title: v }),
+  vcard: v => ({ name: v }),
 }
 
 describe("hasPublishableContent — toutes les familles listées sont couvertes", () => {

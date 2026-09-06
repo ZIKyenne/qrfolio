@@ -31,7 +31,7 @@ function casParBloc(src: string): Record<string, string> {
 
 /** Le corps d'un composant de blocsPublics.tsx, pour suivre la délégation. */
 function corpsComposant(src: string, nom: string): string {
-  const m = new RegExp(`export function ${nom}\\b`).exec(src)
+  const m = new RegExp(`(?:export )?function ${nom}\\b`).exec(src)
   if (!m) return ""
   let k = src.indexOf("(", m.index + m[0].length), n = 0, finParams = k
   for (let j = k; j < src.length; j++) {
@@ -81,6 +81,19 @@ function texteePublic(type: string): string {
   let t = publique[type]
   for (const nom of new Set([...t.matchAll(/<([A-Z][A-Za-z]*Public)\b/g)].map(m => m[1]))) {
     t += "\n" + corpsComposant(blocsPublics, nom)
+  }
+  return t
+}
+
+/** Le rendu éditeur d'un bloc, délégation comprise.
+ *  L'aperçu délègue lui aussi : `countdown` passe par <CountdownBox/>, défini
+ *  dans builderPreview. Sans suivre cette délégation, le contrôle inverse
+ *  ci-dessous accusait le compte à rebours d'ignorer sept réglages qu'il lit. */
+function texteEditeur(type: string): string {
+  let t = editeur[type]
+  const preview = lire("builderPreview.tsx")
+  for (const nom of new Set([...t.matchAll(/<([A-Z][A-Za-z0-9]*)\b/g)].map(m => m[1]))) {
+    t += "\n" + corpsComposant(preview, nom) + "\n" + corpsComposant(blocsPublics, nom)
   }
   return t
 }
@@ -164,3 +177,78 @@ describe("un bloc proposé dans la bibliothèque arrive sur la page publiée", (
     expect([...masques]).toEqual(["qr_code_block"])
   })
 })
+
+// ═════════════════════════════════════════════════════════════════════════════
+// L'AUTRE SENS — ce que la page publie et que l'aperçu ne montre pas.
+//
+// Le contrôle ci-dessus ne regardait qu'une direction : l'éditeur promet, le
+// public ne tient pas. Écrit le 6 septembre au soir, en cherchant ce que ce
+// contrôle ne pouvait pas voir. Le sens inverse existe aussi, et il est tout
+// aussi contraire à la promesse d'un WYSIWYG : le commerçant publie alors du
+// contenu qu'il n'a jamais vu. `call_button` en avait fourni la preuve — son
+// sous-titre (« 7j/7 de 9h à 19h ») était servi au visiteur et absent de
+// l'aperçu ; il a fallu le trouver à la main.
+//
+// Deux familles sont EXCLUES parce qu'elles sont voulues, pas subies :
+//  · les destinations de lien (`url`, `cta_url`, `channel_url`…) : l'aperçu rend
+//    des boutons inertes, il n'a donc aucune raison de lire l'adresse ;
+//  · la logique propre à la page en ligne (`start_date`/`end_date` d'une annonce
+//    programmée, `show_deadline` d'un formulaire) : elle n'a pas de sens dans un
+//    canvas d'édition.
+const DESTINATION_DE_LIEN = /(?:^|_)url$|^url$/
+const LOGIQUE_PUBLIQUE = new Set(["start_date", "end_date", "show_deadline"])
+
+// Écarts inverses connus, chacun un choix assumé et non un oubli.
+const ECARTS_INVERSES_CONNUS: Record<string, string[]> = {
+  // La description part dans le fichier d'agenda que le visiteur télécharge ;
+  // elle ne s'affiche nulle part, donc l'aperçu n'a rien à en montrer.
+  add_to_calendar: ["description"],
+  // Un carrousel qui défile tout seul pendant qu'on compose la page serait
+  // insupportable : l'aperçu montre la première image, fixe.
+  image_carousel: ["auto_play"],
+  // La fiche produit publique affiche la description sous le prix ; l'aperçu
+  // n'en a pas la place et s'arrête au nom et au prix.
+  product: ["description"],
+  // Ces deux champs ne s'AFFICHENT pas : ils décident si la fiche de contact a
+  // quelque chose à enregistrer. L'aperçu applique la même règle depuis ce soir
+  // (voir hasPublishableContent("vcard")), il ne les dessine simplement pas.
+  vcard: ["email", "phone"],
+}
+
+describe("l'aperçu montre tout ce que la page publiée affichera", () => {
+  it("aucun réglage visible seulement en ligne", () => {
+    const trouves: Record<string, string[]> = {}
+    for (const type of legacy.filter(t => !masques.has(t))) {
+      const e = champsLus(texteEditeur(type))
+      const p = champsLus(texteePublic(type))
+      const offerts = champsOfferts(type)
+      const seuls = [...p.directs]
+        .filter(f => !e.directs.has(f))
+        .filter(f => ![...e.prefixes].some(pref => f.startsWith(pref)))
+        .filter(f => offerts.has(f))
+        .filter(f => !DESTINATION_DE_LIEN.test(f) && !LOGIQUE_PUBLIQUE.has(f))
+        .sort()
+      if (seuls.length) trouves[type] = seuls
+    }
+    expect(trouves).toEqual(ECARTS_INVERSES_CONNUS)
+  })
+
+  it("les exclusions restent des exclusions, pas un tapis sous lequel balayer", () => {
+    // Si ces deux filtres devenaient trop larges, le contrôle ne verrait plus rien.
+    expect(DESTINATION_DE_LIEN.test("cta_url")).toBe(true)
+    expect(DESTINATION_DE_LIEN.test("url")).toBe(true)
+    expect(DESTINATION_DE_LIEN.test("sub"), "un sous-titre n'est pas une destination").toBe(false)
+    expect(DESTINATION_DE_LIEN.test("columns_mobile")).toBe(false)
+    expect(DESTINATION_DE_LIEN.test("position")).toBe(false)
+    expect(LOGIQUE_PUBLIQUE.size).toBeLessThan(5)
+  })
+
+  it("les quatre écarts redressés ce soir-là ne reviennent pas", () => {
+    const preview = lire("builderPreview.tsx")
+    expect(preview, "gallery : l'aperçu doit montrer les colonnes MOBILE").toContain("c.columns_mobile")
+    expect(preview, "sticky_bar : la position haut/bas").toContain('c.position === "top" ? "haut" : "bas"')
+    expect(preview, "media_before_after : le mode curseur").toContain('c.mode === "slider"')
+    expect(preview, "vcard : invisible en ligne sans nom, téléphone ni e-mail").toContain('hasPublishableContent("vcard", c)')
+  })
+})
+

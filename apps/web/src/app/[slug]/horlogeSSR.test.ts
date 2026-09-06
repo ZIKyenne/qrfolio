@@ -20,7 +20,10 @@ import { fileURLToPath } from "node:url"
 // attrapé le #418 sur le modèle « Soirée ».
 // ─────────────────────────────────────────────────────────────────────────────
 
-const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "PublicPageClient.tsx"), "utf8")
+// La page publiée et ses blocs sont deux fichiers depuis la découpe, mais une
+// seule surface pour cette règle : on les lit ensemble.
+const ici_ = dirname(fileURLToPath(import.meta.url))
+const src = ["PublicPageClient.tsx", "blocsPublics.tsx"].map(f => readFileSync(join(ici_, f), "utf8")).join("\n")
 
 describe("aucune horloge dans un état initial de la page publiée", () => {
   it("aucun useState n'est initialisé avec l'heure courante", () => {

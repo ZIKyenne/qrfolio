@@ -25,6 +25,8 @@ import { BLOCK_DEFS } from "./blockDefs"
   // Props stables (block/theme/dayMode, aucun callback) -> aucun risque de rendu périmé.
   const MemoBlockPreview = memo(BlockPreview)
   import { EditPanel, ThemePanel, Segmented, STYLE_COPY_KEYS } from "./builderPanels"
+import { motifDeFond } from "./types"
+import { actionClavier } from "./raccourcisClavier"
   import { BuilderStatus } from "./BuilderStatus"
   import { BlockLibrary } from "./BlockLibrary"
   import { essentialsForContext } from "./builderLibrary"
@@ -308,157 +310,63 @@ import { BLOCK_DEFS } from "./blockDefs"
     }, [blocksCollapsed])
 
     // ── Raccourcis clavier ────────────────────────────────────────────────────
+    // La table des seize raccourcis est une règle pure, dans raccourcisClavier.ts :
+    // ici on ne fait qu'exécuter ce qu'elle décide.
     useEffect(() => {
-      const isEditing = (e: KeyboardEvent) =>
+      const enSaisie = (e: KeyboardEvent) =>
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
         e.target instanceof HTMLSelectElement ||
-        (e.target as HTMLElement)?.isContentEditable
+        !!(e.target as HTMLElement)?.isContentEditable
+
+      const replier = (valeur: boolean) => { setSidebarCollapsed(valeur); setBlocksCollapsed(valeur); setRightCollapsed(valeur) }
 
       const handler = (e: KeyboardEvent) => {
-        const ctrl = e.ctrlKey || e.metaKey // Ctrl Windows / Cmd Mac
+        const d = actionClavier(
+          { key: e.key, ctrl: e.ctrlKey || e.metaKey, shift: e.shiftKey, alt: e.altKey },
+          {
+            saisieEnCours: enSaisie(e),
+            blocSelectionne: !!selectedIdKbRef.current,
+            selectionMultiple: multiSelectionKbRef.current.length > 0,
+          },
+        )
+        if (!d) return
+        if (d.bloquer) e.preventDefault()
 
-        // Ctrl/Cmd+K — Palette de commandes (fonctionne même en cours de saisie)
-        if (ctrl && (e.key === "k" || e.key === "K")) {
-          e.preventDefault()
-          setPaletteOpen(o => !o)
-          return
-        }
-        // "/" — ouverture rapide de la palette (menu d'insertion), hors champ de saisie
-        if (e.key === "/" && !ctrl && !isEditing(e)) {
-          e.preventDefault()
-          setPaletteOpen(true)
-          return
-        }
-
-        // Ctrl+Z — Undo
-        if (ctrl && !e.shiftKey && (e.key === "z" || e.key === "Z") && !isEditing(e)) {
-          e.preventDefault()
-          const prev = undoRedo.undo()
-          if (prev) applySnapshot(prev)
-          return
-        }
-        // Ctrl+Shift+Z / Ctrl+Y — Redo
-        if (ctrl && (e.shiftKey && (e.key === "z" || e.key === "Z") || e.key === "y" || e.key === "Y") && !isEditing(e)) {
-          e.preventDefault()
-          const next = undoRedo.redo()
-          if (next) applySnapshot(next)
-          return
-        }
-
-        // Ctrl+B — Bibliothèque de blocs
-        if (ctrl && (e.key === "b" || e.key === "B") && !isEditing(e)) {
-          e.preventDefault()
-          setBlocksCollapsed(p => !p)
-          setFocusMode(false)
-          return
-        }
-        // Ctrl+E — Éditeur (panel droit)
-        if (ctrl && (e.key === "e" || e.key === "E") && !isEditing(e)) {
-          e.preventDefault()
-          setRightCollapsed(p => !p)
-          setFocusMode(false)
-          return
-        }
-        // Ctrl+P — Preview (switch onglet)
-        if (ctrl && (e.key === "p" || e.key === "P") && !isEditing(e)) {
-          e.preventDefault()
-          setRightCollapsed(false)
-          setRightTab("edit")
-          return
-        }
-        // Ctrl+D — Dupliquer la sélection
-        if (ctrl && (e.key === "d" || e.key === "D") && !isEditing(e)) {
-          e.preventDefault()
-          duplicateSelRef.current()
-          return
-        }
-        // Ctrl+C — Copier la sélection (hors saisie ; sinon copie native)
-        if (ctrl && (e.key === "c" || e.key === "C")) {
-          if (!isEditing(e) && (selectedIdKbRef.current || multiSelectionKbRef.current.length > 0)) {
-            e.preventDefault()
-            copyRef.current()
-          }
-          return
-        }
-        // Ctrl+V — Coller (hors saisie ; sinon collage natif dans le champ)
-        if (ctrl && (e.key === "v" || e.key === "V")) {
-          if (!isEditing(e)) { e.preventDefault(); pasteRef.current() }
-          return
-        }
-        // Ctrl+F — Mode Focus
-        if (ctrl && (e.key === "f" || e.key === "F") && !isEditing(e)) {
-          e.preventDefault()
-          setFocusMode(prev => {
-            const next = !prev
-            setSidebarCollapsed(next)
-            setBlocksCollapsed(next)
-            setRightCollapsed(next)
-            return next
-          })
-          return
-        }
-        // Escape — désélectionner tout
-        if (e.key === "Escape" && !isEditing(e)) {
-          setMultiSelection([])
-          setSelectedId(null)
-          return
-        }
-        // Ctrl+A — sélectionner tous les blocs
-        if (ctrl && (e.key === "a" || e.key === "A") && !isEditing(e)) {
-          e.preventDefault()
-          setMultiSelection(blocksKbRef.current.map(b => b.id))
-          return
-        }
-        // Delete/Backspace — supprime la sélection multiple, sinon le bloc sélectionné.
-        if ((e.key === "Delete" || e.key === "Backspace") && !isEditing(e)) {
-          if (multiSelectionKbRef.current.length > 0) {
-            e.preventDefault()
-            deleteMultiRef.current()
-            return
-          }
-          if (selectedIdKbRef.current) {
-            e.preventDefault()
-            deleteBlockRef.current(selectedIdKbRef.current)
-            return
-          }
-        }
-        // Flèches ↑/↓ — a11y clavier du canvas. Uniquement quand un bloc est déjà
-        // sélectionné (sinon on laisse le défilement natif). Flèche seule = déplacer
-        // la sélection ; Alt+flèche = déplacer le bloc (réordonnancement).
-        if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !ctrl && !e.shiftKey && !isEditing(e)) {
-          const cur = selectedIdKbRef.current
-          if (!cur) return
-          const bs = blocksKbRef.current
-          if (bs.length === 0) return
-          const dir = e.key === "ArrowDown" ? 1 : -1
-          e.preventDefault()
-          if (e.altKey) {
-            // Déplacer le bloc sélectionné (setBlocks fonctionnel = état frais).
+        switch (d.action) {
+          case "palette":          setPaletteOpen(o => !o); return
+          case "paletteOuvrir":    setPaletteOpen(true); return
+          case "annuler":          { const p = undoRedo.undo(); if (p) applySnapshot(p); return }
+          case "retablir":         { const n = undoRedo.redo(); if (n) applySnapshot(n); return }
+          case "bibliotheque":     setBlocksCollapsed(p => !p); setFocusMode(false); return
+          case "editeur":          setRightCollapsed(p => !p); setFocusMode(false); return
+          case "apercu":           setRightCollapsed(false); setRightTab("edit"); return
+          case "dupliquer":        duplicateSelRef.current(); return
+          case "copier":           copyRef.current(); return
+          case "coller":           pasteRef.current(); return
+          case "focus":            setFocusMode(prev => { const next = !prev; replier(next); return next }); return
+          case "deselectionner":   setMultiSelection([]); setSelectedId(null); return
+          case "toutSelectionner": setMultiSelection(blocksKbRef.current.map(b => b.id)); return
+          case "supprimerSelection": deleteMultiRef.current(); return
+          case "supprimerBloc":    deleteBlockRef.current(selectedIdKbRef.current!); return
+          case "deplacerBloc": {
+            const cur = selectedIdKbRef.current!
             setBlocks(p => {
               const idx = p.findIndex(b => b.id === cur)
               if (idx < 0 || p[idx]?.locked) return p
-              const ni = idx + dir
+              const ni = idx + d.direction!
               if (ni < 0 || ni >= p.length) return p
               const n = [...p]; [n[idx], n[ni]] = [n[ni], n[idx]]; return n
             })
-          } else {
-            // Déplacer la sélection au bloc voisin.
-            const idx = bs.findIndex(b => b.id === cur)
-            const ni = Math.max(0, Math.min(bs.length - 1, idx + dir))
-            if (ni !== idx) { setMultiSelection([]); setSelectedId(bs[ni].id) }
+            return
           }
-          return
-        }
-        // F seul — Mode Focus (fallback sans modificateur)
-        if (!ctrl && !e.shiftKey && !e.altKey && (e.key === "f" || e.key === "F") && !isEditing(e)) {
-          setFocusMode(prev => {
-            const next = !prev
-            setSidebarCollapsed(next)
-            setBlocksCollapsed(next)
-            setRightCollapsed(next)
-            return next
-          })
+          case "deplacerSelection": {
+            const bs = blocksKbRef.current
+            const idx = bs.findIndex(b => b.id === selectedIdKbRef.current)
+            const ni = Math.max(0, Math.min(bs.length - 1, idx + d.direction!))
+            if (ni !== idx && bs[ni]) { setMultiSelection([]); setSelectedId(bs[ni].id) }
+            return
+          }
         }
       }
       window.addEventListener("keydown", handler)
@@ -1272,27 +1180,13 @@ import { BLOCK_DEFS } from "./blockDefs"
       let base: React.CSSProperties = {}
 
       if (t.bgMode === "pattern") {
+        // Même définition que la pastille du panneau et que la page publiée.
         const patSize = t.pattern_size || 20
-        const patOpacity = t.pattern_opacity || 0.15
-        const patColor = t.pattern_color || "#C9A84C"
-        const alpha = Math.round(patOpacity * 255).toString(16).padStart(2, "0")
-        const c = patColor + alpha
-        let bgImg = ""
-        switch(t.bgPattern || "dots") {
-          case "dots": bgImg = `radial-gradient(circle, ${c} 1px, transparent 1px)`; break
-          case "grid": bgImg = `linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`; break
-          case "lines": bgImg = `linear-gradient(0deg, ${c} 1px, transparent 1px)`; break
-          case "diagonals": bgImg = `linear-gradient(45deg, ${c} 1px, transparent 1px)`; break
-          case "hexagons": bgImg = `radial-gradient(circle, ${c} 2px, transparent 2px)`; break
-          case "circles": bgImg = `radial-gradient(circle, transparent ${patSize*0.3}px, ${c} ${patSize*0.3}px, ${c} ${patSize*0.32}px, transparent ${patSize*0.32}px)`; break
-          case "zigzag": bgImg = `linear-gradient(135deg, ${c} 25%, transparent 25%), linear-gradient(225deg, ${c} 25%, transparent 25%)`; break
-          case "waves": bgImg = `repeating-linear-gradient(90deg, ${c} 0px, ${c} 1px, transparent 1px, transparent ${patSize}px), repeating-linear-gradient(180deg, ${c} 0px, ${c} 1px, transparent 1px, transparent ${patSize}px)`; break
-          case "squares": bgImg = `linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`; break
-          case "circles": bgImg = `radial-gradient(circle, transparent ${patSize*0.3}px, ${c} ${patSize*0.3}px, ${c} ${patSize*0.32}px, transparent ${patSize*0.32}px)`; break
-          case "stars": bgImg = `radial-gradient(circle, ${c} 1.5px, transparent 1.5px), radial-gradient(circle at ${patSize/2}px ${patSize/2}px, ${c} 1.5px, transparent 1.5px)`; break
-          default: bgImg = `radial-gradient(circle, ${c} 1px, transparent 1px)`
+        base = {
+          background: theme.bg,
+          backgroundImage: motifDeFond(t.bgPattern || "dots", t.pattern_color || "#C9A84C", patSize, t.pattern_opacity ?? 0.15),
+          backgroundSize: `${patSize}px ${patSize}px`,
         }
-        base = { background: theme.bg, backgroundImage: bgImg, backgroundSize: `${patSize}px ${patSize}px` }
       } else if (t.bgMode === "radial") {
         return { background: t.bgGradient || `radial-gradient(circle at 50% 50%, ${theme.primary}, ${theme.bg})` }
       } else if (t.bgMode === "mesh") {

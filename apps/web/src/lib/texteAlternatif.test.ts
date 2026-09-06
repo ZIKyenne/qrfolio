@@ -28,7 +28,7 @@ describe("texte alternatif d'une photo de galerie", () => {
 })
 
 describe("la page publiée", () => {
-  const src = readFileSync(join(__dirname, "../app/[slug]/PublicPageClient.tsx"), "utf8")
+  const src = ["PublicPageClient.tsx", "blocsPublics.tsx"].map(f => readFileSync(join(__dirname, "../app/[slug]/" + f), "utf8")).join("\n")
   const defs = readFileSync(join(__dirname, "../app/dashboard/builder/blockDefs.ts"), "utf8")
 
   it("les quatre rendus de galerie décrivent leurs photos", () => {

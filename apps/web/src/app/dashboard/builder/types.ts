@@ -1031,23 +1031,46 @@ export const SOCIAL_PRESETS: { key: string; label: string; emoji: string; networ
   { key: "freelance", label: "Freelance / Portfolio", emoji: "💼", networks: ["linkedin", "github", "behance", "dribbble"] },
   { key: "evenement", label: "Événement", emoji: "🎫", networks: ["instagram", "tiktok", "facebook"] },
 ]
+/**
+ * Le CSS d'un motif de fond. UNE seule définition, pour les trois endroits qui
+ * l'affichaient chacun à leur façon :
+ *   1. la pastille que le commerçant clique, dans le panneau de thème ;
+ *   2. l'aperçu de l'éditeur ;
+ *   3. la page publiée.
+ * Relevé le 6 septembre : les trois divergeaient. Les points faisaient 1,5 px sur
+ * la pastille et 1 px ailleurs ; les lignes et les diagonales étaient espacées
+ * selon la taille choisie sur la pastille, et fixes ailleurs ; les hexagones
+ * n'étaient un hexagone que sur la pastille ; les cercles n'avaient pas la même
+ * épaisseur. Surtout, TROIS motifs sur dix — Vagues, Carrés, Étoiles — étaient
+ * proposés au choix, montrés dans l'aperçu, et remplacés par des points sur la
+ * page publiée. Le commerçant voyait donc trois dessins différents du même
+ * réglage, et le visiteur un quatrième.
+ * La définition retenue est celle de la pastille : c'est sur elle qu'il a choisi.
+ */
+export function motifDeFond(pattern: string, color: string, size: number, opacity: number): string {
+  const c = color + Math.round(opacity * 255).toString(16).padStart(2, "0")
+  const s = size
+  switch (pattern) {
+    case "grid":      return `linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`
+    case "lines":     return `repeating-linear-gradient(0deg, ${c} 0px, ${c} 1px, transparent 1px, transparent ${s}px)`
+    case "waves":     return `repeating-linear-gradient(90deg, ${c} 0px, ${c} 1px, transparent 1px, transparent ${s}px), repeating-linear-gradient(180deg, ${c} 0px, ${c} 1px, transparent 1px, transparent ${s}px)`
+    case "diagonals": return `repeating-linear-gradient(45deg, ${c} 0px, ${c} 1px, transparent 1px, transparent ${s}px)`
+    case "hexagons":  return `radial-gradient(circle at 0% 50%, ${c} ${s * 0.12}px, transparent ${s * 0.12}px), radial-gradient(circle at 100% 50%, ${c} ${s * 0.12}px, transparent ${s * 0.12}px), radial-gradient(circle at 50% 0%, ${c} ${s * 0.12}px, transparent ${s * 0.12}px)`
+    case "squares":   return `linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`
+    case "circles":   return `radial-gradient(circle, transparent ${s * 0.3}px, ${c} ${s * 0.3}px, ${c} ${s * 0.35}px, transparent ${s * 0.35}px)`
+    case "zigzag":    return `linear-gradient(135deg, ${c} 25%, transparent 25%), linear-gradient(225deg, ${c} 25%, transparent 25%)`
+    case "stars":     return `radial-gradient(circle, ${c} 1px, transparent 1px), radial-gradient(circle at ${s / 2}px ${s / 2}px, ${c} 1px, transparent 1px)`
+    default:          return `radial-gradient(circle, ${c} 1.5px, transparent 1.5px)`   // « dots »
+  }
+}
+
 export function themeBackgroundStyle(theme: PageTheme): Record<string, string | number> {
   const t = theme as any
   if (t.bgMode === "pattern") {
     const patSize = t.pattern_size || 20
     const patOpacity = t.pattern_opacity ?? 0.15
     const patColor = t.pattern_color || "#C9A84C"
-    const c = patColor + Math.round(patOpacity * 255).toString(16).padStart(2, "0")
-    let bgImg: string
-    switch (t.bgPattern || "dots") {
-      case "grid":      bgImg = `linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`; break
-      case "lines":     bgImg = `linear-gradient(0deg, ${c} 1px, transparent 1px)`; break
-      case "diagonals": bgImg = `linear-gradient(45deg, ${c} 1px, transparent 1px)`; break
-      case "hexagons":  bgImg = `radial-gradient(circle, ${c} 2px, transparent 2px)`; break
-      case "circles":   bgImg = `radial-gradient(circle, transparent ${patSize * 0.3}px, ${c} ${patSize * 0.3}px, ${c} ${patSize * 0.32}px, transparent ${patSize * 0.32}px)`; break
-      case "zigzag":    bgImg = `linear-gradient(135deg, ${c} 25%, transparent 25%), linear-gradient(225deg, ${c} 25%, transparent 25%)`; break
-      default:          bgImg = `radial-gradient(circle, ${c} 1px, transparent 1px)`
-    }
+    const bgImg = motifDeFond(t.bgPattern || "dots", patColor, patSize, patOpacity)
     return { background: theme.bg, backgroundImage: bgImg, backgroundSize: `${patSize}px ${patSize}px` }
   }
   if (t.bgMode === "radial") {

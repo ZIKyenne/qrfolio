@@ -39,6 +39,25 @@ const DETECTORS: Record<string, (c: Record<string, any>) => boolean> = {
   tabs_block:              c => anyIndexed(c, i => c[`tab${i}_label`]),
   accordion_block:         c => anyIndexed(c, i => c[`a${i}_title`]),
   two_columns:             c => hasMeaningfulText(c.col1_title) || hasMeaningfulText(c.col1_text) || hasMeaningfulText(c.col2_title) || hasMeaningfulText(c.col2_text),
+
+  // ── Ajoutés le 6 septembre ────────────────────────────────────────────────
+  // Ces dix blocs affichaient dans l'aperçu des chiffres et des noms INVENTÉS —
+  // « 127 ventes », « 5.0 ★ », « 287 participants », « Jean Dupont, Fondateur »,
+  // « 99€ », un code promo « PROMO10 », une citation entière — pendant que la page
+  // publiée ne rendait rien. Le commerçant composait sa page devant des données qui
+  // ressemblaient aux siennes, publiait, et le bloc disparaissait.
+  // Chaque condition ci-dessous est le miroir EXACT du filtre public.
+  promo_code:              c => hasMeaningfulText(c.code),
+  sales_counter:           c => hasMeaningfulText(c.count),
+  participants_count:      c => hasMeaningfulText(c.count),
+  scan_counter:            c => hasMeaningfulText(c.count),   // un libellé seul ne compte rien
+  featured_product:        c => hasMeaningfulText(c.name) || hasMeaningfulText(c.image),
+  quote_block:             c => hasMeaningfulText(c.quote) || hasMeaningfulText(c.author),
+  founder_message:         c => hasMeaningfulText(c.message) || hasMeaningfulText(c.name),
+  info_box:                c => hasMeaningfulText(c.message) || hasMeaningfulText(c.title),
+  google_reviews_block:    c => anyIndexed(c, i => c[`r${i}_name`]) || hasMeaningfulText(c.avg_rating),
+  event_access:            c => hasMeaningfulText(c.embed_url) || hasMeaningfulText(c.address)
+                              || hasMeaningfulText(c.transport1_label) || hasMeaningfulText(c.transport2_label) || hasMeaningfulText(c.transport3_label),
 }
 
 // Vrai si le bloc contient au moins un élément réellement publiable. Pour un type non

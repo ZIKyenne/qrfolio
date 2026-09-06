@@ -1936,12 +1936,15 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         </div>
       ) : null
     }
-    case "scan_counter": return (c.count || c.label) ? (
+    // Un compteur sans chiffre affichait « 1 240 » — un nombre inventé, montré au
+    // visiteur comme s'il était réel. Il ne s'affiche plus que si le commerçant a
+    // saisi son propre chiffre : un libellé seul ne compte rien.
+    case "scan_counter": return c.count ? (
       <div style={{ padding: "12px 24px 16px", textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
           {c.emoji && <span style={{ fontSize: 34 }}>{c.emoji}</span>}
           <div style={{ textAlign: "left" }}>
-            <p style={{ fontFamily: FONT_D, fontSize: 40, color: G, fontWeight: 700, margin: "0 0 1px", lineHeight: 1 }}>{c.count || "1 240"}</p>
+            <p style={{ fontFamily: FONT_D, fontSize: 40, color: G, fontWeight: 700, margin: "0 0 1px", lineHeight: 1 }}>{c.count}</p>
             {c.label && <p style={{ color: MUTED, fontSize: 13, margin: 0, fontFamily: FONT_B }}>{c.label}</p>}
           </div>
         </div>

@@ -33,6 +33,18 @@ describe("état vide éditeur — aucune donnée de démonstration trompeuse ne 
     "Nos services", "Détail des services",   // accordion_block
     "T-shirt", "Casquette",                  // merch
     "Album 1",                                // discography
+    // Relevé du 6 septembre : dix blocs affichaient encore des chiffres et des noms
+    // inventés dans l'aperçu, pendant que la page publiée ne rendait rien. Le pire
+    // était « 1 240 » : ce nombre-là était même écrit sur la PAGE PUBLIÉE quand le
+    // commerçant n'avait renseigné qu'un libellé.
+    "PROMO10",                                // promo_code
+    "127",                                    // sales_counter
+    "1 240",                                  // scan_counter — était aussi côté public
+    "287",                                    // participants_count
+    "Mon produit phare",                      // featured_product
+    "Jean Dupont", "Fondateur & CEO",         // founder_message
+    "La qualité n est jamais un accident",    // quote_block
+    "Information importante à retenir",       // info_box
   ]
   for (const demo of FORBIDDEN_DEMO) {
     it(`ne contient plus le contenu de démo « ${demo} »`, () => {
@@ -42,5 +54,21 @@ describe("état vide éditeur — aucune donnée de démonstration trompeuse ne 
 
   it("la mention « invisible en ligne » est bien câblée", () => {
     expect(src.includes("HIDDEN_WHEN_EMPTY_NOTE")).toBe(true)
+  })
+})
+
+describe("la page publiée n'invente aucun chiffre", () => {
+  const publique = readFileSync(fileURLToPath(new URL("../../[slug]/PublicPageClient.tsx", import.meta.url)), "utf8")
+
+  it("le compteur de scans n'affiche que le chiffre du commerçant", () => {
+    // `{c.count || "1 240"}` : un visiteur lisait « 1 240 scans » sur une page où
+    // personne n'avait saisi de chiffre.
+    expect(publique).not.toContain('"1 240"')
+    expect(publique).toContain('case "scan_counter": return c.count ? (')
+  })
+
+  it("aucun compteur ne se replie sur un nombre en dur", () => {
+    const fauxNombres = [...publique.matchAll(/c\.count\s*\|\|\s*"([^"]+)"/g)].map(m => m[1])
+    expect(fauxNombres.filter(n => n !== "0")).toEqual([])
   })
 })

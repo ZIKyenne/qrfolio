@@ -36,6 +36,17 @@ const KEY: Record<string, (v: string) => Record<string, any>> = {
   tabs_block: v => ({ [`tab1_label`]: v }),
   accordion_block: v => ({ [`a1_title`]: v }),
   two_columns: v => ({ col1_title: v }),
+  // Les dix blocs qui affichaient des chiffres et des noms inventés dans l'aperçu.
+  promo_code: v => ({ code: v }),
+  sales_counter: v => ({ count: v }),
+  participants_count: v => ({ count: v }),
+  scan_counter: v => ({ count: v }),
+  featured_product: v => ({ name: v }),
+  quote_block: v => ({ quote: v }),
+  founder_message: v => ({ message: v }),
+  info_box: v => ({ message: v }),
+  google_reviews_block: v => ({ r1_name: v }),
+  event_access: v => ({ address: v }),
 }
 
 describe("hasPublishableContent — toutes les familles listées sont couvertes", () => {

@@ -654,11 +654,13 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           </div>
         </div>
       )
-      case "promo_code": return (
+      case "promo_code": return !hasPublishableContent("promo_code", c)
+        ? <div style={{ padding: "4px 16px 10px", ...s }}>{emptyHint("🏷️", "Ajoutez un code promo", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        : (
         <div style={{ padding: "4px 16px 10px", ...s }}>
           <div style={{ background: "rgba(249,115,22,0.08)", border: "2px dashed rgba(249,115,22,0.3)", borderRadius: 12, padding: "14px", textAlign: "center" }}>
             {c.description && <p style={{ color: muted, fontSize: 11, margin: "0 0 8px" }}>{c.description}</p>}
-            <div style={{ background: "rgba(249,115,22,0.15)", border: "2px solid rgba(249,115,22,0.4)", borderRadius: 8, padding: "9px 16px", fontFamily: "monospace", fontSize: 18, fontWeight: 700, color: "#F97316", letterSpacing: 3 }}>{c.code||"PROMO10"}</div>
+            <div style={{ background: "rgba(249,115,22,0.15)", border: "2px solid rgba(249,115,22,0.4)", borderRadius: 8, padding: "9px 16px", fontFamily: "monospace", fontSize: 18, fontWeight: 700, color: "#F97316", letterSpacing: 3 }}>{c.code}</div>
             {c.expires && <p style={{ color: muted, fontSize: 9, margin: "5px 0 0" }}>Expire le {c.expires}</p>}
           </div>
         </div>
@@ -1008,7 +1010,9 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         )
       }
 
-      case "featured_product": return (
+      case "featured_product": return !hasPublishableContent("featured_product", c)
+        ? <div style={{ padding: "10px 16px", ...s }}>{emptyHint("⭐", "Ajoutez un produit", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        : (
         <div style={{ padding: "10px 16px", ...s }}>
           <div style={{ background: `linear-gradient(135deg,${primary}10,${accent}08)`, border: `1.5px solid ${primary}30`, borderRadius: 14, overflow: "hidden" }}>
             {c.badge && (() => { const bs = productBadgeStyle(c.badge, primary); return <div style={{ background: bs.color, color: bs.fg, padding: "6px 14px", fontSize: 11, fontWeight: 700, textAlign: "center" }}>{bs.icon ? bs.icon+" " : ""}{c.badge}</div> })()}
@@ -1016,7 +1020,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
               ? <img src={c.image} alt="" style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }} />
               : <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(249,115,22,0.06)", fontSize: 40 }}>⭐</div>}
             <div style={{ padding: "14px" }}>
-              <p style={{ color: text, fontSize: 16, fontWeight: 700, margin: "0 0 6px", fontFamily: theme.fontDisplay }}>{c.name||"Mon produit phare"}</p>
+              <p style={{ color: text, fontSize: 16, fontWeight: 700, margin: "0 0 6px", fontFamily: theme.fontDisplay }}>{c.name}</p>
               {c.description && <p style={{ color: muted, fontSize: 12, margin: "0 0 10px", lineHeight: 1.5 }}>{c.description}</p>}
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <span style={{ color: primary, fontSize: 22, fontWeight: 700 }}>{c.price||"99€"}</span>
@@ -1137,6 +1141,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
       }
 
       case "google_reviews_block": {
+        if (!hasPublishableContent("google_reviews_block", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("⭐", "Ajoutez un avis ou une note", HIDDEN_WHEN_EMPTY_NOTE)}</div>
         const reviews = Array.from({length:50},(_,k)=>{const i=k+1;return [c[`r${i}_name`],c[`r${i}_text`],c[`r${i}_stars`]]}).filter(([n])=>n)
         return (
           <div style={{ padding: "10px 16px", ...s }}>
@@ -1316,14 +1321,16 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         )
       }
 
-      case "sales_counter": return (
+      case "sales_counter": return !hasPublishableContent("sales_counter", c)
+        ? <div style={{ padding: "10px 16px", ...s }}>{emptyHint("🔥", "Ajoutez le nombre de ventes", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        : (
         <div style={{ padding: "10px 16px", ...s }}>
           <div style={{ background: "rgba(239,68,68,0.08)", border: "1.5px solid rgba(239,68,68,0.25)", borderRadius: 14, padding: "16px", textAlign: "center" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: c.subtext ? 6 : 0 }}>
               <span style={{ fontSize: 28 }}>{c.emoji||"🔥"}</span>
               <div>
                 <p style={{ color: "#EF4444", fontSize: 28, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>
-                  <span style={{ color: text }}>{c.count||"127"}</span> <span style={{ fontSize: 14 }}>{c.label||"ventes"}</span>
+                  <span style={{ color: text }}>{c.count}</span> <span style={{ fontSize: 14 }}>{c.label||"ventes"}</span>
                 </p>
                 {c.period && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{c.period}</p>}
               </div>
@@ -1577,13 +1584,15 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         )
       }
 
-      case "scan_counter": return (
+      case "scan_counter": return !hasPublishableContent("scan_counter", c)
+        ? <div style={{ padding: "14px 16px", ...s }}>{emptyHint("📱", "Ajoutez le nombre de scans", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        : (
         <div style={{ padding: "14px 16px", textAlign: "center", ...s }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(57,255,143,0.08)", border: "1px solid rgba(57,255,143,0.2)", borderRadius: 14, padding: "16px 24px" }}>
             <span style={{ fontSize: 28 }}>{c.emoji||"📱"}</span>
             <div>
-              <p style={{ color: primary, fontSize: 32, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>{c.count||"1 240"}</p>
-              <p style={{ color: muted, fontSize: 11, margin: "3px 0 0" }}>{c.label||"scans ce mois"}</p>
+              <p style={{ color: primary, fontSize: 32, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>{c.count}</p>
+              <p style={{ color: muted, fontSize: 11, margin: "3px 0 0" }}>{c.label}</p>
             </div>
           </div>
         </div>
@@ -1756,11 +1765,13 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         )
       }
 
-      case "quote_block": return (
+      case "quote_block": return !hasPublishableContent("quote_block", c)
+        ? <div style={{ padding: "14px 16px", ...s }}>{emptyHint("❝", "Ajoutez une citation", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        : (
         <div style={{ padding: "14px 16px", ...s }}>
           <div style={{ background: primary+"08", border: `1px solid ${primary}20`, borderRadius: 14, padding: "18px 16px", position: "relative" }}>
             <span style={{ position: "absolute", top: 10, left: 14, color: primary, fontSize: 36, fontFamily: "Georgia, serif", lineHeight: 1, opacity: 0.4 }}>"</span>
-            <p style={{ color: text, fontSize: 15, fontStyle: "italic", lineHeight: 1.7, margin: "0 0 10px", paddingTop: 10, fontFamily: theme.fontDisplay }}>{c.quote||"La qualité n est jamais un accident."}</p>
+            <p style={{ color: text, fontSize: 15, fontStyle: "italic", lineHeight: 1.7, margin: "0 0 10px", paddingTop: 10, fontFamily: theme.fontDisplay }}>{c.quote}</p>
             {c.author && (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 24, height: 2, background: primary, borderRadius: 1 }} />
@@ -1810,7 +1821,9 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         )
       }
 
-      case "founder_message": return (
+      case "founder_message": return !hasPublishableContent("founder_message", c)
+        ? <div style={{ padding: "12px 16px", ...s }}>{emptyHint("✍️", "Ajoutez le message du fondateur", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        : (
         <div style={{ padding: "12px 16px", ...s }}>
           <div style={{ background: primary+"06", border: `1px solid ${primary}15`, borderRadius: 14, padding: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
@@ -1818,8 +1831,8 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                 ? <img src={c.photo} alt="" style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${primary}40` }} />
                 : <div style={{ width: 50, height: 50, borderRadius: "50%", background: `linear-gradient(135deg,${primary},${accent})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>👤</div>}
               <div>
-                <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: theme.fontDisplay }}>{c.name||"Jean Dupont"}</p>
-                <p style={{ color: primary, fontSize: 11, margin: 0 }}>{c.role||"Fondateur & CEO"}</p>
+                <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: theme.fontDisplay }}>{c.name}</p>
+                <p style={{ color: primary, fontSize: 11, margin: 0 }}>{c.role}</p>
               </div>
             </div>
             <p style={{ color: muted, fontSize: 12, lineHeight: 1.7, margin: c.signature ? "0 0 10px" : "0", fontStyle: "italic" }}>"{c.message||"Bienvenue ! Notre mission est de vous offrir le meilleur service possible."}"</p>
@@ -2337,7 +2350,9 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         )
       }
 
-      case "event_access": return (
+      case "event_access": return !hasPublishableContent("event_access", c)
+        ? <div style={{ padding: "10px 16px", ...s }}>{emptyHint("🗺️", "Ajoutez une adresse ou un plan", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        : (
         <div style={{ padding: "10px 16px", ...s }}>
           {c.title && <p style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: 2, margin: "0 0 10px" }}>{c.title}</p>}
           {(() => { const mapSrc = mapEmbedUrl(c.address, c.embed_url); return mapSrc
@@ -2411,15 +2426,18 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
       )
 
       case "participants_count": {
-        const total = parseInt(c.count||"287")
-        const max = parseInt(c.max||"500")
-        const pct = Math.min(100, Math.round((total/max)*100))
+        if (!hasPublishableContent("participants_count", c)) return <div style={{ padding: "14px 16px", ...s }}>{emptyHint("👥", "Ajoutez le nombre de participants", HIDDEN_WHEN_EMPTY_NOTE)}</div>
+        // Miroir exact du public : sans objectif saisi, aucune barre — et surtout
+        // aucun compteur ni objectif inventé, qui donnait un taux de remplissage faux.
+        const total = parseInt(c.count || "0")
+        const max = parseInt(c.max || "0")
+        const pct = max > 0 ? Math.min(100, Math.round((total / max) * 100)) : 0
         return (
           <div style={{ padding: "14px 16px", textAlign: "center", ...s }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "rgba(236,72,153,0.08)", border: "1px solid rgba(236,72,153,0.2)", borderRadius: 14, padding: "16px 24px", marginBottom: c.show_progress!=="no" ? 12 : 0 }}>
               <span style={{ fontSize: 28 }}>{c.emoji||"👥"}</span>
               <div>
-                <p style={{ color: "#EC4899", fontSize: 32, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>{c.count||"287"}</p>
+                <p style={{ color: "#EC4899", fontSize: 32, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>{c.count}</p>
                 <p style={{ color: muted, fontSize: 11, margin: "3px 0 0" }}>{c.label||"participants inscrits"}</p>
               </div>
             </div>
@@ -2636,6 +2654,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
       }
 
       case "info_box": {
+        if (!hasPublishableContent("info_box", c)) return <div style={{ padding: "10px 16px", ...s }}>{emptyHint("💡", "Ajoutez le texte de l'encadré", HIDDEN_WHEN_EMPTY_NOTE)}</div>
         const boxStyles: Record<string,any> = {
           info: { bg: "rgba(56,189,248,0.08)", border: "rgba(56,189,248,0.3)", color: "var(--action)" },
           warning: { bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.3)", color: "#FBBF24" },
@@ -2651,7 +2670,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                 <span style={{ fontSize: 20, flexShrink: 0 }}>{c.emoji||"💡"}</span>
                 <div>
                   {c.title && <p style={{ color: bs.color, fontSize: 12, fontWeight: 700, margin: "0 0 4px" }}>{c.title}</p>}
-                  <p style={{ color: text, fontSize: 12, margin: 0, lineHeight: 1.6 }}>{c.message||"Information importante à retenir."}</p>
+                  <p style={{ color: text, fontSize: 12, margin: 0, lineHeight: 1.6 }}>{c.message}</p>
                 </div>
               </div>
             </div>

@@ -67,6 +67,10 @@ describe("état vide éditeur — aucune donnée de démonstration trompeuse ne 
     // Relevé du 6 septembre (vague 10) : l'aperçu de founder_message affichait ce
     // message d'accueil inventé tant que le commerçant n'avait rien écrit.
     "Notre mission est de vous offrir",       // founder_message
+    // Relevé du 6 septembre (vague 11) : deux faux chiffres vivaient encore dans
+    // l'aperçu, sur des blocs que la page publiée n'affichait même pas.
+    "1 234",                                  // visit_counter
+    'c.count||"14"',                          // tickets_left
   ]
   for (const demo of FORBIDDEN_DEMO) {
     it(`ne contient plus le contenu de démo « ${demo} »`, () => {

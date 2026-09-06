@@ -9,6 +9,7 @@ import { validateLeadForm, canSubmit, decideSubmit, decideResult } from "./forms
 import { SharedLeadFormView } from "./forms/SharedLeadFormView"
 import { EditorLeadFormAdapter, EDITOR_FORM_PREVIEW_NOTICE } from "./forms/EditorLeadFormAdapter"
 import { FORM_RENDERER_CANDIDATES, FORM_PILOT_CANDIDATES } from "./forms/formCandidates"
+import { BLOCS_ACTIFS_ATTENDUS } from "./blocsActifs.recensement"
 import { SHARED_RENDERER_BLOCKS } from "./architecture"
 import type { SharedLeadFormModel } from "./forms/formTypes"
 
@@ -161,8 +162,8 @@ describe("B09.13 — sécurité", () => {
 
 // ── Méta : rien n'est activé ─────────────────────────────────────────────────
 describe("B09.13 — aucune activation", () => {
-  it("toujours exactement 99 blocs shared actifs", () => {
-    expect(SHARED_RENDERER_BLOCKS.size).toBe(99)
+  it("toujours exactement blocs shared au recensement actifs", () => {
+    expect(SHARED_RENDERER_BLOCKS.size).toBe(BLOCS_ACTIFS_ATTENDUS.length)
   })
   it("les 6 formulaires restent LEGACY (hors flag)", () => {
     for (const t of ["contact_form", "quote_form", "reservation_form", "booking_request", "event_register", "rsvp"]) {

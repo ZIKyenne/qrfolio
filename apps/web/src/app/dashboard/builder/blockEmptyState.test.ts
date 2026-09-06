@@ -57,6 +57,9 @@ const KEY: Record<string, (v: string) => Record<string, any>> = {
   company: v => ({ company_name: v }),
   journey: v => ({ line_1: v }),
   expertise: v => ({ s1_name: v }),
+  // Vague 11.
+  tickets_left: v => ({ count: v }),
+  limited_offer: v => ({ title: v }),
 }
 
 describe("hasPublishableContent — toutes les familles listées sont couvertes", () => {

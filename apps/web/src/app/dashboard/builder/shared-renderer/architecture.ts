@@ -119,6 +119,12 @@ export const SHARED_RENDERER_BLOCKS: ReadonlySet<string> = new Set<string>([
   // n'appliquaient pas la meme regle de vide des deux cotes ; expertise ecrivait
   // « NaN% » dans la largeur de sa barre quand le niveau manquait.
   "quote_block", "info_box", "founder_message", "company", "journey", "expertise",
+  // ── Vague 11 — compteurs et offres (6 blocs) ──
+  // La famille ou vivaient les faux chiffres : « 14 places restantes » et
+  // « 1 234 visiteurs » etaient encore dessines dans l'apercu, sur des blocs que la
+  // page ne publiait pas. Un compteur sans chiffre ne s'affiche plus nulle part.
+  "scan_counter", "sales_counter", "participants_count",
+  "promo_code", "tickets_left", "limited_offer",
 ])
 
 // Blocs prévus comme pilotes en B09.2 (déclaratif, NON activé). Voir SHARED-RENDERER-PILOT.md.

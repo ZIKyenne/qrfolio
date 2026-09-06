@@ -69,6 +69,12 @@ import { EditorFounderMessage } from "./blocks/founder_message"
 import { EditorCompany } from "./blocks/company"
 import { EditorJourney } from "./blocks/journey"
 import { EditorExpertise } from "./blocks/expertise"
+import { EditorScanCounter } from "./blocks/scan_counter"
+import { EditorSalesCounter } from "./blocks/sales_counter"
+import { EditorParticipantsCount } from "./blocks/participants_count"
+import { EditorPromoCode } from "./blocks/promo_code"
+import { EditorTicketsLeft } from "./blocks/tickets_left"
+import { EditorLimitedOffer } from "./blocks/limited_offer"
 import { EditorFreeSection } from "./blocks/free_section"
 import { EditorImageText } from "./blocks/image_text"
 import { EditorSplitPanel } from "./blocks/split_panel"
@@ -207,6 +213,13 @@ const EDITOR_ADAPTERS: Record<string, ComponentType<EditorAdapterProps>> = {
   company: EditorCompany,
   journey: EditorJourney,
   expertise: EditorExpertise,
+  // Vague 11 — compteurs et offres.
+  scan_counter: EditorScanCounter,
+  sales_counter: EditorSalesCounter,
+  participants_count: EditorParticipantsCount,
+  promo_code: EditorPromoCode,
+  tickets_left: EditorTicketsLeft,
+  limited_offer: EditorLimitedOffer,
 }
 
 // Renvoie l'adapter éditeur partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

@@ -68,6 +68,11 @@ const DETECTORS: Record<string, (c: Record<string, any>) => boolean> = {
   company:                 c => hasMeaningfulText(c.company_name) || hasMeaningfulText(c.logo_url),
   journey:                 c => [1, 2, 3, 4].some(i => hasMeaningfulText(c[`line_${i}`])),
   expertise:               c => anyIndexed(c, i => c[`s${i}_name`]),
+  // Vague 11 — compteurs et offres. tickets_left et limited_offer manquaient a
+  // l'appel : l'apercu leur inventait « 14 places restantes » et un bandeau
+  // « Offre limitée » pour des blocs que la page ne publiait pas.
+  tickets_left:            c => hasMeaningfulText(c.count),
+  limited_offer:           c => hasMeaningfulText(c.title) || hasMeaningfulText(c.description),
   google_reviews_block:    c => anyIndexed(c, i => c[`r${i}_name`]) || hasMeaningfulText(c.avg_rating),
   event_access:            c => hasMeaningfulText(c.embed_url) || hasMeaningfulText(c.address)
                               || hasMeaningfulText(c.transport1_label) || hasMeaningfulText(c.transport2_label) || hasMeaningfulText(c.transport3_label),

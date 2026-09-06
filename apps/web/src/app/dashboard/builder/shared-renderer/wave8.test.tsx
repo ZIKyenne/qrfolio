@@ -19,6 +19,7 @@ import { EditorPodcastLinks } from "./blocks/podcast_links/EditorPodcastLinks"
 import { PublicPodcastLinks } from "./blocks/podcast_links/PublicPodcastLinks"
 import { EditorProductCatalog } from "./blocks/product_catalog/EditorProductCatalog"
 import { PublicProductCatalog } from "./blocks/product_catalog/PublicProductCatalog"
+import { BLOCS_ACTIFS_ATTENDUS } from "./blocsActifs.recensement"
 import { SHARED_RENDERER_BLOCKS } from "./architecture"
 import type { EditorRenderCtx, PublicRenderCtx } from "./renderTypes"
 
@@ -132,9 +133,9 @@ describe("wave8 — contrat image + CTA + parité", () => {
   })
 })
 
-describe("wave8 — méta : 99 blocs shared, aucun bloc exclu activé", () => {
-  it("exactement 99 blocs shared actifs", () => {
-    expect(SHARED_RENDERER_BLOCKS.size).toBe(99)
+describe("wave8 — méta : blocs shared au recensement, aucun bloc exclu activé", () => {
+  it("exactement blocs shared au recensement actifs", () => {
+    expect(SHARED_RENDERER_BLOCKS.size).toBe(BLOCS_ACTIFS_ATTENDUS.length)
   })
   it("les 6 nouveaux sont actifs", () => {
     for (const t of ["video", "google_maps_embed", "album_block", "discography", "podcast_links", "product_catalog"]) {

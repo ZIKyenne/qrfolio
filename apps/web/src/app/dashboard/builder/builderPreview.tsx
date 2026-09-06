@@ -305,10 +305,13 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           </div>
         </div>
       )
+      // Le compteur de visites lit le total REEL de la page publiee ; l'editeur ne
+      // le connait pas. Il affichait un nombre entierement invente, du meme genre
+      // que celui retire de la page publiee le 6 septembre. On
+      // montre desormais ce que le bloc fera, sans faire semblant d'avoir le chiffre.
       case "visit_counter": return (
-        <div style={{ padding: "14px 16px", textAlign: "center", ...s }}>
-          <p style={{ fontFamily: theme.fontDisplay, fontSize: 34, color: primary, fontWeight: 700, margin: "0 0 3px" }}>1 234</p>
-          <p style={{ color: muted, fontSize: 11, margin: 0 }}>{c.label||"visiteurs"}</p>
+        <div style={{ padding: "10px 16px", ...s }}>
+          {emptyHint("👁️", `Compteur de visites — « ${c.label || "visiteurs"} »`, "Le nombre reel s'affiche en ligne ; invisible tant qu'il est a zero")}
         </div>
       )
       case "google_maps": return (
@@ -2468,7 +2471,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 }}>
                 <span style={{ fontSize: 28 }}>🎟️</span>
                 <div>
-                  <p style={{ color: us.color, fontSize: 32, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>{c.count||"14"}</p>
+                  <p style={{ color: us.color, fontSize: 32, fontWeight: 700, margin: 0, fontFamily: theme.fontDisplay, lineHeight: 1 }}>{c.count}</p>
                   <p style={{ color: muted, fontSize: 11, margin: "3px 0 0" }}>{c.label||"places restantes"}</p>
                 </div>
               </div>

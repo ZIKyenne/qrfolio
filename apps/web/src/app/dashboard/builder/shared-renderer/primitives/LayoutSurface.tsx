@@ -30,12 +30,16 @@ export function LayoutSurface({ content, u, children, defaultPad, defaultRadius,
   )
 }
 
-export function SmartCta({ u, href, label, style, external = true }: {
+export function SmartCta({ u, href, label, style, external = true, trackTarget }: {
   u: UnifiedCtx
   href: string
   label: ReactNode
   style: CSSProperties
   external?: boolean
+  /** Cle de suivi si elle differe de l'adresse (ex. « tickets » quand aucune URL
+      n'est saisie) : on conserve les cles historiques pour ne pas casser les
+      statistiques deja collectees. */
+  trackTarget?: string
 }) {
   // Cible tactile plancher (voir avecCibleTactile) : ces boutons sont ceux qui
   // font réserver, commander, acheter — et on n'y touche qu'au téléphone.
@@ -46,7 +50,7 @@ export function SmartCta({ u, href, label, style, external = true }: {
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      onClick={() => { try { u.trackClick(href) } catch {} }}
+      onClick={() => { try { u.trackClick(trackTarget ?? href) } catch {} }}
       style={st}
     >{label}</a>
   )

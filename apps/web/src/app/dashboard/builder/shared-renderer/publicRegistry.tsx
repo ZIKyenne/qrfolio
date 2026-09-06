@@ -120,6 +120,14 @@ const PublicCompany = dynamic(() => import("./blocks/company").then(m => m.Publi
 const PublicJourney = dynamic(() => import("./blocks/journey").then(m => m.PublicJourney))
 const PublicExpertise = dynamic(() => import("./blocks/expertise").then(m => m.PublicExpertise))
 
+// Vague 11 — compteurs et offres.
+const PublicScanCounter = dynamic(() => import("./blocks/scan_counter").then(m => m.PublicScanCounter))
+const PublicSalesCounter = dynamic(() => import("./blocks/sales_counter").then(m => m.PublicSalesCounter))
+const PublicParticipantsCount = dynamic(() => import("./blocks/participants_count").then(m => m.PublicParticipantsCount))
+const PublicPromoCode = dynamic(() => import("./blocks/promo_code").then(m => m.PublicPromoCode))
+const PublicTicketsLeft = dynamic(() => import("./blocks/tickets_left").then(m => m.PublicTicketsLeft))
+const PublicLimitedOffer = dynamic(() => import("./blocks/limited_offer").then(m => m.PublicLimitedOffer))
+
 const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   heading: PublicHeading,
   values: PublicValues,
@@ -220,6 +228,12 @@ const PUBLIC_ADAPTERS: Record<string, ComponentType<PublicAdapterProps>> = {
   company: PublicCompany,
   journey: PublicJourney,
   expertise: PublicExpertise,
+  scan_counter: PublicScanCounter,
+  sales_counter: PublicSalesCounter,
+  participants_count: PublicParticipantsCount,
+  promo_code: PublicPromoCode,
+  tickets_left: PublicTicketsLeft,
+  limited_offer: PublicLimitedOffer,
 }
 
 // Renvoie l'adapter public partagé si le bloc est ACTIVÉ (flag) et enregistré ; sinon null

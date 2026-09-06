@@ -458,7 +458,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
         <div style={{ padding: "10px 16px", ...s }}>
           <div style={{ background: "rgba(29,185,84,0.08)", border: "1px solid rgba(29,185,84,0.2)", borderRadius: 12, padding: "14px", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 42, height: 42, background: "#1DB954", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🎧</div>
-            <div style={{ flex: 1 }}><p style={{ color: text, fontSize: 12, fontWeight: 700, margin: "0 0 2px" }}>{c.title||"Ma musique"}</p><p style={{ color: muted, fontSize: 10, margin: 0 }}>Écouter sur Spotify</p></div>
+            <div style={{ flex: 1 }}>{c.title && <p style={{ color: text, fontSize: 12, fontWeight: 700, margin: "0 0 2px" }}>{c.title}</p>}<p style={{ color: muted, fontSize: 10, margin: 0 }}>Écouter sur Spotify</p></div>
             <div style={{ background: "#1DB954", color: "#000", padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>▶ Play</div>
           </div>
         </div>
@@ -848,7 +848,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
               ? <img src={c.logo_url} alt="" style={{ width: 40, height: 40, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} />
               : <div style={{ width: 40, height: 40, borderRadius: 9, background: primary+"15", border: `1px solid ${primary}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🏢</div>}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 1px", fontFamily: theme.fontDisplay }}>{c.company_name||"Mon Entreprise"}</p>
+              {c.company_name && <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 1px", fontFamily: theme.fontDisplay }}>{c.company_name}</p>}
               <p style={{ color: muted, fontSize: 10, margin: 0 }}>{c.sector}{c.founded_year ? ` · Depuis ${c.founded_year}` : ""}</p>
             </div>
           </div>
@@ -870,7 +870,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
           <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
             <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(255,0,0,0.15)", border: "2px solid rgba(255,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>▶️</div>
             <div style={{ flex: 1 }}>
-              <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{c.channel_name||"Ma Chaîne"}</p>
+              {c.channel_name && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{c.channel_name}</p>}
               {c.subscribers && <p style={{ color: muted, fontSize: 10, margin: 0 }}>{c.subscribers}</p>}
             </div>
           </div>
@@ -887,7 +887,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                 <div style={{ width: 40, height: 40, borderRadius: 9, background: "rgba(145,70,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🎮</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: 0 }}>{c.username||"monpseudo"}</p>
+                    {c.username && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: 0 }}>{c.username}</p>}
                     {isLive && <span style={{ background: "#EF4444", color: "#fff", borderRadius: 4, padding: "1px 6px", fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
                   </div>
                   {c.game && <p style={{ color: muted, fontSize: 10, margin: 0 }}>🎯 {c.game}</p>}
@@ -907,7 +907,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(88,101,242,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎮</div>
               <div style={{ flex: 1 }}>
-                <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 1px" }}>{c.server_name||"Mon Serveur"}</p>
+                {c.server_name && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 1px" }}>{c.server_name}</p>}
                 {c.members && <p style={{ color: muted, fontSize: 10, margin: "0 0 1px" }}>👥 {c.members}</p>}
                 {c.description && <p style={{ color: muted, fontSize: 10, margin: 0 }}>{c.description}</p>}
               </div>
@@ -923,7 +923,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
               <div style={{ width: 42, height: 42, borderRadius: "50%", background: "rgba(38,165,228,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>✈️</div>
               <div style={{ flex: 1 }}>
-                <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 1px" }}>{c.channel_name||"Mon Canal"}</p>
+                {c.channel_name && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 1px" }}>{c.channel_name}</p>}
                 {c.members && <p style={{ color: muted, fontSize: 10, margin: "0 0 1px" }}>👥 {c.members}</p>}
                 {c.description && <p style={{ color: muted, fontSize: 10, margin: 0 }}>{c.description}</p>}
               </div>
@@ -942,7 +942,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                 ? <img src={c.cover_url} alt="" style={{ width: 52, height: 52, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
                 : <div style={{ width: 52, height: 52, borderRadius: 10, background: "rgba(177,80,226,0.15)", border: "1px solid rgba(177,80,226,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>🎙️</div>}
               <div>
-                <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 2px" }}>{c.podcast_name||"Mon Podcast"}</p>
+                {c.podcast_name && <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 2px" }}>{c.podcast_name}</p>}
                 {c.description && <p style={{ color: muted, fontSize: 11, margin: 0 }}>{c.description}</p>}
               </div>
             </div>
@@ -1447,7 +1447,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: c.url ? 12 : 0 }}>
               {!c.cover && <div style={{ width: 44, height: 52, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>📄</div>}
               <div style={{ flex: 1 }}>
-                <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{c.title||"Mon document PDF"}</p>
+                {c.title && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{c.title}</p>}
                 {c.description && <p style={{ color: muted, fontSize: 11, margin: "0 0 2px" }}>{c.description}</p>}
                 {(c.pages || c.file_size) && <p style={{ color: muted, fontSize: 10, margin: 0 }}>📄 PDF{c.pages ? ` · ${c.pages} pages` : ""}{c.file_size ? ` · ${c.file_size}` : ""}</p>}
               </div>
@@ -2073,7 +2073,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
                 ? <img src={c.cover} alt="" style={{ width: 80, height: 80, borderRadius: 10, objectFit: "cover", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }} />
                 : <div style={{ width: 80, height: 80, borderRadius: 10, background: "rgba(29,185,84,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>🎵</div>}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ color: text, fontSize: 16, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.title||"Nouveau titre"}</p>
+                {c.title && <p style={{ color: text, fontSize: 16, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.title}</p>}
                 {c.artist && <p style={{ color: muted, fontSize: 12, margin: "0 0 4px" }}>{c.artist}</p>}
                 {c.release_date && <p style={{ color: "#1DB954", fontSize: 11, margin: "0 0 10px", fontWeight: 600 }}>📅 {c.release_date}</p>}
                 <div style={{ display: "flex", gap: 6 }}>
@@ -2122,7 +2122,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
               ? <img src={c.cover} alt="" style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }} />
               : <div style={{ height: 140, background: "rgba(29,185,84,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48 }}>💿</div>}
             <div style={{ padding: "14px" }}>
-              <p style={{ color: text, fontSize: 18, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }}>{c.title||"Mon Album"}</p>
+              {c.title && <p style={{ color: text, fontSize: 18, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }}>{c.title}</p>}
               {c.artist && <p style={{ color: muted, fontSize: 12, margin: "0 0 3px" }}>{c.artist}</p>}
               <div style={{ display: "flex", gap: 10, marginBottom: c.description ? 10 : 12 }}>
                 {c.year && <span style={{ color: "#1DB954", fontSize: 11, fontWeight: 600 }}>{c.year}</span>}
@@ -2149,7 +2149,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
               ? <img src={c.cover} alt="" style={{ width: 60, height: 60, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
               : <div style={{ width: 60, height: 60, borderRadius: 10, background: "rgba(29,185,84,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>📋</div>}
             <div style={{ flex: 1 }}>
-              <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 3px" }}>{c.title||"Ma Playlist"}</p>
+              {c.title && <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 3px" }}>{c.title}</p>}
               {c.description && <p style={{ color: muted, fontSize: 11, margin: "0 0 3px" }}>{c.description}</p>}
               {c.tracks_count && <p style={{ color: "#1DB954", fontSize: 11, margin: 0, fontWeight: 600 }}>🎵 {c.tracks_count}</p>}
             </div>
@@ -2191,7 +2191,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 14 }}>
               <span style={{ fontSize: 32, flexShrink: 0 }}>🎟️</span>
               <div>
-                <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 3px" }}>{c.event_name||"Mon Concert"}</p>
+                {c.event_name && <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 3px" }}>{c.event_name}</p>}
                 {c.date && <p style={{ color: muted, fontSize: 11, margin: "0 0 2px" }}>📅 {c.date}</p>}
                 {c.venue && <p style={{ color: muted, fontSize: 11, margin: "0 0 2px" }}>📍 {c.venue}</p>}
                 {c.price && <p style={{ color: "#9146FF", fontSize: 12, fontWeight: 700, margin: 0 }}>💶 {c.price}</p>}
@@ -2210,7 +2210,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             {c.cover
               ? <img src={c.cover} alt="" style={{ width: 100, height: 100, borderRadius: 12, objectFit: "cover", margin: "0 auto 12px", display: "block", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }} />
               : <div style={{ width: 100, height: 100, borderRadius: 12, background: "rgba(29,185,84,0.15)", margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>💾</div>}
-            <p style={{ color: text, fontSize: 16, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }}>{c.release_name||"Mon prochain titre"}</p>
+            {c.release_name && <p style={{ color: text, fontSize: 16, fontWeight: 700, margin: "0 0 3px", fontFamily: theme.fontDisplay }}>{c.release_name}</p>}
             {c.release_date && <p style={{ color: "#1DB954", fontSize: 12, fontWeight: 600, margin: "0 0 14px" }}>📅 Sortie le {c.release_date}</p>}
             <div style={{ display: "flex", gap: 8 }}>
               {c.spotify_url && <div style={{ flex: 1, background: "#1DB954", borderRadius: 9, padding: "11px", fontSize: 12, fontWeight: 700, color: "#000" }}>💾 Pré-save Spotify</div>}
@@ -2292,7 +2292,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 14 }}>
               <span style={{ fontSize: 32, flexShrink: 0 }}>🎟️</span>
               <div style={{ flex: 1 }}>
-                <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 3px" }}>{c.event_name||"Mon événement"}</p>
+                {c.event_name && <p style={{ color: text, fontSize: 14, fontWeight: 700, margin: "0 0 3px" }}>{c.event_name}</p>}
                 {c.date && <p style={{ color: muted, fontSize: 11, margin: "0 0 2px" }}>📅 {c.date}</p>}
                 {c.location && <p style={{ color: muted, fontSize: 11, margin: "0 0 2px" }}>📍 {c.location}</p>}
                 {c.price && <p style={{ color: "#EC4899", fontSize: 12, fontWeight: 700, margin: 0 }}>💶 {c.price}</p>}
@@ -2407,7 +2407,7 @@ import { resolveEditorBlock } from "./shared-renderer/editorRegistry"
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
               <div style={{ width: 42, height: 42, borderRadius: 10, background: "rgba(236,72,153,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>📅</div>
               <div>
-                <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{c.event_name||"Mon événement"}</p>
+                {c.event_name && <p style={{ color: text, fontSize: 13, fontWeight: 700, margin: "0 0 2px" }}>{c.event_name}</p>}
                 {c.start_date && <p style={{ color: muted, fontSize: 11, margin: 0 }}>🕐 {c.start_date}</p>}
                 {c.location && <p style={{ color: muted, fontSize: 11, margin: 0 }}>📍 {c.location}</p>}
               </div>

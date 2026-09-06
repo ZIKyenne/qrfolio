@@ -393,7 +393,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ background: "rgba(29,185,84,0.07)", border: "1px solid rgba(29,185,84,0.18)", borderRadius: 13, padding: "16px 16px", display: "flex", alignItems: "center", gap: 13 }}>
           <div style={{ width: 48, height: 48, background: "#1DB954", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎧</div>
           <div style={{ flex: 1 }}>
-            <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.title || "Ma musique"}</p>
+            {c.title && <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.title}</p>}
             <p style={{ color: MUTED, fontSize: 12, margin: 0, fontFamily: FONT_B }}>Ecouter sur Spotify</p>
           </div>
           {c.url && <a href={extHref(c.url)} onClick={() => trackLinkClick(pageId, block.id, c.url||block.type)} target="_blank" rel="noopener noreferrer" style={{ background: "#1DB954", color: "#000", padding: "8px 16px", borderRadius: 20, textDecoration: "none", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>▶ Play</a>}
@@ -1182,7 +1182,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 11 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(88,101,242,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>🎮</div>
             <div style={{ flex: 1 }}>
-              <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_B }}>{c.server_name || "Mon Serveur"}</p>
+              {c.server_name && <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_B }}>{c.server_name}</p>}
               {c.members && <p style={{ color: MUTED, fontSize: 11, margin: "0 0 1px" }}>👥 {c.members}</p>}
               {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{c.description}</p>}
             </div>
@@ -1197,7 +1197,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 11 }}>
             <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(38,165,228,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>✈️</div>
             <div style={{ flex: 1 }}>
-              <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_B }}>{c.channel_name || "Mon Canal"}</p>
+              {c.channel_name && <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_B }}>{c.channel_name}</p>}
               {c.members && <p style={{ color: MUTED, fontSize: 11, margin: "0 0 1px" }}>👥 {c.members}</p>}
               {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{c.description}</p>}
             </div>
@@ -1211,7 +1211,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 13 }}>
           <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(255,0,0,0.15)", border: "2px solid rgba(255,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, flexShrink: 0 }}>▶️</div>
           <div style={{ flex: 1 }}>
-            <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.channel_name || "Ma Chaîne"}</p>
+            {c.channel_name && <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.channel_name}</p>}
             {c.subscribers && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{c.subscribers}</p>}
           </div>
         </div>
@@ -1227,7 +1227,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               <div style={{ width: 42, height: 42, borderRadius: 10, background: "rgba(145,70,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, flexShrink: 0 }}>🎮</div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: 0, fontFamily: FONT_B }}>{c.username || "monpseudo"}</p>
+                  {c.username && <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: 0, fontFamily: FONT_B }}>{c.username}</p>}
                   {isLive && <span style={{ background: "#EF4444", color: "#fff", borderRadius: 4, padding: "1px 6px", fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
                 </div>
                 {c.game && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>🎯 {c.game}</p>}
@@ -1258,7 +1258,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
               ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover_url} alt="" width={54} height={54} style={{ width: 54, height: 54, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} />
               : <div style={{ width: 54, height: 54, borderRadius: 11, background: "rgba(177,80,226,0.15)", border: "1px solid rgba(177,80,226,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 27, flexShrink: 0 }}>🎙️</div>}
             <div>
-              <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.podcast_name || "Mon Podcast"}</p>
+              {c.podcast_name && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.podcast_name}</p>}
               {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: 0 }}>{c.description}</p>}
             </div>
           </div>
@@ -1354,7 +1354,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: c.url ? 13 : 0 }}>
             {!c.cover && <div style={{ width: 46, height: 54, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>📄</div>}
             <div style={{ flex: 1 }}>
-              <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.title || "Mon document PDF"}</p>
+              {c.title && <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.title}</p>}
               {c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 2px" }}>{c.description}</p>}
               {(c.pages || c.file_size) && <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>📄 PDF{c.pages ? ` · ${c.pages} pages` : ""}{c.file_size ? ` · ${c.file_size}` : ""}</p>}
             </div>
@@ -1469,7 +1469,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "flex", gap: 13, alignItems: "flex-start", marginBottom: 15 }}>
             <span style={{ fontSize: 34, flexShrink: 0 }}>🎟️</span>
             <div style={{ flex: 1 }}>
-              <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.event_name || "Mon événement"}</p>
+              {c.event_name && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.event_name}</p>}
               {c.date && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 2px" }}>📅 {c.date}</p>}
               {c.location && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 2px" }}>📍 {c.location}</p>}
               {c.price && <p style={{ color: "#EC4899", fontSize: 13, fontWeight: 700, margin: 0 }}>💶 {c.price}</p>}
@@ -1550,7 +1550,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: (gUrl || cal) ? 13 : 0 }}>
             <div style={{ width: 44, height: 44, borderRadius: 11, background: "rgba(236,72,153,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, flexShrink: 0 }}>📅</div>
             <div>
-              <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.event_name || "Mon événement"}</p>
+              {c.event_name && <p style={{ color: TEXT, fontSize: 14, fontWeight: 700, margin: "0 0 2px", fontFamily: FONT_B }}>{c.event_name}</p>}
               {c.start_date && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>🕐 {c.start_date.replace("T", " à ")}</p>}
               {c.location && <p style={{ color: MUTED, fontSize: 12, margin: 0 }}>📍 {c.location}</p>}
             </div>
@@ -1794,7 +1794,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ display: "flex", gap: 12, alignItems: "center", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 13, padding: "12px 13px" }}>
           {c.logo_url ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.logo_url} alt="" width={44} height={44} style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 44, height: 44, borderRadius: 10, background: `${G}15`, border: `1px solid ${G}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 21, flexShrink: 0 }}>🏢</div>}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_D }}>{c.company_name || "Mon Entreprise"}</p>
+            {c.company_name && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 1px", fontFamily: FONT_D }}>{c.company_name}</p>}
             <p style={{ color: MUTED, fontSize: 11, margin: 0 }}>{c.sector}{c.founded_year ? ` · Depuis ${c.founded_year}` : ""}</p>
           </div>
         </div>
@@ -2041,7 +2041,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
             <div style={{ display: "flex", gap: 14, padding: "15px" }}>
               {c.cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={84} height={84} style={{ width: 84, height: 84, borderRadius: 11, objectFit: "cover", flexShrink: 0, boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }} /> : <div style={{ width: 84, height: 84, borderRadius: 11, background: "rgba(29,185,84,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, flexShrink: 0 }}>🎵</div>}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ color: TEXT, fontSize: 17, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.title || "Nouveau titre"}</p>
+                {c.title && <p style={{ color: TEXT, fontSize: 17, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.title}</p>}
                 {c.artist && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 4px" }}>{c.artist}</p>}
                 {c.release_date && <p style={{ color: "#1DB954", fontSize: 12, margin: "0 0 10px", fontWeight: 600 }}>📅 {c.release_date}</p>}
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -2082,7 +2082,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
           <div style={{ background: "rgba(29,185,84,0.06)", border: "1px solid rgba(29,185,84,0.2)", borderRadius: 15, overflow: "hidden" }}>
             {c.cover ? <SmartImage width={1600} height={1200} sizes={SIZES_PLEINE} onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} /> : <div style={{ height: 150, background: "rgba(29,185,84,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52 }}>💿</div>}
             <div style={{ padding: "15px" }}>
-              <p style={{ color: TEXT, fontSize: 19, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.title || "Mon Album"}</p>
+              {c.title && <p style={{ color: TEXT, fontSize: 19, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.title}</p>}
               {c.artist && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 3px" }}>{c.artist}</p>}
               <div style={{ display: "flex", gap: 10, marginBottom: c.description ? 11 : 13 }}>{c.year && <span style={{ color: "#1DB954", fontSize: 12, fontWeight: 600 }}>{c.year}</span>}{c.tracks && <span style={{ color: MUTED, fontSize: 12 }}>· {c.tracks}</span>}</div>
               {c.description && <p style={{ color: MUTED, fontSize: 13, margin: "0 0 13px", lineHeight: 1.6 }}>{c.description}</p>}
@@ -2099,7 +2099,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ display: "flex", gap: 13, alignItems: "center", marginBottom: 13 }}>
             {c.cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={62} height={62} style={{ width: 62, height: 62, borderRadius: 11, objectFit: "cover", flexShrink: 0 }} /> : <div style={{ width: 62, height: 62, borderRadius: 11, background: "rgba(29,185,84,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 29, flexShrink: 0 }}>📋</div>}
-            <div style={{ flex: 1 }}><p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.title || "Ma Playlist"}</p>{c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 3px" }}>{c.description}</p>}{c.tracks_count && <p style={{ color: "#1DB954", fontSize: 12, margin: 0, fontWeight: 600 }}>🎵 {c.tracks_count}</p>}</div>
+            <div style={{ flex: 1 }}>{c.title && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.title}</p>}{c.description && <p style={{ color: MUTED, fontSize: 13.5, margin: "0 0 3px" }}>{c.description}</p>}{c.tracks_count && <p style={{ color: "#1DB954", fontSize: 12, margin: 0, fontWeight: 600 }}>🎵 {c.tracks_count}</p>}</div>
           </div>
           {platforms.length > 0 && <div style={{ display: "flex", gap: 8 }}>{platforms.map(([url, label, color]: any[], i: number) => <a key={i} href={extHref(String(url))} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, String(url))} style={{ flex: 1, background: `${color}18`, border: `1px solid ${color}33`, borderRadius: 9, padding: "10px", textAlign: "center", fontSize: 12, fontWeight: 700, color, textDecoration: "none" }}>{label}</a>)}</div>}
         </div>
@@ -2127,7 +2127,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ background: "rgba(145,70,255,0.08)", border: "1.5px solid rgba(145,70,255,0.3)", borderRadius: 15, padding: "17px" }}>
           <div style={{ display: "flex", gap: 13, alignItems: "flex-start", marginBottom: 15 }}>
             <span style={{ fontSize: 34, flexShrink: 0 }}>🎟️</span>
-            <div><p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.event_name || "Mon Concert"}</p>{c.date && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 2px" }}>📅 {c.date}</p>}{c.venue && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 2px" }}>📍 {c.venue}</p>}{c.price && <p style={{ color: "#9146FF", fontSize: 13, fontWeight: 700, margin: 0 }}>💶 {c.price}</p>}</div>
+            <div>{c.event_name && <p style={{ color: TEXT, fontSize: 15, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_B }}>{c.event_name}</p>}{c.date && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 2px" }}>📅 {c.date}</p>}{c.venue && <p style={{ color: MUTED, fontSize: 12, margin: "0 0 2px" }}>📍 {c.venue}</p>}{c.price && <p style={{ color: "#9146FF", fontSize: 13, fontWeight: 700, margin: 0 }}>💶 {c.price}</p>}</div>
           </div>
           <a href={extHref(c.url) || "#"} target={/^https?:/.test(c.url || "") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, c.url || "ticket")} style={{ display: "block", background: "#9146FF", borderRadius: 11, padding: "13px", textAlign: "center", fontSize: 14, fontWeight: 700, color: "#fff", textDecoration: "none", fontFamily: FONT_B }}>{c.label || "Acheter mes billets"}{c.platform && c.platform !== "URL personnalisée" ? ` — ${c.platform}` : ""}</a>
         </div>
@@ -2139,7 +2139,7 @@ function RenderBlock({ block, theme, pageId, ownerEmail, totalViews, h1Owner }: 
         <div style={{ padding: "10px 24px 14px" }}>
           <div style={{ background: "linear-gradient(135deg,rgba(29,185,84,0.1),rgba(29,185,84,0.05))", border: "1.5px solid rgba(29,185,84,0.3)", borderRadius: 16, padding: "17px", textAlign: "center" }}>
             {c.cover ? <SmartImage onError={e => { e.currentTarget.style.display = 'none' }} src={c.cover} alt="" width={110} height={110} style={{ width: 110, height: 110, borderRadius: 13, objectFit: "cover", margin: "0 auto 13px", display: "block", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }} /> : <div style={{ width: 110, height: 110, borderRadius: 13, background: "rgba(29,185,84,0.15)", margin: "0 auto 13px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44 }}>💾</div>}
-            <p style={{ color: TEXT, fontSize: 17, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.release_name || "Mon prochain titre"}</p>
+            {c.release_name && <p style={{ color: TEXT, fontSize: 17, fontWeight: 700, margin: "0 0 3px", fontFamily: FONT_D }}>{c.release_name}</p>}
             {c.release_date && <p style={{ color: "#1DB954", fontSize: 13, fontWeight: 600, margin: "0 0 15px" }}>📅 Sortie le {c.release_date}</p>}
             {platforms.length > 0 && <div style={{ display: "flex", gap: 8 }}>{platforms.map(([url, label, bg, fg]: any[], i: number) => <a key={i} href={extHref(String(url))} target="_blank" rel="noopener noreferrer" onClick={() => trackLinkClick(pageId, block.id, String(url))} style={{ flex: 1, background: bg, borderRadius: 10, padding: "12px", fontSize: 12, fontWeight: 700, color: fg, textDecoration: "none" }}>{label}</a>)}</div>}
           </div>

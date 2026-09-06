@@ -10,14 +10,18 @@ import { join } from "node:path"
 const sql = readFileSync(join(__dirname, "../../../../supabase/migrations/20260905120000_durcissement_base.sql"), "utf8")
 
 describe("durcissement de la base", () => {
-  it("les deux fonctions SECURITY DEFINER ne sont plus exécutables par anon/authenticated", () => {
-    expect(sql).toContain("revoke all on function public.log_activity(uuid, activity_event_type, text, text, uuid, text, text, jsonb) from public, anon, authenticated")
-    expect(sql).toContain("revoke all on function public.increment_redirect_hit(uuid) from public, anon, authenticated")
-    expect(sql).toContain("grant execute on function public.increment_redirect_hit(uuid) to service_role")
+  it("les deux fonctions SECURITY DEFINER ne sont plus exécutables par anon/authenticated — retrouvées par nom", () => {
+    // En production, la signature exacte n'existait pas (42883) : on résout par pg_proc,
+    // et une fonction absente n'arrête plus le lot.
+    expect(sql).toContain("p.proname in ('log_activity', 'increment_redirect_hit')")
+    expect(sql).toContain("revoke all on function %s from public, anon, authenticated")
+    expect(sql).toContain("grant execute on function %s to service_role")
+    expect(sql).not.toMatch(/revoke all on function public\.log_activity\(/)
   })
 
   it("team_members : plus de FOR ALL ; update borné (jamais owner) ; delete = soi, owner ou admin", () => {
     expect(sql).toContain('drop policy if exists "Gestion membres equipe"')
+    expect(sql).toContain("to_regclass('public.team_members') is null")
     expect(sql).toMatch(/create policy "Maj membres equipe" on public\.team_members for update/)
     expect(sql).toContain("public.team_role_rank(role) < public.team_role_rank('owner')")
     expect(sql).toMatch(/create policy "Retrait membres equipe" on public\.team_members for delete/)
@@ -25,8 +29,8 @@ describe("durcissement de la base", () => {
   })
 
   it("les triggers de quota lisent profiles hors RLS", () => {
-    expect(sql).toContain("alter function public.quota_instant_qrs() security definer")
-    expect(sql).toContain("alter function public.quota_qr_codes() security definer")
+    expect(sql).toContain("p.proname in ('quota_instant_qrs', 'quota_qr_codes')")
+    expect(sql).toContain("alter function %s security definer")
   })
 
   it("aucun code applicatif n'écrit team_members ou n'appelle ces fonctions avec le client de session", () => {

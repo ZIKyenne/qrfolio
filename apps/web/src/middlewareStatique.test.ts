@@ -22,5 +22,6 @@ describe("le middleware ne saute que les vrais fichiers", () => {
     const sql = readFileSync(join(__dirname, "../../../supabase/migrations/20260905140000_index_utilisateur.sql"), "utf8")
     expect(sql).toContain("idx_qr_codes_user_id on public.qr_codes(user_id)")
     expect(sql).toContain("idx_team_members_user_id on public.team_members(user_id)")
+    expect(sql).toContain("to_regclass('public.team_members') is not null")
   })
 })

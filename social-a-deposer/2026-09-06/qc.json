@@ -1,0 +1,111 @@
+{
+  "total": 15,
+  "avec_alerte": 0,
+  "details": [
+    {
+      "fichier": "qr-code-carte-cadeau-dematerialisee-boutique.png",
+      "fond_sombre_pct": 89.1,
+      "or_pct": 5.1,
+      "qr": "https://qrowg.com/qr-code/boutique?utm_source=pinterest&utm_medium=pin&utm_campaign=20260906-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-carte-enfants-jeu-table-restaurant-01.png",
+      "fond_sombre_pct": 93.2,
+      "or_pct": 1.1,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-carte-enfants-jeu-table-restaurant-02.png",
+      "fond_sombre_pct": 92.8,
+      "or_pct": 1.1,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-carte-enfants-jeu-table-restaurant-03.png",
+      "fond_sombre_pct": 86.6,
+      "or_pct": 8.9,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260906-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-carte-enfants-jeu-table-restaurant-04.png",
+      "fond_sombre_pct": 93.9,
+      "or_pct": 0.5,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-carte-enfants-jeu-table-restaurant-05.png",
+      "fond_sombre_pct": 95.4,
+      "or_pct": 1.2,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-carte-enfants-jeu-table-restaurant-06.png",
+      "fond_sombre_pct": 83.6,
+      "or_pct": 6.5,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260906-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-menu-buffet-reception-traiteur.png",
+      "fond_sombre_pct": 89.4,
+      "or_pct": 5.0,
+      "qr": "https://qrowg.com/qr-code/artisan?utm_source=pinterest&utm_medium=pin&utm_campaign=20260906-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "qr-code-tarifs-durees-prestations-salon-coiffure.png",
+      "fond_sombre_pct": 89.7,
+      "or_pct": 5.1,
+      "qr": "https://qrowg.com/qr-code/salon?utm_source=pinterest&utm_medium=pin&utm_campaign=20260906-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-carte-enfants-jeu-table-restaurant-01.png",
+      "fond_sombre_pct": 93.2,
+      "or_pct": 1.1,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-carte-enfants-jeu-table-restaurant-02.png",
+      "fond_sombre_pct": 92.8,
+      "or_pct": 1.1,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-carte-enfants-jeu-table-restaurant-03.png",
+      "fond_sombre_pct": 86.6,
+      "or_pct": 8.9,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260906-restaurant",
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-carte-enfants-jeu-table-restaurant-04.png",
+      "fond_sombre_pct": 93.9,
+      "or_pct": 0.5,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-carte-enfants-jeu-table-restaurant-05.png",
+      "fond_sombre_pct": 95.5,
+      "or_pct": 1.2,
+      "qr": null,
+      "alertes": []
+    },
+    {
+      "fichier": "tiktok-qr-code-carte-enfants-jeu-table-restaurant-06.png",
+      "fond_sombre_pct": 83.6,
+      "or_pct": 6.6,
+      "qr": "https://qrowg.com/qr-code/restaurant?utm_source=instagram&utm_medium=carrousel&utm_campaign=20260906-restaurant",
+      "alertes": []
+    }
+  ]
+}
